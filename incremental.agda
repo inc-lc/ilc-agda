@@ -66,6 +66,7 @@ eval⟦ abs t ⟧ ρ = λ v → eval⟦ t ⟧ (v • ρ)
 eval⟦ app t₁ t₂ ⟧ ρ = (eval⟦ t₁ ⟧ ρ) (eval⟦ t₂ ⟧ ρ)
 eval⟦ var x ⟧ ρ = lookup⟦ x ⟧ ρ
 
+
 -- WEAKENING
 
 -- Extend a context to a super context
