@@ -107,6 +107,11 @@ compose {τ₁ ⇒ τ₂} =
     abs (abs (abs (app (app compose (app (var (that (that this))) (var this))) (app (var (that this)) (var this)))))
  -- λdf. λdg. λx.           compose (     df                       x         ) (     dg                x      )
 
+nil : ∀ {τ Γ} → Term Γ (Δ-Type τ)
+nil {τ₁ ⇒ τ₂} =
+    abs nil
+ -- λx. nil
+
 -- Hey, apply is α-equivalent to compose, what's going on?
 -- Oh, and `Δ-Type` is the identity function?
 
