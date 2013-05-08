@@ -119,7 +119,7 @@ nil {τ₁ ⇒ τ₂} =
 
 Δ-Context : Context → Context
 Δ-Context ∅ = ∅
-Δ-Context (τ • Γ) = τ • Δ-Type τ • Γ
+Δ-Context (τ • Γ) = τ • Δ-Type τ • Δ-Context Γ
 
 -- CHANGING TERMS WHEN THE ENVIRONMENT CHANGES
 
