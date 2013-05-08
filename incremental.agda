@@ -9,7 +9,7 @@ data Type : Set where
 
 infixr 5 _⇒_
 
--- Semantics
+-- Denotational Semantics
 
 Dom⟦_⟧ : Type -> Set
 Dom⟦ τ₁ ⇒ τ₂ ⟧ = Dom⟦ τ₁ ⟧ → Dom⟦ τ₂ ⟧
@@ -24,7 +24,7 @@ data Context : Set where
 
 infixr 9 _•_
 
--- Semantics
+-- Denotational Semantics
 
 data Empty : Set where
   ∅ : Empty
@@ -44,7 +44,7 @@ data Var : Context → Type → Set where
   this : ∀ {Γ τ} → Var (τ • Γ) τ
   that : ∀ {Γ τ τ′} → (x : Var Γ τ) → Var (τ′ • Γ) τ
 
--- Semantics
+-- Denotational Semantics
 
 lookup⟦_⟧ : ∀ {Γ τ} → Var Γ τ → Env⟦ Γ ⟧ → Dom⟦ τ ⟧
 lookup⟦ this ⟧ (v • ρ) = v
@@ -59,13 +59,51 @@ data Term : Context → Type → Set where
   app : ∀ {Γ τ₁ τ₂} → (t₁ : Term Γ (τ₁ ⇒ τ₂)) (t₂ : Term Γ τ₁) → Term Γ τ₂
   var : ∀ {Γ τ} → (x : Var Γ τ) → Term Γ τ
 
--- Semantics
+-- Denotational Semantics
 
 eval⟦_⟧ : ∀ {Γ τ} → Term Γ τ → Env⟦ Γ ⟧ → Dom⟦ τ ⟧
 eval⟦ abs t ⟧ ρ = λ v → eval⟦ t ⟧ (v • ρ)
 eval⟦ app t₁ t₂ ⟧ ρ = (eval⟦ t₁ ⟧ ρ) (eval⟦ t₂ ⟧ ρ)
 eval⟦ var x ⟧ ρ = lookup⟦ x ⟧ ρ
 
+-- NATURAL SEMANTICS
+
+-- Syntax
+
+data Env : Context → Set
+data Val : Type → Set
+
+data Val where
+  ⟨abs_,_⟩ : ∀ {Γ τ₁ τ₂} → (t : Term (τ₁ • Γ) τ₂) (ρ : Env Γ) → Val (τ₁ ⇒ τ₂)
+
+data Env where
+  ∅ : Env ∅
+  _•_ : ∀ {Γ τ} → Val τ → Env Γ → Env (τ • Γ)
+
+-- Lookup
+
+infixr 8 _⊢_↓_ _⊢_↦_
+
+data _⊢_↦_ : ∀ {Γ τ} → Env Γ → Var Γ τ → Val τ → Set where
+  this : ∀ {Γ τ} {ρ : Env Γ} {v : Val τ} →
+    v • ρ ⊢ this ↦ v
+  that : ∀ {Γ τ₁ τ₂ x} {ρ : Env Γ} {v₁ : Val τ₁} {v₂ : Val τ₂} →
+    ρ ⊢ x ↦ v₂ →
+    v₁ • ρ ⊢ that x ↦ v₂
+
+-- Reduction
+
+data _⊢_↓_ : ∀ {Γ τ} → Env Γ → Term Γ τ → Val τ → Set where
+  abs : ∀ {Γ τ₁ τ₂ ρ} {t : Term (τ₁ • Γ) τ₂} →
+    ρ ⊢ abs t ↓ ⟨abs t , ρ ⟩
+  app : ∀ {Γ Γ′ τ₁ τ₂ ρ ρ′ v₂ v′} {t₁ : Term Γ (τ₁ ⇒ τ₂)} {t₂ : Term Γ τ₁} {t′ : Term (τ₁ • Γ′) τ₂} →
+    ρ ⊢ t₁ ↓ ⟨abs t′ , ρ′ ⟩ →
+    ρ ⊢ t₂ ↓ v₂ →
+    v₂ • ρ′ ⊢ t′ ↓ v′ →
+    ρ ⊢ app t₁ t₂ ↓ v′
+  var : ∀ {Γ τ x} {ρ : Env Γ} {v : Val τ}→
+    ρ ⊢ x ↦ v →
+    ρ ⊢ var x ↓ v
 
 -- WEAKENING
 
