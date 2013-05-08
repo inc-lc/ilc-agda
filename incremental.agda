@@ -121,9 +121,24 @@ nil {τ₁ ⇒ τ₂} =
 Δ-Context ∅ = ∅
 Δ-Context (τ • Γ) = τ • Δ-Type τ • Δ-Context Γ
 
--- CHANGING TERMS WHEN THE ENVIRONMENT CHANGES
+-- CHANGE VARIABLES
+
+-- changes 'x' to 'dx'
+
+rename : ∀ {Γ τ} → Var Γ τ → Var (Δ-Context Γ) (Δ-Type τ)
+rename this = that this
+rename (that x) = that (that (rename x))
+
+-- changes 'x' to 'nil' (if internally bound) or 'dx' (if externally bound)
+
+Δ-var : ∀ {Γ₁ Γ₂ τ} → Var (Γ₁ ⋎ Γ₂) τ → Term (Δ-Context Γ₂) (Δ-Type τ)
+Δ-var {∅} x = var (rename x)
+Δ-var {τ • Γ} this = nil
+Δ-var {τ • Γ} (that x) = Δ-var {Γ} x
+
+-- CHANGE TERMS
 
 Δ-term : ∀ {Γ₁ Γ₂ τ} → Term (Γ₁ ⋎ Γ₂) τ → Term (Γ₁ ⋎ Δ-Context Γ₂) (Δ-Type τ)
 Δ-term {Γ} (abs {τ₁ = τ} t) = abs (Δ-term {τ • Γ} t)
 Δ-term {Γ} (app t₁ t₂) = {!!}
-Δ-term {Γ} (var x) = {!!}
+Δ-term {Γ} (var x) = weaken {∅} {Γ} (Δ-var {Γ} x)
