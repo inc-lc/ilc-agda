@@ -1,5 +1,7 @@
 module incremental where
 
+open import Relation.Binary.PropositionalEquality
+
 -- SIMPLE TYPES
 
 -- Syntax
@@ -104,6 +106,29 @@ data _⊢_↓_ : ∀ {Γ τ} → Env Γ → Term Γ τ → Val τ → Set where
   var : ∀ {Γ τ x} {ρ : Env Γ} {v : Val τ}→
     ρ ⊢ x ↦ v →
     ρ ⊢ var x ↓ v
+
+-- SOUNDNESS of natural semantics
+
+evalEnv⟦_⟧ : ∀ {Γ} → Env Γ → Env⟦ Γ ⟧
+evalVal⟦_⟧ : ∀ {τ} → Val τ → Dom⟦ τ ⟧
+
+evalEnv⟦ ∅ ⟧ = ∅
+evalEnv⟦ v • ρ ⟧ = evalVal⟦ v ⟧ • evalEnv⟦ ρ ⟧
+
+evalVal⟦ ⟨abs t , ρ ⟩ ⟧ = λ v → eval⟦ t ⟧ (v • evalEnv⟦ ρ ⟧)
+
+↦-sound : ∀ {Γ τ ρ v} {x : Var Γ τ} →
+  ρ ⊢ x ↦ v →
+  lookup⟦ x ⟧ evalEnv⟦ ρ ⟧ ≡ evalVal⟦ v ⟧
+↦-sound this = refl
+↦-sound (that ↦) = ↦-sound ↦
+
+↓-sound : ∀ {Γ τ ρ v} {t : Term Γ τ} →
+  ρ ⊢ t ↓ v →
+  eval⟦ t ⟧ evalEnv⟦ ρ ⟧ ≡ evalVal⟦ v ⟧
+↓-sound abs = refl
+↓-sound (app ↓₁ ↓₂ ↓′) = trans (cong₂ (λ x y → x y) (↓-sound ↓₁) (↓-sound ↓₂)) (↓-sound ↓′)
+↓-sound (var ↦) = ↦-sound ↦
 
 -- WEAKENING
 
