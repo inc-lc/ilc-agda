@@ -39,6 +39,12 @@ lookup⟦_⟧ : ∀ {Γ τ} → Var Γ τ → Env⟦ Γ ⟧ → Dom⟦ τ ⟧
 lookup⟦ this ⟧ (v • ρ) = v
 lookup⟦ that x ⟧ (v • ρ) = lookup⟦ x ⟧ ρ
 
+-- OPERATIONS on environments
+
+update : ∀ {Γ τ} → Var Γ τ → (Dom⟦ τ ⟧ → Dom⟦ τ ⟧) → Env⟦ Γ ⟧ → Env⟦ Γ ⟧
+update this f (v • ρ) = f v • ρ
+update (that x) f (v • ρ) = v • (update x f ρ)
+
 -- WEAKENING
 
 -- Extend a context to a super context
