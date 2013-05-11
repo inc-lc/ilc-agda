@@ -1,4 +1,4 @@
-module incremental where
+module lambda where
 
 open import Relation.Binary.PropositionalEquality
 
