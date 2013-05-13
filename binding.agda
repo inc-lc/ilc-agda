@@ -35,9 +35,9 @@ data Var : Context → Type → Set where
 
 -- Denotational Semantics
 
-lookup⟦_⟧ : ∀ {Γ τ} → Var Γ τ → ⟦ Γ ⟧Context → ⟦ τ ⟧Type
-lookup⟦ this ⟧ (v • ρ) = v
-lookup⟦ that x ⟧ (v • ρ) = lookup⟦ x ⟧ ρ
+⟦_⟧Var : ∀ {Γ τ} → Var Γ τ → ⟦ Γ ⟧Context → ⟦ τ ⟧Type
+⟦ this ⟧Var (v • ρ) = v
+⟦ that x ⟧Var (v • ρ) = ⟦ x ⟧Var ρ
 
 -- OPERATIONS on environments
 

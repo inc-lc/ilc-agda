@@ -41,7 +41,7 @@ data Term : Context → Type → Set where
 eval⟦_⟧ : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧Context → ⟦ τ ⟧Type
 eval⟦ abs t ⟧ ρ = λ v → eval⟦ t ⟧ (v • ρ)
 eval⟦ app t₁ t₂ ⟧ ρ = (eval⟦ t₁ ⟧ ρ) (eval⟦ t₂ ⟧ ρ)
-eval⟦ var x ⟧ ρ = lookup⟦ x ⟧ ρ
+eval⟦ var x ⟧ ρ = ⟦ x ⟧Var ρ
 eval⟦ Δ x t ⟧ ρ = λ Δx _ → eval⟦ t ⟧ (update x Δx ρ)
 
 -- NATURAL SEMANTICS
@@ -97,7 +97,7 @@ evalVal⟦ ⟨abs t , ρ ⟩ ⟧ = λ v → eval⟦ t ⟧ (v • evalEnv⟦ ρ �
 
 ↦-sound : ∀ {Γ τ ρ v} {x : Var Γ τ} →
   ρ ⊢ x ↦ v →
-  lookup⟦ x ⟧ evalEnv⟦ ρ ⟧ ≡ evalVal⟦ v ⟧
+  ⟦ x ⟧Var evalEnv⟦ ρ ⟧ ≡ evalVal⟦ v ⟧
 ↦-sound this = refl
 ↦-sound (that ↦) = ↦-sound ↦
 
