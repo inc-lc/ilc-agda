@@ -6,21 +6,25 @@ open import lambda
 
 Δ-Type : Type → Type
 Δ-Type (τ₁ ⇒ τ₂) = τ₁ ⇒ Δ-Type τ₂
+Δ-Type bool = {!!}
 
 apply : ∀ {τ Γ} → Term Γ (Δ-Type τ ⇒ τ ⇒ τ)
 apply {τ₁ ⇒ τ₂} =
     abs (abs (abs (app (app apply (app (var (that (that this))) (var this))) (app (var (that this)) (var this)))))
  -- λdf. λf.  λx.           apply (     df                       x        )  (     f                 x        )
+apply {bool} = {!!}
 
 compose : ∀ {τ Γ} → Term Γ (Δ-Type τ ⇒ Δ-Type τ ⇒ Δ-Type τ)
 compose {τ₁ ⇒ τ₂} =
-    abs (abs (abs (app (app compose (app (var (that (that this))) (var this))) (app (var (that this)) (var this)))))
+    abs (abs (abs (app (app (compose {τ₂}) (app (var (that (that this))) (var this))) (app (var (that this)) (var this)))))
  -- λdf. λdg. λx.           compose (     df                       x         ) (     dg                x      )
+compose {bool} = {!!}
 
 nil : ∀ {τ Γ} → Term Γ (Δ-Type τ)
 nil {τ₁ ⇒ τ₂} =
-    abs nil
+    abs (nil {τ₂})
  -- λx. nil
+nil {bool} = {!!}
 
 -- Hey, apply is α-equivalent to compose, what's going on?
 -- Oh, and `Δ-Type` is the identity function?
@@ -43,7 +47,7 @@ rename (that x) = that (that (rename x))
 
 Δ-var : ∀ {Γ₁ Γ₂ τ} → Var (Γ₁ ⋎ Γ₂) τ → Term (Δ-Context Γ₂) (Δ-Type τ)
 Δ-var {∅} x = var (rename x)
-Δ-var {τ • Γ} this = nil
+Δ-var {τ • Γ} this = nil {τ}
 Δ-var {τ • Γ} (that x) = Δ-var {Γ} x
 
 -- CHANGE TERMS
@@ -52,3 +56,6 @@ rename (that x) = that (that (rename x))
 Δ-term {Γ} (abs {τ₁ = τ} t) = abs (Δ-term {τ • Γ} t)
 Δ-term {Γ} (app t₁ t₂) = {!!}
 Δ-term {Γ} (var x) = weaken {∅} {Γ} (Δ-var {Γ} x)
+Δ-term {Γ} true = {!!}
+Δ-term {Γ} false = {!!}
+Δ-term {Γ} (cond t₁ t₂ t₃) = {!!}
