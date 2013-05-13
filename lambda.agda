@@ -31,7 +31,7 @@ data Term : Context → Type → Set where
 
 -- Denotational Semantics
 
-eval⟦_⟧ : ∀ {Γ τ} → Term Γ τ → Env⟦ Γ ⟧ → ⟦ τ ⟧Type
+eval⟦_⟧ : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧Context → ⟦ τ ⟧Type
 eval⟦ abs t ⟧ ρ = λ v → eval⟦ t ⟧ (v • ρ)
 eval⟦ app t₁ t₂ ⟧ ρ = (eval⟦ t₁ ⟧ ρ) (eval⟦ t₂ ⟧ ρ)
 eval⟦ var x ⟧ ρ = lookup⟦ x ⟧ ρ
@@ -77,7 +77,7 @@ data _⊢_↓_ : ∀ {Γ τ} → Env Γ → Term Γ τ → Val τ → Set where
 
 -- SOUNDNESS of natural semantics
 
-evalEnv⟦_⟧ : ∀ {Γ} → Env Γ → Env⟦ Γ ⟧
+evalEnv⟦_⟧ : ∀ {Γ} → Env Γ → ⟦ Γ ⟧Context
 evalVal⟦_⟧ : ∀ {τ} → Val τ → ⟦ τ ⟧Type
 
 evalEnv⟦ ∅ ⟧ = ∅

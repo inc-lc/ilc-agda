@@ -21,9 +21,9 @@ data Empty : Set where
 data Bind A B : Set where
   _•_ : (v : A) (ρ : B) → Bind A B
 
-Env⟦_⟧ : Context → Set
-Env⟦ ∅ ⟧ = Empty
-Env⟦ τ • Γ ⟧ = Bind ⟦ τ ⟧Type Env⟦ Γ ⟧
+⟦_⟧Context : Context → Set
+⟦ ∅ ⟧Context = Empty
+⟦ τ • Γ ⟧Context = Bind ⟦ τ ⟧Type ⟦ Γ ⟧Context
 
 -- VARIABLES
 
@@ -35,13 +35,13 @@ data Var : Context → Type → Set where
 
 -- Denotational Semantics
 
-lookup⟦_⟧ : ∀ {Γ τ} → Var Γ τ → Env⟦ Γ ⟧ → ⟦ τ ⟧Type
+lookup⟦_⟧ : ∀ {Γ τ} → Var Γ τ → ⟦ Γ ⟧Context → ⟦ τ ⟧Type
 lookup⟦ this ⟧ (v • ρ) = v
 lookup⟦ that x ⟧ (v • ρ) = lookup⟦ x ⟧ ρ
 
 -- OPERATIONS on environments
 
-update : ∀ {Γ τ} → Var Γ τ → (⟦ τ ⟧Type → ⟦ τ ⟧Type) → Env⟦ Γ ⟧ → Env⟦ Γ ⟧
+update : ∀ {Γ τ} → Var Γ τ → (⟦ τ ⟧Type → ⟦ τ ⟧Type) → ⟦ Γ ⟧Context → ⟦ Γ ⟧Context
 update this f (v • ρ) = f v • ρ
 update (that x) f (v • ρ) = v • (update x f ρ)
 
