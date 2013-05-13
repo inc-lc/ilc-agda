@@ -38,8 +38,8 @@ data Term : Context → Type → Set where
   app : ∀ {Γ τ₁ τ₂} → (t₁ : Term Γ (τ₁ ⇒ τ₂)) (t₂ : Term Γ τ₁) → Term Γ τ₂
   var : ∀ {Γ τ} → (x : Var Γ τ) → Term Γ τ
 
-  -- `Δ x t` maps changes in `x` to changes in `t`
-  Δ : ∀ {Γ τ₁ τ₂} → (x : Var Γ τ₁) → (t : Term Γ τ₂) → Term Γ (Δ τ₁ ⇒ Δ τ₂)
+  -- `Δ x dx t` maps changes `dx` in `x` to changes in `t`
+  Δ : ∀ {Γ τ₁ τ₂} → (x : Var Γ τ₁) (dx : Var Γ (Δ τ₁)) → (t : Term Γ τ₂) → Term Γ (Δ τ₂)
 
 -- Denotational Semantics
 
@@ -47,7 +47,7 @@ data Term : Context → Type → Set where
 ⟦ abs t ⟧Term ρ = λ v → ⟦ t ⟧Term (v • ρ)
 ⟦ app t₁ t₂ ⟧Term ρ = (⟦ t₁ ⟧Term ρ) (⟦ t₂ ⟧Term ρ)
 ⟦ var x ⟧Term ρ = ⟦ x ⟧ ρ
-⟦ Δ x t ⟧Term ρ = λ Δx _ → ⟦ t ⟧Term (update x Δx ρ)
+⟦ Δ x dx t ⟧Term ρ = λ _ → ⟦ t ⟧Term (update x (⟦ dx ⟧ ρ) ρ)
 
 meaningOfTerm : ∀ {Γ τ} → Meaning (Term Γ τ)
 meaningOfTerm {Γ} {τ} = meaning (⟦ Γ ⟧ → ⟦ τ ⟧) ⟦_⟧Term
@@ -130,4 +130,4 @@ weaken : ∀ {Γ₁ Γ₂ Γ₃ τ} → Term (Γ₁ ⋎ Γ₃) τ → Term (Γ�
 weaken {Γ₁} {Γ₂} (abs  {τ₁ = τ} t) = abs (weaken {τ • Γ₁} {Γ₂} t)
 weaken {Γ₁} {Γ₂} (app t₁ t₂) = app (weaken {Γ₁} {Γ₂} t₁) (weaken {Γ₁} {Γ₂} t₂)
 weaken {Γ₁} {Γ₂} (var x) = var (lift {Γ₁} {Γ₂} x)
-weaken {Γ₁} {Γ₂} (Δ x t) = Δ (lift {Γ₁} {Γ₂} x) (weaken {Γ₁} {Γ₂} t)
+weaken {Γ₁} {Γ₂} (Δ x dx t) = Δ (lift {Γ₁} {Γ₂} x) (lift {Γ₁} {Γ₂} dx) (weaken {Γ₁} {Γ₂} t)
