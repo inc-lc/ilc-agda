@@ -3,6 +3,12 @@ module binding
     (⟦_⟧Type : Type → Set)
   where
 
+open import meaning
+
+private
+  meaningOfType : Meaning Type
+  meaningOfType = meaning Set ⟦_⟧Type
+
 -- TYPING CONTEXTS
 
 -- Syntax
@@ -23,7 +29,10 @@ data Bind A B : Set where
 
 ⟦_⟧Context : Context → Set
 ⟦ ∅ ⟧Context = Empty
-⟦ τ • Γ ⟧Context = Bind ⟦ τ ⟧Type ⟦ Γ ⟧Context
+⟦ τ • Γ ⟧Context = Bind ⟦ τ ⟧ ⟦ Γ ⟧Context
+
+meaningOfContext : Meaning Context
+meaningOfContext = meaning Set ⟦_⟧Context
 
 -- VARIABLES
 
@@ -35,13 +44,16 @@ data Var : Context → Type → Set where
 
 -- Denotational Semantics
 
-⟦_⟧Var : ∀ {Γ τ} → Var Γ τ → ⟦ Γ ⟧Context → ⟦ τ ⟧Type
+⟦_⟧Var : ∀ {Γ τ} → Var Γ τ → ⟦ Γ ⟧ → ⟦ τ ⟧
 ⟦ this ⟧Var (v • ρ) = v
 ⟦ that x ⟧Var (v • ρ) = ⟦ x ⟧Var ρ
 
+meaningOfVar : ∀ {Γ τ} → Meaning (Var Γ τ)
+meaningOfVar {Γ} {τ} = meaning (⟦ Γ ⟧ → ⟦ τ ⟧) ⟦_⟧Var
+
 -- OPERATIONS on environments
 
-update : ∀ {Γ τ} → Var Γ τ → (⟦ τ ⟧Type → ⟦ τ ⟧Type) → ⟦ Γ ⟧Context → ⟦ Γ ⟧Context
+update : ∀ {Γ τ} → Var Γ τ → (⟦ τ ⟧ → ⟦ τ ⟧) → ⟦ Γ ⟧ → ⟦ Γ ⟧
 update this f (v • ρ) = f v • ρ
 update (that x) f (v • ρ) = v • (update x f ρ)
 

@@ -2,6 +2,8 @@ module incremental where
 
 open import Relation.Binary.PropositionalEquality
 
+open import meaning
+
 -- SIMPLE TYPES
 
 -- Syntax
@@ -19,6 +21,9 @@ infixr 5 _⇒_
 ⟦_⟧Type : Type -> Set
 ⟦ τ₁ ⇒ τ₂ ⟧Type = ⟦ τ₁ ⟧Type → ⟦ τ₂ ⟧Type
 ⟦ Δ τ ⟧Type = ⟦ τ ⟧Type → ⟦ τ ⟧Type
+
+meaningOfType : Meaning Type
+meaningOfType = meaning Set ⟦_⟧Type
 
 -- TYPING CONTEXTS, VARIABLES and WEAKENING
 
@@ -38,11 +43,14 @@ data Term : Context → Type → Set where
 
 -- Denotational Semantics
 
-⟦_⟧Term : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧Context → ⟦ τ ⟧Type
+⟦_⟧Term : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧ → ⟦ τ ⟧
 ⟦ abs t ⟧Term ρ = λ v → ⟦ t ⟧Term (v • ρ)
 ⟦ app t₁ t₂ ⟧Term ρ = (⟦ t₁ ⟧Term ρ) (⟦ t₂ ⟧Term ρ)
-⟦ var x ⟧Term ρ = ⟦ x ⟧Var ρ
+⟦ var x ⟧Term ρ = ⟦ x ⟧ ρ
 ⟦ Δ x t ⟧Term ρ = λ Δx _ → ⟦ t ⟧Term (update x Δx ρ)
+
+meaningOfTerm : ∀ {Γ τ} → Meaning (Term Γ τ)
+meaningOfTerm {Γ} {τ} = meaning (⟦ Γ ⟧ → ⟦ τ ⟧) ⟦_⟧Term
 
 -- NATURAL SEMANTICS
 
@@ -87,23 +95,29 @@ data _⊢_↓_ : ∀ {Γ τ} → Env Γ → Term Γ τ → Val τ → Set where
 
 -- SOUNDNESS of natural semantics
 
-⟦_⟧Env : ∀ {Γ} → Env Γ → ⟦ Γ ⟧Context
-⟦_⟧Val : ∀ {τ} → Val τ → ⟦ τ ⟧Type
+⟦_⟧Env : ∀ {Γ} → Env Γ → ⟦ Γ ⟧
+⟦_⟧Val : ∀ {τ} → Val τ → ⟦ τ ⟧
 
 ⟦ ∅ ⟧Env = ∅
 ⟦ v • ρ ⟧Env = ⟦ v ⟧Val • ⟦ ρ ⟧Env
 
-⟦ ⟨abs t , ρ ⟩ ⟧Val = λ v → ⟦ t ⟧Term (v • ⟦ ρ ⟧Env)
+⟦ ⟨abs t , ρ ⟩ ⟧Val = λ v → ⟦ t ⟧ (v • ⟦ ρ ⟧Env)
+
+meaningOfEnv : ∀ {Γ} → Meaning (Env Γ)
+meaningOfEnv {Γ} = meaning ⟦ Γ ⟧ ⟦_⟧Env
+
+meaningOfVal : ∀ {τ} → Meaning (Val τ)
+meaningOfVal {τ} = meaning ⟦ τ ⟧ ⟦_⟧Val
 
 ↦-sound : ∀ {Γ τ ρ v} {x : Var Γ τ} →
   ρ ⊢ x ↦ v →
-  ⟦ x ⟧Var ⟦ ρ ⟧Env ≡ ⟦ v ⟧Val
+  ⟦ x ⟧ ⟦ ρ ⟧ ≡ ⟦ v ⟧
 ↦-sound this = refl
 ↦-sound (that ↦) = ↦-sound ↦
 
 ↓-sound : ∀ {Γ τ ρ v} {t : Term Γ τ} →
   ρ ⊢ t ↓ v →
-  ⟦ t ⟧Term ⟦ ρ ⟧Env ≡ ⟦ v ⟧Val
+  ⟦ t ⟧ ⟦ ρ ⟧ ≡ ⟦ v ⟧
 ↓-sound abs = refl
 ↓-sound (app ↓₁ ↓₂ ↓′) = trans (cong₂ (λ x y → x y) (↓-sound ↓₁) (↓-sound ↓₂)) (↓-sound ↓′)
 ↓-sound (var ↦) = ↦-sound ↦
