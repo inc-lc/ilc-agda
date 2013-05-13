@@ -16,13 +16,13 @@ infixr 5 _⇒_
 
 -- Denotational Semantics
 
-Dom⟦_⟧ : Type -> Set
-Dom⟦ τ₁ ⇒ τ₂ ⟧ = Dom⟦ τ₁ ⟧ → Dom⟦ τ₂ ⟧
-Dom⟦ Δ τ ⟧ = Dom⟦ τ ⟧ → Dom⟦ τ ⟧
+⟦_⟧Type : Type -> Set
+⟦ τ₁ ⇒ τ₂ ⟧Type = ⟦ τ₁ ⟧Type → ⟦ τ₂ ⟧Type
+⟦ Δ τ ⟧Type = ⟦ τ ⟧Type → ⟦ τ ⟧Type
 
 -- TYPING CONTEXTS, VARIABLES and WEAKENING
 
-open import binding Type Dom⟦_⟧
+open import binding Type ⟦_⟧Type
 
 -- TERMS
 
@@ -38,7 +38,7 @@ data Term : Context → Type → Set where
 
 -- Denotational Semantics
 
-eval⟦_⟧ : ∀ {Γ τ} → Term Γ τ → Env⟦ Γ ⟧ → Dom⟦ τ ⟧
+eval⟦_⟧ : ∀ {Γ τ} → Term Γ τ → Env⟦ Γ ⟧ → ⟦ τ ⟧Type
 eval⟦ abs t ⟧ ρ = λ v → eval⟦ t ⟧ (v • ρ)
 eval⟦ app t₁ t₂ ⟧ ρ = (eval⟦ t₁ ⟧ ρ) (eval⟦ t₂ ⟧ ρ)
 eval⟦ var x ⟧ ρ = lookup⟦ x ⟧ ρ
@@ -88,7 +88,7 @@ data _⊢_↓_ : ∀ {Γ τ} → Env Γ → Term Γ τ → Val τ → Set where
 -- SOUNDNESS of natural semantics
 
 evalEnv⟦_⟧ : ∀ {Γ} → Env Γ → Env⟦ Γ ⟧
-evalVal⟦_⟧ : ∀ {τ} → Val τ → Dom⟦ τ ⟧
+evalVal⟦_⟧ : ∀ {τ} → Val τ → ⟦ τ ⟧Type
 
 evalEnv⟦ ∅ ⟧ = ∅
 evalEnv⟦ v • ρ ⟧ = evalVal⟦ v ⟧ • evalEnv⟦ ρ ⟧
