@@ -88,22 +88,22 @@ data _⊢_↓_ : ∀ {Γ τ} → Env Γ → Term Γ τ → Val τ → Set where
 -- SOUNDNESS of natural semantics
 
 ⟦_⟧Env : ∀ {Γ} → Env Γ → ⟦ Γ ⟧Context
-evalVal⟦_⟧ : ∀ {τ} → Val τ → ⟦ τ ⟧Type
+⟦_⟧Val : ∀ {τ} → Val τ → ⟦ τ ⟧Type
 
 ⟦ ∅ ⟧Env = ∅
-⟦ v • ρ ⟧Env = evalVal⟦ v ⟧ • ⟦ ρ ⟧Env
+⟦ v • ρ ⟧Env = ⟦ v ⟧Val • ⟦ ρ ⟧Env
 
-evalVal⟦ ⟨abs t , ρ ⟩ ⟧ = λ v → ⟦ t ⟧Term (v • ⟦ ρ ⟧Env)
+⟦ ⟨abs t , ρ ⟩ ⟧Val = λ v → ⟦ t ⟧Term (v • ⟦ ρ ⟧Env)
 
 ↦-sound : ∀ {Γ τ ρ v} {x : Var Γ τ} →
   ρ ⊢ x ↦ v →
-  ⟦ x ⟧Var ⟦ ρ ⟧Env ≡ evalVal⟦ v ⟧
+  ⟦ x ⟧Var ⟦ ρ ⟧Env ≡ ⟦ v ⟧Val
 ↦-sound this = refl
 ↦-sound (that ↦) = ↦-sound ↦
 
 ↓-sound : ∀ {Γ τ ρ v} {t : Term Γ τ} →
   ρ ⊢ t ↓ v →
-  ⟦ t ⟧Term ⟦ ρ ⟧Env ≡ evalVal⟦ v ⟧
+  ⟦ t ⟧Term ⟦ ρ ⟧Env ≡ ⟦ v ⟧Val
 ↓-sound abs = refl
 ↓-sound (app ↓₁ ↓₂ ↓′) = trans (cong₂ (λ x y → x y) (↓-sound ↓₁) (↓-sound ↓₂)) (↓-sound ↓′)
 ↓-sound (var ↦) = ↦-sound ↦
