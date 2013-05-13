@@ -31,10 +31,10 @@ data Term : Context → Type → Set where
 
 -- Denotational Semantics
 
-eval⟦_⟧ : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧Context → ⟦ τ ⟧Type
-eval⟦ abs t ⟧ ρ = λ v → eval⟦ t ⟧ (v • ρ)
-eval⟦ app t₁ t₂ ⟧ ρ = (eval⟦ t₁ ⟧ ρ) (eval⟦ t₂ ⟧ ρ)
-eval⟦ var x ⟧ ρ = ⟦ x ⟧Var ρ
+⟦_⟧Term : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧Context → ⟦ τ ⟧Type
+⟦ abs t ⟧Term ρ = λ v → ⟦ t ⟧Term (v • ρ)
+⟦ app t₁ t₂ ⟧Term ρ = (⟦ t₁ ⟧Term ρ) (⟦ t₂ ⟧Term ρ)
+⟦ var x ⟧Term ρ = ⟦ x ⟧Var ρ
 
 -- NATURAL SEMANTICS
 
@@ -83,7 +83,7 @@ evalVal⟦_⟧ : ∀ {τ} → Val τ → ⟦ τ ⟧Type
 evalEnv⟦ ∅ ⟧ = ∅
 evalEnv⟦ v • ρ ⟧ = evalVal⟦ v ⟧ • evalEnv⟦ ρ ⟧
 
-evalVal⟦ ⟨abs t , ρ ⟩ ⟧ = λ v → eval⟦ t ⟧ (v • evalEnv⟦ ρ ⟧)
+evalVal⟦ ⟨abs t , ρ ⟩ ⟧ = λ v → ⟦ t ⟧Term (v • evalEnv⟦ ρ ⟧)
 
 ↦-sound : ∀ {Γ τ ρ v} {x : Var Γ τ} →
   ρ ⊢ x ↦ v →
@@ -93,7 +93,7 @@ evalVal⟦ ⟨abs t , ρ ⟩ ⟧ = λ v → eval⟦ t ⟧ (v • evalEnv⟦ ρ �
 
 ↓-sound : ∀ {Γ τ ρ v} {t : Term Γ τ} →
   ρ ⊢ t ↓ v →
-  eval⟦ t ⟧ evalEnv⟦ ρ ⟧ ≡ evalVal⟦ v ⟧
+  ⟦ t ⟧Term evalEnv⟦ ρ ⟧ ≡ evalVal⟦ v ⟧
 ↓-sound abs = refl
 ↓-sound (app ↓₁ ↓₂ ↓′) = trans (cong₂ (λ x y → x y) (↓-sound ↓₁) (↓-sound ↓₂)) (↓-sound ↓′)
 ↓-sound (var ↦) = ↦-sound ↦
