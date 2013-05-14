@@ -5,7 +5,7 @@ module partial where
 --
 -- Features:
 --   * Changes and derivatives are different.
---   * Δ x e  maps changes of x to changes of e.
+--   * Δ x dx e  describes how e changes if x changes by dx.
 --   * a full denotational semantics is given.
 --   * the domain of change types `⟦Δ τ⟧` is uniformly defined as `⟦τ⟧ → ⟦τ⟧`.
 
