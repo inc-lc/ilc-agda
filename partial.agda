@@ -1,4 +1,4 @@
-module incremental where
+module partial where
 
 -- INCREMENTAL λ-CALCULUS
 --   with (one-variable) partial derivatives
