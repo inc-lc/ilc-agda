@@ -1,5 +1,14 @@
 module incremental where
 
+-- INCREMENTAL λ-CALCULUS
+--   with (one-variable) partial derivatives
+--
+-- Features:
+--   * Changes and derivatives are different.
+--   * Δ x e  maps changes of x to changes of e.
+--   * a full denotational semantics is given.
+--   * the domain of change types `⟦Δ τ⟧` is uniformly defined as `⟦τ⟧ → ⟦τ⟧`.
+
 open import Relation.Binary.PropositionalEquality
 
 open import meaning
