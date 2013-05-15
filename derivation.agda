@@ -43,7 +43,9 @@ rename : ∀ {Γ τ} → Var Γ τ → Var (Δ-Context Γ) (Δ-Type τ)
 rename this = that this
 rename (that x) = that (that (rename x))
 
-adaptVar : ∀  {τ} Γ₁ Γ₂ → Var (Γ₁ ⋎ Γ₂) τ → Var (Γ₁ ⋎ Δ-Context Γ₂) τ
+-- Weakening of a term needed during derivation - change x to x in a context which also includes dx.
+-- The actual specification is more complicated, study the type signature.
+adaptVar : ∀ {τ} Γ₁ Γ₂ → Var (Γ₁ ⋎ Γ₂) τ → Var (Γ₁ ⋎ Δ-Context Γ₂) τ
 adaptVar ∅ (τ₂ • Γ₂) this = this
 adaptVar ∅ (τ₂ • Γ₂) (that x) = that (that (adaptVar ∅ Γ₂ x))
 adaptVar (τ₁ • Γ₁) Γ₂ this = this
@@ -72,7 +74,10 @@ nabla = {!!}
 Δ-term : ∀ {Γ₁ Γ₂ τ} → Term (Γ₁ ⋎ Γ₂) τ → Term (Γ₁ ⋎ Δ-Context Γ₂) (Δ-Type τ)
 Δ-term {Γ} (abs {τ₁ = τ} t) = abs (Δ-term {τ • Γ} t)
 
-Δ-term {Γ₁} {Γ₂} {τ} (app t₁ t₂) = app (app (compose {τ}) (app (Δ-term {Γ₁} t₁) (adapt Γ₁ Γ₂ t₂)))
+-- To recheck: which is the order in which to apply the changes? When I did my live proof to Klaus, I came up with this order:
+-- (Δ-term t₁) (t₂ ⊕ (Δ-term t₂)) ∘ (∇ t₁) t₂ (Δ-term t₂)
+-- corresponding to:
+Δ-term {Γ₁} {Γ₂} {τ} (app t₁ t₂) = app (app (compose {τ}) (app (Δ-term {Γ₁} t₁) (app (app apply (Δ-term {Γ₁} {Γ₂} t₂)) (adapt Γ₁ Γ₂ t₂))))
   (app (adapt Γ₁ Γ₂ (app (nabla {Γ₁ ⋎ Γ₂} t₁) t₂)) (Δ-term {Γ₁} {Γ₂} t₂))
 
 Δ-term {Γ} (var x) = weaken {∅} {Γ} (Δ-var {Γ} x)
