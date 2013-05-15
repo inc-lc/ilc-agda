@@ -24,7 +24,7 @@ data Bool : Set where
 ⟦ bool ⟧Type = Bool
 
 meaningOfType : Meaning Type
-meaningOfType = meaning Set ⟦_⟧Type
+meaningOfType = meaning ⟦_⟧Type
 
 -- TYPING CONTEXTS, VARIABLES and WEAKENING
 
@@ -56,7 +56,7 @@ data Term : Context → Type → Set where
 ... | false = ⟦ t₃ ⟧Term ρ
 
 meaningOfTerm : ∀ {Γ τ} → Meaning (Term Γ τ)
-meaningOfTerm {Γ} {τ} = meaning (⟦ Γ ⟧ → ⟦ τ ⟧) ⟦_⟧Term
+meaningOfTerm = meaning ⟦_⟧Term
 
 -- NATURAL SEMANTICS
 
@@ -120,10 +120,10 @@ data _⊢_↓_ : ∀ {Γ τ} → Env Γ → Term Γ τ → Val τ → Set where
 ⟦ false ⟧Val = false
 
 meaningOfEnv : ∀ {Γ} → Meaning (Env Γ)
-meaningOfEnv {Γ} = meaning ⟦ Γ ⟧ ⟦_⟧Env
+meaningOfEnv = meaning ⟦_⟧Env
 
 meaningOfVal : ∀ {τ} → Meaning (Val τ)
-meaningOfVal {τ} = meaning ⟦ τ ⟧ ⟦_⟧Val
+meaningOfVal = meaning ⟦_⟧Val
 
 ↦-sound : ∀ {Γ τ ρ v} {x : Var Γ τ} →
   ρ ⊢ x ↦ v →

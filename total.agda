@@ -36,7 +36,7 @@ infixr 5 _⇒_
 ⟦ τ₁ ⇒ τ₂ ⟧Type = ⟦ τ₁ ⟧Type → ⟦ τ₂ ⟧Type
 
 meaningOfType : Meaning Type
-meaningOfType = newMeaning ⟦_⟧Type
+meaningOfType = meaning ⟦_⟧Type
 
 -- Value Equivalence
 
@@ -184,7 +184,7 @@ data Term : Context → Type → Set where
 ⟦ Δ t ⟧Term ρ = diff (⟦ t ⟧Term (update ρ)) (⟦ t ⟧Term (ignore ρ))
 
 meaningOfTerm : ∀ {Γ τ} → Meaning (Term Γ τ)
-meaningOfTerm {Γ} {τ} = meaning (⟦ Γ ⟧ → ⟦ τ ⟧) ⟦_⟧Term
+meaningOfTerm = meaning ⟦_⟧Term
 
 -- Term Equivalence
 
@@ -398,10 +398,10 @@ data _⊢_↓_ : ∀ {Γ τ} → Env Γ → Term Γ τ → Val τ → Set where
 ⟦ ⟨abs t , ρ ⟩ ⟧Val = λ v → ⟦ t ⟧ (v • ⟦ ρ ⟧Env)
 
 meaningOfEnv : ∀ {Γ} → Meaning (Env Γ)
-meaningOfEnv {Γ} = meaning ⟦ Γ ⟧ ⟦_⟧Env
+meaningOfEnv = meaning ⟦_⟧Env
 
 meaningOfVal : ∀ {τ} → Meaning (Val τ)
-meaningOfVal {τ} = meaning ⟦ τ ⟧ ⟦_⟧Val
+meaningOfVal = meaning ⟦_⟧Val
 
 ↦-sound : ∀ {Γ τ ρ v} {x : Var Γ τ} →
   ρ ⊢ x ↦ v →

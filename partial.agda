@@ -32,7 +32,7 @@ infixr 5 _⇒_
 ⟦ Δ τ ⟧Type = ⟦ τ ⟧Type → ⟦ τ ⟧Type
 
 meaningOfType : Meaning Type
-meaningOfType = meaning Set ⟦_⟧Type
+meaningOfType = meaning ⟦_⟧Type
 
 -- TYPING CONTEXTS, VARIABLES and WEAKENING
 
@@ -63,7 +63,7 @@ data Term : Context → Type → Set where
 ⟦ Δ x dx t ⟧Term ρ = λ _ → ⟦ t ⟧Term (update x (⟦ dx ⟧ ρ) ρ)
 
 meaningOfTerm : ∀ {Γ τ} → Meaning (Term Γ τ)
-meaningOfTerm {Γ} {τ} = meaning (⟦ Γ ⟧ → ⟦ τ ⟧) ⟦_⟧Term
+meaningOfTerm {Γ} {τ} = meaning ⟦_⟧Term
 
 -- NATURAL SEMANTICS
 
@@ -117,10 +117,10 @@ data _⊢_↓_ : ∀ {Γ τ} → Env Γ → Term Γ τ → Val τ → Set where
 ⟦ ⟨abs t , ρ ⟩ ⟧Val = λ v → ⟦ t ⟧ (v • ⟦ ρ ⟧Env)
 
 meaningOfEnv : ∀ {Γ} → Meaning (Env Γ)
-meaningOfEnv {Γ} = meaning ⟦ Γ ⟧ ⟦_⟧Env
+meaningOfEnv {Γ} = meaning ⟦_⟧Env
 
 meaningOfVal : ∀ {τ} → Meaning (Val τ)
-meaningOfVal {τ} = meaning ⟦ τ ⟧ ⟦_⟧Val
+meaningOfVal {τ} = meaning ⟦_⟧Val
 
 ↦-sound : ∀ {Γ τ ρ v} {x : Var Γ τ} →
   ρ ⊢ x ↦ v →

@@ -7,7 +7,7 @@ open import meaning
 
 private
   meaningOfType : Meaning Type
-  meaningOfType = meaning Set ⟦_⟧Type
+  meaningOfType = meaning ⟦_⟧Type
 
 -- TYPING CONTEXTS
 
@@ -32,7 +32,7 @@ data Bind A B : Set where
 ⟦ τ • Γ ⟧Context = Bind ⟦ τ ⟧ ⟦ Γ ⟧Context
 
 meaningOfContext : Meaning Context
-meaningOfContext = meaning Set ⟦_⟧Context
+meaningOfContext = meaning ⟦_⟧Context
 
 -- VARIABLES
 
@@ -49,7 +49,7 @@ data Var : Context → Type → Set where
 ⟦ that x ⟧Var (v • ρ) = ⟦ x ⟧Var ρ
 
 meaningOfVar : ∀ {Γ τ} → Meaning (Var Γ τ)
-meaningOfVar {Γ} {τ} = meaning (⟦ Γ ⟧ → ⟦ τ ⟧) ⟦_⟧Var
+meaningOfVar = meaning ⟦_⟧Var
 
 -- WEAKENING
 
