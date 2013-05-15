@@ -38,6 +38,10 @@ meaningOfType = meaning Set ⟦_⟧Type
 
 open import binding Type ⟦_⟧Type
 
+update : ∀ {Γ τ} → Var Γ τ → (⟦ τ ⟧ → ⟦ τ ⟧) → ⟦ Γ ⟧ → ⟦ Γ ⟧
+update this f (v • ρ) = f v • ρ
+update (that x) f (v • ρ) = v • (update x f ρ)
+
 -- TERMS
 
 -- Syntax

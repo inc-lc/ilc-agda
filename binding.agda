@@ -51,12 +51,6 @@ data Var : Context → Type → Set where
 meaningOfVar : ∀ {Γ τ} → Meaning (Var Γ τ)
 meaningOfVar {Γ} {τ} = meaning (⟦ Γ ⟧ → ⟦ τ ⟧) ⟦_⟧Var
 
--- OPERATIONS on environments
-
-update : ∀ {Γ τ} → Var Γ τ → (⟦ τ ⟧ → ⟦ τ ⟧) → ⟦ Γ ⟧ → ⟦ Γ ⟧
-update this f (v • ρ) = f v • ρ
-update (that x) f (v • ρ) = v • (update x f ρ)
-
 -- WEAKENING
 
 -- Extend a context to a super context
