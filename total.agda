@@ -36,7 +36,7 @@ infixr 5 _⇒_
 ⟦ τ₁ ⇒ τ₂ ⟧Type = ⟦ τ₁ ⟧Type → ⟦ τ₂ ⟧Type
 
 meaningOfType : Meaning Type
-meaningOfType = meaning Set ⟦_⟧Type
+meaningOfType = newMeaning ⟦_⟧Type
 
 -- Value Equivalence
 
