@@ -163,6 +163,18 @@ ignore : ∀ {Γ} → ⟦ Δ-Context Γ ⟧ → ⟦ Γ ⟧
 ignore {∅} ∅ = ∅
 ignore {τ • Γ} (dv • v • ρ) = v • ignore ρ
 
+Δ-Context′ : (Γ : Context) → Prefix Γ → Context
+Δ-Context′ Γ ∅ = Δ-Context Γ
+Δ-Context′ (.τ • Γ) (τ • Γ′) = τ • Δ-Context′ Γ Γ′
+
+update′ : ∀ {Γ} → (Γ′ : Prefix Γ) → ⟦ Δ-Context′ Γ Γ′ ⟧ → ⟦ Γ ⟧
+update′ ∅ ρ = update ρ
+update′ (τ • Γ′) (v • ρ) = v • update′ Γ′ ρ
+
+ignore′ : ∀ {Γ} → (Γ′ : Prefix Γ) → ⟦ Δ-Context′ Γ Γ′ ⟧ → ⟦ Γ ⟧
+ignore′ ∅ ρ = ignore ρ
+ignore′ (τ • Γ′) (v • ρ) = v • ignore′ Γ′ ρ
+
 -- TERMS
 
 -- Syntax
@@ -174,6 +186,9 @@ data Term : Context → Type → Set where
 
   -- `Δ t` describes how t changes if its free variables or arguments change
   Δ : ∀ {Γ τ} → (t : Term Γ τ) → Term (Δ-Context Γ) (Δ-Type τ)
+
+fv : ∀ {Γ τ} → Term Γ τ → Context
+fv {Γ} _ = Γ
 
 -- Denotational Semantics
 
@@ -243,11 +258,19 @@ lift-var : ∀ {Γ τ} → Var Γ τ → Var (Δ-Context Γ) τ
 lift-var this = that this
 lift-var (that x) = that (that (lift-var x))
 
+lift-var′ : ∀ {Γ τ} → (Γ′ : Prefix Γ) → Var Γ τ → Var (Δ-Context′ Γ Γ′) τ
+lift-var′ ∅ x = lift-var x
+lift-var′ (τ • Γ′) this = this
+lift-var′ (τ • Γ′) (that x) = that (lift-var′ Γ′ x)
+
+lift-term′ : ∀ {Γ τ} → (Γ′ : Prefix Γ) → Term Γ τ → Term (Δ-Context′ Γ Γ′) τ
+lift-term′ Γ′ (abs t) = abs (lift-term′ (_ • Γ′) t)
+lift-term′ Γ′ (app t₁ t₂) = app (lift-term′ Γ′ t₁) (lift-term′ Γ′ t₂)
+lift-term′ Γ′ (var x) = var (lift-var′ Γ′ x)
+lift-term′ Γ′ (Δ t) = {!!}
+
 lift-term : ∀ {Γ τ} → Term Γ τ → Term (Δ-Context Γ) τ
-lift-term (abs t) = abs {!!}
-lift-term (app t₁ t₂) = app (lift-term t₁) (lift-term t₂)
-lift-term (var x) = var (lift-var x)
-lift-term (Δ t) = Δ (lift-term t)
+lift-term = lift-term′ ∅
 
 -- PROPERTIES of lift-term
 
@@ -256,12 +279,27 @@ lift-var-ignore : ∀ {Γ τ} (ρ : ⟦ Δ-Context Γ ⟧) (x : Var Γ τ) →
 lift-var-ignore (v • dv • ρ) this = ≡-refl
 lift-var-ignore (v • dv • ρ) (that x) = lift-var-ignore ρ x
 
+lift-var-ignore′ : ∀ {Γ τ} →
+  (Γ′ : Prefix Γ) (ρ : ⟦ Δ-Context′ Γ Γ′ ⟧) (x : Var Γ τ) →
+  ⟦ lift-var′ Γ′ x ⟧ ρ ≡ ⟦ x ⟧ (ignore′ Γ′ ρ)
+lift-var-ignore′ ∅ ρ x = lift-var-ignore ρ x
+lift-var-ignore′ (τ • Γ′) (v • ρ) this = ≡-refl
+lift-var-ignore′ (τ • Γ′) (v • ρ) (that x) = lift-var-ignore′ Γ′ ρ x
+
+lift-term-ignore′ : ∀ {Γ τ} →
+  (Γ′ : Prefix Γ) {ρ : ⟦ Δ-Context′  Γ Γ′ ⟧} (t : Term Γ τ) →
+  ⟦ lift-term′ Γ′ t ⟧ ρ ≡ ⟦ t ⟧ (ignore′ Γ′ ρ)
+lift-term-ignore′ Γ′ (abs t) =
+  ext (λ v → lift-term-ignore′ (_ • Γ′) t)
+lift-term-ignore′ Γ′ (app t₁ t₂) =
+  ≡-app (lift-term-ignore′ Γ′ t₁) (lift-term-ignore′ Γ′ t₂)
+lift-term-ignore′ Γ′ (var x) = lift-var-ignore′ Γ′ _ x
+lift-term-ignore′ Γ′ (Δ t) = {!!}
+
 lift-term-ignore : ∀ {Γ τ} {ρ : ⟦ Δ-Context Γ ⟧} (t : Term Γ τ) →
   ⟦ lift-term t ⟧ ρ ≡ ⟦ t ⟧ (ignore ρ)
-lift-term-ignore (abs t) = {!!}
-lift-term-ignore (app t₁ t₂) = ≡-app (lift-term-ignore t₁) (lift-term-ignore t₂)
-lift-term-ignore (var x) = lift-var-ignore _ x
-lift-term-ignore (Δ t) = {!!}
+lift-term-ignore = lift-term-ignore′ ∅
+
 
 -- PROPERTIES of Δ
 

@@ -53,6 +53,24 @@ meaningOfVar = meaning ⟦_⟧Var
 
 -- WEAKENING
 
+-- Prefix of a context
+
+data Prefix : Context → Set where
+  ∅ : ∀ {Γ} → Prefix Γ
+  _•_ : ∀ {Γ} → (τ : Type) → Prefix Γ → Prefix (τ • Γ)
+
+-- take only the prefix of a context
+
+take : (Γ : Context) → Prefix Γ → Context
+take Γ ∅ = ∅
+take (τ • Γ) (.τ • Γ′) = τ • take Γ Γ′
+
+-- drop the prefix of a context
+
+drop : (Γ : Context) → Prefix Γ → Context
+drop Γ ∅ = Γ
+drop (τ • Γ) (.τ • Γ′) = drop Γ Γ′
+
 -- Extend a context to a super context
 
 infixr 10 _⋎_
