@@ -7,7 +7,10 @@ record Meaning (Syntax : Set) {ℓ : Level} : Set (suc ℓ) where
     meaning
   field
     {Semantics} : Set ℓ
-    ⟦_⟧ : Syntax → Semantics
+    ⟨_⟩⟦_⟧ : Syntax → Semantics
 
 open Meaning {{...}} public
+  renaming (⟨_⟩⟦_⟧ to ⟦_⟧)
 
+open Meaning public
+  using (⟨_⟩⟦_⟧)
