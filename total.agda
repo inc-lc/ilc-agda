@@ -73,12 +73,17 @@ data _≡_ : ∀ {τ} → (v₁ v₂ : ⟦ τ ⟧) → Set where
 ≡-cong : ∀ {τ₂ τ₁ v₁ v₂} (f : ⟦ τ₁ ⟧ → ⟦ τ₂ ⟧) →
   v₁ ≡ v₂ → f v₁ ≡ f v₂
 ≡-cong {τ₁ ⇒ τ₂} f ≡ = ext (λ v → ≡-cong (λ x → f x v) ≡)
-≡-cong {bool} f ≡ = {!!}
+--≡-cong {bool} {bool} {v₁} f bool = bool
+≡-cong {bool} {bool} f bool = bool
+≡-cong {bool} {τ₃ ⇒ τ₄} {v₁} {v₂} f (ext ≡₁) = {!!}
 
 ≡-cong₂ : ∀ {τ₃ τ₁ τ₂ v₁ v₂ v₃ v₄} (f : ⟦ τ₁ ⟧ → ⟦ τ₂ ⟧ → ⟦ τ₃ ⟧) →
   v₁ ≡ v₂ → v₃ ≡ v₄ → f v₁ v₃ ≡ f v₂ v₄
 ≡-cong₂ {τ₁ ⇒ τ₂} f ≡₁ ≡₂ = ext (λ v → ≡-cong₂ (λ x y → f x y v) ≡₁ ≡₂)
-≡-cong₂ {bool} f ≡₁ ≡₂ = {!!}
+≡-cong₂ {bool} {bool} {bool} f bool bool = bool
+≡-cong₂ {bool} {bool} {τ₂ ⇒ τ₃} f bool (ext ≡₂) = {!!}
+≡-cong₂ {bool} {τ₁ ⇒ τ₂} {bool} f (ext ≡₁) (bool) = {!!}
+≡-cong₂ {bool} {τ₁ ⇒ τ₂} {τ₃ ⇒ τ₄} f (ext ≡₁) (ext ≡₂) = {!!}
 
 ≡-app : ∀ {τ₁ τ₂} {v₁ v₂ : ⟦ τ₁ ⇒ τ₂ ⟧} {v₃ v₄ : ⟦ τ₁ ⟧} →
   v₁ ≡ v₂ → v₃ ≡ v₄ → v₁ v₃ ≡ v₂ v₄
