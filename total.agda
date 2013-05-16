@@ -19,6 +19,8 @@ open import Relation.Binary using
   (IsEquivalence; Setoid; Reflexive; Symmetric; Transitive)
 import Relation.Binary.EqReasoning as EqR
 
+open import Relation.Nullary using (¬_)
+
 open import meaning
 
 -- SIMPLE TYPES
@@ -100,6 +102,10 @@ module ≡-Reasoning where
   module _ {τ : Type} where
     open EqR (≡-setoid τ) public
       hiding (_≡⟨_⟩_) renaming (_≈⟨_⟩_ to _≡⟨_⟩_)
+
+≡-consistent : ¬ (∀ (τ : Type) → (v₁ v₂ : ⟦ τ ⟧) → v₁ ≡ v₂)
+≡-consistent H with H bool true false
+... | ()
 
 -- CHANGE TYPES
 
@@ -330,6 +336,11 @@ module ≈-Reasoning where
   module _ {Γ : Context} {τ : Type} where
     open EqR (≈-setoid Γ τ) public
       hiding (_≡⟨_⟩_)
+
+≈-consistent : ¬ (∀ {Γ τ} (t₁ t₂ : Term Γ τ) → t₁ ≈ t₂)
+≈-consistent H with H {∅} true false
+... | ext x with x ∅
+... | ()
 
 -- LIFTING terms into Δ-Contexts
 
