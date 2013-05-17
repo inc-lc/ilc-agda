@@ -163,12 +163,27 @@ derive-term (if c t e) =
 
 derive-term (Δ t) = Δ (derive-term t)
 derive-term (weakenOne Γ₁ τ₂ {Γ₃} t) =
-  lemma-2 Γ₁ Γ₃ _ (weakenOne (Δ-Context Γ₁) (Δ-Type τ₂) (weakenOne (Δ-Context Γ₁) τ₂ {Δ-Context Γ₃} (lemma Γ₁ Γ₃ _ (derive-term t))))
+  context-cast-2 Γ₁ Γ₃
+    (weakenOne (Δ-Context Γ₁) (Δ-Type τ₂)
+      (weakenOne (Δ-Context Γ₁) τ₂
+        (context-cast Γ₁ Γ₃ (derive-term t))))
+
   where
-    lemma : ∀ Γ₁ Γ₂ τ → Term (Δ-Context (Γ₁ ⋎ Γ₂)) τ → Term (Δ-Context Γ₁ ⋎ Δ-Context Γ₂) τ
-    lemma = {!!}
-    lemma-2 : ∀ Γ₁ Γ₂ τ → Term (Δ-Context Γ₁ ⋎ (Δ-Type τ₂ • τ₂ • Δ-Context Γ₂)) τ → Term (Δ-Context (Γ₁ ⋎ (τ₂ • Γ₂))) τ
-    lemma-2 = {!!}
+    open import Relation.Binary.PropositionalEquality using (subst)
+
+    context-cast :
+      ∀ Γ₁ Γ₂ {τ} →
+        Term (Δ-Context (Γ₁ ⋎ Γ₂)) τ → Term (Δ-Context Γ₁ ⋎ Δ-Context Γ₂) τ
+    context-cast Γ₁ Γ₂ {τ} =
+      subst (λ t → Term t τ) (context-distr Γ₁ Γ₂)
+
+    context-cast-2 :
+      ∀ Γ₁ Γ₂ {τ τ₂} →
+        Term (Δ-Context Γ₁ ⋎ (Δ-Type τ₂ • τ₂ • Δ-Context Γ₂)) τ →
+        Term (Δ-Context (Γ₁ ⋎ (τ₂ • Γ₂))) τ
+    context-cast-2 Γ₁ Γ₂ {τ} {τ₂} =
+      subst (λ t → Term t τ)
+      (context-distr-expanded Γ₁ τ₂ Γ₂)
 
 -- CORRECTNESS of derivation
 
