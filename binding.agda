@@ -79,6 +79,23 @@ _⋎_ : (Γ₁ Γ₂ : Context) → Context
 ∅ ⋎ Γ₂ = Γ₂
 (τ • Γ₁) ⋎ Γ₂ = τ • Γ₁ ⋎ Γ₂
 
+open import Relation.Binary.PropositionalEquality
+
+take-drop : ∀ Γ Γ′ → take Γ Γ′ ⋎ drop Γ Γ′ ≡ Γ
+take-drop ∅ ∅ = refl
+take-drop (τ • Γ) ∅ = refl
+take-drop (τ • Γ) (.τ • Γ′) rewrite take-drop Γ Γ′ = refl
+
+or-unit : ∀ Γ → Γ ⋎ ∅ ≡ Γ
+or-unit ∅ = refl
+or-unit (τ • Γ) rewrite or-unit Γ = refl
+
+move-prefix : ∀ Γ τ Γ′ →
+  Γ ⋎ (τ • Γ′) ≡ (Γ ⋎ (τ • ∅)) ⋎ Γ′
+move-prefix ∅ τ Γ′ = refl
+move-prefix (τ • Γ) τ₁ ∅ = sym (or-unit (τ • Γ ⋎ (τ₁ • ∅)))
+move-prefix (τ • Γ) τ₁ (τ₂ • Γ′) rewrite move-prefix Γ τ₁ (τ₂ • Γ′) = refl
+
 -- Lift a variable to a super context
 
 lift : ∀ {Γ₁ Γ₂ Γ₃ τ} → Var (Γ₁ ⋎ Γ₃) τ → Var (Γ₁ ⋎ Γ₂ ⋎ Γ₃) τ
