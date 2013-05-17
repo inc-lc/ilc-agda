@@ -39,6 +39,10 @@ lift-var′ ∅ x = lift-var x
 lift-var′ (τ • Γ′) this = this
 lift-var′ (τ • Γ′) (that x) = that (lift-var′ Γ′ x)
 
+lift-var-3 : ∀ {Γ τ} → Var Γ τ → Var (Δ-Context (Δ-Context Γ)) τ
+lift-var-3 this = that (that (that this))
+lift-var-3 (that x) = that (that (that (that (lift-var-3 x))))
+
 lift-term′ : ∀ {Γ τ} → (Γ′ : Prefix Γ) → Term Γ τ → Term (Δ-Context′ Γ Γ′) τ
 lift-term′ Γ′ (abs t) = abs (lift-term′ (_ • Γ′) t)
 lift-term′ Γ′ (app t₁ t₂) = app (lift-term′ Γ′ t₁) (lift-term′ Γ′ t₂)
@@ -82,6 +86,23 @@ lift-term′ {.(Δ-Context Γ)} {.(Δ-Type τ)} Γ′ (Δ {Γ} {τ} t) = weakenM
       substTerm
         (sym (take-⋎-Δ-Context-drop-Δ-Context′ (Δ-Context Γ) Γ′))
         (weakenMore2 Γ Γ′ t)
+
+{-
+    weakenMore2 : ∀ Γ Γ′ {τ} →
+      Term Γ τ →
+      Term (prefix Γ Γ′ ⋎ Δ-Context (rest Γ Γ′)) (Δ-Type τ)
+    weakenMore2 ∅ ∅ t₁ = Δ t₁
+    weakenMore2 (τ₁ • Γ₁) ∅ t₁ =
+      weakenOne ∅ (Δ-Type (Δ-Type τ₁))
+        (weakenOne (Δ-Type τ₁ • ∅) (Δ-Type τ₁) {!
+          weakenMore2
+            (Δ {τ₁ • Γ₁} {τ} t₁)!})
+          --(weakenMore2 {τ₁ • Γ₁} (Δ-Type τ₁ • τ₁ • ∅) t₁ ))
+
+--        (Δ {τ₁ • Γ₁} {τ} t₁)))
+
+    weakenMore2 (τ₁ • Γ₁) (.(Δ-Type τ₁) • Γ′₁) t₁ = {!!}
+-}
 
 lift-term′ {._} {_} _ (weakenOne _ _ {_} {._} _) = {!!}
 
