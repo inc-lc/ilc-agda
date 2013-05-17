@@ -79,15 +79,3 @@ meaningOfVal = meaning ⟦_⟧Val
     (≡-cong₂ (λ x y → x y) (↓-sound ↓₁) (↓-sound ↓₂))
     (↓-sound ↓′)
 ↓-sound (var ↦) = ↦-sound ↦
-
--- WEAKENING
-
--- Weaken a term to a super context
-
-{-
-weaken : ∀ {Γ₁ Γ₂ Γ₃ τ} → Term (Γ₁ ⋎ Γ₃) τ → Term (Γ₁ ⋎ Γ₂ ⋎ Γ₃) τ
-weaken {Γ₁} {Γ₂} (abs  {τ₁ = τ} t) = abs (weaken {τ • Γ₁} {Γ₂} t)
-weaken {Γ₁} {Γ₂} (app t₁ t₂) = app (weaken {Γ₁} {Γ₂} t₁) (weaken {Γ₁} {Γ₂} t₂)
-weaken {Γ₁} {Γ₂} (var x) = var (lift {Γ₁} {Γ₂} x)
-weaken {Γ₁} {Γ₂} (Δ t) = ?
--}

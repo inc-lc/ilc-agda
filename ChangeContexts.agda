@@ -53,3 +53,21 @@ take-⋎-Δ-Context-drop-Δ-Context′ ∅ ∅ = refl
 take-⋎-Δ-Context-drop-Δ-Context′ (τ • Γ) ∅ = refl
 take-⋎-Δ-Context-drop-Δ-Context′ (τ • Γ) (.τ • Γ′)
   rewrite take-⋎-Δ-Context-drop-Δ-Context′ Γ Γ′ = refl
+
+-- WEAKENING
+
+-- Weaken a term to a super context
+
+{-
+weaken : ∀ {Γ₁ Γ₂ Γ₃ τ} → Term (Γ₁ ⋎ Γ₃) τ → Term (Γ₁ ⋎ Γ₂ ⋎ Γ₃) τ
+weaken = {!!}
+
+weaken : ∀ {Γ₁ Γ₂ Γ₃ τ} → Term (Γ₁ ⋎ Γ₃) τ → Term (Γ₁ ⋎ Γ₂ ⋎ Γ₃) τ
+weaken {Γ₁} {Γ₂} (abs  {τ₁ = τ} t) = abs (weaken {τ • Γ₁} {Γ₂} t)
+weaken {Γ₁} {Γ₂} (app t₁ t₂) = app (weaken {Γ₁} {Γ₂} t₁) (weaken {Γ₁} {Γ₂} t₂)
+weaken {Γ₁} {Γ₂} (var x) = var (lift {Γ₁} {Γ₂} x)
+weaken {.(Δ-Type τ) • .τ • _} {Γ₂} (Δ {τ • Γ₃} t) = ?
+--weaken {.(Δ-Type τ) • .τ • _} {Γ₂} (Δ {τ • Γ₃} t) = ?
+--weaken {(Δ-Type τ) • τ • _} {Γ₂} (Δ {τ • Γ₃} t) = ?
+--weaken {(Δ-Context .Γ₁)} {Γ₂} (Δ {Γ₁ ⋎ Γ₃} t) = ?
+-}
