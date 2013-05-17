@@ -102,3 +102,8 @@ module ≈-Reasoning where
 ≈-consistent H with H {∅} true false
 ... | ext x with x ∅
 ... | ()
+
+open import Relation.Binary.PropositionalEquality as P
+
+substTerm : ∀ {τ Γ₁ Γ₂} → Γ₁ P.≡ Γ₂ → Term Γ₁ τ → Term Γ₂ τ
+substTerm {τ} {Γ₁} {Γ₂} ≡₁ t = subst (λ Γ → Term Γ τ) ≡₁ t

@@ -175,14 +175,14 @@ derive-term (weakenOne Γ₁ τ₂ {Γ₃} t) =
       ∀ Γ₁ Γ₂ {τ} →
         Term (Δ-Context (Γ₁ ⋎ Γ₂)) τ → Term (Δ-Context Γ₁ ⋎ Δ-Context Γ₂) τ
     context-cast Γ₁ Γ₂ {τ} =
-      subst (λ t → Term t τ) (Δ-Context-⋎ Γ₁ Γ₂)
+      substTerm (Δ-Context-⋎ Γ₁ Γ₂)
 
     context-cast-2 :
       ∀ Γ₁ Γ₂ {τ τ₂} →
         Term (Δ-Context Γ₁ ⋎ (Δ-Type τ₂ • τ₂ • Δ-Context Γ₂)) τ →
         Term (Δ-Context (Γ₁ ⋎ (τ₂ • Γ₂))) τ
     context-cast-2 Γ₁ Γ₂ {τ} {τ₂} =
-      subst (λ t → Term t τ)
+      substTerm
       (Δ-Context-⋎-expanded Γ₁ τ₂ Γ₂)
 
 -- CORRECTNESS of derivation
