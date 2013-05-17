@@ -276,6 +276,12 @@ data Term : Context → Type → Set where
   -- `Δ t` describes how t changes if its free variables or arguments change
   Δ : ∀ {Γ τ} → (t : Term Γ τ) → Term (Δ-Context Γ) (Δ-Type τ)
 
+_and_ : ∀ {Γ} → Term Γ bool → Term Γ bool → Term Γ bool
+a and b = ?
+
+!_ : ∀ {Γ} → Term Γ bool → Term Γ bool
+! x = ?
+
 -- Denotational Semantics
 
 ⟦_⟧Term : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧ → ⟦ τ ⟧
@@ -451,13 +457,27 @@ derive-var : ∀ {Γ τ} → Var Γ τ → Var (Δ-Context Γ) (Δ-Type τ)
 derive-var this = this
 derive-var (that x) = that (that (derive-var x))
 
+diff-term : ∀ {Γ τ} → Term Γ τ → Term Γ τ → Term Γ (Δ-Type τ)
+diff-term = {!!}
+
+apply-term : ∀ {Γ τ} → Term Γ (Δ-Type τ) → Term Γ τ → Term Γ τ
+apply-term = {!!}
+
 derive-term : ∀ {Γ τ} → Term Γ τ → Term (Δ-Context Γ) (Δ-Type τ)
 derive-term (abs t) = abs (abs (derive-term t))
 derive-term (app t₁ t₂) = app (app (derive-term t₁) (lift-term t₂)) (derive-term t₂)
 derive-term (var x) = var (derive-var x)
 derive-term true = false
 derive-term false = false
-derive-term (if t₁ t₂ t₃) = {!!}
+derive-term (if c t e) =
+  if ((derive-term c) and (lift-term c))
+    (diff-term (apply-term (derive-term e) (lift-term e)) (lift-term t))
+    (if ((derive-term c) and (lift-term (! c)))
+      (diff-term (apply-term (derive-term t) (lift-term t)) (lift-term e))
+      (if (lift-term c)
+        (derive-term t)
+        (derive-term e)))
+
 derive-term (Δ t) = Δ (derive-term t)
 
 -- CORRECTNESS of derivation
