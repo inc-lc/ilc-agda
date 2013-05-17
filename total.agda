@@ -46,7 +46,43 @@ lift-term′ Γ′ (var x) = var (lift-var′ Γ′ x)
 lift-term′ Γ′ true = true
 lift-term′ Γ′ false = false
 lift-term′ Γ′ (if t₁ t₂ t₃) = if (lift-term′ Γ′ t₁) (lift-term′ Γ′ t₂) (lift-term′ Γ′ t₃)
-lift-term′ {.(Δ-Context Γ)} {.(Δ-Type τ)} Γ′ (Δ {Γ} {τ} t) = {!!}
+lift-term′ {.(Δ-Context Γ)} {.(Δ-Type τ)} Γ′ (Δ {Γ} {τ} t) = weakenMore t
+  where
+    open import Relation.Binary.PropositionalEquality using (sym)
+
+    doWeakenMore : ∀ Γprefix Γrest {τ} →
+      Term (Γprefix ⋎ Γrest) (Δ-Type τ) →
+      Term (Γprefix ⋎ Δ-Context Γrest) (Δ-Type τ)
+
+    doWeakenMore Γprefix ∅ t₁ = t₁
+    doWeakenMore ∅ (τ₂ • Γrest) t₁ =
+      weakenOne ∅ (Δ-Type τ₂) (doWeakenMore (τ₂ • ∅) Γrest t₁)
+    doWeakenMore Γprefix (τ₂ • Γrest) {τ} t₁ =
+      weakenOne Γprefix (Δ-Type τ₂)
+        (substTerm (sym (move-prefix Γprefix τ₂ (Δ-Context Γrest)))
+          (doWeakenMore (Γprefix ⋎ (τ₂ • ∅)) Γrest
+            (substTerm (move-prefix Γprefix τ₂ Γrest) t₁)))
+
+    prefix : ∀ Γ → (Γ′ : Prefix (Δ-Context Γ)) → Context
+    prefix Γ Γ′ = take (Δ-Context Γ) Γ′
+
+    rest   : ∀ Γ → (Γ′ : Prefix (Δ-Context Γ)) → Context
+    rest   Γ Γ′ = drop (Δ-Context Γ) Γ′
+
+    weakenMore2 : ∀ Γ Γ′ {τ} →
+      Term Γ τ →
+      Term (prefix Γ Γ′ ⋎ Δ-Context (rest Γ Γ′)) (Δ-Type τ)
+    weakenMore2 Γ Γ′ t =
+      doWeakenMore (prefix Γ Γ′) (rest Γ Γ′) (
+      substTerm (sym (take-drop (Δ-Context Γ) Γ′)) (Δ t))
+
+    weakenMore : --∀ {Γ τ} Γ′ →
+      Term Γ τ → Term (Δ-Context′ (Δ-Context Γ) Γ′) (Δ-Type τ)
+    weakenMore t =
+      substTerm
+        (sym (take-⋎-Δ-Context-drop-Δ-Context′ (Δ-Context Γ) Γ′))
+        (weakenMore2 Γ Γ′ t)
+
 lift-term′ {._} {_} _ (weakenOne _ _ {_} {._} _) = {!!}
 
 lift-term : ∀ {Γ τ} → Term Γ τ → Term (Δ-Context Γ) τ
