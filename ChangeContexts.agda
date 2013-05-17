@@ -3,6 +3,7 @@ module ChangeContexts where
 open import IlcModel
 open import Changes
 open import meaning
+
 -- TYPING CONTEXTS, VARIABLES and WEAKENING
 
 open import binding Type ⟦_⟧Type
@@ -35,17 +36,20 @@ ignore′ : ∀ {Γ} → (Γ′ : Prefix Γ) → ⟦ Δ-Context′ Γ Γ′ ⟧ 
 ignore′ ∅ ρ = ignore ρ
 ignore′ (τ • Γ′) (v • ρ) = v • ignore′ Γ′ ρ
 
-open import Relation.Binary.PropositionalEquality
+open import Relation.Binary.PropositionalEquality as P
 
-context-distr : ∀ Γ₁ Γ₂ →
-  Δ-Context (Γ₁ ⋎ Γ₂)
-    Relation.Binary.PropositionalEquality.≡
-  Δ-Context Γ₁ ⋎ Δ-Context Γ₂
-context-distr ∅ Γ₂ = refl
-context-distr (τ • Γ₁) Γ₂ rewrite context-distr Γ₁ Γ₂ = refl
+Δ-Context-⋎ : ∀ Γ₁ Γ₂ →
+  Δ-Context (Γ₁ ⋎ Γ₂) P.≡ Δ-Context Γ₁ ⋎ Δ-Context Γ₂
+Δ-Context-⋎ ∅ Γ₂ = refl
+Δ-Context-⋎ (τ • Γ₁) Γ₂ rewrite Δ-Context-⋎ Γ₁ Γ₂ = refl
 
-context-distr-expanded : ∀ Γ₁ τ₂ Γ₂ →
-  Δ-Context Γ₁ ⋎ (Δ-Type τ₂ • τ₂ • Δ-Context Γ₂)
-    Relation.Binary.PropositionalEquality.≡
-  Δ-Context (Γ₁ ⋎ (τ₂ • Γ₂))
-context-distr-expanded Γ₁ τ₂ Γ₂ rewrite (context-distr Γ₁ (τ₂ • Γ₂)) = refl
+Δ-Context-⋎-expanded : ∀ Γ₁ τ₂ Γ₂ →
+  Δ-Context Γ₁ ⋎ (Δ-Type τ₂ • τ₂ • Δ-Context Γ₂) P.≡ Δ-Context (Γ₁ ⋎ (τ₂ • Γ₂))
+Δ-Context-⋎-expanded Γ₁ τ₂ Γ₂ rewrite Δ-Context-⋎ Γ₁ (τ₂ • Γ₂) = refl
+
+take-⋎-Δ-Context-drop-Δ-Context′ : ∀ Γ Γ′ →
+  Δ-Context′ Γ Γ′ P.≡ take Γ Γ′ ⋎ Δ-Context (drop Γ Γ′)
+take-⋎-Δ-Context-drop-Δ-Context′ ∅ ∅ = refl
+take-⋎-Δ-Context-drop-Δ-Context′ (τ • Γ) ∅ = refl
+take-⋎-Δ-Context-drop-Δ-Context′ (τ • Γ) (.τ • Γ′)
+  rewrite take-⋎-Δ-Context-drop-Δ-Context′ Γ Γ′ = refl

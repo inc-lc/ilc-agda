@@ -75,7 +75,7 @@ drop (τ • Γ) (.τ • Γ′) = drop Γ Γ′
 
 infixr 10 _⋎_
 
-_⋎_ : (Γ₁ Γ₁ : Context) → Context
+_⋎_ : (Γ₁ Γ₂ : Context) → Context
 ∅ ⋎ Γ₂ = Γ₂
 (τ • Γ₁) ⋎ Γ₂ = τ • Γ₁ ⋎ Γ₂
 
