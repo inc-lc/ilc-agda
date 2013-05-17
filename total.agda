@@ -46,7 +46,8 @@ lift-term′ Γ′ (var x) = var (lift-var′ Γ′ x)
 lift-term′ Γ′ true = true
 lift-term′ Γ′ false = false
 lift-term′ Γ′ (if t₁ t₂ t₃) = if (lift-term′ Γ′ t₁) (lift-term′ Γ′ t₂) (lift-term′ Γ′ t₃)
-lift-term′ Γ′ (Δ t) = {!!}
+lift-term′ {.(Δ-Context Γ)} {.(Δ-Type τ)} Γ′ (Δ {Γ} {τ} t) = {!!}
+lift-term′ {._} {_} _ (weakenOne _ _ {_} {._} _) = {!!}
 
 lift-term : ∀ {Γ τ} → Term Γ τ → Term (Δ-Context Γ) τ
 lift-term = lift-term′ ∅
@@ -82,6 +83,7 @@ lift-term-ignore′ Γ′ {ρ} (if t₁ t₂ t₃)
 ... | true | true | bool = lift-term-ignore′ Γ′ t₂
 ... | false | false | bool = lift-term-ignore′ Γ′ t₃
 lift-term-ignore′ Γ′ (Δ t) = {!!}
+lift-term-ignore′ _ (weakenOne _ _ {_} {._} _) = {!!}
 
 lift-term-ignore : ∀ {Γ τ} {ρ : ⟦ Δ-Context Γ ⟧} (t : Term Γ τ) →
   ⟦ lift-term t ⟧ ρ ≡ ⟦ t ⟧ (ignore ρ)
@@ -160,6 +162,13 @@ derive-term (if c t e) =
         (derive-term e)))
 
 derive-term (Δ t) = Δ (derive-term t)
+derive-term (weakenOne Γ₁ τ₂ {Γ₃} t) =
+  lemma-2 Γ₁ Γ₃ _ (weakenOne (Δ-Context Γ₁) (Δ-Type τ₂) (weakenOne (Δ-Context Γ₁) τ₂ {Δ-Context Γ₃} (lemma Γ₁ Γ₃ _ (derive-term t))))
+  where
+    lemma : ∀ Γ₁ Γ₂ τ → Term (Δ-Context (Γ₁ ⋎ Γ₂)) τ → Term (Δ-Context Γ₁ ⋎ Δ-Context Γ₂) τ
+    lemma = {!!}
+    lemma-2 : ∀ Γ₁ Γ₂ τ → Term (Δ-Context Γ₁ ⋎ (Δ-Type τ₂ • τ₂ • Δ-Context Γ₂)) τ → Term (Δ-Context (Γ₁ ⋎ (τ₂ • Γ₂))) τ
+    lemma-2 = {!!}
 
 -- CORRECTNESS of derivation
 
@@ -196,3 +205,4 @@ derive-term-correct true = ext (λ ρ → ≡-refl)
 derive-term-correct false = ext (λ ρ → ≡-refl)
 derive-term-correct (if t₁ t₂ t₃) = {!!}
 derive-term-correct (Δ t) = ≈-Δ (derive-term-correct t)
+derive-term-correct (weakenOne _ _ t) = {!!}
