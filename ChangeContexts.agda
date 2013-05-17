@@ -21,6 +21,8 @@ ignore : ∀ {Γ} → ⟦ Δ-Context Γ ⟧ → ⟦ Γ ⟧
 ignore {∅} ∅ = ∅
 ignore {τ • Γ} (dv • v • ρ) = v • ignore ρ
 
+-- Δ-Context′: behaves like Δ-Context, but has an extra argument Γ′, a
+-- prefix of its first argument which should not be touched.
 Δ-Context′ : (Γ : Context) → Prefix Γ → Context
 Δ-Context′ Γ ∅ = Δ-Context Γ
 Δ-Context′ (.τ • Γ) (τ • Γ′) = τ • Δ-Context′ Γ Γ′
