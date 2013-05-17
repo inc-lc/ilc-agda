@@ -70,6 +70,12 @@ data _≡_ : ∀ {τ} → (v₁ v₂ : ⟦ τ ⟧) → Set where
   ext (λ v → ≡-trans (≡₁ v) (≡₂ v))
 ≡-trans {bool} bool bool = bool
 
+postulate
+  ≡-cong : ∀ {τ₂ τ₁ v₁ v₂} (f : ⟦ τ₁ ⟧ → ⟦ τ₂ ⟧) →
+    v₁ ≡ v₂ → f v₁ ≡ f v₂
+  ≡-cong₂ : ∀ {τ₃ τ₁ τ₂ v₁ v₂ v₃ v₄} (f : ⟦ τ₁ ⟧ → ⟦ τ₂ ⟧ → ⟦ τ₃ ⟧) →
+    v₁ ≡ v₂ → v₃ ≡ v₄ → f v₁ v₃ ≡ f v₂ v₄
+{-
 ≡-cong : ∀ {τ₂ τ₁ v₁ v₂} (f : ⟦ τ₁ ⟧ → ⟦ τ₂ ⟧) →
   v₁ ≡ v₂ → f v₁ ≡ f v₂
 ≡-cong {τ₁ ⇒ τ₂} f ≡ = ext (λ v → ≡-cong (λ x → f x v) ≡)
@@ -84,6 +90,7 @@ data _≡_ : ∀ {τ} → (v₁ v₂ : ⟦ τ ⟧) → Set where
 ≡-cong₂ {bool} {bool} {τ₂ ⇒ τ₃} f bool (ext ≡₂) = {!!}
 ≡-cong₂ {bool} {τ₁ ⇒ τ₂} {bool} f (ext ≡₁) (bool) = {!!}
 ≡-cong₂ {bool} {τ₁ ⇒ τ₂} {τ₃ ⇒ τ₄} f (ext ≡₁) (ext ≡₂) = {!!}
+-}
 
 ≡-app : ∀ {τ₁ τ₂} {v₁ v₂ : ⟦ τ₁ ⇒ τ₂ ⟧} {v₃ v₄ : ⟦ τ₁ ⟧} →
   v₁ ≡ v₂ → v₃ ≡ v₄ → v₁ v₃ ≡ v₂ v₄
@@ -162,14 +169,19 @@ diff-derive {τ₁ ⇒ τ₂} v = ≡-refl
 diff-derive {bool} true = bool
 diff-derive {bool} false = bool
 
-diff-apply : ∀ {τ} (dv : ⟦ Δ-Type τ ⟧) (v : ⟦ τ ⟧) →
-  diff (apply dv v) v ≡ dv
+-- XXX: as given, this is false!
+postulate
+  diff-apply : ∀ {τ} (dv : ⟦ Δ-Type τ ⟧) (v : ⟦ τ ⟧) →
+    diff (apply dv v) v ≡ dv
+
+{-
 diff-apply {τ₁ ⇒ τ₂} df f = ext (λ v → ext (λ dv →
   {!!}))
 diff-apply {bool} true true = bool
 diff-apply {bool} true false = bool
 diff-apply {bool} false true = bool
 diff-apply {bool} false false = bool
+-}
 
 apply-diff : ∀ {τ} (v₁ v₂ : ⟦ τ ⟧) →
   apply (diff v₂ v₁) v₁ ≡ v₂
