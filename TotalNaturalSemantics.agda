@@ -9,6 +9,8 @@ open import Model
 open import binding Type ⟦_⟧Type
 open import TotalTerms
 
+open import Relation.Binary.PropositionalEquality
+
 -- NATURAL SEMANTICS
 
 -- (without support for Δ for now)
