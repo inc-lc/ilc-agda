@@ -64,10 +64,10 @@ lift-term′ {.(Δ-Context Γ)} {.(Δ-Type τ)} Γ′ (Δ {Γ} {τ} t) = weakenM
     weakenMore : ∀ {Γ τ} Γ′ →
       Term Γ τ → Term (Δ-Context′ (Δ-Context Γ) Γ′) (Δ-Type τ)
     weakenMore {Γ} Γ′ t =
-      substTerm
-        (sym (take-⋎-Δ-Context-drop-Δ-Context′ (Δ-Context Γ) Γ′))
-        (doWeakenMore (take (Δ-Context Γ) Γ′) (drop (Δ-Context Γ) Γ′) (
-          substTerm (sym (take-drop (Δ-Context Γ) Γ′)) (Δ t)))
+      substTerm (sym (take-⋎-Δ-Context-drop-Δ-Context′ (Δ-Context Γ) Γ′))
+        (doWeakenMore (take (Δ-Context Γ) Γ′) (drop (Δ-Context Γ) Γ′)
+          (substTerm (sym (take-drop (Δ-Context Γ) Γ′))
+            (Δ t)))
 
 lift-term′ {._} {_} _ (weakenOne _ _ {_} {._} _) = {!!}
 
