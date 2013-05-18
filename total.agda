@@ -26,7 +26,8 @@ open import Syntactic.Types
 open import Denotational.Values
 open import Changes
 open import ChangeContexts
-open import binding Type ⟦_⟧Type
+open import Syntactic.Contexts Type
+open import Denotational.Environments Type ⟦_⟧Type
 open import TotalTerms
 
 open import Relation.Binary.PropositionalEquality

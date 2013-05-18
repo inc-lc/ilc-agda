@@ -27,11 +27,13 @@ import Relation.Binary.EqReasoning as EqR
 open import Relation.Nullary using (¬_)
 
 open import Syntactic.Types
+open import Syntactic.Contexts Type
 open import Denotational.Notation
 open import Denotational.Values
 open import Changes
 open import ChangeContexts
-open import binding Type ⟦_⟧Type
+open import Denotational.Environments Type ⟦_⟧Type
+
 
 -- TERMS
 

@@ -36,7 +36,8 @@ meaningOfType = meaning ⟦_⟧Type
 
 -- TYPING CONTEXTS, VARIABLES and WEAKENING
 
-open import binding Type ⟦_⟧Type
+open import Syntactic.Contexts Type
+open import Denotational.Environments Type ⟦_⟧Type
 
 update : ∀ {Γ τ} → Var Γ τ → (⟦ τ ⟧ → ⟦ τ ⟧) → ⟦ Γ ⟧ → ⟦ Γ ⟧
 update this f (v • ρ) = f v • ρ

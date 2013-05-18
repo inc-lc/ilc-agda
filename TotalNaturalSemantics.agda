@@ -3,11 +3,14 @@ module TotalNaturalSemantics where
 open import Relation.Binary.PropositionalEquality
 
 open import Syntactic.Types
+open import Syntactic.Contexts Type
+
 open import Denotational.Notation
 open import Denotational.Values
+open import Denotational.Environments Type ⟦_⟧Type
+
 --open import Changes
 --open import ChangeContexts
-open import binding Type ⟦_⟧Type
 open import TotalTerms
 
 -- NATURAL SEMANTICS

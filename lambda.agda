@@ -28,7 +28,8 @@ meaningOfType = meaning ⟦_⟧Type
 
 -- TYPING CONTEXTS, VARIABLES and WEAKENING
 
-open import binding Type ⟦_⟧Type public
+open import Syntactic.Contexts Type public
+open import Denotational.Environments Type ⟦_⟧Type public
 
 -- TERMS
 
