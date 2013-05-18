@@ -1,5 +1,24 @@
 module TotalTerms where
 
+-- TERMS with a primitive for TOTAL DERIVATIVES
+--
+-- This module defines the syntax of terms that support a
+-- primitive (Δ e) for computing the total derivative according
+-- to all free variables in e and all future arguments of e if e
+-- is a function.
+
+-- EVALUATION with a primitive for TOTAL DERIVATIVES
+--
+-- This module defines the semantics of terms that support a
+-- primitive (Δ e) for computing the total derivative according
+-- to all free variables in e and all future arguments of e if e
+-- is a function.
+
+-- TERM EQUIVALENCE
+--
+-- This module defines term equivalence as the relation that
+-- identifies terms with the same meaning.
+
 open import Relation.Binary.PropositionalEquality as P
 open import Relation.Binary using
   (IsEquivalence; Setoid; Reflexive; Symmetric; Transitive)
