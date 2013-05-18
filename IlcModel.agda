@@ -26,6 +26,16 @@ infixr 5 _⇒_
 data Bool : Set where
   true false : Bool
 
+_xor_ : Bool → Bool → Bool
+true xor true = false
+true xor false = true
+false xor true = true
+false xor false = false
+
+not : Bool → Bool
+not true = false
+not false = false
+
 ⟦_⟧Type : Type -> Set
 ⟦ τ₁ ⇒ τ₂ ⟧Type = ⟦ τ₁ ⟧Type → ⟦ τ₂ ⟧Type
 ⟦ bool ⟧Type = Bool
@@ -41,6 +51,31 @@ data _≡_ : ∀ {τ} → (v₁ v₂ : ⟦ τ ⟧) → Set where
     f₁ ≡ f₂
   bool : ∀ {b : Bool} →
     b ≡ b
+
+a-xor-a-false : ∀ a → (a xor a) ≡ false
+a-xor-a-false true = bool
+a-xor-a-false false = bool
+
+a-xor-false-a : ∀ a → (false xor a) ≡ a
+a-xor-false-a true = bool
+a-xor-false-a false = bool
+
+xor-cancellative : ∀ a b → ((b xor a) xor a) ≡ b
+xor-cancellative true true = bool
+xor-cancellative true false = bool
+xor-cancellative false true = bool
+xor-cancellative false false = bool
+
+xor-associative : ∀ a b c → ((b xor c) xor a) ≡ (b xor (c xor a))
+
+xor-associative true true true = bool
+xor-associative true true false = bool
+xor-associative true false true = bool
+xor-associative true false false = bool
+xor-associative false true true = bool
+xor-associative false true false = bool
+xor-associative false false true = bool
+xor-associative false false false = bool
 
 ≡-refl : ∀ {τ} {v : ⟦ τ ⟧} →
   v ≡ v
