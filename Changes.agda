@@ -1,5 +1,11 @@
 module Changes where
 
+-- CHANGES
+--
+-- This module defines the representation of changes, the
+-- available operations on changes, and properties of these
+-- operations.
+
 open import meaning
 open import Model
 
