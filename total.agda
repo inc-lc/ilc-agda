@@ -28,7 +28,7 @@ open import ChangeContexts
 open import binding Type ⟦_⟧Type
 open import TotalTerms
 
-open import Relation.Binary.PropositionalEquality using (sym)
+open import Relation.Binary.PropositionalEquality
 
 -- LIFTING terms into Δ-Contexts
 
@@ -124,8 +124,8 @@ lift-term-ignore′ Γ′ {ρ} (if t₁ t₂ t₃)
   with ⟦ lift-term′ Γ′ t₁ ⟧ ρ
      | ⟦ t₁ ⟧ (ignore′ Γ′ ρ)
      | lift-term-ignore′ Γ′ {ρ} t₁
-... | true | true | bool = lift-term-ignore′ Γ′ t₂
-... | false | false | bool = lift-term-ignore′ Γ′ t₃
+... | true | true | refl = lift-term-ignore′ Γ′ t₂
+... | false | false | refl = lift-term-ignore′ Γ′ t₃
 lift-term-ignore′ Γ′ (Δ t) = {!!}
 lift-term-ignore′ _ (weakenOne _ _ {_} {._} _) = {!!}
 
@@ -138,11 +138,11 @@ lift-term-ignore = lift-term-ignore′ ∅
 
 Δ-abs : ∀ {Γ τ₁ τ₂} (t : Term (τ₁ • Γ) τ₂) →
   Δ (abs t) ≈ abs (abs (Δ t))
-Δ-abs t = ext (λ ρ → ≡-refl)
+Δ-abs t = ext-t (λ ρ → ≡-refl)
 
 Δ-app : ∀ {Γ τ₁ τ₂} (t₁ : Term Γ (τ₁ ⇒ τ₂)) (t₂ : Term Γ τ₁) →
   Δ (app t₁ t₂) ≈ app (app (Δ t₁) (lift-term t₂)) (Δ t₂)
-Δ-app t₁ t₂ = ≈-sym (ext (λ ρ →
+Δ-app t₁ t₂ = ≈-sym (ext-t (λ ρ →
   begin
     diff
       (⟦ t₁ ⟧ (update ρ)
@@ -243,9 +243,9 @@ derive-term-correct (app t₁ t₂) =
   ≈⟨ ≈-refl ⟩
     derive-term (app t₁ t₂)
   ∎ where open ≈-Reasoning
-derive-term-correct (var x) = ext (λ ρ → derive-var-correct ρ x)
-derive-term-correct true = ext (λ ρ → ≡-refl)
-derive-term-correct false = ext (λ ρ → ≡-refl)
+derive-term-correct (var x) = ext-t (λ ρ → derive-var-correct ρ x)
+derive-term-correct true = ext-t (λ ρ → ≡-refl)
+derive-term-correct false = ext-t (λ ρ → ≡-refl)
 derive-term-correct (if t₁ t₂ t₃) = {!!}
 derive-term-correct (Δ t) = ≈-Δ (derive-term-correct t)
 derive-term-correct (weakenOne _ _ t) = {!!}

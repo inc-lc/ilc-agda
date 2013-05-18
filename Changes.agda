@@ -28,6 +28,8 @@ compose {bool} b c = b xor c
 
 -- CONGRUENCE rules for change operations
 
+open import Relation.Binary.PropositionalEquality
+
 ≡-diff : ∀ {τ : Type} {v₁ v₂ v₃ v₄ : ⟦ τ ⟧} →
   v₁ ≡ v₂ → v₃ ≡ v₄ → diff v₁ v₃ ≡ diff v₂ v₄
 ≡-diff = ≡-cong₂ diff
@@ -41,6 +43,7 @@ compose {bool} b c = b xor c
 diff-derive : ∀ {τ} (v : ⟦ τ ⟧) →
   diff v v ≡ derive v
 diff-derive {τ₁ ⇒ τ₂} v = ≡-refl
+
 diff-derive {bool} b = a-xor-a-false b
 
 -- XXX: as given, this is false!

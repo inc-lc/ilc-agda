@@ -1,5 +1,6 @@
 module TotalTerms where
 
+open import Relation.Binary.PropositionalEquality as P
 open import Relation.Binary using
   (IsEquivalence; Setoid; Reflexive; Symmetric; Transitive)
 import Relation.Binary.EqReasoning as EqR
@@ -49,18 +50,18 @@ meaningOfTerm = meaning ⟦_⟧Term
 
 module _ {Γ} {τ} where
   data _≈_ (t₁ t₂ : Term Γ τ) : Set where
-    ext :
+    ext-t :
       (∀ ρ → ⟦ t₁ ⟧ ρ ≡ ⟦ t₂ ⟧ ρ) →
       t₁ ≈ t₂
 
   ≈-refl : Reflexive _≈_
-  ≈-refl = ext (λ ρ → ≡-refl)
+  ≈-refl = ext-t (λ ρ → ≡-refl)
 
   ≈-sym : Symmetric _≈_
-  ≈-sym (ext ≈) = ext (λ ρ → ≡-sym (≈ ρ))
+  ≈-sym (ext-t ≈) = ext-t (λ ρ → ≡-sym (≈ ρ))
 
   ≈-trans : Transitive _≈_
-  ≈-trans (ext ≈₁) (ext ≈₂) = ext (λ ρ → ≡-trans (≈₁ ρ) (≈₂ ρ))
+  ≈-trans (ext-t ≈₁) (ext-t ≈₂) = ext-t (λ ρ → ≡-trans (≈₁ ρ) (≈₂ ρ))
 
   ≈-isEquivalence : IsEquivalence _≈_
   ≈-isEquivalence = record
@@ -78,17 +79,17 @@ module _ {Γ} {τ} where
 
 ≈-app : ∀ {Γ τ₁ τ₂} {t₁ t₂ : Term Γ (τ₁ ⇒ τ₂)} {t₃ t₄ : Term Γ τ₁} →
   t₁ ≈ t₂ → t₃ ≈ t₄ → app t₁ t₃ ≈ app t₂ t₄
-≈-app (ext ≈₁) (ext ≈₂) = ext (λ ρ →
+≈-app (ext-t ≈₁) (ext-t ≈₂) = ext-t (λ ρ →
   ≡-cong₂ (λ x y → x y) (≈₁ ρ) (≈₂ ρ))
 
 ≈-abs : ∀ {Γ τ₁ τ₂} {t₁ t₂ : Term (τ₁ • Γ) τ₂} →
   t₁ ≈ t₂ → abs t₁ ≈ abs t₂
-≈-abs (ext ≈) = ext (λ ρ →
+≈-abs (ext-t ≈) = ext-t (λ ρ →
   ext (λ v → ≈ (v • ρ)))
 
 ≈-Δ : ∀ {τ Γ} {t₁ t₂ : Term Γ τ} →
   t₁ ≈ t₂ → Δ t₁ ≈ Δ t₂
-≈-Δ (ext ≈) = ext (λ ρ → ≡-diff (≈ (update ρ)) (≈ (ignore ρ)))
+≈-Δ (ext-t ≈) = ext-t (λ ρ → ≡-diff (≈ (update ρ)) (≈ (ignore ρ)))
 
 module ≈-Reasoning where
   module _ {Γ : Context} {τ : Type} where
@@ -97,10 +98,8 @@ module ≈-Reasoning where
 
 ≈-consistent : ¬ (∀ {Γ τ} (t₁ t₂ : Term Γ τ) → t₁ ≈ t₂)
 ≈-consistent H with H {∅} true false
-... | ext x with x ∅
+... | ext-t x with x ∅
 ... | ()
-
-open import Relation.Binary.PropositionalEquality as P
 
 substTerm : ∀ {τ Γ₁ Γ₂} → Γ₁ P.≡ Γ₂ → Term Γ₁ τ → Term Γ₂ τ
 substTerm {τ} {Γ₁} {Γ₂} ≡₁ t = subst (λ Γ → Term Γ τ) ≡₁ t
