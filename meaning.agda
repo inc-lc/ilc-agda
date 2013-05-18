@@ -1,5 +1,10 @@
 module meaning where
 
+-- OVERLOADING ⟦_⟧
+--
+-- This module defines a general mechanism for overloading the
+-- ⟦_⟧ notation, using Agda’s instance arguments.
+
 open import Level
 
 record Meaning (Syntax : Set) {ℓ : Level} : Set (suc ℓ) where
