@@ -4,14 +4,16 @@ open import Relation.Binary.PropositionalEquality
 
 open import Syntactic.Types
 open import Syntactic.Contexts Type
+open import Syntactic.Terms.Total
 
 open import Denotational.Notation
 open import Denotational.Values
 open import Denotational.Environments Type ⟦_⟧Type
+open import Denotational.Evaluation.Total
+open import Denotational.Equivalence
 
 --open import Changes
 --open import ChangeContexts
-open import TotalTerms
 
 -- NATURAL SEMANTICS
 
