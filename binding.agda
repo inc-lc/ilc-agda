@@ -19,7 +19,7 @@ data Context : Set where
 
 infixr 9 _•_
 
--- Denotational Semantics
+-- Denotational Semantics : Contexts Represent Environments
 
 data Empty : Set where
   ∅ : Empty
@@ -78,6 +78,12 @@ infixr 10 _⋎_
 _⋎_ : (Γ₁ Γ₂ : Context) → Context
 ∅ ⋎ Γ₂ = Γ₂
 (τ • Γ₁) ⋎ Γ₂ = τ • Γ₁ ⋎ Γ₂
+
+-- Remove a variable from an environment
+
+weakenEnv : ∀ Γ₁ τ₂ {Γ₃} → ⟦ Γ₁ ⋎ (τ₂ • Γ₃) ⟧ → ⟦ Γ₁ ⋎ Γ₃ ⟧
+weakenEnv ∅ τ₂ (v • ρ) = ρ
+weakenEnv (τ • Γ₁) τ₂ (v • ρ) = v • weakenEnv Γ₁ τ₂ ρ
 
 open import Relation.Binary.PropositionalEquality
 

@@ -29,9 +29,6 @@ data Term : Context → Type → Set where
   weakenOne : ∀ Γ₁ τ₂ {Γ₃ τ} → Term (Γ₁ ⋎ Γ₃) τ → Term (Γ₁ ⋎ (τ₂ • Γ₃)) τ
 
 -- Denotational Semantics
-weakenOneContext : ∀ Γ₁ τ₂ {Γ₃} → ⟦ Γ₁ ⋎ (τ₂ • Γ₃) ⟧ → ⟦ Γ₁ ⋎ Γ₃ ⟧
-weakenOneContext ∅ τ₂ (v • ρ) = ρ
-weakenOneContext (τ • Γ₁) τ₂ (v • ρ) = v • weakenOneContext Γ₁ τ₂ ρ
 
 ⟦_⟧Term : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧ → ⟦ τ ⟧
 ⟦ abs t ⟧Term ρ = λ v → ⟦ t ⟧Term (v • ρ)
@@ -43,7 +40,7 @@ weakenOneContext (τ • Γ₁) τ₂ (v • ρ) = v • weakenOneContext Γ₁ 
 ... | true = ⟦ t₂ ⟧Term ρ
 ... | false = ⟦ t₃ ⟧Term ρ
 ⟦ Δ t ⟧Term ρ = diff (⟦ t ⟧Term (update ρ)) (⟦ t ⟧Term (ignore ρ))
-⟦ weakenOne Γ₁ τ₂ t ⟧Term ρ = ⟦ t ⟧Term (weakenOneContext Γ₁ τ₂ ρ)
+⟦ weakenOne Γ₁ τ₂ t ⟧Term ρ = ⟦ t ⟧Term (weakenEnv Γ₁ τ₂ ρ)
 
 meaningOfTerm : ∀ {Γ τ} → Meaning (Term Γ τ)
 meaningOfTerm = meaning ⟦_⟧Term
