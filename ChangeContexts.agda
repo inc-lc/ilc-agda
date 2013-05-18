@@ -1,5 +1,17 @@
 module ChangeContexts where
 
+-- CHANGE CONTEXTS
+--
+-- This module defines change contexts, that is, contexts where
+-- for every value assertion x : τ, we also have a change
+-- assertion ds : Δ-Type τ.
+
+-- CHANGE ENVIRONMENTS
+--
+-- This module describes operations on change environments, that
+-- is, environments where for every value binding x = ⟦ τ ⟧, we
+-- also have a change assertion dx = ⟦ Δ-Type τ ⟧.
+
 open import Model
 open import Changes
 open import meaning
