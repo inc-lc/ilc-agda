@@ -46,7 +46,7 @@ lift-term′ Γ′ (var x) = var (lift-var′ Γ′ x)
 lift-term′ Γ′ true = true
 lift-term′ Γ′ false = false
 lift-term′ Γ′ (if t₁ t₂ t₃) = if (lift-term′ Γ′ t₁) (lift-term′ Γ′ t₂) (lift-term′ Γ′ t₃)
-lift-term′ {.(Δ-Context Γ)} {.(Δ-Type τ)} Γ′ (Δ {Γ} {τ} t) = weakenMore t
+lift-term′ {.(Δ-Context Γ)} {.(Δ-Type τ)} Γ′ (Δ {Γ} {τ} t) = weakenMore Γ′ t
   where
     open import Relation.Binary.PropositionalEquality using (sym)
 
@@ -76,9 +76,9 @@ lift-term′ {.(Δ-Context Γ)} {.(Δ-Type τ)} Γ′ (Δ {Γ} {τ} t) = weakenM
       doWeakenMore (prefix Γ Γ′) (rest Γ Γ′) (
       substTerm (sym (take-drop (Δ-Context Γ) Γ′)) (Δ t))
 
-    weakenMore : --∀ {Γ τ} Γ′ →
+    weakenMore : ∀ {Γ τ} Γ′ →
       Term Γ τ → Term (Δ-Context′ (Δ-Context Γ) Γ′) (Δ-Type τ)
-    weakenMore t =
+    weakenMore {Γ} Γ′ t =
       substTerm
         (sym (take-⋎-Δ-Context-drop-Δ-Context′ (Δ-Context Γ) Γ′))
         (weakenMore2 Γ Γ′ t)
