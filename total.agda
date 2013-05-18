@@ -41,6 +41,9 @@ lift-var′ ∅ x = lift-var x
 lift-var′ (τ • Γ′) this = this
 lift-var′ (τ • Γ′) (that x) = that (lift-var′ Γ′ x)
 
+-- This version of lift-term′ uses just weakenOne to accomplish its
+-- job.
+
 lift-term′-weakenOne : ∀ {Γ τ} Γ′ →
   Term Γ τ → Term (Δ-Context′ Γ Γ′) τ
 lift-term′-weakenOne {Γ} Γ′ t =
@@ -68,7 +71,25 @@ lift-term′ Γ′ true = true
 lift-term′ Γ′ false = false
 lift-term′ Γ′ (if t₁ t₂ t₃) = if (lift-term′ Γ′ t₁) (lift-term′ Γ′ t₂) (lift-term′ Γ′ t₃)
 lift-term′ Γ′ (Δ t) = lift-term′-weakenOne Γ′ (Δ t)
-lift-term′ {._} {_} _ (weakenOne _ _ {_} {._} _) = {!!}
+lift-term′ {τ = τ} Γ′ (weakenOne Γ₁ τ₂ {Γ₃} t) = lift-weakened-term Γ₁ τ₂ Γ′ t
+  where
+    double-weakenOne :
+      ∀ Γ₁ {Γ₃ τ} τ₂ → Term (Γ₁ ⋎ Γ₃) τ → 
+      Term (Δ-Context (Γ₁ ⋎ (τ₂ • Γ₃))) τ
+    double-weakenOne Γ₁ {Γ₃} τ₂ t =
+      substTerm (Δ-Context-⋎-expanded Γ₁ τ₂ Γ₃)
+        (weakenOne (Δ-Context Γ₁) _
+          (weakenOne (Δ-Context Γ₁) _
+            (substTerm (Δ-Context-⋎ Γ₁ Γ₃) (lift-term′ ∅ t))))
+
+    lift-weakened-term :
+      ∀ Γ₁ {Γ₃ τ} τ₂ Γ′ → Term (Γ₁ ⋎ Γ₃) τ → 
+      Term (Δ-Context′ (Γ₁ ⋎ (τ₂ • Γ₃)) Γ′) τ
+    lift-weakened-term ∅ τ₂ ∅ t = double-weakenOne ∅ τ₂ t
+    lift-weakened-term Γ₁ τ₂ ∅ t = double-weakenOne Γ₁ τ₂ t
+    lift-weakened-term ∅ τ₃ (.τ₃ • Γ′₁) t₁ = weakenOne ∅ τ₃ (lift-term′ Γ′₁ t₁)
+    lift-weakened-term (τ₁ • Γ₁) {Γ₃} τ₂ (.τ₁ • Γ′₁) t₁ =
+      lift-term′-weakenOne (τ₁ • Γ′₁) (weakenOne (τ₁ • Γ₁) τ₂ t₁)
 
 lift-term : ∀ {Γ τ} → Term Γ τ → Term (Δ-Context Γ) τ
 lift-term = lift-term′ ∅
