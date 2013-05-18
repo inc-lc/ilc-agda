@@ -90,6 +90,8 @@ lift-term′ {τ = τ} Γ′ (weakenOne Γ₁ τ₂ {Γ₃} t) = lift-weakened-t
     lift-weakened-term ∅ τ₃ (.τ₃ • Γ′₁) t₁ = weakenOne ∅ τ₃ (lift-term′ Γ′₁ t₁)
     lift-weakened-term (τ₁ • Γ₁) {Γ₃} τ₂ (.τ₁ • Γ′₁) t₁ =
       lift-term′-weakenOne (τ₁ • Γ′₁) (weakenOne (τ₁ • Γ₁) τ₂ t₁)
+    -- In the last case, I was not able to finish without using the expensive
+    -- lift-term′-weakenOne
 
 lift-term : ∀ {Γ τ} → Term Γ τ → Term (Δ-Context Γ) τ
 lift-term = lift-term′ ∅
