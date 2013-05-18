@@ -55,33 +55,19 @@ lift-term′ {.(Δ-Context Γ)} {.(Δ-Type τ)} Γ′ (Δ {Γ} {τ} t) = weakenM
       Term (Γprefix ⋎ Δ-Context Γrest) (Δ-Type τ)
 
     doWeakenMore Γprefix ∅ t₁ = t₁
-    doWeakenMore ∅ (τ₂ • Γrest) t₁ =
-      weakenOne ∅ (Δ-Type τ₂) (doWeakenMore (τ₂ • ∅) Γrest t₁)
     doWeakenMore Γprefix (τ₂ • Γrest) {τ} t₁ =
       weakenOne Γprefix (Δ-Type τ₂)
         (substTerm (sym (move-prefix Γprefix τ₂ (Δ-Context Γrest)))
           (doWeakenMore (Γprefix ⋎ (τ₂ • ∅)) Γrest
             (substTerm (move-prefix Γprefix τ₂ Γrest) t₁)))
 
-    prefix : ∀ Γ → (Γ′ : Prefix (Δ-Context Γ)) → Context
-    prefix Γ Γ′ = take (Δ-Context Γ) Γ′
-
-    rest   : ∀ Γ → (Γ′ : Prefix (Δ-Context Γ)) → Context
-    rest   Γ Γ′ = drop (Δ-Context Γ) Γ′
-
-    weakenMore2 : ∀ Γ Γ′ {τ} →
-      Term Γ τ →
-      Term (prefix Γ Γ′ ⋎ Δ-Context (rest Γ Γ′)) (Δ-Type τ)
-    weakenMore2 Γ Γ′ t =
-      doWeakenMore (prefix Γ Γ′) (rest Γ Γ′) (
-      substTerm (sym (take-drop (Δ-Context Γ) Γ′)) (Δ t))
-
     weakenMore : ∀ {Γ τ} Γ′ →
       Term Γ τ → Term (Δ-Context′ (Δ-Context Γ) Γ′) (Δ-Type τ)
     weakenMore {Γ} Γ′ t =
       substTerm
         (sym (take-⋎-Δ-Context-drop-Δ-Context′ (Δ-Context Γ) Γ′))
-        (weakenMore2 Γ Γ′ t)
+        (doWeakenMore (take (Δ-Context Γ) Γ′) (drop (Δ-Context Γ) Γ′) (
+          substTerm (sym (take-drop (Δ-Context Γ) Γ′)) (Δ t)))
 
 lift-term′ {._} {_} _ (weakenOne _ _ {_} {._} _) = {!!}
 
