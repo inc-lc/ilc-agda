@@ -22,7 +22,8 @@ import Relation.Binary.EqReasoning as EqR
 open import Relation.Nullary using (¬_)
 
 open import Denotational.Notation
-open import Model
+open import Syntactic.Types
+open import Denotational.Values
 open import Changes
 open import ChangeContexts
 open import binding Type ⟦_⟧Type

@@ -2,8 +2,9 @@ module TotalNaturalSemantics where
 
 open import Relation.Binary.PropositionalEquality
 
+open import Syntactic.Types
 open import Denotational.Notation
-open import Model
+open import Denotational.Values
 --open import Changes
 --open import ChangeContexts
 open import binding Type ⟦_⟧Type

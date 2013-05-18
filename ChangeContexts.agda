@@ -12,8 +12,9 @@ module ChangeContexts where
 -- is, environments where for every value binding x = ⟦ τ ⟧, we
 -- also have a change assertion dx = ⟦ Δ-Type τ ⟧.
 
-open import Model
+open import Syntactic.Types
 open import Changes
+open import Denotational.Values
 open import Denotational.Notation
 
 -- TYPING CONTEXTS, VARIABLES and WEAKENING

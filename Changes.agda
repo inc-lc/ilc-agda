@@ -6,8 +6,10 @@ module Changes where
 -- available operations on changes, and properties of these
 -- operations.
 
+open import Syntactic.Types
+
 open import Denotational.Notation
-open import Model
+open import Denotational.Values
 
 -- CHANGE TYPES
 
