@@ -14,7 +14,7 @@ module ChangeContexts where
 
 open import Model
 open import Changes
-open import meaning
+open import Denotational.Notation
 
 -- TYPING CONTEXTS, VARIABLES and WEAKENING
 

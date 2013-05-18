@@ -2,14 +2,12 @@ module TotalNaturalSemantics where
 
 open import Relation.Binary.PropositionalEquality
 
-open import meaning
+open import Denotational.Notation
 open import Model
 --open import Changes
 --open import ChangeContexts
 open import binding Type ⟦_⟧Type
 open import TotalTerms
-
-open import Relation.Binary.PropositionalEquality
 
 -- NATURAL SEMANTICS
 

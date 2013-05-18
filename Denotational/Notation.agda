@@ -1,6 +1,6 @@
-module meaning where
+module Denotational.Notation where
 
--- OVERLOADING ⟦_⟧
+-- OVERLOADING ⟦_⟧ NOTATION
 --
 -- This module defines a general mechanism for overloading the
 -- ⟦_⟧ notation, using Agda’s instance arguments.

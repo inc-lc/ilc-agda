@@ -21,7 +21,7 @@ module binding
 -- of types, so it can be reused for different calculi
 -- and models.
 
-open import meaning
+open import Denotational.Notation
 
 private
   meaningOfType : Meaning Type

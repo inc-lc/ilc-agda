@@ -6,7 +6,7 @@ module Changes where
 -- available operations on changes, and properties of these
 -- operations.
 
-open import meaning
+open import Denotational.Notation
 open import Model
 
 -- CHANGE TYPES

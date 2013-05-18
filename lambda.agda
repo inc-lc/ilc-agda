@@ -2,7 +2,7 @@ module lambda where
 
 open import Relation.Binary.PropositionalEquality
 
-open import meaning
+open import Denotational.Notation
 
 -- SIMPLE TYPES
 

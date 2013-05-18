@@ -21,7 +21,7 @@ import Relation.Binary.EqReasoning as EqR
 
 open import Relation.Nullary using (¬_)
 
-open import meaning
+open import Denotational.Notation
 open import Model
 open import Changes
 open import ChangeContexts
