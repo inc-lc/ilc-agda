@@ -163,27 +163,11 @@ derive-term (if c t e) =
 
 derive-term (Δ t) = Δ (derive-term t)
 derive-term (weakenOne Γ₁ τ₂ {Γ₃} t) =
-  context-cast-2 Γ₁ Γ₃
+  substTerm (Δ-Context-⋎-expanded Γ₁ τ₂ Γ₃)
     (weakenOne (Δ-Context Γ₁) (Δ-Type τ₂)
       (weakenOne (Δ-Context Γ₁) τ₂
-        (context-cast Γ₁ Γ₃ (derive-term t))))
-
-  where
-    open import Relation.Binary.PropositionalEquality using (subst)
-
-    context-cast :
-      ∀ Γ₁ Γ₂ {τ} →
-        Term (Δ-Context (Γ₁ ⋎ Γ₂)) τ → Term (Δ-Context Γ₁ ⋎ Δ-Context Γ₂) τ
-    context-cast Γ₁ Γ₂ {τ} =
-      substTerm (Δ-Context-⋎ Γ₁ Γ₂)
-
-    context-cast-2 :
-      ∀ Γ₁ Γ₂ {τ τ₂} →
-        Term (Δ-Context Γ₁ ⋎ (Δ-Type τ₂ • τ₂ • Δ-Context Γ₂)) τ →
-        Term (Δ-Context (Γ₁ ⋎ (τ₂ • Γ₂))) τ
-    context-cast-2 Γ₁ Γ₂ {τ} {τ₂} =
-      substTerm
-      (Δ-Context-⋎-expanded Γ₁ τ₂ Γ₂)
+        (substTerm (Δ-Context-⋎ Γ₁ Γ₃)
+          (derive-term t))))
 
 -- CORRECTNESS of derivation
 
