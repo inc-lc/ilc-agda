@@ -3,6 +3,24 @@ module binding
     (⟦_⟧Type : Type → Set)
   where
 
+-- CONTEXTS
+--
+-- This module defines the syntax of contexts, prefixes of
+-- contexts and variables and properties of these notions.
+--
+-- This module is parametric in the syntax of types, so it
+-- can be reused for different calculi.
+
+-- ENVIRONMENTS
+--
+-- This module defines the meaning of contexts, that is,
+-- the type of environments that fit a context, together
+-- with operations and properties of these operations.
+--
+-- This module is parametric in the syntax and semantics
+-- of types, so it can be reused for different calculi
+-- and models.
+
 open import meaning
 
 private
