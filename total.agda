@@ -178,17 +178,31 @@ derive-var : ∀ {Γ τ} → Var Γ τ → Var (Δ-Context Γ) (Δ-Type τ)
 derive-var this = this
 derive-var (that x) = that (that (derive-var x))
 
-diff-term : ∀ {Γ τ} → Term Γ τ → Term Γ τ → Term Γ (Δ-Type τ)
-diff-term = {!!}
-
-apply-term : ∀ {Γ τ} → Term Γ (Δ-Type τ) → Term Γ τ → Term Γ τ
-apply-term = {!!}
-
 _and_ : ∀ {Γ} → Term Γ bool → Term Γ bool → Term Γ bool
-a and b = {!!}
+a and b = if a b false
 
 !_ : ∀ {Γ} → Term Γ bool → Term Γ bool
-! x = {!!}
+! x = if x false true
+
+-- XXX: to finish this, we just need to call lift-term, like in
+-- derive-term. Should be easy, just a bit boring.
+apply-pure-term : ∀ {τ Γ} → Term Γ (Δ-Type τ ⇒ τ ⇒ τ)
+apply-pure-term {bool} = abs {!!}
+apply-pure-term {τ₁ ⇒ τ₂} {Γ} = abs (abs (abs (app (app apply-pure-term (app (app (var (that (that this))) (var this)) ({!Δ {Γ} (var this)!}))) (app (var (that this)) (var this)))))
+--abs (abs (abs (app (app apply-compose-term (app (var (that (that this))) (var this))) (app (var (that this)) (var this)))))
+ -- λdf. λf.  λx.           apply (     df                       x       (Δx))  (     f                 x        )
+
+-- Term xor
+_xor-term_ : ∀ {Γ} → Term Γ bool → Term Γ bool → Term Γ bool
+a xor-term b = if a (! b) b
+
+diff-term : ∀ {τ Γ} → Term Γ τ → Term Γ τ → Term Γ (Δ-Type τ)
+diff-term {τ ⇒ τ₁} = λ f₁ f₂ → {!diff-term (f₁ x) (f₂ x)!}
+diff-term {bool} = _xor-term_
+
+apply-term : ∀ {τ Γ} → Term Γ (Δ-Type τ) → Term Γ τ → Term Γ τ
+apply-term {τ ⇒ τ₁} = {!!}
+apply-term {bool} = _xor-term_
 
 derive-term : ∀ {Γ τ} → Term Γ τ → Term (Δ-Context Γ) (Δ-Type τ)
 derive-term (abs t) = abs (abs (derive-term t))
