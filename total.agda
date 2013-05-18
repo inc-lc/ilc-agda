@@ -63,6 +63,41 @@ lift-term′-weakenOne {Γ} Γ′ t =
       (substTerm (sym (take-drop Γ Γ′))
         t))
 
+weakenOne-ignore :
+ ∀ Γ₁ τ₂ {Γ₃ τ} → (t : Term (Γ₁ ⋎ Γ₃) τ) →
+   {ρ : ⟦ Γ₁ ⋎ (τ₂ • Γ₃) ⟧} →
+   ⟦ weakenOne Γ₁ τ₂ t ⟧ ρ ≡ ⟦ t ⟧ (weakenEnv Γ₁ τ₂ ρ)
+weakenOne-ignore Γ₁ τ₂ t {ρ} = ≡-refl
+
+_∪_ : ∀ {Γ Γ′} → (ρ : ⟦ Γ ⟧) → (ρ′ : ⟦ Γ′ ⟧) → ⟦ Γ ⋎ Γ′ ⟧
+_∪_ {∅} {Γ′} ∅ ρ′ = ρ′
+_∪_ {τ • Γ} {Γ′} (v • ρ) ρ′ = v • ρ ∪ ρ′
+
+lift-term-doWeakenOne-ignore′ : ∀ Γprefix Γrest {τ} →
+  {ρ₁ : ⟦ Γprefix ⟧} {ρ₂ : ⟦ Δ-Context Γrest ⟧}
+  (t : Term (Γprefix ⋎ Γrest) τ) →
+  ⟦ lift-term′-doWeakenMore Γprefix Γrest t ⟧ (ρ₁ ∪ ρ₂) ≡ ⟦ t ⟧ (ρ₁ ∪ ignore ρ₂)
+lift-term-doWeakenOne-ignore′ = {!!}
+
+lift-term-weakenOne-ignore′ : ∀ {Γ τ} →
+  (Γ′ : Prefix Γ) {ρ : ⟦ Δ-Context′  Γ Γ′ ⟧} (t : Term Γ τ) →
+  ⟦ lift-term′-weakenOne Γ′ t ⟧ ρ ≡ ⟦ t ⟧ (ignore′ Γ′ ρ)
+lift-term-weakenOne-ignore′ {Γ} {τ} Γ′ {ρ} t =
+  begin
+    ⟦
+      substTerm (sym (take-⋎-Δ-Context-drop-Δ-Context′ Γ Γ′))
+        (lift-term′-doWeakenMore (take Γ Γ′) (drop Γ Γ′)
+          (substTerm (sym (take-drop Γ Γ′))
+            t))
+      ⟧ ρ
+  --≡⟨ {!≡-cong!} ⟩
+    --{!!}
+  ≡⟨ {!!} ⟩
+    ⟦ t ⟧ (ignore′ Γ′ ρ)
+  ∎
+  where
+    open ≡-Reasoning
+
 lift-term′ : ∀ {Γ τ} → (Γ′ : Prefix Γ) → Term Γ τ → Term (Δ-Context′ Γ Γ′) τ
 lift-term′ Γ′ (abs t) = abs (lift-term′ (_ • Γ′) t)
 lift-term′ Γ′ (app t₁ t₂) = app (lift-term′ Γ′ t₁) (lift-term′ Γ′ t₂)
