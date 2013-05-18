@@ -44,24 +44,24 @@ lift-var′ (τ • Γ′) (that x) = that (lift-var′ Γ′ x)
 -- This version of lift-term′ uses just weakenOne to accomplish its
 -- job.
 
+lift-term′-doWeakenMore : ∀ Γprefix Γrest {τ} →
+  Term (Γprefix ⋎ Γrest) τ →
+  Term (Γprefix ⋎ Δ-Context Γrest) τ
+
+lift-term′-doWeakenMore Γprefix ∅ t₁ = t₁
+lift-term′-doWeakenMore Γprefix (τ₂ • Γrest) t₁ =
+  weakenOne Γprefix (Δ-Type τ₂)
+    (substTerm (sym (move-prefix Γprefix τ₂ (Δ-Context Γrest)))
+      (lift-term′-doWeakenMore (Γprefix ⋎ (τ₂ • ∅)) Γrest
+        (substTerm (move-prefix Γprefix τ₂ Γrest) t₁)))
+
 lift-term′-weakenOne : ∀ {Γ τ} Γ′ →
   Term Γ τ → Term (Δ-Context′ Γ Γ′) τ
 lift-term′-weakenOne {Γ} Γ′ t =
   substTerm (sym (take-⋎-Δ-Context-drop-Δ-Context′ Γ Γ′))
-    (doWeakenMore (take Γ Γ′) (drop Γ Γ′)
+    (lift-term′-doWeakenMore (take Γ Γ′) (drop Γ Γ′)
       (substTerm (sym (take-drop Γ Γ′))
         t))
-  where
-    doWeakenMore : ∀ Γprefix Γrest {τ} →
-      Term (Γprefix ⋎ Γrest) τ →
-      Term (Γprefix ⋎ Δ-Context Γrest) τ
-
-    doWeakenMore Γprefix ∅ t₁ = t₁
-    doWeakenMore Γprefix (τ₂ • Γrest) t₁ =
-      weakenOne Γprefix (Δ-Type τ₂)
-        (substTerm (sym (move-prefix Γprefix τ₂ (Δ-Context Γrest)))
-          (doWeakenMore (Γprefix ⋎ (τ₂ • ∅)) Γrest
-            (substTerm (move-prefix Γprefix τ₂ Γrest) t₁)))
 
 lift-term′ : ∀ {Γ τ} → (Γ′ : Prefix Γ) → Term Γ τ → Term (Δ-Context′ Γ Γ′) τ
 lift-term′ Γ′ (abs t) = abs (lift-term′ (_ • Γ′) t)
