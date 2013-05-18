@@ -1,4 +1,4 @@
-module IlcModel where
+module Model where
 
 import Relation.Binary as B
 

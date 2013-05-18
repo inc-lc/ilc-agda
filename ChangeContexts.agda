@@ -1,6 +1,6 @@
 module ChangeContexts where
 
-open import IlcModel
+open import Model
 open import Changes
 open import meaning
 

@@ -1,7 +1,7 @@
 module Changes where
 
 open import meaning
-open import IlcModel
+open import Model
 
 -- CHANGE TYPES
 

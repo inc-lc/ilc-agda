@@ -22,7 +22,7 @@ import Relation.Binary.EqReasoning as EqR
 open import Relation.Nullary using (¬_)
 
 open import meaning
-open import IlcModel
+open import Model
 open import Changes
 open import ChangeContexts
 open import binding Type ⟦_⟧Type

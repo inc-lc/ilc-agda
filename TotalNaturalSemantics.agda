@@ -1,7 +1,7 @@
 module TotalNaturalSemantics where
 
 open import meaning
-open import IlcModel
+open import Model
 --open import Changes
 --open import ChangeContexts
 open import binding Type ⟦_⟧Type
