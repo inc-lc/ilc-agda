@@ -1,5 +1,17 @@
 module Model where
 
+-- SIMPLE TYPES
+--
+-- This module defines the syntax of simple types.
+
+
+-- VALUES
+--
+-- This module defines the model theory of simple types, that is,
+-- it defines for every type, the set of values of that type.
+--
+-- In fact, we only describe a single model here.
+
 import Relation.Binary as B
 
 open import Relation.Binary using
