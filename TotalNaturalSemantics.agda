@@ -1,5 +1,7 @@
 module TotalNaturalSemantics where
 
+open import Relation.Binary.PropositionalEquality
+
 open import meaning
 open import Model
 --open import Changes
