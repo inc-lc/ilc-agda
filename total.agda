@@ -73,11 +73,24 @@ _∪_ : ∀ {Γ Γ′} → (ρ : ⟦ Γ ⟧) → (ρ′ : ⟦ Γ′ ⟧) → ⟦
 _∪_ {∅} {Γ′} ∅ ρ′ = ρ′
 _∪_ {τ • Γ} {Γ′} (v • ρ) ρ′ = v • ρ ∪ ρ′
 
-lift-term-doWeakenOne-ignore′ : ∀ Γprefix Γrest {τ} →
-  {ρ₁ : ⟦ Γprefix ⟧} {ρ₂ : ⟦ Δ-Context Γrest ⟧}
+lift-term-doWeakenOne-ignore′ : ∀ Γprefix Γrest {τ}
+  (ρ₁ : ⟦ Γprefix ⟧) (ρ₂ : ⟦ Δ-Context Γrest ⟧)
   (t : Term (Γprefix ⋎ Γrest) τ) →
   ⟦ lift-term′-doWeakenMore Γprefix Γrest t ⟧ (ρ₁ ∪ ρ₂) ≡ ⟦ t ⟧ (ρ₁ ∪ ignore ρ₂)
-lift-term-doWeakenOne-ignore′ = {!!}
+
+lift-term-doWeakenOne-ignore′ Γprefix ∅ ρ₁ ∅ t = refl
+--This step gives the proof idea.
+lift-term-doWeakenOne-ignore′ ∅ (τ • Γrest) ∅ (dv • v • ρ₂) t = lift-term-doWeakenOne-ignore′ (τ • ∅) Γrest (v • ∅) ρ₂ t
+
+lift-term-doWeakenOne-ignore′ (τ₀ • Γprefix) (τ₂ • Γrest) {τ} (v₀ • ρ₁) (dv • v • ρ₂) t = {!!}
+--Look at C-c C-, for the normalized goal.
+-- The solution here should be something like:
+  --lift-term-doWeakenOne-ignore′ (τ₀ • Γprefix ⋎ (τ₂ • ∅)) Γrest {τ} ((v₀ • ρ₁) ∪ (v • ∅)) ρ₂  ?
+
+-- accompanied by enough subst to make it typecheck, and maybe by
+-- weakenOne-ignore to account for weakenOne - or maybe not since
+-- weakenOne is a definitional equality. PG
+-- Not planning to finish this, it looks quite horrible.
 
 lift-term-weakenOne-ignore′ : ∀ {Γ τ} →
   (Γ′ : Prefix Γ) {ρ : ⟦ Δ-Context′  Γ Γ′ ⟧} (t : Term Γ τ) →
