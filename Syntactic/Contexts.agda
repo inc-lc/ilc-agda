@@ -22,6 +22,14 @@ data Context : Set where
 
 infixr 9 _•_
 
+-- Specialized congruence rules
+
+⟨∅⟩ : ∅ ≡ ∅
+⟨∅⟩ = refl
+
+_⟨•⟩_ : ∀ {τ₁ τ₂ Γ₁ Γ₂} → τ₁ ≡ τ₂ → Γ₁ ≡ Γ₂ → τ₁ • Γ₁ ≡ τ₂ • Γ₂
+_⟨•⟩_ = cong₂ _•_
+
 -- VARIABLES
 
 -- Syntax
