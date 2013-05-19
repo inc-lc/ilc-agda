@@ -10,6 +10,7 @@ module Syntactic.Contexts
 -- This module is parametric in the syntax of types, so it
 -- can be reused for different calculi.
 
+open import Relation.Binary
 open import Relation.Binary.PropositionalEquality
 
 -- TYPING CONTEXTS
@@ -97,6 +98,69 @@ module Prefixes where
   lift {∅} {τ • Γ₂} x = that (lift {∅} {Γ₂} x)
   lift {τ • Γ₁} {Γ₂} this = this
   lift {τ • Γ₁} {Γ₂} (that x) = that (lift {Γ₁} {Γ₂} x)
+
+-- SUBCONTEXTS
+--
+-- Useful as a reified weakening operation.
+
+module Subcontexts where
+  infix 8 _≼_
+
+  data _≼_ : (Γ₁ Γ₂ : Context) → Set where
+    ∅ : ∅ ≼ ∅
+    keep_•_ : ∀ {Γ₁ Γ₂} →
+      (τ : Type) →
+      Γ₁ ≼ Γ₂ →
+      τ • Γ₁ ≼ τ • Γ₂
+    drop_•_ : ∀ {Γ₁ Γ₂} →
+      (τ : Type) →
+      Γ₁ ≼ Γ₂ →
+      Γ₁ ≼ τ • Γ₂
+
+  -- Properties
+
+  ≼-refl : Reflexive _≼_
+  ≼-refl {∅} = ∅
+  ≼-refl {τ • Γ} = keep τ • ≼-refl
+
+  ≼-reflexive : ∀ {Γ₁ Γ₂} → Γ₁ ≡ Γ₂ → Γ₁ ≼ Γ₂
+  ≼-reflexive refl = ≼-refl
+
+  ≼-trans : Transitive _≼_
+  ≼-trans ≼₁ ∅ = ≼₁
+  ≼-trans (keep .τ • ≼₁) (keep τ • ≼₂) = keep τ • ≼-trans ≼₁ ≼₂
+  ≼-trans (drop .τ • ≼₁) (keep τ • ≼₂) = drop τ • ≼-trans ≼₁ ≼₂
+  ≼-trans ≼₁ (drop τ • ≼₂) = drop τ • ≼-trans ≼₁ ≼₂
+
+  ≼-isPreorder : IsPreorder _≡_ _≼_
+  ≼-isPreorder = record
+    { isEquivalence = isEquivalence
+    ; reflexive = ≼-reflexive
+    ; trans = ≼-trans
+    }
+
+  ≼-preorder : Preorder _ _ _
+  ≼-preorder = record
+    { Carrier = Context
+    ; _≈_ = _≡_
+    ; _∼_ = _≼_
+    ; isPreorder = ≼-isPreorder
+    }
+
+  module ≼-Reasoning where
+    open import Relation.Binary.PreorderReasoning ≼-preorder public
+      renaming
+        ( _≈⟨_⟩_ to _≡⟨_⟩_
+        ; _∼⟨_⟩_ to _≼⟨_⟩_
+        ; _≈⟨⟩_ to _≡⟨⟩_
+        )
+
+  -- Lift a variable to a super context
+
+  lift : ∀ {Γ₁ Γ₂ τ} → Γ₁ ≼ Γ₂ → Var Γ₁ τ → Var Γ₂ τ
+  lift (keep τ • ≼₁) this = this
+  lift (keep τ • ≼₁) (that x) = that (lift ≼₁ x)
+  lift (drop τ • ≼₁) x = that (lift ≼₁ x)
 
 -- Currently, we export context prefixes, but that might change
 -- in the future
