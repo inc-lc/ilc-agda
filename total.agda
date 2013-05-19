@@ -13,24 +13,23 @@ module total where
 --   * lemmas about behavior of Δ
 --   * correctness proof for symbolic derivation
 
-import Relation.Binary as B
-
-open import Relation.Binary using
-  (IsEquivalence; Setoid; Reflexive; Symmetric; Transitive)
-import Relation.Binary.EqReasoning as EqR
-
-open import Relation.Nullary using (¬_)
-
-open import meaning
-open import Model
-open import Changes
-open import ChangeContexts
-open import binding Type ⟦_⟧Type
-open import TotalTerms
-
 open import Data.Product
 open import Data.Unit
+
 open import Relation.Binary.PropositionalEquality
+
+open import Syntactic.Types
+open import Syntactic.Contexts Type
+open import Syntactic.Terms.Total
+
+open import Denotational.Notation
+open import Denotational.Values
+open import Denotational.Environments Type ⟦_⟧Type
+open import Denotational.Evaluation.Total
+open import Denotational.Equivalence
+
+open import Changes
+open import ChangeContexts
 
 -- DEFINITION of valid changes via a logical relation
 

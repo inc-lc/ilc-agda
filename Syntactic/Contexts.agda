@@ -1,6 +1,5 @@
-module binding
+module Syntactic.Contexts
     (Type : Set)
-    (⟦_⟧Type : Type → Set)
   where
 
 -- CONTEXTS
@@ -11,21 +10,7 @@ module binding
 -- This module is parametric in the syntax of types, so it
 -- can be reused for different calculi.
 
--- ENVIRONMENTS
---
--- This module defines the meaning of contexts, that is,
--- the type of environments that fit a context, together
--- with operations and properties of these operations.
---
--- This module is parametric in the syntax and semantics
--- of types, so it can be reused for different calculi
--- and models.
-
-open import meaning
-
-private
-  meaningOfType : Meaning Type
-  meaningOfType = meaning ⟦_⟧Type
+open import Relation.Binary.PropositionalEquality
 
 -- TYPING CONTEXTS
 
@@ -37,21 +22,6 @@ data Context : Set where
 
 infixr 9 _•_
 
--- Denotational Semantics : Contexts Represent Environments
-
-data Empty : Set where
-  ∅ : Empty
-
-data Bind A B : Set where
-  _•_ : (v : A) (ρ : B) → Bind A B
-
-⟦_⟧Context : Context → Set
-⟦ ∅ ⟧Context = Empty
-⟦ τ • Γ ⟧Context = Bind ⟦ τ ⟧ ⟦ Γ ⟧Context
-
-meaningOfContext : Meaning Context
-meaningOfContext = meaning ⟦_⟧Context
-
 -- VARIABLES
 
 -- Syntax
@@ -59,15 +29,6 @@ meaningOfContext = meaning ⟦_⟧Context
 data Var : Context → Type → Set where
   this : ∀ {Γ τ} → Var (τ • Γ) τ
   that : ∀ {Γ τ τ′} → (x : Var Γ τ) → Var (τ′ • Γ) τ
-
--- Denotational Semantics
-
-⟦_⟧Var : ∀ {Γ τ} → Var Γ τ → ⟦ Γ ⟧ → ⟦ τ ⟧
-⟦ this ⟧Var (v • ρ) = v
-⟦ that x ⟧Var (v • ρ) = ⟦ x ⟧Var ρ
-
-meaningOfVar : ∀ {Γ τ} → Meaning (Var Γ τ)
-meaningOfVar = meaning ⟦_⟧Var
 
 -- WEAKENING
 
@@ -96,14 +57,6 @@ infixr 10 _⋎_
 _⋎_ : (Γ₁ Γ₂ : Context) → Context
 ∅ ⋎ Γ₂ = Γ₂
 (τ • Γ₁) ⋎ Γ₂ = τ • Γ₁ ⋎ Γ₂
-
--- Remove a variable from an environment
-
-weakenEnv : ∀ Γ₁ τ₂ {Γ₃} → ⟦ Γ₁ ⋎ (τ₂ • Γ₃) ⟧ → ⟦ Γ₁ ⋎ Γ₃ ⟧
-weakenEnv ∅ τ₂ (v • ρ) = ρ
-weakenEnv (τ • Γ₁) τ₂ (v • ρ) = v • weakenEnv Γ₁ τ₂ ρ
-
-open import Relation.Binary.PropositionalEquality
 
 take-drop : ∀ Γ Γ′ → take Γ Γ′ ⋎ drop Γ Γ′ ≡ Γ
 take-drop ∅ ∅ = refl

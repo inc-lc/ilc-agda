@@ -2,33 +2,12 @@ module lambda where
 
 open import Relation.Binary.PropositionalEquality
 
-open import meaning
+open import Syntactic.Types public
+open import Syntactic.Contexts Type public
 
--- SIMPLE TYPES
-
--- Syntax
-
-data Type : Set where
-  _⇒_ : (τ₁ τ₂ : Type) → Type
-  bool : Type
-
-infixr 5 _⇒_
-
--- Denotational Semantics
-
-data Bool : Set where
-  true false : Bool
-
-⟦_⟧Type : Type -> Set
-⟦ τ₁ ⇒ τ₂ ⟧Type = ⟦ τ₁ ⟧Type → ⟦ τ₂ ⟧Type
-⟦ bool ⟧Type = Bool
-
-meaningOfType : Meaning Type
-meaningOfType = meaning ⟦_⟧Type
-
--- TYPING CONTEXTS, VARIABLES and WEAKENING
-
-open import binding Type ⟦_⟧Type public
+open import Denotational.Notation
+open import Denotational.Values public
+open import Denotational.Environments Type ⟦_⟧Type public
 
 -- TERMS
 

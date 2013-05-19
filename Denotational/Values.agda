@@ -1,9 +1,4 @@
-module Model where
-
--- SIMPLE TYPES
---
--- This module defines the syntax of simple types.
-
+module Denotational.Values where
 
 -- VALUES
 --
@@ -20,18 +15,9 @@ import Relation.Binary.EqReasoning as EqR
 
 open import Relation.Nullary using (¬_)
 
-open import meaning
+open import Denotational.Notation
 
-
--- SIMPLE TYPES
-
--- Syntax
-
-data Type : Set where
-  _⇒_ : (τ₁ τ₂ : Type) → Type
-  bool : Type
-
-infixr 5 _⇒_
+open import Syntactic.Types
 
 -- Denotational Semantics
 
