@@ -28,7 +28,25 @@ open import ChangeContexts
 open import binding Type ⟦_⟧Type
 open import TotalTerms
 
+open import Data.Product
+open import Data.Unit
 open import Relation.Binary.PropositionalEquality
+
+-- DEFINITION of valid changes via a logical relation
+
+{-
+What I wanted to write:
+
+data ValidΔ : {T : Type} → (v : ⟦ T ⟧) → (dv : ⟦ Δ-Type T ⟧) → Set where
+  base : (v : ⟦ bool ⟧) → (dv : ⟦ Δ-Type bool ⟧) → ValidΔ v dv
+  fun : ∀ {S T} → (f : ⟦ S ⇒ T ⟧) → (df : ⟦ Δ-Type (S ⇒ T) ⟧) →
+    (∀ (s : ⟦ S ⟧) ds (valid : ValidΔ s ds) → (ValidΔ (f s) (df s ds)) × ((apply df f) (apply ds s) ≡ apply (df s ds) (f s))) → 
+    ValidΔ f df
+-}
+-- What I had to write:
+valid-Δ : {T : Type} → ⟦ T ⟧ → ⟦ Δ-Type T ⟧ → Set
+valid-Δ {bool} v dv = ⊤
+valid-Δ {S ⇒ T} f df = ∀ (s : ⟦ S ⟧) ds (valid-w : valid-Δ s ds) → (valid-Δ (f s) (df s ds)) × ((apply df f) (apply ds s) ≡ apply (df s ds) (f s))
 
 -- LIFTING terms into Δ-Contexts
 
