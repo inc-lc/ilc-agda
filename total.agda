@@ -13,26 +13,20 @@ module total where
 --   * lemmas about behavior of Δ
 --   * correctness proof for symbolic derivation
 
-import Relation.Binary as B
+open import Relation.Binary.PropositionalEquality
 
-open import Relation.Binary using
-  (IsEquivalence; Setoid; Reflexive; Symmetric; Transitive)
-import Relation.Binary.EqReasoning as EqR
-
-open import Relation.Nullary using (¬_)
+open import Syntactic.Types
+open import Syntactic.Contexts Type
+open import Syntactic.Terms.Total
 
 open import Denotational.Notation
-open import Syntactic.Types
 open import Denotational.Values
-open import Changes
-open import ChangeContexts
-open import Syntactic.Contexts Type
 open import Denotational.Environments Type ⟦_⟧Type
-open import Syntactic.Terms.Total
 open import Denotational.Evaluation.Total
 open import Denotational.Equivalence
 
-open import Relation.Binary.PropositionalEquality
+open import Changes
+open import ChangeContexts
 
 -- LIFTING terms into Δ-Contexts
 
