@@ -28,6 +28,17 @@ open import Denotational.Environments Type ⟦_⟧Type
 Δ-Context ∅ = ∅
 Δ-Context (τ • Γ) = Δ-Type τ • τ • Δ-Context Γ
 
+-- Properties
+
+module _ where
+  open Subcontexts renaming (drop_•_ to drop′_•_)
+
+  ≼-Δ-Context : ∀ {Γ} → Γ ≼ Δ-Context Γ
+  ≼-Δ-Context {∅} = ∅
+  ≼-Δ-Context {τ • Γ} = drop′ (Δ-Type τ) • keep τ • ≼-Δ-Context
+
+-- OPERATIONS on CHANGE ENVIRONMENTS
+
 update : ∀ {Γ} → ⟦ Δ-Context Γ ⟧ → ⟦ Γ ⟧
 update {∅} ∅ = ∅
 update {τ • Γ} (dv • v • ρ) = apply dv v • update ρ
