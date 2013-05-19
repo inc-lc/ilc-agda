@@ -7,10 +7,8 @@ module Denotational.Equivalence where
 
 open import Relation.Nullary using (¬_)
 
-open import Relation.Binary.PropositionalEquality as P
-open import Relation.Binary using
-  (IsEquivalence; Setoid; Reflexive; Symmetric; Transitive)
-import Relation.Binary.EqReasoning as EqR
+open import Relation.Binary hiding (_⇒_)
+open import Relation.Binary.PropositionalEquality
 
 open import Syntactic.Types
 open import Syntactic.Contexts Type
@@ -73,7 +71,7 @@ module _ {Γ} {τ} where
 
 module ≈-Reasoning where
   module _ {Γ : Context} {τ : Type} where
-    open EqR (≈-setoid Γ τ) public
+    open import Relation.Binary.EqReasoning (≈-setoid Γ τ) public
       hiding (_≡⟨_⟩_)
 
 ≈-consistent : ¬ (∀ {Γ τ} (t₁ t₂ : Term Γ τ) → t₁ ≈ t₂)
