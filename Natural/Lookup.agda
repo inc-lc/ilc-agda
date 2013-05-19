@@ -1,14 +1,13 @@
 module Natural.Lookup where
 
+-- LOOKUP values in environments
+--
+-- This module defines lookup of (syntactic) values in
+-- (syntactic) environments as a derivation system.
+
 open import Syntactic.Types
 open import Syntactic.Contexts Type
 open import Syntactic.Closures
-
--- NATURAL SEMANTICS
-
--- (without support for Δ for now)
-
--- Lookup
 
 infixr 8 _⊢_↦_
 

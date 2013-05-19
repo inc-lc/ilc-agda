@@ -1,5 +1,10 @@
 module Natural.Soundness where
 
+-- SOUNDNESS of NATURAL SEMANTICS
+--
+-- This module proves consistency of the natural semantics with
+-- respect to the denotational semantics.
+
 open import Relation.Binary.PropositionalEquality
 
 open import Syntactic.Types
@@ -17,13 +22,15 @@ open import Denotational.Closures
 open import Natural.Lookup
 open import Natural.Evaluation
 
--- SOUNDNESS of natural semantics
+-- Syntactic lookup is consistent with semantic lookup.
 
 ↦-sound : ∀ {Γ τ ρ v} {x : Var Γ τ} →
   ρ ⊢ x ↦ v →
   ⟦ x ⟧ ⟦ ρ ⟧ ≡ ⟦ v ⟧
 ↦-sound this = ≡-refl
 ↦-sound (that ↦) = ↦-sound ↦
+
+-- Syntactic evaluation is consistent with semantic evaluation.
 
 ↓-sound : ∀ {Γ τ ρ v} {t : Term Γ τ} →
   ρ ⊢ t ↓ v →

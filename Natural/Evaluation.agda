@@ -1,17 +1,16 @@
 module Natural.Evaluation where
 
+-- EVALUATION of terms to values
+--
+-- This module defines evaluation of syntactic terms to syntactic
+-- values as a derivation system. Δ is not yet supported.
+
 open import Syntactic.Types
 open import Syntactic.Contexts Type
 open import Syntactic.Terms.Total
 open import Syntactic.Closures
 
 open import Natural.Lookup
-
--- NATURAL SEMANTICS
-
--- (without support for Δ for now)
-
--- Reduction
 
 infixr 8 _⊢_↓_
 
