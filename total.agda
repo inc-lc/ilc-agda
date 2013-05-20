@@ -49,7 +49,7 @@ data ValidΔ : {T : Type} → (v : ⟦ T ⟧) → (dv : ⟦ Δ-Type T ⟧) → S
     ValidΔ f df
 -}
 -- What I had to write:
-valid-Δ : {T : Type} → ⟦ T ⟧ → ⟦ Δ-Type T ⟧ → Set
+valid-Δ : {τ : Type} → ⟦ τ ⟧ → ⟦ Δ-Type τ ⟧ → Set
 valid-Δ {bool} v dv = ⊤
 valid-Δ {S ⇒ T} f df =
   ∀ (s : ⟦ S ⟧) ds (valid-w : valid-Δ s ds) →
