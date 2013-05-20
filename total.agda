@@ -54,179 +54,52 @@ valid-Δ {S ⇒ T} f df = ∀ (s : ⟦ S ⟧) ds (valid-w : valid-Δ s ds) → (
 
 -- LIFTING terms into Δ-Contexts
 
-lift-var : ∀ {Γ τ} → Var Γ τ → Var (Δ-Context Γ) τ
-lift-var this = that this
-lift-var (that x) = that (that (lift-var x))
-
-lift-var′ : ∀ {Γ τ} → (Γ′ : Prefix Γ) → Var Γ τ → Var (Δ-Context′ Γ Γ′) τ
-lift-var′ ∅ x = lift-var x
-lift-var′ (τ • Γ′) this = this
-lift-var′ (τ • Γ′) (that x) = that (lift-var′ Γ′ x)
-
--- This version of lift-term′ uses just weakenOne to accomplish its
--- job.
-
-lift-term′-doWeakenMore : ∀ Γprefix Γrest {τ} →
-  Term (Γprefix ⋎ Γrest) τ →
-  Term (Γprefix ⋎ Δ-Context Γrest) τ
-
-lift-term′-doWeakenMore Γprefix ∅ t₁ = t₁
-lift-term′-doWeakenMore Γprefix (τ₂ • Γrest) t₁ =
-  weakenOne Γprefix (Δ-Type τ₂)
-    (substTerm (sym (move-prefix Γprefix τ₂ (Δ-Context Γrest)))
-      (lift-term′-doWeakenMore (Γprefix ⋎ (τ₂ • ∅)) Γrest
-        (substTerm (move-prefix Γprefix τ₂ Γrest) t₁)))
-
-lift-term′-weakenOne : ∀ {Γ τ} Γ′ →
-  Term Γ τ → Term (Δ-Context′ Γ Γ′) τ
-lift-term′-weakenOne {Γ} Γ′ t =
-  substTerm (sym (take-⋎-Δ-Context-drop-Δ-Context′ Γ Γ′))
-    (lift-term′-doWeakenMore (take Γ Γ′) (drop Γ Γ′)
-      (substTerm (sym (take-drop Γ Γ′))
-        t))
-
-weakenOne-ignore :
- ∀ Γ₁ τ₂ {Γ₃ τ} → (t : Term (Γ₁ ⋎ Γ₃) τ) →
-   {ρ : ⟦ Γ₁ ⋎ (τ₂ • Γ₃) ⟧} →
-   ⟦ weakenOne Γ₁ τ₂ t ⟧ ρ ≡ ⟦ t ⟧ (weakenEnv Γ₁ τ₂ ρ)
-weakenOne-ignore Γ₁ τ₂ t {ρ} = ≡-refl
-
-_∪_ : ∀ {Γ Γ′} → (ρ : ⟦ Γ ⟧) → (ρ′ : ⟦ Γ′ ⟧) → ⟦ Γ ⋎ Γ′ ⟧
-_∪_ {∅} {Γ′} ∅ ρ′ = ρ′
-_∪_ {τ • Γ} {Γ′} (v • ρ) ρ′ = v • ρ ∪ ρ′
-
-lift-term-doWeakenOne-ignore′ : ∀ Γprefix Γrest {τ}
-  (ρ₁ : ⟦ Γprefix ⟧) (ρ₂ : ⟦ Δ-Context Γrest ⟧)
-  (t : Term (Γprefix ⋎ Γrest) τ) →
-  ⟦ lift-term′-doWeakenMore Γprefix Γrest t ⟧ (ρ₁ ∪ ρ₂) ≡ ⟦ t ⟧ (ρ₁ ∪ ignore ρ₂)
-
-lift-term-doWeakenOne-ignore′ Γprefix ∅ ρ₁ ∅ t = refl
---This step gives the proof idea.
-lift-term-doWeakenOne-ignore′ ∅ (τ • Γrest) ∅ (dv • v • ρ₂) t = lift-term-doWeakenOne-ignore′ (τ • ∅) Γrest (v • ∅) ρ₂ t
-
-lift-term-doWeakenOne-ignore′ (τ₀ • Γprefix) (τ₂ • Γrest) {τ} (v₀ • ρ₁) (dv • v • ρ₂) t = {!!}
---Look at C-c C-, for the normalized goal.
--- The solution here should be something like:
-  --lift-term-doWeakenOne-ignore′ (τ₀ • Γprefix ⋎ (τ₂ • ∅)) Γrest {τ} ((v₀ • ρ₁) ∪ (v • ∅)) ρ₂  ?
-
--- accompanied by enough subst to make it typecheck, and maybe by
--- weakenOne-ignore to account for weakenOne - or maybe not since
--- weakenOne is a definitional equality. PG
--- Not planning to finish this, it looks quite horrible.
-
-lift-term-weakenOne-ignore′ : ∀ {Γ τ} →
-  (Γ′ : Prefix Γ) {ρ : ⟦ Δ-Context′  Γ Γ′ ⟧} (t : Term Γ τ) →
-  ⟦ lift-term′-weakenOne Γ′ t ⟧ ρ ≡ ⟦ t ⟧ (ignore′ Γ′ ρ)
-lift-term-weakenOne-ignore′ {Γ} {τ} Γ′ {ρ} t =
-  begin
-    ⟦
-      substTerm (sym (take-⋎-Δ-Context-drop-Δ-Context′ Γ Γ′))
-        (lift-term′-doWeakenMore (take Γ Γ′) (drop Γ Γ′)
-          (substTerm (sym (take-drop Γ Γ′))
-            t))
-      ⟧ ρ
-  --≡⟨ {!≡-cong!} ⟩
-    --{!!}
-  ≡⟨ {!!} ⟩
-    ⟦ t ⟧ (ignore′ Γ′ ρ)
-  ∎
-  where
-    open ≡-Reasoning
-
-lift-term′ : ∀ {Γ τ} → (Γ′ : Prefix Γ) → Term Γ τ → Term (Δ-Context′ Γ Γ′) τ
-lift-term′ Γ′ (abs t) = abs (lift-term′ (_ • Γ′) t)
-lift-term′ Γ′ (app t₁ t₂) = app (lift-term′ Γ′ t₁) (lift-term′ Γ′ t₂)
-lift-term′ Γ′ (var x) = var (lift-var′ Γ′ x)
-lift-term′ Γ′ true = true
-lift-term′ Γ′ false = false
-lift-term′ Γ′ (if t₁ t₂ t₃) = if (lift-term′ Γ′ t₁) (lift-term′ Γ′ t₂) (lift-term′ Γ′ t₃)
-lift-term′ Γ′ (Δ t) = lift-term′-weakenOne Γ′ (Δ t)
-lift-term′ {τ = τ} Γ′ (weakenOne Γ₁ τ₂ {Γ₃} t) = lift-weakened-term Γ₁ τ₂ Γ′ t
-  where
-    double-weakenOne :
-      ∀ Γ₁ {Γ₃ τ} τ₂ → Term (Γ₁ ⋎ Γ₃) τ → 
-      Term (Δ-Context (Γ₁ ⋎ (τ₂ • Γ₃))) τ
-    double-weakenOne Γ₁ {Γ₃} τ₂ t =
-      substTerm (Δ-Context-⋎-expanded Γ₁ τ₂ Γ₃)
-        (weakenOne (Δ-Context Γ₁) _
-          (weakenOne (Δ-Context Γ₁) _
-            (substTerm (Δ-Context-⋎ Γ₁ Γ₃) (lift-term′ ∅ t))))
-
-    lift-weakened-term :
-      ∀ Γ₁ {Γ₃ τ} τ₂ Γ′ → Term (Γ₁ ⋎ Γ₃) τ → 
-      Term (Δ-Context′ (Γ₁ ⋎ (τ₂ • Γ₃)) Γ′) τ
-    lift-weakened-term ∅ τ₂ ∅ t = double-weakenOne ∅ τ₂ t
-    lift-weakened-term Γ₁ τ₂ ∅ t = double-weakenOne Γ₁ τ₂ t
-    lift-weakened-term ∅ τ₃ (.τ₃ • Γ′₁) t₁ = weakenOne ∅ τ₃ (lift-term′ Γ′₁ t₁)
-    lift-weakened-term (τ₁ • Γ₁) {Γ₃} τ₂ (.τ₁ • Γ′₁) t₁ =
-      lift-term′-weakenOne (τ₁ • Γ′₁) (weakenOne (τ₁ • Γ₁) τ₂ t₁)
-    -- In the last case, I was not able to finish without using the expensive
-    -- lift-term′-weakenOne
-
-lift-term : ∀ {Γ τ} → Term Γ τ → Term (Δ-Context Γ) τ
-lift-term = lift-term′ ∅
+lift-term : ∀ {Γ₁ Γ₂ τ} {{Γ′ : Δ-Context Γ₁ ≼ Γ₂}} → Term Γ₁ τ → Term Γ₂ τ
+lift-term {Γ₁} {Γ₂} {{Γ′}} = weaken (≼-trans ≼-Δ-Context Γ′)
 
 -- PROPERTIES of lift-term
 
-lift-var-ignore : ∀ {Γ τ} (ρ : ⟦ Δ-Context Γ ⟧) (x : Var Γ τ) →
-  ⟦ lift-var x ⟧ ρ ≡ ⟦ x ⟧ (ignore ρ)
-lift-var-ignore (v • dv • ρ) this = ≡-refl
-lift-var-ignore (v • dv • ρ) (that x) = lift-var-ignore ρ x
-
-lift-var-ignore′ : ∀ {Γ τ} →
-  (Γ′ : Prefix Γ) (ρ : ⟦ Δ-Context′ Γ Γ′ ⟧) (x : Var Γ τ) →
-  ⟦ lift-var′ Γ′ x ⟧ ρ ≡ ⟦ x ⟧ (ignore′ Γ′ ρ)
-lift-var-ignore′ ∅ ρ x = lift-var-ignore ρ x
-lift-var-ignore′ (τ • Γ′) (v • ρ) this = ≡-refl
-lift-var-ignore′ (τ • Γ′) (v • ρ) (that x) = lift-var-ignore′ Γ′ ρ x
-
-lift-term-ignore′ : ∀ {Γ τ} →
-  (Γ′ : Prefix Γ) {ρ : ⟦ Δ-Context′  Γ Γ′ ⟧} (t : Term Γ τ) →
-  ⟦ lift-term′ Γ′ t ⟧ ρ ≡ ⟦ t ⟧ (ignore′ Γ′ ρ)
-lift-term-ignore′ Γ′ (abs t) =
-  ext (λ v → lift-term-ignore′ (_ • Γ′) t)
-lift-term-ignore′ Γ′ (app t₁ t₂) =
-  ≡-app (lift-term-ignore′ Γ′ t₁) (lift-term-ignore′ Γ′ t₂)
-lift-term-ignore′ Γ′ (var x) = lift-var-ignore′ Γ′ _ x
-lift-term-ignore′ Γ′ true = ≡-refl
-lift-term-ignore′ Γ′ false = ≡-refl
-lift-term-ignore′ Γ′ {ρ} (if t₁ t₂ t₃)
-  with ⟦ lift-term′ Γ′ t₁ ⟧ ρ
-     | ⟦ t₁ ⟧ (ignore′ Γ′ ρ)
-     | lift-term-ignore′ Γ′ {ρ} t₁
-... | true | true | refl = lift-term-ignore′ Γ′ t₂
-... | false | false | refl = lift-term-ignore′ Γ′ t₃
-lift-term-ignore′ Γ′ (Δ t) = {!!}
-lift-term-ignore′ _ (weakenOne _ _ {_} {._} _) = {!!}
-
-lift-term-ignore : ∀ {Γ τ} {ρ : ⟦ Δ-Context Γ ⟧} (t : Term Γ τ) →
-  ⟦ lift-term t ⟧ ρ ≡ ⟦ t ⟧ (ignore ρ)
-lift-term-ignore = lift-term-ignore′ ∅
-
+lift-term-ignore : ∀ {Γ₁ Γ₂ τ} {{Γ′ : Δ-Context Γ₁ ≼ Γ₂}} {ρ : ⟦ Γ₂ ⟧} (t : Term Γ₁ τ) →
+  ⟦ lift-term {{Γ′}} t ⟧ ρ ≡ ⟦ t ⟧ (ignore (⟦ Γ′ ⟧ ρ))
+lift-term-ignore {{Γ′}} {ρ} t = let Γ″ = ≼-trans ≼-Δ-Context Γ′ in
+  begin
+    ⟦ lift-term {{Γ′}} t ⟧ ρ
+  ≡⟨⟩
+    ⟦ weaken Γ″ t ⟧ ρ
+  ≡⟨ weaken-sound t ρ ⟩
+    ⟦ t ⟧ (⟦ ≼-trans ≼-Δ-Context Γ′ ⟧ ρ)
+  ≡⟨ cong (λ x → ⟦ t ⟧ x) (⟦⟧-≼-trans ≼-Δ-Context Γ′ ρ) ⟩
+    ⟦ t ⟧Term (⟦ ≼-Δ-Context ⟧≼ (⟦ Γ′ ⟧≼ ρ))
+  ≡⟨⟩
+    ⟦ t ⟧ (ignore (⟦ Γ′ ⟧ ρ))
+  ∎ where open ≡-Reasoning
 
 -- PROPERTIES of Δ
 
-Δ-abs : ∀ {Γ τ₁ τ₂} (t : Term (τ₁ • Γ) τ₂) →
-  Δ (abs t) ≈ abs (abs (Δ t))
-Δ-abs t = ext-t (λ ρ → ≡-refl)
+Δ-abs : ∀ {τ₁ τ₂ Γ₁ Γ₂} {{Γ′ : Δ-Context Γ₁ ≼ Γ₂}} (t : Term (τ₁ • Γ₁) τ₂) →
+  let Γ″ = keep Δ-Type τ₁ • keep τ₁ • Γ′ in
+  Δ {{Γ′}} (abs t) ≈ abs (abs (Δ {τ₁ • Γ₁} t))
+Δ-abs t = ext-t (λ ρ → refl)
 
-Δ-app : ∀ {Γ τ₁ τ₂} (t₁ : Term Γ (τ₁ ⇒ τ₂)) (t₂ : Term Γ τ₁) →
-  Δ (app t₁ t₂) ≈ app (app (Δ t₁) (lift-term t₂)) (Δ t₂)
-Δ-app t₁ t₂ = ≈-sym (ext-t (λ ρ →
+Δ-app : ∀ {Γ₁ Γ₂ τ₁ τ₂} {{Γ′ : Δ-Context Γ₁ ≼ Γ₂}} (t₁ : Term Γ₁ (τ₁ ⇒ τ₂)) (t₂ : Term Γ₁ τ₁) →
+  Δ {{Γ′}} (app t₁ t₂) ≈ app (app (Δ {{Γ′}} t₁) (lift-term {{Γ′}} t₂)) (Δ {{Γ′}} t₂)
+Δ-app {{Γ′}} t₁ t₂ = ≈-sym (ext-t (λ ρ′ → let ρ = ⟦ Γ′ ⟧ ρ′ in
   begin
+    ⟦ app (app (Δ {{Γ′}} t₁) (lift-term {{Γ′}} t₂)) (Δ {{Γ′}} t₂) ⟧ ρ′
+  ≡⟨⟩
     diff
       (⟦ t₁ ⟧ (update ρ)
        (apply
          (diff (⟦ t₂ ⟧ (update ρ)) (⟦ t₂ ⟧ (ignore ρ)))
-         (⟦ lift-term t₂ ⟧ ρ)))
-      (⟦ t₁ ⟧ (ignore ρ) (⟦ lift-term t₂ ⟧ ρ))
+         (⟦ lift-term {{Γ′}} t₂ ⟧ ρ′)))
+      (⟦ t₁ ⟧ (ignore ρ) (⟦ lift-term {{Γ′}} t₂ ⟧ ρ′))
   ≡⟨ ≡-cong
        (λ x →
           diff
           (⟦ t₁ ⟧ (update ρ)
            (apply (diff (⟦ t₂ ⟧ (update ρ)) (⟦ t₂ ⟧ (ignore ρ))) x))
           (⟦ t₁ ⟧ (ignore ρ) x))
-       (lift-term-ignore {ρ = ρ} t₂) ⟩
+       (lift-term-ignore {{Γ′}} t₂) ⟩
     diff
       (⟦ t₁ ⟧ (update ρ)
        (apply
@@ -240,13 +113,15 @@ lift-term-ignore = lift-term-ignore′ ∅
     diff
       (⟦ t₁ ⟧ (update ρ) (⟦ t₂ ⟧ (update ρ)))
       (⟦ t₁ ⟧ (ignore ρ) (⟦ t₂ ⟧ (ignore ρ)))
+  ≡⟨⟩
+     ⟦ Δ {{Γ′}} (app t₁ t₂) ⟧ ρ′
   ∎)) where open ≡-Reasoning
 
 -- SYMBOLIC DERIVATION
 
 derive-var : ∀ {Γ τ} → Var Γ τ → Var (Δ-Context Γ) (Δ-Type τ)
-derive-var this = this
-derive-var (that x) = that (that (derive-var x))
+derive-var {τ • Γ} this = this
+derive-var {τ • Γ} (that x) = that (that (derive-var x))
 
 _and_ : ∀ {Γ} → Term Γ bool → Term Γ bool → Term Γ bool
 a and b = if a b false
@@ -274,28 +149,22 @@ apply-term : ∀ {τ Γ} → Term Γ (Δ-Type τ) → Term Γ τ → Term Γ τ
 apply-term {τ ⇒ τ₁} = {!!}
 apply-term {bool} = _xor-term_
 
-derive-term : ∀ {Γ τ} → Term Γ τ → Term (Δ-Context Γ) (Δ-Type τ)
-derive-term (abs t) = abs (abs (derive-term t))
-derive-term (app t₁ t₂) = app (app (derive-term t₁) (lift-term t₂)) (derive-term t₂)
-derive-term (var x) = var (derive-var x)
-derive-term true = false
-derive-term false = false
-derive-term (if c t e) =
-  if ((derive-term c) and (lift-term c))
-    (diff-term (apply-term (derive-term e) (lift-term e)) (lift-term t))
-    (if ((derive-term c) and (lift-term (! c)))
-      (diff-term (apply-term (derive-term t) (lift-term t)) (lift-term e))
-      (if (lift-term c)
-        (derive-term t)
-        (derive-term e)))
-
-derive-term (Δ t) = Δ (derive-term t)
-derive-term (weakenOne Γ₁ τ₂ {Γ₃} t) =
-  substTerm (Δ-Context-⋎-expanded Γ₁ τ₂ Γ₃)
-    (weakenOne (Δ-Context Γ₁) (Δ-Type τ₂)
-      (weakenOne (Δ-Context Γ₁) τ₂
-        (substTerm (Δ-Context-⋎ Γ₁ Γ₃)
-          (derive-term t))))
+derive-term : ∀ {Γ₁ Γ₂ τ} → {{Γ′ : Δ-Context Γ₁ ≼ Γ₂}} → Term Γ₁ τ → Term Γ₂ (Δ-Type τ)
+derive-term {Γ₁} {{Γ′}} (abs {τ} t) = abs (abs (derive-term {τ • Γ₁} {{Γ″}} t))
+  where Γ″ = keep Δ-Type τ • keep τ • Γ′
+derive-term {{Γ′}} (app t₁ t₂) = app (app (derive-term {{Γ′}} t₁) (lift-term {{Γ′}} t₂)) (derive-term {{Γ′}} t₂)
+derive-term {{Γ′}} (var x) = var (lift Γ′ (derive-var x))
+derive-term {{Γ′}} true = false
+derive-term {{Γ′}} false = false
+derive-term {{Γ′}} (if c t e) =
+  if ((derive-term {{Γ′}} c) and (lift-term {{Γ′}} c))
+    (diff-term (apply-term (derive-term {{Γ′}} e) (lift-term {{Γ′}} e)) (lift-term {{Γ′}} t))
+    (if ((derive-term {{Γ′}} c) and (lift-term {{Γ′}} (! c)))
+      (diff-term (apply-term (derive-term {{Γ′}} t) (lift-term {{Γ′}} t)) (lift-term {{Γ′}} e))
+      (if (lift-term {{Γ′}} c)
+        (derive-term {{Γ′}} t)
+        (derive-term {{Γ′}} e)))
+derive-term {{Γ′}} (Δ {{Γ″}} t) = Δ {{Γ′}} (derive-term {{Γ″}} t)
 
 -- CORRECTNESS of derivation
 
@@ -305,31 +174,43 @@ derive-var-correct : ∀ {Γ τ} → (ρ : ⟦ Δ-Context Γ ⟧) → (x : Var �
 derive-var-correct (dv • v • ρ) this = diff-apply dv v
 derive-var-correct (dv • v • ρ) (that x) = derive-var-correct ρ x
 
-derive-term-correct : ∀ {Γ τ} → (t : Term Γ τ) →
-   Δ t ≈ derive-term t
-derive-term-correct {Γ} (abs t) =
+derive-term-correct : ∀ {Γ₁ Γ₂ τ} → {{Γ′ : Δ-Context Γ₁ ≼ Γ₂}} → (t : Term Γ₁ τ) →
+  Δ {{Γ′}} t ≈ derive-term {{Γ′}} t
+derive-term-correct {Γ₁} {{Γ′}} (abs {τ} t) =
   begin
-    Δ (abs t)
-  ≈⟨ Δ-abs t ⟩
-    abs (abs (Δ t))
-  ≈⟨ ≈-abs (≈-abs (derive-term-correct t)) ⟩
-    abs (abs (derive-term t))
-  ≈⟨ ≈-refl ⟩
-    derive-term (abs t)
-  ∎ where open ≈-Reasoning
-derive-term-correct (app t₁ t₂) =
+     Δ (abs t)
+  ≈⟨  Δ-abs t  ⟩
+     abs (abs (Δ {τ • Γ₁} t))
+  ≈⟨  ≈-abs (≈-abs (derive-term-correct {τ • Γ₁} t))  ⟩
+     abs (abs (derive-term {τ • Γ₁} t))
+  ≡⟨⟩
+     derive-term (abs t)
+  ∎ where
+      open ≈-Reasoning
+      Γ″ = keep Δ-Type τ • keep τ • Γ′
+derive-term-correct {Γ₁} {{Γ′}} (app t₁ t₂) =
   begin
     Δ (app t₁ t₂)
-  ≈⟨ Δ-app t₁ t₂ ⟩
-    app (app (Δ t₁) (lift-term t₂)) (Δ t₂)
-  ≈⟨ ≈-app (≈-app (derive-term-correct t₁) ≈-refl) (derive-term-correct t₂) ⟩
-    app (app (derive-term t₁) (lift-term t₂)) (derive-term t₂)
-  ≈⟨ ≈-refl ⟩
-    derive-term (app t₁ t₂)
+  ≈⟨  Δ-app t₁ t₂  ⟩
+     app (app (Δ {{Γ′}} t₁) (lift-term {{Γ′}} t₂)) (Δ {{Γ′}} t₂)
+  ≈⟨  ≈-app (≈-app (derive-term-correct {{Γ′}} t₁) ≈-refl) (derive-term-correct {{Γ′}} t₂)  ⟩
+     app (app (derive-term {{Γ′}} t₁) (lift-term {{Γ′}} t₂)) (derive-term {{Γ′}} t₂)
+  ≡⟨⟩
+    derive-term {{Γ′}} (app t₁ t₂)
   ∎ where open ≈-Reasoning
-derive-term-correct (var x) = ext-t (λ ρ → derive-var-correct ρ x)
+derive-term-correct {Γ₁} {{Γ′}} (var x) = ext-t (λ ρ →
+  begin
+    ⟦ Δ {{Γ′}} (var x) ⟧ ρ
+  ≡⟨⟩
+    diff
+      (⟦ x ⟧ (update (⟦ Γ′ ⟧ ρ)))
+      (⟦ x ⟧ (ignore (⟦ Γ′ ⟧ ρ)))
+  ≡⟨  derive-var-correct {Γ₁} (⟦ Γ′ ⟧ ρ) x  ⟩
+    ⟦ derive-var x ⟧Var (⟦ Γ′ ⟧ ρ)
+  ≡⟨ sym (lift-sound Γ′ (derive-var x) ρ) ⟩
+    ⟦ lift Γ′ (derive-var x) ⟧Var ρ
+  ∎) where open ≡-Reasoning
 derive-term-correct true = ext-t (λ ρ → ≡-refl)
 derive-term-correct false = ext-t (λ ρ → ≡-refl)
 derive-term-correct (if t₁ t₂ t₃) = {!!}
 derive-term-correct (Δ t) = ≈-Δ (derive-term-correct t)
-derive-term-correct (weakenOne _ _ t) = {!!}

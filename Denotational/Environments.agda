@@ -13,6 +13,8 @@ module Denotational.Environments
 -- of types, so it can be reused for different calculi
 -- and models.
 
+open import Relation.Binary.PropositionalEquality
+
 open import Syntactic.Contexts Type
 open import Denotational.Notation
 
@@ -52,6 +54,34 @@ meaningOfVar = meaning ⟦_⟧Var
 
 -- Remove a variable from an environment
 
-weakenEnv : ∀ Γ₁ τ₂ {Γ₃} → ⟦ Γ₁ ⋎ (τ₂ • Γ₃) ⟧ → ⟦ Γ₁ ⋎ Γ₃ ⟧
-weakenEnv ∅ τ₂ (v • ρ) = ρ
-weakenEnv (τ • Γ₁) τ₂ (v • ρ) = v • weakenEnv Γ₁ τ₂ ρ
+⟦_⟧≼ : ∀ {Γ₁ Γ₂} → (Γ′ : Γ₁ ≼ Γ₂) → ⟦ Γ₂ ⟧ → ⟦ Γ₁ ⟧
+⟦ ∅ ⟧≼ ∅ = ∅
+⟦ keep τ • Γ′ ⟧≼ (v • ρ) = v • ⟦ Γ′ ⟧≼ ρ
+⟦ drop τ • Γ′ ⟧≼ (v • ρ) = ⟦ Γ′ ⟧≼ ρ
+
+meaningOf≼ : ∀ {Γ₁ Γ₂} → Meaning (Γ₁ ≼ Γ₂)
+meaningOf≼ = meaning ⟦_⟧≼
+
+-- Properties
+
+⟦⟧-≼-trans : ∀ {Γ₃ Γ₁ Γ₂ : Context} → (Γ′ : Γ₁ ≼ Γ₂) (Γ″ : Γ₂ ≼ Γ₃) →
+  ∀ (ρ : ⟦ Γ₃ ⟧) → ⟦ ≼-trans Γ′ Γ″ ⟧ ρ ≡ ⟦ Γ′ ⟧ (⟦ Γ″ ⟧ ρ)
+⟦⟧-≼-trans Γ′ ∅ ∅ = refl
+⟦⟧-≼-trans (keep τ • Γ′) (keep .τ • Γ″) (v • ρ) = cong₂ _•_ refl (⟦⟧-≼-trans Γ′ Γ″ ρ)
+⟦⟧-≼-trans (drop τ • Γ′) (keep .τ • Γ″) (v • ρ) = ⟦⟧-≼-trans Γ′ Γ″ ρ
+⟦⟧-≼-trans Γ′ (drop τ • Γ″) (v • ρ) = ⟦⟧-≼-trans Γ′ Γ″ ρ
+
+⟦⟧-≼-refl : ∀ {Γ : Context} →
+  ∀ (ρ : ⟦ Γ ⟧) → ⟦ ≼-refl ⟧ ρ ≡ ρ
+⟦⟧-≼-refl {∅} ∅ = refl
+⟦⟧-≼-refl {τ • Γ} (v • ρ) = cong₂ _•_ refl (⟦⟧-≼-refl ρ)
+
+-- SOUNDNESS of variable lifting
+
+lift-sound : ∀ {Γ₁ Γ₂ τ} (Γ′ : Γ₁ ≼ Γ₂) (x : Var Γ₁ τ) →
+  ∀ (ρ : ⟦ Γ₂ ⟧) → ⟦ lift Γ′ x ⟧ ρ ≡ ⟦ x ⟧ (⟦ Γ′ ⟧ ρ)
+lift-sound ∅ () ρ
+lift-sound (keep τ • Γ′) this (v • ρ) = refl
+lift-sound (keep τ • Γ′) (that x) (v • ρ) = lift-sound Γ′ x ρ
+lift-sound (drop τ • Γ′) this (v • ρ) = lift-sound Γ′ this ρ
+lift-sound (drop τ • Γ′) (that x) (v • ρ) = lift-sound Γ′ (that x) ρ

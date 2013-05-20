@@ -3,7 +3,9 @@ module lambda where
 open import Relation.Binary.PropositionalEquality
 
 open import Syntactic.Types public
-open import Syntactic.Contexts Type public
+open import Syntactic.Contexts Type public hiding (lift)
+
+open Prefixes
 
 open import Denotational.Notation
 open import Denotational.Values public

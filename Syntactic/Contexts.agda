@@ -45,8 +45,7 @@ data Var : Context → Type → Set where
 --
 -- Useful for making lemmas strong enough to prove by induction.
 --
--- The contents of this module are currently exported at the end
--- of this file.
+-- Consider using the Subcontexts module instead.
 
 module Prefixes where
 
@@ -101,7 +100,11 @@ module Prefixes where
 
 -- SUBCONTEXTS
 --
--- Useful as a reified weakening operation.
+-- Useful as a reified weakening operation,
+-- and for making theorems strong enough to prove by induction.
+--
+-- The contents of this module are currently exported at the end
+-- of this file.
 
 module Subcontexts where
   infix 8 _≼_
@@ -162,7 +165,8 @@ module Subcontexts where
   lift (keep τ • ≼₁) (that x) = that (lift ≼₁ x)
   lift (drop τ • ≼₁) x = that (lift ≼₁ x)
 
--- Currently, we export context prefixes, but that might change
--- in the future
+-- Currently, we export the subcontext relation as well as the
+-- definition of _⋎_.
 
-open Prefixes public
+open Subcontexts public
+open Prefixes public using (_⋎_)
