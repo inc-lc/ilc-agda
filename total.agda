@@ -132,25 +132,32 @@ a and b = if a b false
 !_ : ∀ {Γ} → Term Γ bool → Term Γ bool
 ! x = if x false true
 
--- XXX: to finish this, we just need to call lift-term, like in
--- derive-term. Should be easy, just a bit boring.
-apply-pure-term : ∀ {τ Γ} → Term Γ (Δ-Type τ ⇒ τ ⇒ τ)
-apply-pure-term {bool} = abs {!!}
-apply-pure-term {τ₁ ⇒ τ₂} {Γ} = abs (abs (abs (app (app apply-pure-term (app (app (var (that (that this))) (var this)) ({!Δ {Γ} (var this)!}))) (app (var (that this)) (var this)))))
---abs (abs (abs (app (app apply-compose-term (app (var (that (that this))) (var this))) (app (var (that this)) (var this)))))
- -- λdf. λf.  λx.           apply (     df                       x       (Δx))  (     f                 x        )
-
 -- Term xor
 _xor-term_ : ∀ {Γ} → Term Γ bool → Term Γ bool → Term Γ bool
 a xor-term b = if a (! b) b
 
-diff-term : ∀ {τ Γ} → Term Γ τ → Term Γ τ → Term Γ (Δ-Type τ)
-diff-term {τ ⇒ τ₁} = λ f₁ f₂ → {!diff-term (f₁ x) (f₂ x)!}
-diff-term {bool} = _xor-term_
+-- XXX: to finish this, we just need to call lift-term, like in
+-- derive-term. Should be easy, just a bit boring.
+-- Other problem: in fact, Δ t is not the nil change of t, in this context. That's a problem.
+apply-pure-term : ∀ {τ Γ} → Term Γ (Δ-Type τ ⇒ τ ⇒ τ)
+apply-pure-term {bool} = abs (abs (var this xor-term var (that this)))
+apply-pure-term {τ₁ ⇒ τ₂} {Γ} = abs (abs (abs (app (app apply-pure-term (app (app (var (that (that this))) (var this)) ({!Δ {Γ} (var this)!}))) (app (var (that this)) (var this)))))
+--abs (abs (abs (app (app apply-compose-term (app (var (that (that this))) (var this))) (app (var (that this)) (var this)))))
+-- λdf. λf.  λx.           apply (     df                       x       (Δx))  (     f                 x        )
 
 apply-term : ∀ {τ Γ} → Term Γ (Δ-Type τ) → Term Γ τ → Term Γ τ
-apply-term {τ ⇒ τ₁} = {!!}
+apply-term {τ ⇒ τ₁} = λ df f → app (app apply-pure-term df) f
 apply-term {bool} = _xor-term_
+
+diff-term : ∀ {τ Γ} → Term Γ τ → Term Γ τ → Term Γ (Δ-Type τ)
+diff-term {τ ⇒ τ₁} =
+  λ f₁ f₂ →
+  --λx.  λdx. diff           (     f₁                   (apply      dx         x))                 (f₂                        x)
+    abs (abs (diff-term {τ₁} (app (weaken ≼-in-body f₁) (apply-term (var this) (var (that this)))) (app (weaken ≼-in-body f₂) (var (that this)))))
+  where
+    ≼-in-body = drop (Δ-Type τ) • (drop τ • ≼-refl)
+
+diff-term {bool} = _xor-term_
 
 derive-term : ∀ {Γ₁ Γ₂ τ} → {{Γ′ : Δ-Context Γ₁ ≼ Γ₂}} → Term Γ₁ τ → Term Γ₂ (Δ-Type τ)
 derive-term {Γ₁} {{Γ′}} (abs {τ} t) = abs (abs (derive-term {τ • Γ₁} {{Γ″}} t))
