@@ -50,7 +50,10 @@ data ValidΔ : {T : Type} → (v : ⟦ T ⟧) → (dv : ⟦ Δ-Type T ⟧) → S
 -- What I had to write:
 valid-Δ : {T : Type} → ⟦ T ⟧ → ⟦ Δ-Type T ⟧ → Set
 valid-Δ {bool} v dv = ⊤
-valid-Δ {S ⇒ T} f df = ∀ (s : ⟦ S ⟧) ds (valid-w : valid-Δ s ds) → (valid-Δ (f s) (df s ds)) × ((apply df f) (apply ds s) ≡ apply (df s ds) (f s))
+valid-Δ {S ⇒ T} f df =
+  ∀ (s : ⟦ S ⟧) ds (valid-w : valid-Δ s ds) →
+    valid-Δ (f s) (df s ds) ×
+    (apply df f) (apply ds s) ≡ apply (df s ds) (f s)
 
 -- LIFTING terms into Δ-Contexts
 
