@@ -56,6 +56,44 @@ valid-Δ {S ⇒ T} f df =
     valid-Δ (f s) (df s ds) ×
     (apply df f) (apply ds s) ≡ apply (df s ds) (f s)
 
+derive-is-valid : ∀ {τ} (v : ⟦ τ ⟧) → valid-Δ {τ} v (derive v)
+derive-is-valid {bool} v = tt
+derive-is-valid {τ₁ ⇒ τ₂} v =
+  λ s ds valid-Δ-s-ds → {!!} , (
+    begin
+      (apply (derive v) v) (apply ds s)
+    ≡⟨ ≡-cong (λ x → x (apply ds s)) (apply-derive v) ⟩
+      v (apply ds s)
+    ≡⟨ sym (apply-diff (v s) (v (apply ds s))) ⟩
+      apply (derive v s ds) (v s)
+    ∎) where open ≡-Reasoning
+
+-- This is a postulate elsewhere, but here I want to start developing a proper proof.
+
+diff-apply-proof : ∀ {τ} (dv : ⟦ Δ-Type τ ⟧) (v : ⟦ τ ⟧) →
+    (valid-Δ v dv) → diff (apply dv v) v ≡ dv
+
+diff-apply-proof {τ₁ ⇒ τ₂} df f df-valid = ext (λ v → ext (λ dv →
+  begin
+    diff (apply (df (apply dv v) (derive (apply dv v))) (f (apply dv v))) (f v)
+  ≡⟨ ≡-cong
+     (λ x → diff x (f v))
+       (sym (proj₂ (df-valid (apply dv v) (derive (apply dv v)) (derive-is-valid (apply dv v))))) ⟩
+    diff ((apply df f) (apply (derive (apply dv v)) (apply dv v))) (f v)
+  ≡⟨ ≡-cong
+     (λ x → diff (apply df f x) (f v))
+       (apply-derive (apply dv v)) ⟩
+    diff ((apply df f) (apply dv v)) (f v)
+  ≡⟨ ≡-cong
+     (λ x → diff x (f v))
+       (proj₂ (df-valid v dv {!!})) ⟩
+    diff (apply (df v dv) (f v)) (f v)
+  ≡⟨ diff-apply-proof {τ₂} (df v dv) (f v) (proj₁ (df-valid v dv {!!})) ⟩
+    df v dv
+  ∎)) where open ≡-Reasoning
+
+diff-apply-proof {bool} db b _ = xor-cancellative b db
+
 -- LIFTING terms into Δ-Contexts
 
 lift-term : ∀ {Γ₁ Γ₂ τ} {{Γ′ : Δ-Context Γ₁ ≼ Γ₂}} → Term Γ₁ τ → Term Γ₂ τ
