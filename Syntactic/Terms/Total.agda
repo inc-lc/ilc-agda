@@ -6,6 +6,11 @@ module Syntactic.Terms.Total where
 -- primitive (Δ e) for computing the total derivative according
 -- to all free variables in e and all future arguments of e if e
 -- is a function.
+--
+-- Note that this is *not* the same as the ∂ operator in
+-- definition/intro.tex. See discussion at:
+--
+--   https://github.com/ps-mr/ilc/pull/34#discussion_r4290325
 
 open import Syntactic.Types
 open import Syntactic.Contexts Type
