@@ -56,22 +56,27 @@ valid-Δ {S ⇒ T} f df =
     valid-Δ (f s) (df s ds) ×
     (apply df f) (apply ds s) ≡ apply (df s ds) (f s)
 
-
 diff-is-valid : ∀ {τ} (v′ v : ⟦ τ ⟧) → valid-Δ {τ} v (diff v′ v)
-diff-is-valid = {!!}
-
--- This proof could be finished using diff-is-valid:
-derive-is-valid : ∀ {τ} (v : ⟦ τ ⟧) → valid-Δ {τ} v (derive v)
-derive-is-valid {bool} v = tt
-derive-is-valid {τ₁ ⇒ τ₂} v =
-  λ s ds valid-Δ-s-ds → diff-is-valid (v (apply ds s)) (v s) , (
+diff-is-valid {bool} v′ v = tt
+diff-is-valid {τ ⇒ τ₁} v′ v =
+  λ s ds valid-Δ-s-ds →
+    diff-is-valid (v′ (apply ds s)) (v s) , (
     begin
-      (apply (derive v) v) (apply ds s)
-    ≡⟨ ≡-cong (λ x → x (apply ds s)) (apply-derive v) ⟩
-      v (apply ds s)
-    ≡⟨ sym (apply-diff (v s) (v (apply ds s))) ⟩
-      apply (derive v s ds) (v s)
+      apply (diff v′ v) v (apply ds s)
+    ≡⟨ refl ⟩
+      apply
+        (diff (v′ (apply (derive (apply ds s)) (apply ds s))) (v (apply ds s)))
+        (v (apply ds s))
+    ≡⟨ ≡-cong (λ x → apply (diff (v′ x) (v (apply ds s))) (v (apply ds s))) (apply-derive (apply ds s)) ⟩
+      apply (diff (v′ (apply ds s)) (v (apply ds s))) (v (apply ds s))
+    ≡⟨ apply-diff (v (apply ds s)) (v′ (apply ds s)) ⟩
+      v′ (apply ds s)
+    ≡⟨ sym (apply-diff (v s) (v′ (apply ds s))) ⟩
+      apply ((diff v′ v) s ds) (v s)
     ∎) where open ≡-Reasoning
+
+derive-is-valid : ∀ {τ} (v : ⟦ τ ⟧) → valid-Δ {τ} v (derive v)
+derive-is-valid v rewrite sym (diff-derive v) = diff-is-valid v v
 
 -- This is a postulate elsewhere, but here I want to start developing a proper proof.
 
