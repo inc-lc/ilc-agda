@@ -38,7 +38,12 @@ apply-term {bool} = _xor-term_
 
 diff-term {τ ⇒ τ₁} =
   λ f₁ f₂ →
+  -- The following can be written as:
+  -- * Using Unicode symbols for change operations:
+  -- λ x dx. (f1 (dx ⊝ x)) ⊝ (f2 x)
+  -- * In lambda calculus with names:
   --λx.  λdx. diff           (     f₁                   (apply      dx         x))                 (f₂                        x)
+  -- * As a deBrujin-encoded term in Agda:
     abs (abs (diff-term {τ₁} (app (weaken ≼-in-body f₁) (apply-term (var this) (var (that this)))) (app (weaken ≼-in-body f₂) (var (that this)))))
   where
     ≼-in-body = drop (Δ-Type τ) • (drop τ • ≼-refl)
