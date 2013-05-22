@@ -239,5 +239,15 @@ derive-term-correct {Γ₁} {{Γ′}} (var x) = ext-t (λ ρ →
   ∎) where open ≡-Reasoning
 derive-term-correct true = ext-t (λ ρ → ≡-refl)
 derive-term-correct false = ext-t (λ ρ → ≡-refl)
-derive-term-correct (if t₁ t₂ t₃) = {!!}
+derive-term-correct {{Γ′}} (if t₁ t₂ t₃) = ext-t (λ ρ →
+  begin
+    ⟦ Δ (if t₁ t₂ t₃) ⟧Term ρ
+  ≡⟨⟩
+     diff
+       (⟦ if t₁ t₂ t₃ ⟧Term (update (⟦ Γ′ ⟧ ρ)))
+       (⟦ if t₁ t₂ t₃ ⟧Term (ignore (⟦ Γ′ ⟧ ρ)))
+  ≡⟨ {!!} ⟩
+    ⟦ derive-term (if t₁ t₂ t₃) ⟧ ρ
+  ∎) where open ≡-Reasoning
+
 derive-term-correct (Δ t) = ≈-Δ (derive-term-correct t)
