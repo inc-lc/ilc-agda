@@ -14,6 +14,8 @@ open import Denotational.Evaluation.Total
 open import Denotational.Equivalence
 open import Denotational.ValidChanges
 
+open import Natural.Evaluation
+
 open import Changes
 open import ChangeContexts
 open import ChangeContextLifting

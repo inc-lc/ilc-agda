@@ -41,3 +41,5 @@ open import Natural.Evaluation
     (≡-cong₂ (λ x y → x y) (↓-sound ↓₁) (↓-sound ↓₂))
     (↓-sound ↓′)
 ↓-sound (var ↦) = ↦-sound ↦
+↓-sound e-true = ≡-refl 
+↓-sound e-false = ≡-refl 

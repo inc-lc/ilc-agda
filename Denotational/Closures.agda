@@ -16,6 +16,8 @@ open import Denotational.Evaluation.Total
 ⟦ v • ρ ⟧Env = ⟦ v ⟧Val • ⟦ ρ ⟧Env
 
 ⟦ ⟨abs t , ρ ⟩ ⟧Val = λ v → ⟦ t ⟧ (v • ⟦ ρ ⟧Env)
+⟦ vtrue ⟧Val = true
+⟦ vfalse ⟧Val = false
 
 meaningOfEnv : ∀ {Γ} → Meaning (Env Γ)
 meaningOfEnv = meaning ⟦_⟧Env

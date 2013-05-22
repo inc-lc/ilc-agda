@@ -25,3 +25,7 @@ data _⊢_↓_ : ∀ {Γ τ} → Env Γ → Term Γ τ → Val τ → Set where
   var : ∀ {Γ τ x} {ρ : Env Γ} {v : Val τ}→
     ρ ⊢ x ↦ v →
     ρ ⊢ var x ↓ v
+  e-true : ∀ {Γ} {ρ : Env Γ} →
+    ρ ⊢ true ↓ vtrue
+  e-false : ∀ {Γ} {ρ : Env Γ} →
+    ρ ⊢ false ↓ vfalse
