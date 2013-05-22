@@ -3,8 +3,14 @@ module derivation where
 open import lambda
 
 -- KO: Is it correct that this file is supposed to contain the syntactic 
+<<<<<<< HEAD
 -- variants of the operations in Syntactic.Changes.agda?
 -- If so, why does it have a different (and rather strange) Δ-Type definition?
+=======
+-- variants of the operations in Changes.agda? What is its relation to
+-- the definitions in Syntactic.Changes?
+-- Why does it have a different (and rather strange) Δ-Type definition?
+>>>>>>> clarified question
 -- Why are the base cases (bool) all missing? The inductive cases look
 -- boring since they don't actually do anything (which explains why compose and apply are the same)
 
