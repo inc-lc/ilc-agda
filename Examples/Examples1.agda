@@ -43,3 +43,16 @@ test1 = refl
 open import Natural.Lookup
 test2 : ∅ ⊢ term1 ↓ vtrue
 test2 = app abs e-true (var this)
+
+term2 : Term (bool • bool • bool • ∅) bool
+term2 = if (var this) (if (var (that this)) false true) (if (var (that (that this))) false true)
+
+term3 : Term ∅ (bool ⇒ bool ⇒ bool ⇒ bool)
+term3 = abs (abs (abs term2))
+
+open import SymbolicDerivation
+-- presumably there is some shorter way to do this?
+-- I don't understand instance arguments sufficiently
+term4 = derive-term {∅} {∅} {bool ⇒ bool ⇒ bool ⇒ bool} {{∅ }} term3
+
+-- it turns out that term4 is already way too complicated to be analyzed by hand
