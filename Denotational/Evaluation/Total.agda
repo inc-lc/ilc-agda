@@ -30,9 +30,7 @@ open import ChangeContexts
 ⟦ var x ⟧Term ρ = ⟦ x ⟧ ρ
 ⟦ true ⟧Term ρ = true
 ⟦ false ⟧Term ρ = false
-⟦ if t₁ t₂ t₃ ⟧Term ρ with ⟦ t₁ ⟧Term ρ
-... | true = ⟦ t₂ ⟧Term ρ
-... | false = ⟦ t₃ ⟧Term ρ
+⟦ if t₁ t₂ t₃ ⟧Term ρ = if ⟦ t₁ ⟧Term ρ then ⟦ t₂ ⟧Term ρ else ⟦ t₃ ⟧Term ρ
 ⟦ Δ {{Γ′}} t ⟧Term ρ = diff (⟦ t ⟧Term (update (⟦ Γ′ ⟧ ρ))) (⟦ t ⟧Term (ignore (⟦ Γ′ ⟧ ρ)))
 
 meaningOfTerm : ∀ {Γ τ} → Meaning (Term Γ τ)
