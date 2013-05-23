@@ -44,8 +44,8 @@ open import Natural.Evaluation
 ↓-sound e-true = ≡-refl 
 ↓-sound e-false = ≡-refl 
 ↓-sound (if-true {ρ = ρ} {c = c} ↓₁ ↓₂) with ⟦ c ⟧ ⟦ ρ ⟧ | ↓-sound ↓₁
-↓-sound (if-true ↓₁ ↓₂) | true | refl = ≡-trans refl (↓-sound ↓₂)
+↓-sound (if-true ↓₁ ↓₂) | true | refl = ↓-sound ↓₂
 ↓-sound (if-true ↓₁ ↓₂) | false | ()
 ↓-sound (if-false {ρ = ρ} {c = c} ↓₁ ↓₂) with ⟦ c ⟧ ⟦ ρ ⟧ | ↓-sound ↓₁
-↓-sound (if-false ↓₁ ↓₂) | false | refl = ≡-trans refl (↓-sound ↓₂)
+↓-sound (if-false ↓₁ ↓₂) | false | refl = ↓-sound ↓₂
 ↓-sound (if-false ↓₁ ↓₂) | true | ()
