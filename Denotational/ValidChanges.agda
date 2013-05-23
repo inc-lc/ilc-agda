@@ -2,6 +2,7 @@ module Denotational.ValidChanges where
 
 open import Data.Product
 open import Data.Unit
+open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
 
 open import Syntactic.Types
@@ -32,6 +33,10 @@ Valid-Δ {S ⇒ T} f df =
   ∀ (s : ⟦ S ⟧) ds {- (valid-w : Valid-Δ s ds) -} →
     Valid-Δ (f s) (df s ds) ×
     (apply df f) (apply ds s) ≡ apply (df s ds) (f s)
+
+invalid-changes-exist : ¬ (∀ {τ} v dv → Valid-Δ {τ} v dv)
+invalid-changes-exist k with k (λ x → x) (λ x dx → false) false true
+... | _ , ()
 
 diff-is-valid : ∀ {τ} (v′ v : ⟦ τ ⟧) → Valid-Δ {τ} v (diff v′ v)
 diff-is-valid {bool} v′ v = tt
