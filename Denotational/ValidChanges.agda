@@ -25,14 +25,14 @@ data ValidΔ : {T : Type} → (v : ⟦ T ⟧) → (dv : ⟦ Δ-Type T ⟧) → S
 -}
 -- What I had to write:
 -- Note: now I could go back to using a datatype, since the datatype is now strictly positive.
-valid-Δ : {τ : Type} → ⟦ τ ⟧ → ⟦ Δ-Type τ ⟧ → Set
-valid-Δ {bool} v dv = ⊤
-valid-Δ {S ⇒ T} f df =
-  ∀ (s : ⟦ S ⟧) ds {- (valid-w : valid-Δ s ds) -} →
-    valid-Δ (f s) (df s ds) ×
+Valid-Δ : {τ : Type} → ⟦ τ ⟧ → ⟦ Δ-Type τ ⟧ → Set
+Valid-Δ {bool} v dv = ⊤
+Valid-Δ {S ⇒ T} f df =
+  ∀ (s : ⟦ S ⟧) ds {- (valid-w : Valid-Δ s ds) -} →
+    Valid-Δ (f s) (df s ds) ×
     (apply df f) (apply ds s) ≡ apply (df s ds) (f s)
 
-diff-is-valid : ∀ {τ} (v′ v : ⟦ τ ⟧) → valid-Δ {τ} v (diff v′ v)
+diff-is-valid : ∀ {τ} (v′ v : ⟦ τ ⟧) → Valid-Δ {τ} v (diff v′ v)
 diff-is-valid {bool} v′ v = tt
 diff-is-valid {τ ⇒ τ₁} v′ v =
   λ s ds →
@@ -51,13 +51,13 @@ diff-is-valid {τ ⇒ τ₁} v′ v =
       apply ((diff v′ v) s ds) (v s)
     ∎) where open ≡-Reasoning
 
-derive-is-valid : ∀ {τ} (v : ⟦ τ ⟧) → valid-Δ {τ} v (derive v)
+derive-is-valid : ∀ {τ} (v : ⟦ τ ⟧) → Valid-Δ {τ} v (derive v)
 derive-is-valid v rewrite sym (diff-derive v) = diff-is-valid v v
 
 -- This is a postulate elsewhere, but here I provide a proper proof.
 
 diff-apply-proof : ∀ {τ} (dv : ⟦ Δ-Type τ ⟧) (v : ⟦ τ ⟧) →
-    (valid-Δ v dv) → diff (apply dv v) v ≡ dv
+    (Valid-Δ v dv) → diff (apply dv v) v ≡ dv
 
 diff-apply-proof {τ₁ ⇒ τ₂} df f df-valid = ext (λ v → ext (λ dv →
   begin
