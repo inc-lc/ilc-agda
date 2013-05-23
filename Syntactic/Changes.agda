@@ -28,9 +28,12 @@ diff-term : ∀ {τ Γ} → Term Γ τ → Term Γ τ → Term Γ (Δ-Type τ)
 -- Other problem: in fact, Δ t is not the nil change of t, in this context. That's a problem.
 apply-pure-term : ∀ {τ Γ} → Term Γ (Δ-Type τ ⇒ τ ⇒ τ)
 apply-pure-term {bool} = abs (abs (var this xor-term var (that this)))
-apply-pure-term {τ₁ ⇒ τ₂} {Γ} = abs (abs (abs (app (app apply-pure-term (app (app (var (that (that this))) (var this)) (diff-term (var this) (var this)))) (app (var (that this)) (var this)))))
+
+apply-pure-term {τ₁ ⇒ τ₂} {Γ} =
+-- λdf. λf.  λx.            apply          (          df                       x          (x ⊖ x))                             (     f                x        )
+   abs (abs (abs (app (app apply-pure-term (app (app (var (that (that this))) (var this)) (diff-term (var this) (var this)))) (app (var (that this)) (var this)))))
 --abs (abs (abs (app (app apply-compose-term (app (var (that (that this))) (var this))) (app (var (that this)) (var this)))))
--- λdf. λf.  λx.           apply (     df                       x       (Δx))  (     f                 x        )
+
 
 apply-term : ∀ {τ Γ} → Term Γ (Δ-Type τ) → Term Γ τ → Term Γ τ
 apply-term {τ ⇒ τ₁} = λ df f → app (app apply-pure-term df) f
@@ -40,7 +43,7 @@ diff-term {τ ⇒ τ₁} =
   λ f₁ f₂ →
   -- The following can be written as:
   -- * Using Unicode symbols for change operations:
-  -- λ x dx. (f1 (dx ⊝ x)) ⊝ (f2 x)
+  -- λ x dx. (f1 (dx ⊕ x)) ⊝ (f2 x)
   -- * In lambda calculus with names:
   --λx.  λdx. diff           (     f₁                   (apply      dx         x))                 (f₂                        x)
   -- * As a deBrujin-encoded term in Agda:

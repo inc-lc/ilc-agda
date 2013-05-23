@@ -64,7 +64,7 @@ meaningOf≼ = meaning ⟦_⟧≼
 
 -- Properties
 
-⟦⟧-≼-trans : ∀ {Γ₃ Γ₁ Γ₂ : Context} → (Γ′ : Γ₁ ≼ Γ₂) (Γ″ : Γ₂ ≼ Γ₃) →
+⟦⟧-≼-trans : ∀ {Γ₃ Γ₁ Γ₂} → (Γ′ : Γ₁ ≼ Γ₂) (Γ″ : Γ₂ ≼ Γ₃) →
   ∀ (ρ : ⟦ Γ₃ ⟧) → ⟦ ≼-trans Γ′ Γ″ ⟧ ρ ≡ ⟦ Γ′ ⟧ (⟦ Γ″ ⟧ ρ)
 ⟦⟧-≼-trans Γ′ ∅ ∅ = refl
 ⟦⟧-≼-trans (keep τ • Γ′) (keep .τ • Γ″) (v • ρ) = cong₂ _•_ refl (⟦⟧-≼-trans Γ′ Γ″ ρ)
