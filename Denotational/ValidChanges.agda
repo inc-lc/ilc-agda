@@ -17,12 +17,13 @@ open import Changes
 {-
 What I wanted to write:
 
-data ValidΔ : {T : Type} → (v : ⟦ T ⟧) → (dv : ⟦ Δ-Type T ⟧) → Set where
+data Valid-Δ : {T : Type} → (v : ⟦ T ⟧) → (dv : ⟦ Δ-Type T ⟧) → Set where
   base : (v : ⟦ bool ⟧) → (dv : ⟦ Δ-Type bool ⟧) → ValidΔ v dv
   fun : ∀ {S T} → (f : ⟦ S ⇒ T ⟧) → (df : ⟦ Δ-Type (S ⇒ T) ⟧) →
-    (∀ (s : ⟦ S ⟧) ds (valid : ValidΔ s ds) → (ValidΔ (f s) (df s ds)) × ((apply df f) (apply ds s) ≡ apply (df s ds) (f s))) → 
+    (∀ (s : ⟦ S ⟧) ds → (ValidΔ (f s) (df s ds)) × ((apply df f) (apply ds s) ≡ apply (df s ds) (f s))) → 
     ValidΔ f df
 -}
+
 -- What I had to write:
 -- Note: now I could go back to using a datatype, since the datatype is now strictly positive.
 Valid-Δ : {τ : Type} → ⟦ τ ⟧ → ⟦ Δ-Type τ ⟧ → Set
