@@ -92,6 +92,11 @@ xor-cancellative a b rewrite xor-associative a b a = xor-cancellative-2 a b
   v₁ ≡ v₂ → v₃ ≡ v₄ → v₁ v₃ ≡ v₂ v₄
 ≡-app = ≡-cong₂ (λ x y → x y)
 
+≡-if_then_else_ : ∀ {τ} {v₁ v₂ : ⟦ bool ⟧} {v₃ v₄ v₅ v₆ : ⟦ τ ⟧} →
+  v₁ ≡ v₂ → v₃ ≡ v₄ → v₅ ≡ v₆ →
+  (if v₁ then v₃ else v₅) ≡ (if v₂ then v₄ else v₆)
+≡-if refl then refl else refl = refl
+
 ≡-isEquivalence : ∀ {τ : Set} → IsEquivalence (_≡_ {A = τ})
 ≡-isEquivalence = isEquivalence
 

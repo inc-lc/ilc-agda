@@ -50,3 +50,18 @@ diff-term {τ ⇒ τ₁} =
 
 diff-term {bool} = _xor-term_
 
+-- Derived CONGRUENCE RULES
+module _ where
+  open import Denotational.Equivalence
+
+  _≈-and_ : ∀ {Γ} {t₁ t₂ t₃ t₄ : Term Γ bool} →
+    t₁ ≈ t₂ → t₃ ≈ t₄ → (t₁ and t₃) ≈ (t₂ and t₄)
+  _≈-and_ ≈₁ ≈₂ = ≈-if ≈₁ ≈₂ ≈-false
+
+  ≈-!_ : ∀ {Γ} {t₁ t₂ : Term Γ bool} →
+    t₁ ≈ t₂ → ! t₁ ≈ ! t₂
+  ≈-!_ ≈₁ = ≈-if ≈₁ ≈-false ≈-true
+
+  _≈-xor-term_ : ∀ {Γ} {t₁ t₂ t₃ t₄ : Term Γ bool} →
+    t₁ ≈ t₂ → t₃ ≈ t₄ → (t₁ xor-term t₃) ≈ (t₂ xor-term t₄)
+  _≈-xor-term_ ≈₁ ≈₂ = ≈-if ≈₁ (≈-! ≈₂) ≈₂

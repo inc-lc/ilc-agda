@@ -94,6 +94,16 @@ open MakeEquivalence Type ⟦_⟧ Term ⟦_⟧ public
   t₁ ≈ t₂ → Δ {{Γ′}} t₁ ≈ Δ {{Γ′}} t₂
 ≈-Δ {{Γ′}} (ext-t ≈) = ext-t (λ ρ → ≡-diff (≈ (update (⟦ Γ′ ⟧ ρ))) (≈ (ignore (⟦ Γ′ ⟧ ρ))))
 
+≈-true : ∀ {Γ} → _≈_ {Γ} true true
+≈-true = ≈-refl
+
+≈-false : ∀ {Γ} → _≈_ {Γ} false false
+≈-false = ≈-refl
+
+≈-if : ∀ {τ Γ} {t₁ t₂ : Term Γ bool} {t₃ t₄ t₅ t₆ : Term Γ τ} →
+  t₁ ≈ t₂ → t₃ ≈ t₄ → t₅ ≈ t₆ → if t₁ t₃ t₅ ≈ if t₂ t₄ t₆
+≈-if (ext-t ≈₁) (ext-t ≈₂) (ext-t ≈₃) = ext-t (λ ρ → ≡-if ≈₁ ρ then ≈₂ ρ else ≈₃ ρ)
+
 -- Consistency
 
 ≈-consistent : ¬ (∀ {Γ τ} (t₁ t₂ : Term Γ τ) → t₁ ≈ t₂)
