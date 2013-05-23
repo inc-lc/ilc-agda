@@ -7,6 +7,8 @@ module Denotational.Values where
 --
 -- In fact, we only describe a single model here.
 
+open import Data.Bool public
+
 import Relation.Binary as B
 
 open import Relation.Binary using
@@ -20,17 +22,6 @@ open import Denotational.Notation
 open import Syntactic.Types
 
 -- Denotational Semantics
-
-data Bool : Set where
-  true false : Bool
-
-not : Bool → Bool
-not true = false
-not false = true
-
-_xor_ : Bool → Bool → Bool
-true xor b = not b
-false xor b = b
 
 ⟦_⟧Type : Type -> Set
 ⟦ τ₁ ⇒ τ₂ ⟧Type = ⟦ τ₁ ⟧Type → ⟦ τ₂ ⟧Type
