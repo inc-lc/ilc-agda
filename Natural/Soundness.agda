@@ -43,3 +43,5 @@ open import Natural.Evaluation
 ↓-sound (var ↦) = ↦-sound ↦
 ↓-sound e-true = ≡-refl 
 ↓-sound e-false = ≡-refl 
+↓-sound (if-true ↓₁ ↓₂) ≡-trans {!!} (↓-sound ↓₂)
+↓-sound (if-false ↓₁ ↓₂) = {!!}

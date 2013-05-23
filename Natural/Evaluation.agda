@@ -29,3 +29,11 @@ data _⊢_↓_ : ∀ {Γ τ} → Env Γ → Term Γ τ → Val τ → Set where
     ρ ⊢ true ↓ vtrue
   e-false : ∀ {Γ} {ρ : Env Γ} →
     ρ ⊢ false ↓ vfalse
+  if-true : ∀ {Γ τ ρ v} {c : Term Γ bool} {t : Term Γ τ} {e : Term Γ τ} →
+    ρ ⊢ c ↓ vtrue →
+    ρ ⊢ t ↓ v → 
+    ρ ⊢ if c t e ↓ v
+  if-false : ∀ {Γ τ ρ v} {c : Term Γ bool} {t : Term Γ τ} {e : Term Γ τ} →
+    ρ ⊢ c ↓ vfalse →
+    ρ ⊢ e ↓ v → 
+    ρ ⊢ if c t e ↓ v
