@@ -43,5 +43,9 @@ open import Natural.Evaluation
 ↓-sound (var ↦) = ↦-sound ↦
 ↓-sound e-true = ≡-refl 
 ↓-sound e-false = ≡-refl 
-↓-sound (if-true ↓₁ ↓₂) ≡-trans {!!} (↓-sound ↓₂)
+-- Agda does not recognize automagically that
+-- ⟦if c t e⟧ ≡ ⟦t⟧, which I would need to finish 
+-- the proof. Maybe I need some "with" magic in
+-- the pattern match here? Help!
+↓-sound (if-true ↓₁ ↓₂) = ≡-trans {!!} (↓-sound ↓₂)
 ↓-sound (if-false ↓₁ ↓₂) = {!!}
