@@ -104,6 +104,19 @@ open MakeEquivalence Type ⟦_⟧ Term ⟦_⟧ public
   t₁ ≈ t₂ → t₃ ≈ t₄ → t₅ ≈ t₆ → if t₁ t₃ t₅ ≈ if t₂ t₄ t₆
 ≈-if (ext-t ≈₁) (ext-t ≈₂) (ext-t ≈₃) = ext-t (λ ρ → ≡-if ≈₁ ρ then ≈₂ ρ else ≈₃ ρ)
 
+≈-weaken : ∀ {τ Γ₁ Γ₂} (Γ′ : Γ₁ ≼ Γ₂) {t₁ t₂ : Term Γ₁ τ} →
+  t₁ ≈ t₂ → weaken Γ′ t₁ ≈ weaken Γ′ t₂
+≈-weaken Γ′ {t₁} {t₂} (ext-t ≈₁) = ext-t (λ ρ →
+  begin
+    ⟦ weaken Γ′ t₁ ⟧ ρ
+  ≡⟨ weaken-sound t₁ ρ ⟩
+    ⟦ t₁ ⟧Term (⟦ Γ′ ⟧≼ ρ)
+  ≡⟨ ≈₁ (⟦ Γ′ ⟧≼ ρ) ⟩
+    ⟦ t₂ ⟧Term (⟦ Γ′ ⟧≼ ρ)
+  ≡⟨ ≡-sym (weaken-sound t₂ ρ) ⟩
+    ⟦ weaken Γ′ t₂ ⟧ ρ
+  ∎) where open ≡-Reasoning
+
 -- Consistency
 
 ≈-consistent : ¬ (∀ {Γ τ} (t₁ t₂ : Term Γ τ) → t₁ ≈ t₂)
