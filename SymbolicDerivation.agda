@@ -36,10 +36,14 @@ derive-term {{Γ′}} true = false
 derive-term {{Γ′}} false = false
 derive-term {{Γ′}} (if c t e) =
   if ((derive-term {{Γ′}} c) and (lift-term {{Γ′}} c))
-    (diff-term (apply-term (derive-term {{Γ′}} e) (lift-term {{Γ′}} e)) (lift-term {{Γ′}} t))
-    (if ((derive-term {{Γ′}} c) and (lift-term {{Γ′}} (! c)))
-      (diff-term (apply-term (derive-term {{Γ′}} t) (lift-term {{Γ′}} t)) (lift-term {{Γ′}} e))
-      (if (lift-term {{Γ′}} c)
-        (derive-term {{Γ′}} t)
-        (derive-term {{Γ′}} e)))
+     (diff-term
+       (apply-term (derive-term {{Γ′}} e) (lift-term {{Γ′}} e))
+       (lift-term {{Γ′}} t))
+     (if ((derive-term {{Γ′}} c) and (lift-term {{Γ′}} (! c)))
+       (diff-term
+         (apply-term (derive-term {{Γ′}} t) (lift-term {{Γ′}} t))
+         (lift-term {{Γ′}} e))
+       (if (lift-term {{Γ′}} c)
+         (derive-term {{Γ′}} t)
+         (derive-term {{Γ′}} e)))
 derive-term {{Γ′}} (Δ {{Γ″}} t) = Δ {{Γ′}} (derive-term {{Γ″}} t)
