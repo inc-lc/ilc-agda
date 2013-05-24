@@ -117,6 +117,34 @@ open MakeEquivalence Type ⟦_⟧ Term ⟦_⟧ public
     ⟦ weaken Γ′ t₂ ⟧ ρ
   ∎) where open ≡-Reasoning
 
+-- Computation Rules
+
+≈-if-true : ∀ {τ Γ} {t₁ : Term Γ bool} {t₂ t₃ : Term Γ τ} →
+  t₁ ≈ true → if t₁ t₂ t₃ ≈ t₂
+≈-if-true {_} {_} {t₁} {t₂} {t₃} (ext-t ≈₁) = ext-t (λ ρ →
+  begin
+    ⟦ if t₁ t₂ t₃ ⟧ ρ
+  ≡⟨⟩
+    ( if ⟦ t₁ ⟧ ρ then ⟦ t₂ ⟧ ρ else ⟦ t₃ ⟧ ρ )
+  ≡⟨ ≡-if ≈₁ ρ then ≡-refl else ≡-refl ⟩
+    ( if true then ⟦ t₂ ⟧ ρ else ⟦ t₃ ⟧ ρ )
+  ≡⟨⟩
+    ⟦ t₂ ⟧ ρ
+  ∎) where open ≡-Reasoning
+
+≈-if-false : ∀ {τ Γ} {t₁ : Term Γ bool} {t₂ t₃ : Term Γ τ} →
+  t₁ ≈ false → if t₁ t₂ t₃ ≈ t₃
+≈-if-false {_} {_} {t₁} {t₂} {t₃} (ext-t ≈₁) = ext-t (λ ρ →
+  begin
+    ⟦ if t₁ t₂ t₃ ⟧ ρ
+  ≡⟨⟩
+    ( if ⟦ t₁ ⟧ ρ then ⟦ t₂ ⟧ ρ else ⟦ t₃ ⟧ ρ )
+  ≡⟨ ≡-if ≈₁ ρ then ≡-refl else ≡-refl ⟩
+    ( if false then ⟦ t₂ ⟧ ρ else ⟦ t₃ ⟧ ρ )
+  ≡⟨⟩
+    ⟦ t₃ ⟧ ρ
+  ∎) where open ≡-Reasoning
+
 -- Consistency
 
 ≈-consistent : ¬ (∀ {Γ τ} (t₁ t₂ : Term Γ τ) → t₁ ≈ t₂)
