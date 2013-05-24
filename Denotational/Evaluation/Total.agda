@@ -33,6 +33,51 @@ open import ChangeContexts
 ⟦ if t₁ t₂ t₃ ⟧Term ρ = if ⟦ t₁ ⟧Term ρ then ⟦ t₂ ⟧Term ρ else ⟦ t₃ ⟧Term ρ
 ⟦ Δ {{Γ′}} t ⟧Term ρ = diff (⟦ t ⟧Term (update (⟦ Γ′ ⟧ ρ))) (⟦ t ⟧Term (ignore (⟦ Γ′ ⟧ ρ)))
 
+{-
+
+Here is an example to understand the semantics of Δ. I will use a
+named variable representation for the task.
+
+Consider the typing judgment:
+
+   x: T |- x: T
+
+Thus, we have that:
+
+   dx : Δ T, x: T |- Δ x : Δ T
+
+Thanks to weakening, we also have:
+
+   y : S, dx : Δ T, x: T |- Δ x : Δ T
+
+In the formalization, we need a proof Γ′ that the context Γ₁ = dx : Δ
+T, x: T is a subcontext of Γ₂ = y : S, dx : Δ T, x: T. Thus, Γ′ has
+type Γ₁ ≼ Γ₂.
+
+Now take the environment:
+
+   ρ = y ↦ w, dx ↦ dv, x ↦ v
+
+Since the semantics of Γ′ : Γ₁ ≼ Γ₂ is a function from environments
+for Γ₂ to environments for Γ₁, we have that:
+
+   ⟦ Γ′ ⟧ ρ = dx ↦ dv, x ↦ v
+
+From the definitions of update and ignore, it follows that:
+
+   update (⟦ Γ′ ⟧ ρ) =  x ↦ dv ⊕ v
+   ignore (⟦ Γ′ ⟧ ρ) =  x ↦ v
+
+Hence, finally, we have that:
+
+   diff (⟦ t ⟧Term (update (⟦ Γ′ ⟧ ρ))) (⟦ t ⟧Term (ignore (⟦ Γ′ ⟧ ρ)))
+
+is simply diff (dv ⊕ v) v (or (dv ⊕ v) ⊝ v). If dv is a valid change,
+that's just dv, that is ⟦ dx ⟧ ρ. In other words
+
+-}
+
+
 meaningOfTerm : ∀ {Γ τ} → Meaning (Term Γ τ)
 meaningOfTerm = meaning ⟦_⟧Term
 
