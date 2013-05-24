@@ -73,7 +73,10 @@ Hence, finally, we have that:
    diff (⟦ t ⟧Term (update (⟦ Γ′ ⟧ ρ))) (⟦ t ⟧Term (ignore (⟦ Γ′ ⟧ ρ)))
 
 is simply diff (dv ⊕ v) v (or (dv ⊕ v) ⊝ v). If dv is a valid change,
-that's just dv, that is ⟦ dx ⟧ ρ. In other words
+that's just dv, that is ⟦ dx ⟧ ρ. In other words, if dv is a valid
+change then ⟦ Δ {{Γ′}} x ⟧ ρ ≡ ⟦ dx ⟧ ρ ≡ ⟦ derive-term x ⟧ ρ. This
+fact, generalized for arbitrary terms, is proven formally by
+derive-term-correct.
 
 -}
 
