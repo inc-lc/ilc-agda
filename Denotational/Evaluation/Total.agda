@@ -99,3 +99,38 @@ weaken-sound (if t₁ t₂ t₃) {Γ′} ρ | refl | true | true = weaken-sound 
 weaken-sound (if t₁ t₂ t₃) {Γ′} ρ | refl | false | false = weaken-sound t₃ {Γ′} ρ
 weaken-sound (Δ {{Γ′}} t) {Γ″} ρ =
   cong (λ x → diff (⟦ t ⟧ (update x)) (⟦ t ⟧ (ignore x))) (⟦⟧-≼-trans Γ′ Γ″ ρ)
+
+-- Simplification rules for weakening
+
+≡-weaken⁰ : ∀ {Γ τ} (t : Term Γ τ) →
+  ∀ (ρ : ⟦ Γ ⟧) → ⟦ weaken⁰ t ⟧ ρ ≡ ⟦ t ⟧ ρ
+≡-weaken⁰ t ρ =
+  begin
+    ⟦ weaken⁰ t ⟧ ρ
+  ≡⟨ weaken-sound t ρ ⟩
+    ⟦ t ⟧ (⟦ ≼-refl ⟧ ρ)
+  ≡⟨ cong ⟦ t ⟧ (⟦⟧-≼-refl ρ) ⟩
+    ⟦ t ⟧ ρ
+  ∎ where open ≡-Reasoning
+
+≡-weaken¹ : ∀ {Γ τ} {τ₁ : Type} (t : Term Γ τ) →
+  ∀ (v₁ : ⟦ τ₁ ⟧) (ρ : ⟦ Γ ⟧) → ⟦ weaken¹ t ⟧ (v₁ • ρ) ≡ ⟦ t ⟧ ρ
+≡-weaken¹ t v₁ ρ =
+  begin
+    ⟦ weaken¹ t ⟧ (v₁ • ρ)
+  ≡⟨ weaken-sound t (v₁ • ρ) ⟩
+    ⟦ t ⟧ (⟦ ≼-refl ⟧ ρ)
+  ≡⟨ cong ⟦ t ⟧ (⟦⟧-≼-refl ρ) ⟩
+    ⟦ t ⟧ ρ
+  ∎ where open ≡-Reasoning
+
+≡-weaken² : ∀ {Γ τ} {τ₁ τ₂ : Type} (t : Term Γ τ) →
+  ∀ (v₁ : ⟦ τ₁ ⟧) (v₂ : ⟦ τ₂ ⟧) (ρ : ⟦ Γ ⟧) → ⟦ weaken² t ⟧ (v₁ • v₂ • ρ) ≡ ⟦ t ⟧ ρ
+≡-weaken² t v₁ v₂ ρ =
+  begin
+    ⟦ weaken² t ⟧ (v₁ • v₂ • ρ)
+  ≡⟨ weaken-sound t (v₁ • v₂ • ρ) ⟩
+    ⟦ t ⟧ (⟦ ≼-refl ⟧ ρ)
+  ≡⟨ cong ⟦ t ⟧ (⟦⟧-≼-refl ρ) ⟩
+    ⟦ t ⟧ ρ
+  ∎ where open ≡-Reasoning

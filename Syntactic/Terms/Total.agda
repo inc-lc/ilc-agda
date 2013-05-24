@@ -47,3 +47,14 @@ weaken Γ′ true = true
 weaken Γ′ false = false
 weaken Γ′ (if t₁ t₂ t₃) = if (weaken Γ′ t₁) (weaken Γ′ t₂) (weaken Γ′ t₃)
 weaken Γ′ (Δ {{Γ″}} t) = Δ {{≼-trans Γ″ Γ′}} t
+
+-- Specialized versions of weakening
+
+weaken⁰ : ∀ {Γ τ} → Term Γ τ → Term Γ τ
+weaken⁰ t = weaken ≼-refl t
+
+weaken¹ : ∀ {τ₁ Γ τ} → Term Γ τ → Term (τ₁ • Γ) τ
+weaken¹ t = weaken (drop _ • ≼-refl) t
+
+weaken² : ∀ {τ₁ τ₂ Γ τ} → Term Γ τ → Term (τ₁ • τ₂ • Γ) τ
+weaken² t = weaken (drop _ • drop _ • ≼-refl) t
