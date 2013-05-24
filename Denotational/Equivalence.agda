@@ -180,5 +180,10 @@ _≈-xor-term_ ≈₁ ≈₂ = ≈-if ≈₁ (≈-! ≈₂) ≈₂
 
 ≈-apply-term : ∀ {τ Γ} {t₁ t₂ : Term Γ (Δ-Type τ)} {t₃ t₄ : Term Γ τ} →
   t₁ ≈ t₂ → t₃ ≈ t₄ → apply-term t₁ t₃ ≈ apply-term t₂ t₄
-≈-apply-term {τ₁ ⇒ τ₂} ≈₁ ≈₂ = ≈-app (≈-app ≈-refl ≈₁) ≈₂
+≈-apply-term {τ₁ ⇒ τ₂} ≈₁ ≈₂ =
+  ≈-abs (≈-apply-term
+          (≈-app (≈-app (≈-weaken Γ″ ≈₁) ≈-refl) ≈-refl)
+          (≈-app (≈-weaken Γ″ ≈₂) ≈-refl))
+  where
+    Γ″ = drop τ₁ • ≼-refl
 ≈-apply-term {bool} ≈₁ ≈₂ = ≈₁ ≈-xor-term ≈₂
