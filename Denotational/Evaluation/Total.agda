@@ -12,6 +12,7 @@ open import Relation.Binary.PropositionalEquality
 open import Syntactic.Types
 open import Syntactic.Contexts Type
 open import Syntactic.Terms.Total
+open import Syntactic.Changes
 
 open import Denotational.Notation
 open import Denotational.Values
@@ -133,4 +134,109 @@ weaken-sound (Δ {{Γ′}} t) {Γ″} ρ =
     ⟦ t ⟧ (⟦ ≼-refl ⟧ ρ)
   ≡⟨ cong ⟦ t ⟧ (⟦⟧-≼-refl ρ) ⟩
     ⟦ t ⟧ ρ
+  ∎ where open ≡-Reasoning
+
+-- CORRECTNESS of NAMED TERMS
+
+xor-term-correct : ∀ {Γ} (t₁ t₂ : Term Γ bool) →
+  ∀ (ρ : ⟦ Γ ⟧) → ⟦ t₁ xor-term t₂ ⟧ ρ ≡ ⟦ t₁ ⟧ ρ xor ⟦ t₂ ⟧ ρ
+xor-term-correct t₁ t₂ ρ
+  with ⟦ t₁ ⟧ ρ | ⟦ t₂ ⟧ ρ
+... | true | true = refl
+... | true | false = refl
+... | false | true = refl
+... | false | false = refl
+
+diff-term-correct : ∀ {τ Γ} {t₁ t₂ : Term Γ τ} →
+  ∀ (ρ : ⟦ Γ ⟧) → ⟦ diff-term t₁ t₂ ⟧ ρ ≡ diff (⟦ t₁ ⟧ ρ) (⟦ t₂ ⟧ ρ)
+
+apply-term-correct : ∀ {τ Γ} {t₁ : Term Γ (Δ-Type τ)} {t₂ : Term Γ τ} →
+  ∀ (ρ : ⟦ Γ ⟧) → ⟦ apply-term t₁ t₂ ⟧ ρ ≡ apply (⟦ t₁ ⟧ ρ) (⟦ t₂ ⟧ ρ)
+
+diff-term-correct {τ₁ ⇒ τ₂} {Γ} {f₁} {f₂} ρ = ext (λ dv → ext (λ v →
+  begin
+    (⟦ diff-term f₁ f₂ ⟧ ρ) dv v
+  ≡⟨⟩
+    ⟦ diff-term
+       (app (weaken² f₁) (apply-term (var this) (var (that this))))
+       (app (weaken² f₂) (var (that this))) ⟧ (v • dv • ρ)
+  ≡⟨ diff-term-correct (v • dv • ρ) ⟩
+    diff
+      (⟦ app (weaken² f₁) (apply-term (var this) (var (that this))) ⟧ (v • dv • ρ))
+      (⟦ app (weaken² f₂) (var (that this)) ⟧ (v • dv • ρ))
+  ≡⟨⟩
+    diff
+      (⟦ weaken² f₁ ⟧ (v • dv • ρ) (⟦ apply-term (var this) (var (that this)) ⟧ (v • dv • ρ)))
+      (⟦ weaken² f₂ ⟧ (v • dv • ρ) dv)
+  ≡⟨ ≡-diff
+       (≡-app (≡-weaken² f₁ v dv ρ) (apply-term-correct (v • dv • ρ)))
+       (≡-app (≡-weaken² f₂ v dv ρ) ≡-refl) ⟩
+    diff
+      (⟦ f₁ ⟧ ρ (apply (⟦ var {_ • _ • _} this ⟧ (v • dv • ρ)) (⟦ var (that this) ⟧ (v • dv • ρ))))
+      (⟦ f₂ ⟧ ρ dv)
+  ≡⟨⟩
+    diff (⟦ f₁ ⟧ ρ (apply v dv)) (⟦ f₂ ⟧Term ρ dv)
+  ≡⟨⟩
+    diff (⟦ f₁ ⟧ ρ) (⟦ f₂ ⟧ ρ) dv v
+  ∎)) where open ≡-Reasoning
+
+diff-term-correct {bool} {Γ} {b₁} {b₂} ρ =
+  begin
+    ⟦ diff-term b₁ b₂ ⟧ ρ
+  ≡⟨⟩
+    ⟦ b₁ xor-term b₂ ⟧ ρ
+  ≡⟨ xor-term-correct b₁ b₂ ρ ⟩
+    ⟦ b₁ ⟧ ρ xor ⟦ b₂ ⟧ ρ
+  ≡⟨⟩
+    diff (⟦ b₁ ⟧ ρ) (⟦ b₂ ⟧ ρ)
+  ∎ where open ≡-Reasoning
+
+apply-term-correct {τ₁ ⇒ τ₂} {Γ} {df} {f} ρ = ext (λ v →
+  begin
+    ⟦ apply-term df f ⟧ ρ v
+  ≡⟨⟩
+    ⟦ abs (apply-term
+            (app (app (weaken¹ df) (var this))
+                 (diff-term (var this) (var this)))
+            (app (weaken¹ f) (var this))) ⟧ ρ v
+  ≡⟨⟩
+    ⟦ apply-term
+        (app (app (weaken¹ df) (var this))
+             (diff-term (var this) (var this)))
+        (app (weaken¹ f) (var this)) ⟧ (v • ρ)
+  ≡⟨ apply-term-correct (v • ρ) ⟩
+    apply
+      (⟦ app (app (weaken¹ df) (var this))
+             (diff-term (var this) (var this)) ⟧ (v • ρ))
+      (⟦ app (weaken¹ f) (var this) ⟧ (v • ρ))
+  ≡⟨⟩
+    apply
+      (⟦ weaken¹ df ⟧ (v • ρ) v
+        (⟦ diff-term (var this) (var this) ⟧ (v • ρ)))
+      (⟦ weaken¹ f ⟧ (v • ρ) v)
+  ≡⟨ ≡-apply
+       (≡-app (≡-app (≡-weaken¹ df v ρ) ≡-refl)
+              (diff-term-correct (v • ρ)))
+       (≡-app (≡-weaken¹ f v ρ) ≡-refl) ⟩
+    apply
+      (⟦ df ⟧ ρ v
+        (diff (⟦ var this ⟧ (v • ρ)) (⟦ var this ⟧ (v • ρ))))
+      (⟦ f ⟧ ρ v)
+  ≡⟨⟩
+    apply (⟦ df ⟧ ρ v (diff v v)) (⟦ f ⟧ ρ v)
+  ≡⟨ cong (λ X → apply (⟦ df ⟧ ρ v X) (⟦ f ⟧ ρ v)) (diff-derive v) ⟩
+    apply (⟦ df ⟧ ρ v (derive v)) (⟦ f ⟧ ρ v)
+  ≡⟨⟩
+    apply (⟦ df ⟧ ρ) (⟦ f ⟧ ρ) v
+  ∎) where open ≡-Reasoning
+
+apply-term-correct {bool} {Γ} {db} {b} ρ =
+  begin
+    ⟦ apply-term db b ⟧ ρ
+  ≡⟨⟩
+    ⟦ db xor-term b ⟧ ρ
+  ≡⟨ xor-term-correct db b ρ ⟩
+    ⟦ db ⟧ ρ xor ⟦ b ⟧ ρ
+  ≡⟨⟩
+    apply (⟦ db ⟧ ρ) (⟦ b ⟧ ρ)
   ∎ where open ≡-Reasoning
