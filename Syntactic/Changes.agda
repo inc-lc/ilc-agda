@@ -52,35 +52,3 @@ diff-term {τ ⇒ τ₁} =
     ≼-in-body = drop (Δ-Type τ) • (drop τ • ≼-refl)
 
 diff-term {bool} = _xor-term_
-
--- Derived CONGRUENCE RULES
-module _ where
-  open import Denotational.Equivalence
-
-  _≈-and_ : ∀ {Γ} {t₁ t₂ t₃ t₄ : Term Γ bool} →
-    t₁ ≈ t₂ → t₃ ≈ t₄ → (t₁ and t₃) ≈ (t₂ and t₄)
-  _≈-and_ ≈₁ ≈₂ = ≈-if ≈₁ ≈₂ ≈-false
-
-  ≈-!_ : ∀ {Γ} {t₁ t₂ : Term Γ bool} →
-    t₁ ≈ t₂ → ! t₁ ≈ ! t₂
-  ≈-!_ ≈₁ = ≈-if ≈₁ ≈-false ≈-true
-
-  _≈-xor-term_ : ∀ {Γ} {t₁ t₂ t₃ t₄ : Term Γ bool} →
-    t₁ ≈ t₂ → t₃ ≈ t₄ → (t₁ xor-term t₃) ≈ (t₂ xor-term t₄)
-  _≈-xor-term_ ≈₁ ≈₂ = ≈-if ≈₁ (≈-! ≈₂) ≈₂
-
-  ≈-diff-term : ∀ {τ Γ} {t₁ t₂ t₃ t₄ : Term Γ τ} →
-    t₁ ≈ t₂ → t₃ ≈ t₄ → diff-term t₁ t₃ ≈ diff-term t₂ t₄
-  ≈-diff-term {τ₁ ⇒ τ₂} ≈₁ ≈₂ =
-    ≈-abs (≈-abs
-      (≈-diff-term
-        (≈-app (≈-weaken Γ″ ≈₁) ≈-refl)
-        (≈-app (≈-weaken Γ″ ≈₂) ≈-refl)))
-    where
-      Γ″ = drop (Δ-Type τ₁) • (drop τ₁ • ≼-refl)
-  ≈-diff-term {bool} ≈₁ ≈₂ = ≈₁ ≈-xor-term ≈₂
-
-  ≈-apply-term : ∀ {τ Γ} {t₁ t₂ : Term Γ (Δ-Type τ)} {t₃ t₄ : Term Γ τ} →
-    t₁ ≈ t₂ → t₃ ≈ t₄ → apply-term t₁ t₃ ≈ apply-term t₂ t₄
-  ≈-apply-term {τ₁ ⇒ τ₂} ≈₁ ≈₂ = ≈-app (≈-app ≈-refl ≈₁) ≈₂
-  ≈-apply-term {bool} ≈₁ ≈₂ = ≈₁ ≈-xor-term ≈₂
