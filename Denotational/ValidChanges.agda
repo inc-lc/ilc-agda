@@ -85,3 +85,25 @@ diff-apply-proof {τ₁ ⇒ τ₂} df f df-valid = ext (λ v → ext (λ dv →
   ∎)) where open ≡-Reasoning
 
 diff-apply-proof {bool} db b _ = xor-cancellative b db
+
+open import Syntactic.Contexts Type
+open import Denotational.Environments Type ⟦_⟧Type
+open import Changes
+open import ChangeContexts
+
+ProofVal : Type → Set
+ProofVal τ = Σ[ v ∈ ⟦ τ ⟧ ] (Σ[ dv ∈ ⟦ Δ-Type τ ⟧ ] Valid-Δ v dv)
+
+import Denotational.Environments Type ProofVal as ProofEnv
+
+eraseVal : ∀ {τ} → ProofVal τ → ⟦ τ ⟧
+eraseVal (v , dv , dv-valid) = v
+
+-- Specification: eraseEnv = map eraseVal
+eraseEnv : ∀ {Γ} → ProofEnv.⟦ Γ ⟧Context → ⟦ Γ ⟧
+eraseEnv {∅} ∅ = ∅
+eraseEnv {τ • Γ} (v • ρ) = eraseVal v • eraseEnv ρ
+
+eraseProofs : ∀ {Γ} → ProofEnv.⟦ Γ ⟧Context → ⟦ Δ-Context Γ ⟧
+eraseProofs {∅} ∅ = ∅
+eraseProofs {τ • Γ} ((v , dv , dv-valid) • ρ) = dv • v • eraseProofs ρ
