@@ -19,6 +19,17 @@ module README where
 --   * correctness proof for symbolic derivation
 
 -- The formalization is split across the following files.
+
+-- Note that we use two postulates currently:
+
+-- 1. function extensionality (in
+--    `Denotational.ExtensionalityPostulate`), known to be consistent
+--    with intensional type theory.
+--
+-- 2. Temporarily, we use `diff-apply` as a postulate, which is only
+--    true in a slightly weaker form, `diff-apply-proof` - we are
+--    adapting the proofs to use the latter.
+
 -- TODO: document them more.
 
 open import Syntactic.Types

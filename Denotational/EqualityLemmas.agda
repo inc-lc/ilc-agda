@@ -1,7 +1,19 @@
 module Denotational.EqualityLemmas where
 
--- Value Equivalence
-import Relation.Binary as B
+-- VALUES
+--
+-- This module describes some equality lemmas on the semantic domain
+-- from `Denotational.Values`.
+
+open import Syntactic.Types
+
+open import Denotational.Notation
+open import Denotational.Values
+open import Denotational.ExtensionalityPostulate public
+
+-- Value Equality
+
+--import Relation.Binary as B
 
 open import Relation.Binary using
   (IsEquivalence; Setoid; Reflexive; Symmetric; Transitive)
@@ -10,12 +22,6 @@ import Relation.Binary.EqReasoning as EqR
 open import Relation.Nullary using (¬_)
 
 open import Relation.Binary.PropositionalEquality
-
-open import Syntactic.Types
-
-open import Denotational.Notation
-open import Denotational.Values
-open import Denotational.ExtensionalityPostulate public
 
 
 not-not : ∀ a → a ≡ not (not a)
