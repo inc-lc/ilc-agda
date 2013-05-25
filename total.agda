@@ -1,23 +1,5 @@
 module total where
 
--- INCREMENTAL λ-CALCULUS
---   with total derivatives
---
--- Features:
---   * changes and derivatives are unified (following Cai)
---   * Δ e describes how e changes when its free variables or its arguments change
---   * denotational semantics including semantics of changes
---
--- Note that Δ is *not* the same as the ∂ operator in
--- definition/intro.tex. See discussion at:
---
---   https://github.com/ps-mr/ilc/pull/34#discussion_r4290325
---
--- Work in Progress:
---   * lemmas about behavior of changes
---   * lemmas about behavior of Δ
---   * correctness proof for symbolic derivation
-
 open import Relation.Binary.PropositionalEquality
 
 open import Syntactic.Types

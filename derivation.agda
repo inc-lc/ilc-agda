@@ -2,23 +2,22 @@ module derivation where
 
 open import lambda
 
--- KO: Is it correct that this file is supposed to contain the syntactic 
-<<<<<<< HEAD
--- variants of the operations in Syntactic.Changes.agda?
--- If so, why does it have a different (and rather strange) Δ-Type definition?
-=======
--- variants of the operations in Changes.agda? What is its relation to
--- the definitions in Syntactic.Changes?
--- Why does it have a different (and rather strange) Δ-Type definition?
->>>>>>> clarified question
--- Why are the base cases (bool) all missing? The inductive cases look
--- boring since they don't actually do anything (which explains why compose and apply are the same)
+-- This file contains an alternative calculus, where there are no
+-- additional primitives in the calculus, derivatives are distinct
+-- from changes (hence the different Δ-Type definition), and changes
+-- are intentionally boring and easy.
+
+-- I am not sure about the status of this file though, and whether it
+-- is possible to build such a calculus (which I think it is).
+
+-- KO: The inductive cases look boring since they don't actually do
+-- anything (which explains why compose and apply are the same)
 
 -- CHANGE TYPES
 
 Δ-Type : Type → Type
 Δ-Type (τ₁ ⇒ τ₂) = τ₁ ⇒ Δ-Type τ₂
-Δ-Type bool = {!!}
+Δ-Type bool = bool
 
 apply : ∀ {τ Γ} → Term Γ (Δ-Type τ ⇒ τ ⇒ τ)
 apply {τ₁ ⇒ τ₂} =
