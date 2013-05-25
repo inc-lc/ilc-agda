@@ -39,8 +39,8 @@ open import ChangeContextLifting
 open import PropsDelta
 open import SymbolicDerivation
 
--- This does not work. It finishes the work above.
---open import total
+-- This finishes the correctness proof of the above work.
+open import total
 
 
 -- EXAMPLES

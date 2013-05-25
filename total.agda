@@ -68,9 +68,9 @@ derive-term-correct true = ext-t (λ ρ → ≡-refl)
 derive-term-correct false = ext-t (λ ρ → ≡-refl)
 derive-term-correct {{Γ′}} (if t₁ t₂ t₃) =
   begin
-    Δ (if t₁ t₂ t₃)
+    Δ {{Γ′}} (if t₁ t₂ t₃)
   ≈⟨ Δ-if {{Γ′}} t₁ t₂ t₃ ⟩
-    if (Δ t₁)
+    if (Δ {{Γ′}} t₁)
        (if (lift-term {{Γ′}} t₁)
            (diff-term (apply-term (Δ {{Γ′}} t₃) (lift-term {{Γ′}} t₃)) (lift-term {{Γ′}} t₂))
            (diff-term (apply-term (Δ {{Γ′}} t₂) (lift-term {{Γ′}} t₂)) (lift-term {{Γ′}} t₃)))
