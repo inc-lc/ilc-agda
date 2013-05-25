@@ -5,6 +5,7 @@ open import Relation.Binary.PropositionalEquality
 open import Syntactic.Types
 open import Syntactic.Contexts Type
 open import Syntactic.Terms.Total
+open import Syntactic.ChangeContexts
 
 open import Denotational.Notation
 open import Denotational.Values

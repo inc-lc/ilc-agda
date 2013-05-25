@@ -13,10 +13,13 @@ open import Denotational.Environments Type ⟦_⟧Type
 open import Denotational.Evaluation.Total
 open import Denotational.Equivalence
 
-open import Changes
+open import Syntactic.ChangeTypes.ChangesAreDerivatives
+open import Syntactic.ChangeContexts
+open import Syntactic.Changes
+
+open import Denotational.Changes
 open import ChangeContexts
 open import ChangeContextLifting
-open import Syntactic.Changes
 
 -- PROPERTIES of Δ
 

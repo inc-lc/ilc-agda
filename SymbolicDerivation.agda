@@ -6,17 +6,19 @@ open import Syntactic.Types
 open import Syntactic.Contexts Type
 open import Syntactic.Terms.Total
 open import Syntactic.Changes
+open import Syntactic.ChangeTypes.ChangesAreDerivatives
+open import Syntactic.ChangeContexts
 
 open import Denotational.Notation
 open import Denotational.Values
 open import Denotational.Environments Type ⟦_⟧Type
 open import Denotational.Evaluation.Total
+open import Denotational.Changes
 open import Denotational.Equivalence
 open import Denotational.ValidChanges
 
 open import Natural.Evaluation
 
-open import Changes
 open import ChangeContexts
 open import ChangeContextLifting
 open import PropsDelta

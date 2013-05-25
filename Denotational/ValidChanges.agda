@@ -4,15 +4,15 @@ open import Data.Product
 open import Data.Unit
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
+open import Syntactic.ChangeTypes.ChangesAreDerivatives
 
 open import Syntactic.Types
 
 open import Denotational.Notation
 open import Denotational.Values
+open import Denotational.Changes
 open import Denotational.EqualityLemmas
 open import Denotational.Equivalence
-
-open import Changes
 
 -- DEFINITION of valid changes via a logical relation
 
@@ -89,8 +89,7 @@ diff-apply-proof {bool} db b _ = xor-cancellative b db
 
 open import Syntactic.Contexts Type
 open import Denotational.Environments Type ⟦_⟧Type
-open import Changes
-open import ChangeContexts
+open import Syntactic.ChangeContexts
 
 ProofVal : Type → Set
 ProofVal τ = Σ[ v ∈ ⟦ τ ⟧ ] (Σ[ dv ∈ ⟦ Δ-Type τ ⟧ ] Valid-Δ v dv)

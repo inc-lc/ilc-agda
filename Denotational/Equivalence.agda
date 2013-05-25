@@ -65,14 +65,16 @@ module _ where
 open import Syntactic.Types
 open import Syntactic.Contexts Type
 open import Syntactic.Terms.Total
+open import Syntactic.ChangeTypes.ChangesAreDerivatives
+open import Syntactic.ChangeContexts
 open import Syntactic.Changes
 
 open import Denotational.Values
 open import Denotational.EqualityLemmas
 open import Denotational.Environments Type ⟦_⟧Type
 open import Denotational.Evaluation.Total
+open import Denotational.Changes
 
-open import Changes
 open import ChangeContexts
 
 -- Export a version of the equivalence for terms with total

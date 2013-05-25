@@ -11,10 +11,10 @@ open import Denotational.Notation
 open import Denotational.Values
 open import Denotational.Environments Type ⟦_⟧Type
 open import Denotational.Evaluation.Total
+open import Denotational.Changes
 open import Denotational.Equivalence
 open import Denotational.ValidChanges
 
-open import Changes
 open import ChangeContexts
 open import ChangeContextLifting
 open import PropsDelta

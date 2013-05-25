@@ -1,4 +1,4 @@
-module Changes where
+module Denotational.Changes where
 
 -- CHANGES
 --
@@ -7,15 +7,10 @@ module Changes where
 -- operations.
 
 open import Syntactic.Types
+open import Syntactic.ChangeTypes.ChangesAreDerivatives
 
 open import Denotational.Notation
 open import Denotational.Values
-
--- CHANGE TYPES
-
-Δ-Type : Type → Type
-Δ-Type (τ₁ ⇒ τ₂) = τ₁ ⇒ Δ-Type τ₁ ⇒ Δ-Type τ₂
-Δ-Type (bool) = bool -- true means negate, false means nil change
 
 open import Denotational.EqualityLemmas
 

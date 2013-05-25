@@ -14,8 +14,8 @@ module Syntactic.Terms.Total where
 
 open import Syntactic.Types
 open import Syntactic.Contexts Type
-open import Changes
-open import ChangeContexts
+open import Syntactic.ChangeTypes.ChangesAreDerivatives
+open import Syntactic.ChangeContexts
 
 open import Relation.Binary.PropositionalEquality
 

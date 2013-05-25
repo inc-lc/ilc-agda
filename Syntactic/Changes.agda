@@ -9,7 +9,7 @@ open import Syntactic.Types
 open import Syntactic.Contexts Type
 open import Syntactic.Terms.Total
 
-open import Changes
+open import Syntactic.ChangeTypes.ChangesAreDerivatives
 
 _and_ : ∀ {Γ} → Term Γ bool → Term Γ bool → Term Γ bool
 a and b = if a b false
