@@ -32,7 +32,7 @@ open import ChangeContexts
 ⟦ true ⟧Term ρ = true
 ⟦ false ⟧Term ρ = false
 ⟦ if t₁ t₂ t₃ ⟧Term ρ = if ⟦ t₁ ⟧Term ρ then ⟦ t₂ ⟧Term ρ else ⟦ t₃ ⟧Term ρ
-⟦ Δ {{Γ′}} t ⟧Term ρ = diff (⟦ t ⟧Term (update (⟦ Γ′ ⟧ ρ))) (⟦ t ⟧Term (ignore (⟦ Γ′ ⟧ ρ)))
+⟦ Δ Γ′ t ⟧Term ρ = diff (⟦ t ⟧Term (update (⟦ Γ′ ⟧ ρ))) (⟦ t ⟧Term (ignore (⟦ Γ′ ⟧ ρ)))
 
 {-
 
@@ -75,7 +75,7 @@ Hence, finally, we have that:
 
 is simply diff (dv ⊕ v) v (or (dv ⊕ v) ⊝ v). If dv is a valid change,
 that's just dv, that is ⟦ dx ⟧ ρ. In other words, if dv is a valid
-change then ⟦ Δ {{Γ′}} x ⟧ ρ ≡ ⟦ dx ⟧ ρ ≡ ⟦ derive-term x ⟧ ρ. This
+change then ⟦ Δ Γ′ x ⟧ ρ ≡ ⟦ dx ⟧ ρ ≡ ⟦ derive-term x ⟧ ρ. This
 fact, generalized for arbitrary terms, is proven formally by
 derive-term-correct.
 
@@ -98,7 +98,7 @@ weaken-sound (if t₁ t₂ t₃) {Γ′} ρ with weaken-sound t₁ {Γ′} ρ
 ... | H with ⟦ weaken Γ′ t₁ ⟧ ρ | ⟦ t₁ ⟧ (⟦ Γ′ ⟧ ρ)
 weaken-sound (if t₁ t₂ t₃) {Γ′} ρ | refl | true | true = weaken-sound t₂ {Γ′} ρ
 weaken-sound (if t₁ t₂ t₃) {Γ′} ρ | refl | false | false = weaken-sound t₃ {Γ′} ρ
-weaken-sound (Δ {{Γ′}} t) {Γ″} ρ =
+weaken-sound (Δ Γ′ t) {Γ″} ρ =
   cong (λ x → diff (⟦ t ⟧ (update x)) (⟦ t ⟧ (ignore x))) (⟦⟧-≼-trans Γ′ Γ″ ρ)
 
 -- Simplification rules for weakening

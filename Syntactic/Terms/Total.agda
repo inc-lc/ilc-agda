@@ -32,7 +32,7 @@ data Term : Context → Type → Set where
   if : ∀ {Γ τ} → (t₁ : Term Γ bool) (t₂ t₃ : Term Γ τ) → Term Γ τ
 
   -- `Δ t` describes how t changes if its free variables or arguments change
-  Δ : ∀ {Γ₁ Γ₂ τ} → {{Γ′ : Δ-Context Γ₁ ≼ Γ₂}} → (t : Term Γ₁ τ) → Term Γ₂ (Δ-Type τ)
+  Δ : ∀ {Γ₁ Γ₂ τ} → (Γ′ : Δ-Context Γ₁ ≼ Γ₂) → (t : Term Γ₁ τ) → Term Γ₂ (Δ-Type τ)
 
 substTerm : ∀ {τ Γ₁ Γ₂} → Γ₁ ≡ Γ₂ → Term Γ₁ τ → Term Γ₂ τ
 substTerm {τ} {Γ₁} {Γ₂} ≡₁ t = subst (λ Γ → Term Γ τ) ≡₁ t
@@ -46,7 +46,7 @@ weaken Γ′ (var x) = var (lift Γ′ x)
 weaken Γ′ true = true
 weaken Γ′ false = false
 weaken Γ′ (if t₁ t₂ t₃) = if (weaken Γ′ t₁) (weaken Γ′ t₂) (weaken Γ′ t₃)
-weaken Γ′ (Δ {{Γ″}} t) = Δ {{≼-trans Γ″ Γ′}} t
+weaken Γ′ (Δ Γ″ t) = Δ {{≼-trans Γ″ Γ′}} t
 
 -- Specialized versions of weakening
 

@@ -15,16 +15,16 @@ open import ChangeContexts
 
 -- LIFTING terms into Δ-Contexts
 
-lift-term : ∀ {Γ₁ Γ₂ τ} {{Γ′ : Δ-Context Γ₁ ≼ Γ₂}} → Term Γ₁ τ → Term Γ₂ τ
-lift-term {Γ₁} {Γ₂} {{Γ′}} = weaken (≼-trans ≼-Δ-Context Γ′)
+lift-term : ∀ {Γ₁ Γ₂ τ} (Γ′ : Δ-Context Γ₁ ≼ Γ₂) → Term Γ₁ τ → Term Γ₂ τ
+lift-term {Γ₁} {Γ₂} Γ′ = weaken (≼-trans ≼-Δ-Context Γ′)
 
 -- PROPERTIES of lift-term
 
-lift-term-ignore : ∀ {Γ₁ Γ₂ τ} {{Γ′ : Δ-Context Γ₁ ≼ Γ₂}} {ρ : ⟦ Γ₂ ⟧} (t : Term Γ₁ τ) →
-  ⟦ lift-term {{Γ′}} t ⟧ ρ ≡ ⟦ t ⟧ (ignore (⟦ Γ′ ⟧ ρ))
-lift-term-ignore {{Γ′}} {ρ} t = let Γ″ = ≼-trans ≼-Δ-Context Γ′ in
+lift-term-ignore : ∀ {Γ₁ Γ₂ τ} (Γ′ : Δ-Context Γ₁ ≼ Γ₂) {ρ : ⟦ Γ₂ ⟧} (t : Term Γ₁ τ) →
+  ⟦ lift-term Γ′ t ⟧ ρ ≡ ⟦ t ⟧ (ignore (⟦ Γ′ ⟧ ρ))
+lift-term-ignore Γ′ {ρ} t = let Γ″ = ≼-trans ≼-Δ-Context Γ′ in
   begin
-    ⟦ lift-term {{Γ′}} t ⟧ ρ
+    ⟦ lift-term Γ′ t ⟧ ρ
   ≡⟨⟩
     ⟦ weaken Γ″ t ⟧ ρ
   ≡⟨ weaken-sound t ρ ⟩

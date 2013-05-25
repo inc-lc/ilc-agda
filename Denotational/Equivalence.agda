@@ -91,9 +91,9 @@ open MakeEquivalence Type ⟦_⟧ Term ⟦_⟧ public
 ≈-abs (ext-t ≈) = ext-t (λ ρ →
   ext (λ v → ≈ (v • ρ)))
 
-≈-Δ : ∀ {τ Γ₁ Γ₂} {{Γ′ : Δ-Context Γ₁ ≼ Γ₂}} {t₁ t₂ : Term Γ₁ τ} →
-  t₁ ≈ t₂ → Δ {{Γ′}} t₁ ≈ Δ {{Γ′}} t₂
-≈-Δ {{Γ′}} (ext-t ≈) = ext-t (λ ρ → ≡-diff (≈ (update (⟦ Γ′ ⟧ ρ))) (≈ (ignore (⟦ Γ′ ⟧ ρ))))
+≈-Δ : ∀ {τ Γ₁ Γ₂} (Γ′ : Δ-Context Γ₁ ≼ Γ₂) {t₁ t₂ : Term Γ₁ τ} →
+  t₁ ≈ t₂ → Δ Γ′ t₁ ≈ Δ Γ′ t₂
+≈-Δ Γ′ (ext-t ≈) = ext-t (λ ρ → ≡-diff (≈ (update (⟦ Γ′ ⟧ ρ))) (≈ (ignore (⟦ Γ′ ⟧ ρ))))
 
 ≈-true : ∀ {Γ} → _≈_ {Γ} true true
 ≈-true = ≈-refl
