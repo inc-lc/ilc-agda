@@ -78,9 +78,9 @@ derive-term-correct {Γ₁} {{Γ′}} (var x) = ext-t (λ ρ →
       (⟦ x ⟧ (update (⟦ Γ′ ⟧ ρ)))
       (⟦ x ⟧ (ignore (⟦ Γ′ ⟧ ρ)))
   ≡⟨  derive-var-correct {Γ₁} (⟦ Γ′ ⟧ ρ) x  ⟩
-    ⟦ derive-var x ⟧Var (⟦ Γ′ ⟧ ρ)
+    ⟦ derive-var x ⟧ (⟦ Γ′ ⟧ ρ)
   ≡⟨ sym (lift-sound Γ′ (derive-var x) ρ) ⟩
-    ⟦ lift Γ′ (derive-var x) ⟧Var ρ
+    ⟦ lift Γ′ (derive-var x) ⟧ ρ
   ∎) where open ≡-Reasoning
 derive-term-correct true = ext-t (λ ρ → ≡-refl)
 derive-term-correct false = ext-t (λ ρ → ≡-refl)
