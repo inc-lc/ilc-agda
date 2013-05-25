@@ -17,6 +17,8 @@ open import Denotational.Values
 Δ-Type (τ₁ ⇒ τ₂) = τ₁ ⇒ Δ-Type τ₁ ⇒ Δ-Type τ₂
 Δ-Type (bool) = bool -- true means negate, false means nil change
 
+open import Denotational.EqualityLemmas
+
 derive : ∀ {τ} → ⟦ τ ⟧ → ⟦ Δ-Type τ ⟧
 apply : ∀ {τ} → ⟦ Δ-Type τ ⟧ → ⟦ τ ⟧ → ⟦ τ ⟧
 diff : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ Δ-Type τ ⟧

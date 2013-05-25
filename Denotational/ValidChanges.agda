@@ -9,6 +9,7 @@ open import Syntactic.Types
 
 open import Denotational.Notation
 open import Denotational.Values
+open import Denotational.EqualityLemmas
 open import Denotational.Equivalence
 
 open import Changes

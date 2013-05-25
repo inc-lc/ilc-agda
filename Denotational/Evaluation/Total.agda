@@ -16,6 +16,7 @@ open import Syntactic.Changes
 
 open import Denotational.Notation
 open import Denotational.Values
+open import Denotational.EqualityLemmas
 open import Denotational.Environments Type ⟦_⟧Type
 
 open import Changes
