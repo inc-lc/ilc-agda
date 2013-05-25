@@ -19,6 +19,7 @@ module README where
 --   * correctness proof for symbolic derivation
 
 -- The formalization is split across the following files.
+-- TODO: document them more.
 
 -- Note that we use two postulates currently:
 
@@ -29,8 +30,6 @@ module README where
 -- 2. Temporarily, we use `diff-apply` as a postulate, which is only
 --    true in a slightly weaker form, `diff-apply-proof` - we are
 --    adapting the proofs to use the latter.
-
--- TODO: document them more.
 
 open import Syntactic.Types
 open import Syntactic.Contexts Type
