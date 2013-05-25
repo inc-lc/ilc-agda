@@ -50,20 +50,20 @@ derive-term-correct : ∀ {Γ₁ Γ₂ τ} → {{Γ′ : Δ-Context Γ₁ ≼ Γ
   Δ {{Γ′}} t ≈ derive-term {{Γ′}} t
 derive-term-correct {Γ₁} {{Γ′}} (abs {τ} t) =
   begin
-     Δ (abs t)
-  ≈⟨  Δ-abs t  ⟩
-     abs (abs (Δ {τ • Γ₁} t))
-  ≈⟨  ≈-abs (≈-abs (derive-term-correct {τ • Γ₁} t))  ⟩
-     abs (abs (derive-term {τ • Γ₁} t))
+     Δ {{Γ′}} (abs t)
+  ≈⟨  Δ-abs {{Γ′}} t  ⟩
+     abs (abs (Δ {τ • Γ₁} {{Γ″}} t))
+  ≈⟨  ≈-abs (≈-abs (derive-term-correct {τ • Γ₁} {{Γ″}} t))  ⟩
+     abs (abs (derive-term {τ • Γ₁} {{Γ″}} t))
   ≡⟨⟩
-     derive-term (abs t)
+     derive-term {{Γ′}} (abs t)
   ∎ where
       open ≈-Reasoning
       Γ″ = keep Δ-Type τ • keep τ • Γ′
 derive-term-correct {Γ₁} {{Γ′}} (app t₁ t₂) =
   begin
-    Δ (app t₁ t₂)
-  ≈⟨  Δ-app t₁ t₂  ⟩
+    Δ {{Γ′}} (app t₁ t₂)
+  ≈⟨  Δ-app {{Γ′}} t₁ t₂  ⟩
      app (app (Δ {{Γ′}} t₁) (lift-term {{Γ′}} t₂)) (Δ {{Γ′}} t₂)
   ≈⟨  ≈-app (≈-app (derive-term-correct {{Γ′}} t₁) ≈-refl) (derive-term-correct {{Γ′}} t₂)  ⟩
      app (app (derive-term {{Γ′}} t₁) (lift-term {{Γ′}} t₂)) (derive-term {{Γ′}} t₂)
@@ -90,27 +90,27 @@ derive-term-correct {{Γ′}} (if t₁ t₂ t₃) =
   ≈⟨ Δ-if {{Γ′}} t₁ t₂ t₃ ⟩
     if (Δ t₁)
        (if (lift-term {{Γ′}} t₁)
-           (diff-term (apply-term (Δ t₃) (lift-term {{Γ′}} t₃)) (lift-term {{Γ′}} t₂))
-           (diff-term (apply-term (Δ t₂) (lift-term {{Γ′}} t₂)) (lift-term {{Γ′}} t₃)))
+           (diff-term (apply-term (Δ {{Γ′}} t₃) (lift-term {{Γ′}} t₃)) (lift-term {{Γ′}} t₂))
+           (diff-term (apply-term (Δ {{Γ′}} t₂) (lift-term {{Γ′}} t₂)) (lift-term {{Γ′}} t₃)))
        (if (lift-term {{Γ′}} t₁)
-           (Δ t₂)
-           (Δ t₃))
-  ≈⟨ ≈-if (derive-term-correct t₁)
+           (Δ {{Γ′}} t₂)
+           (Δ {{Γ′}} t₃))
+  ≈⟨ ≈-if (derive-term-correct {{Γ′}} t₁)
           (≈-if (≈-refl)
-                (≈-diff-term (≈-apply-term (derive-term-correct t₃) ≈-refl) ≈-refl)
-                (≈-diff-term (≈-apply-term (derive-term-correct t₂) ≈-refl) ≈-refl))
+                (≈-diff-term (≈-apply-term (derive-term-correct {{Γ′}} t₃) ≈-refl) ≈-refl)
+                (≈-diff-term (≈-apply-term (derive-term-correct {{Γ′}} t₂) ≈-refl) ≈-refl))
           (≈-if (≈-refl)
-                (derive-term-correct t₂)
-                (derive-term-correct t₃)) ⟩
-    if (derive-term t₁)
+                (derive-term-correct {{Γ′}} t₂)
+                (derive-term-correct {{Γ′}} t₃)) ⟩
+    if (derive-term {{Γ′}} t₁)
        (if (lift-term {{Γ′}} t₁)
-           (diff-term (apply-term (derive-term t₃) (lift-term {{Γ′}} t₃)) (lift-term {{Γ′}} t₂))
-           (diff-term (apply-term (derive-term t₂) (lift-term {{Γ′}} t₂)) (lift-term {{Γ′}} t₃)))
+           (diff-term (apply-term (derive-term {{Γ′}} t₃) (lift-term {{Γ′}} t₃)) (lift-term {{Γ′}} t₂))
+           (diff-term (apply-term (derive-term {{Γ′}} t₂) (lift-term {{Γ′}} t₂)) (lift-term {{Γ′}} t₃)))
        (if (lift-term {{Γ′}} t₁)
-           (derive-term t₂)
-           (derive-term t₃))
+           (derive-term {{Γ′}} t₂)
+           (derive-term {{Γ′}} t₃))
   ≡⟨⟩
-    derive-term (if t₁ t₂ t₃)
+    derive-term {{Γ′}} (if t₁ t₂ t₃)
   ∎ where open ≈-Reasoning
 
-derive-term-correct (Δ t) = ≈-Δ (derive-term-correct t)
+derive-term-correct {{Γ′}} (Δ {{Γ″}} t) = ≈-Δ {{Γ′}} (derive-term-correct {{Γ″}} t)
