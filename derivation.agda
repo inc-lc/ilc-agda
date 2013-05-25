@@ -1,6 +1,7 @@
 module derivation where
 
 open import lambda
+open import Syntactic.ChangeTypes.ChangesAreNotDerivatives public
 
 -- This file contains an alternative calculus, where there are no
 -- additional primitives in the calculus, derivatives are distinct
@@ -13,32 +14,42 @@ open import lambda
 -- KO: The inductive cases look boring since they don't actually do
 -- anything (which explains why compose and apply are the same)
 
--- CHANGE TYPES
+-- What follows is an analogue of module Syntactic.Changes for this
+-- calculus. It should be closer though.
 
-Δ-Type : Type → Type
-Δ-Type (τ₁ ⇒ τ₂) = τ₁ ⇒ Δ-Type τ₂
-Δ-Type bool = bool
+-- TERMS that operate on CHANGES
+
+_and_ : ∀ {Γ} → Term Γ bool → Term Γ bool → Term Γ bool
+a and b = if a b false
+
+!_ : ∀ {Γ} → Term Γ bool → Term Γ bool
+! x = if x false true
+
+-- Term xor
+_xor-term_ : ∀ {Γ} → Term Γ bool → Term Γ bool → Term Γ bool
+a xor-term b = if a (! b) b
 
 apply : ∀ {τ Γ} → Term Γ (Δ-Type τ ⇒ τ ⇒ τ)
 apply {τ₁ ⇒ τ₂} =
     abs (abs (abs (app (app apply (app (var (that (that this))) (var this))) (app (var (that this)) (var this)))))
  -- λdf. λf.  λx.           apply (     df                       x        )  (     f                 x        )
-apply {bool} = {!!}
+apply {bool} = abs (abs ((var (that this)) xor-term (var this)))
 
 compose : ∀ {τ Γ} → Term Γ (Δ-Type τ ⇒ Δ-Type τ ⇒ Δ-Type τ)
 compose {τ₁ ⇒ τ₂} =
     abs (abs (abs (app (app (compose {τ₂}) (app (var (that (that this))) (var this))) (app (var (that this)) (var this)))))
  -- λdf. λdg. λx.           compose (     df                       x         ) (     dg                x      )
-compose {bool} = {!!}
+compose {bool} = abs (abs ((var (that this)) xor-term (var this)))
 
 nil : ∀ {τ Γ} → Term Γ (Δ-Type τ)
 nil {τ₁ ⇒ τ₂} =
     abs (nil {τ₂})
  -- λx. nil
-nil {bool} = {!!}
+nil {bool} = false
 
--- Hey, apply is α-equivalent to compose, what's going on?
--- Oh, and `Δ-Type` is the identity function?
+-- Surprisingly but not too much, apply is α-equivalent to compose,
+-- and `Δ-Type` is the identity function (because this happens to be
+-- the case on base types).
 
 -- CHANGE CONTEXTS
 
@@ -68,7 +79,7 @@ adapt Γ₁ Γ₂ (app t₁ t₂) = app (adapt Γ₁ Γ₂ t₁) (adapt Γ₁ Γ
 adapt Γ₁ Γ₂ (var t) = var (adaptVar Γ₁ Γ₂ t)
 adapt Γ₁ Γ₂ true = true
 adapt Γ₁ Γ₂ false = false
-adapt Γ₁ Γ₂ (cond tc t₁ t₂) = cond (adapt Γ₁ Γ₂ tc) (adapt Γ₁ Γ₂ t₁) (adapt Γ₁ Γ₂ t₂)
+adapt Γ₁ Γ₂ (if tc t₁ t₂) = if (adapt Γ₁ Γ₂ tc) (adapt Γ₁ Γ₂ t₁) (adapt Γ₁ Γ₂ t₂)
 
 -- changes 'x' to 'nil' (if internally bound) or 'dx' (if externally bound)
 
@@ -94,4 +105,4 @@ nabla = {!!}
 Δ-term {Γ} (var x) = weaken {∅} {Γ} (Δ-var {Γ} x)
 Δ-term {Γ} true = {!!}
 Δ-term {Γ} false = {!!}
-Δ-term {Γ} (cond t₁ t₂ t₃) = {!!}
+Δ-term {Γ} (if t₁ t₂ t₃) = {!!}

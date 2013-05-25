@@ -21,7 +21,7 @@ data Term : Context → Type → Set where
   var : ∀ {Γ τ} → (x : Var Γ τ) → Term Γ τ
 
   true false : ∀ {Γ} → Term Γ bool
-  cond : ∀ {Γ τ} → (e₁ : Term Γ bool) (e₂ e₃ : Term Γ τ) → Term Γ τ
+  if : ∀ {Γ τ} → (t₁ : Term Γ bool) (t₂ t₃ : Term Γ τ) → Term Γ τ
 
 -- Denotational Semantics
 
@@ -32,7 +32,7 @@ data Term : Context → Type → Set where
 
 ⟦ true ⟧Term ρ = true
 ⟦ false ⟧Term ρ = false
-⟦ cond t₁ t₂ t₃ ⟧Term ρ with ⟦ t₁ ⟧Term ρ
+⟦ if t₁ t₂ t₃ ⟧Term ρ with ⟦ t₁ ⟧Term ρ
 ... | true = ⟦ t₂ ⟧Term ρ
 ... | false = ⟦ t₃ ⟧Term ρ
 
@@ -79,14 +79,14 @@ data _⊢_↓_ : ∀ {Γ τ} → Env Γ → Term Γ τ → Val τ → Set where
   var : ∀ {Γ τ x} {ρ : Env Γ} {v : Val τ}→
     ρ ⊢ x ↦ v →
     ρ ⊢ var x ↓ v
-  cond-true : ∀ {Γ τ} {ρ : Env Γ} {t₁ t₂ t₃} {v₂ : Val τ} →
+  if-true : ∀ {Γ τ} {ρ : Env Γ} {t₁ t₂ t₃} {v₂ : Val τ} →
     ρ ⊢ t₁ ↓ true →
     ρ ⊢ t₂ ↓ v₂ →
-    ρ ⊢ cond t₁ t₂ t₃ ↓ v₂
-  cond-false : ∀ {Γ τ} {ρ : Env Γ} {t₁ t₂ t₃} {v₃ : Val τ} →
+    ρ ⊢ if t₁ t₂ t₃ ↓ v₂
+  if-false : ∀ {Γ τ} {ρ : Env Γ} {t₁ t₂ t₃} {v₃ : Val τ} →
     ρ ⊢ t₁ ↓ false →
     ρ ⊢ t₃ ↓ v₃ →
-    ρ ⊢ cond t₁ t₂ t₃ ↓ v₃
+    ρ ⊢ if t₁ t₂ t₃ ↓ v₃
 
 -- SOUNDNESS of natural semantics
 
@@ -118,8 +118,8 @@ meaningOfVal = meaning ⟦_⟧Val
 ↓-sound abs = refl
 ↓-sound (app ↓₁ ↓₂ ↓′) = trans (cong₂ (λ x y → x y) (↓-sound ↓₁) (↓-sound ↓₂)) (↓-sound ↓′)
 ↓-sound (var ↦) = ↦-sound ↦
-↓-sound (cond-true ↓₁ ↓₂) rewrite ↓-sound ↓₁ = ↓-sound ↓₂
-↓-sound (cond-false ↓₁ ↓₃) rewrite ↓-sound ↓₁ = ↓-sound ↓₃
+↓-sound (if-true ↓₁ ↓₂) rewrite ↓-sound ↓₁ = ↓-sound ↓₂
+↓-sound (if-false ↓₁ ↓₃) rewrite ↓-sound ↓₁ = ↓-sound ↓₃
 
 -- WEAKENING
 
@@ -131,4 +131,4 @@ weaken {Γ₁} {Γ₂} (app t₁ t₂) = app (weaken {Γ₁} {Γ₂} t₁) (weak
 weaken {Γ₁} {Γ₂} (var x) = var (lift {Γ₁} {Γ₂} x)
 weaken {Γ₁} {Γ₂} true = true
 weaken {Γ₁} {Γ₂} false = false
-weaken {Γ₁} {Γ₂} (cond e₁ e₂ e₃) = cond (weaken {Γ₁} {Γ₂} e₁) (weaken {Γ₁} {Γ₂} e₂) (weaken {Γ₁} {Γ₂} e₃)
+weaken {Γ₁} {Γ₂} (if e₁ e₂ e₃) = if (weaken {Γ₁} {Γ₂} e₁) (weaken {Γ₁} {Γ₂} e₂) (weaken {Γ₁} {Γ₂} e₃)
