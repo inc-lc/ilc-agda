@@ -53,6 +53,6 @@ term3 = abs (abs (abs term2))
 open import SymbolicDerivation
 -- presumably there is some shorter way to do this?
 -- I don't understand instance arguments sufficiently
-term4 = derive-term {∅} {∅} {bool ⇒ bool ⇒ bool ⇒ bool} {{∅ }} term3
+term4 = derive-term {∅} {∅} {bool ⇒ bool ⇒ bool ⇒ bool} ∅ term3
 
 -- it turns out that term4 is already way too complicated to be analyzed by hand

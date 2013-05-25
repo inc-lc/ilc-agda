@@ -21,8 +21,8 @@ open import Syntactic.Changes
 
 Δ-abs : ∀ {τ₁ τ₂ Γ₁ Γ₂} (Γ′ : Δ-Context Γ₁ ≼ Γ₂) (t : Term (τ₁ • Γ₁) τ₂) →
   let Γ″ = keep Δ-Type τ₁ • keep τ₁ • Γ′ in
-  Δ Γ′ (abs t) ≈ abs (abs (Δ {τ₁ • Γ₁} t))
-Δ-abs t = ext-t (λ ρ → refl)
+  Δ Γ′ (abs t) ≈ abs (abs (Δ {τ₁ • Γ₁} (keep Δ-Type τ₁ • keep τ₁ • Γ′) t))
+Δ-abs Γ′ t = ext-t (λ ρ → refl)
 
 Δ-app : ∀ {Γ₁ Γ₂ τ₁ τ₂} (Γ′ : Δ-Context Γ₁ ≼ Γ₂) (t₁ : Term Γ₁ (τ₁ ⇒ τ₂)) (t₂ : Term Γ₁ τ₁) →
   Δ Γ′ (app t₁ t₂) ≈ app (app (Δ Γ′ t₁) (lift-term Γ′ t₂)) (Δ Γ′ t₂)

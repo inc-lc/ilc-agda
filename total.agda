@@ -64,8 +64,8 @@ derive-term-correct {Γ₁} Γ′ (var x) = ext-t (λ ρ →
   ≡⟨ sym (lift-sound Γ′ (derive-var x) ρ) ⟩
     ⟦ lift Γ′ (derive-var x) ⟧ ρ
   ∎) where open ≡-Reasoning
-derive-term-correct true = ext-t (λ ρ → ≡-refl)
-derive-term-correct false = ext-t (λ ρ → ≡-refl)
+derive-term-correct Γ′ true = ext-t (λ ρ → ≡-refl)
+derive-term-correct Γ′ false = ext-t (λ ρ → ≡-refl)
 derive-term-correct Γ′ (if t₁ t₂ t₃) =
   begin
     Δ Γ′ (if t₁ t₂ t₃)

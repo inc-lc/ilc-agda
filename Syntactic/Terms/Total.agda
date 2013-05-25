@@ -46,7 +46,7 @@ weaken Γ′ (var x) = var (lift Γ′ x)
 weaken Γ′ true = true
 weaken Γ′ false = false
 weaken Γ′ (if t₁ t₂ t₃) = if (weaken Γ′ t₁) (weaken Γ′ t₂) (weaken Γ′ t₃)
-weaken Γ′ (Δ Γ″ t) = Δ {{≼-trans Γ″ Γ′}} t
+weaken Γ′ (Δ Γ″ t) = Δ (≼-trans Γ″ Γ′) t
 
 -- Specialized versions of weakening
 
