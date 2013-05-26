@@ -500,8 +500,6 @@ correctness-of-deriveVar : ∀ {Γ τ} →
 correctness-of-deriveVar {τ • Γ₀} {.τ}
   (dv • v • ρ) {dρ=dv•v•dρ₀ {.τ} {.v} {.dv} {.Γ₀} {.ρ} R[v,dv] _}
   this = df=f⊕df⊝f {τ} v dv R[v,dv]
-  --Putting `df=f⊕df⊝f v dv ?` on RHS triggers Agda bug.
-  --TODO: Report it as Agda tells us to.
 
 correctness-of-deriveVar {τ₀ • Γ₀} {τ}
   (dv • v • ρ) {dρ=dv•v•dρ₀ {.τ₀} {.v} {.dv} {.Γ₀} {.ρ} R[v,dv] _}
@@ -548,13 +546,49 @@ validity-of-derive {Γ} {τ₁ ⇒ τ₂}
       (begin
         ⟦ t ⟧ ((v ⟦⊕⟧ dv) • ⟦ Γ≼ΔΓ ⟧ ρ) ⟦⊕⟧
           ⟦ derive t ⟧ (⟦derive⟧ (v ⟦⊕⟧ dv) • (v ⟦⊕⟧ dv) • ρ)
-      ≡⟨ {!!} ⟩
-        ⟦ t ⟧ (v • ⟦ Γ≼ΔΓ ⟧ ρ)
-        ⟦⊕⟧ {!!}
-        ⟦⊕⟧ ⟦ derive t ⟧ (⟦derive⟧ (v ⟦⊕⟧ dv) • (v ⟦⊕⟧ dv) • ρ)
-
-      ≡⟨ {!!} ⟩
-        ⟦ t ⟧ (v • ⟦ Γ≼ΔΓ ⟧≼ ρ) ⟦⊕⟧ ⟦ derive t ⟧ (dv • v • ρ)
+      ≡⟨ extract-Δequiv
+           (correctness-of-derive
+             (⟦derive⟧ (v ⟦⊕⟧ dv) • (v ⟦⊕⟧ dv) • ρ)
+             {dρ=dv•v•dρ₀ (R[f,Δf] (v ⟦⊕⟧ dv)) consistency}
+             t)
+           (⟦ t ⟧ ((v ⟦⊕⟧ dv) • ⟦ Γ≼ΔΓ ⟧ ρ))
+           (validity-of-derive
+             (⟦derive⟧ (v ⟦⊕⟧ dv) • (v ⟦⊕⟧ dv) • ρ)
+             {dρ=dv•v•dρ₀ (R[f,Δf] (v ⟦⊕⟧ dv)) consistency}
+             t)
+           ((R[f,g⊝f] (⟦ t ⟧ ((v ⟦⊕⟧ dv) • ⟦ Γ≼ΔΓ ⟧ ρ))
+                     (⟦ t ⟧ ((v ⟦⊕⟧ dv ⟦⊕⟧ (⟦derive⟧ (v ⟦⊕⟧ dv))) •
+                       update ρ {consistency})))) ⟩
+         ⟦ t ⟧ ((v ⟦⊕⟧ dv) • ⟦ Γ≼ΔΓ ⟧ ρ) ⟦⊕⟧
+          (⟦ t ⟧ ((v ⟦⊕⟧ dv ⟦⊕⟧ (⟦derive⟧ (v ⟦⊕⟧ dv))) •
+                  update ρ {consistency})
+           ⟦⊝⟧
+           ⟦ t ⟧ ((v ⟦⊕⟧ dv) • ⟦ Γ≼ΔΓ ⟧ ρ))
+      ≡⟨ f⊕[g⊝f]=g (⟦ t ⟧ ((v ⟦⊕⟧ dv) • ⟦ Γ≼ΔΓ ⟧ ρ))
+                   (⟦ t ⟧ ((v ⟦⊕⟧ dv ⟦⊕⟧ (⟦derive⟧ (v ⟦⊕⟧ dv))) •
+                          update ρ {consistency})) ⟩
+        ⟦ t ⟧ ((v ⟦⊕⟧ dv ⟦⊕⟧ (⟦derive⟧ (v ⟦⊕⟧ dv))) •
+                  update ρ {consistency})
+      ≡⟨ cong ⟦ t ⟧ (cong₂ _•_ (f⊕Δf=f (v ⟦⊕⟧ dv)) refl) ⟩
+        ⟦ t ⟧ ((v ⟦⊕⟧ dv) • update ρ {consistency})
+      ≡⟨ sym (f⊕[g⊝f]=g (⟦ t ⟧ (v • ⟦ Γ≼ΔΓ ⟧ ρ))
+                        (⟦ t ⟧ ((v ⟦⊕⟧ dv) • update ρ {consistency}))) ⟩
+        ⟦ t ⟧ (v • ⟦ Γ≼ΔΓ ⟧ ρ) ⟦⊕⟧
+          (⟦ t ⟧ ((v ⟦⊕⟧ dv) • update ρ {consistency})
+           ⟦⊝⟧
+           ⟦ t ⟧ (v • ⟦ Γ≼ΔΓ ⟧ ρ))
+      ≡⟨ sym (extract-Δequiv
+           (correctness-of-derive
+             ((dv • v • ρ))
+             {dρ=dv•v•dρ₀ R[v,dv] consistency}
+             t)
+           (⟦ t ⟧ (v • ⟦ Γ≼ΔΓ ⟧ ρ))
+           (validity-of-derive
+             (dv • v • ρ) {dρ=dv•v•dρ₀ R[v,dv] consistency}
+             t)
+           (R[f,g⊝f] (⟦ t ⟧ (v • ⟦ Γ≼ΔΓ ⟧ ρ))
+                     (⟦ t ⟧ ((v ⟦⊕⟧ dv) • update ρ {consistency})))) ⟩
+        ⟦ t ⟧ (v • ⟦ Γ≼ΔΓ ⟧ ρ) ⟦⊕⟧ ⟦ derive t ⟧ (dv • v • ρ)
       ∎)
   where open ≡-Reasoning
 
