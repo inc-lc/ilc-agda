@@ -1,5 +1,3 @@
--- TODO: Include proof of
--- "not all correctly-typed values are valid changes"
 
 module A where
 
@@ -413,9 +411,9 @@ infix 3 as-Δ_is_ext-equiv-to_
 -- Given a value of the data type holding the proof,
 -- returns the proof in applicable form.
 --
--- Question: Would it not have been better if such
+-- It would not be necessary if such
 -- proof-holding types were defined as a function in
--- the first place, say in the manner of `valid-Δ`?
+-- the first place, say in the manner of `valid-Δ`.
 --
 extract-Δequiv :
   ∀ {τ : Type} {df dg : ⟦ Δ-Type τ ⟧} →
@@ -621,16 +619,104 @@ correctness-of-derive {Γ} {τ₁ ⇒ τ₂}
         ∎
   )) where open ≡-Reasoning
 
-correctness-of-derive ρ (app {τ₁} {τ₂} {Γ} t₁ t₂) =
+correctness-of-derive ρ {consistency} (app {τ₁} {τ₂} {Γ} t₁ t₂) =
   ext-Δ {τ₂}
   (λ f R[f,Δt] R[f,t′⊝t] →
     begin
       f ⟦⊕⟧ ⟦ derive t₁ ⟧ ρ (⟦ weaken Γ≼ΔΓ t₂ ⟧ ρ) (⟦ derive t₂ ⟧ ρ)
-    ≡⟨ {!!} ⟩
+    ≡⟨ extract-Δequiv ext-Δ[t₁t₂] f R[f,Δt] R[f,t′⊝t] ⟩
       f ⟦⊕⟧
         (⟦ t₁ ⟧ (update ρ) (⟦ t₂ ⟧ (update ρ))
          ⟦⊝⟧
          ⟦ t₁ ⟧ (⟦ Γ≼ΔΓ ⟧ ρ) (⟦ t₂ ⟧ (⟦ Γ≼ΔΓ ⟧ ρ)))
-    ∎
-  ) where open ≡-Reasoning
+    ∎)
+  where
+    open ≡-Reasoning
+
+    v₁ : ⟦ τ₁ ⇒ τ₂ ⟧
+    v₁ = ⟦ t₁ ⟧ (ignore ρ)
+    v₂ : ⟦ τ₁ ⟧
+    v₂ = ⟦ weaken Γ≼ΔΓ t₂ ⟧ ρ
+
+    dv₁ : ⟦ Δ-Type (τ₁ ⇒ τ₂) ⟧
+    dv₁ = ⟦ derive t₁ ⟧ ρ
+    dv₂ : ⟦ Δ-Type τ₁ ⟧
+    dv₂ = ⟦ derive t₂ ⟧ ρ
+
+    v₁′ : ⟦ τ₁ ⇒ τ₂ ⟧
+    v₁′ = ⟦ t₁ ⟧ (update ρ {consistency})
+    v₂′ : ⟦ τ₁ ⟧
+    v₂′ = ⟦ t₂ ⟧ (update ρ {consistency})
+
+    v₂=old-v₂ : v₂ ≡ ⟦ t₂ ⟧ (ignore ρ)
+    v₂=old-v₂ = weaken-sound {subctx = Γ≼ΔΓ} t₂ ρ
+
+    valid-dv₁ : valid-Δ v₁ dv₁
+    valid-dv₁ = validity-of-derive ρ {consistency} t₁
+  
+    valid-dv₂ : valid-Δ v₂ dv₂
+    valid-dv₂ rewrite v₂=old-v₂ =
+      validity-of-derive ρ {consistency} t₂
+
+    v₁⊕dv₁=v₁′ : v₁ ⟦⊕⟧ dv₁ ≡ v₁′
+    v₁⊕dv₁=v₁′ =
+      begin
+        v₁ ⟦⊕⟧ dv₁
+      ≡⟨ extract-Δequiv
+           (correctness-of-derive ρ {consistency} t₁)
+           v₁ valid-dv₁ (R[f,g⊝f] v₁ v₁′) ⟩
+        v₁ ⟦⊕⟧ (v₁′ ⟦⊝⟧ v₁)
+      ≡⟨ f⊕[g⊝f]=g v₁ v₁′ ⟩
+        v₁′
+      ∎
+
+    -- TODO: remove code duplication.
+    v₂⊕dv₂=v₂′ : v₂ ⟦⊕⟧ dv₂ ≡ v₂′
+    v₂⊕dv₂=v₂′ rewrite v₂=old-v₂ =
+      begin
+        old-v₂ ⟦⊕⟧ dv₂
+      ≡⟨ extract-Δequiv
+           (correctness-of-derive ρ {consistency} t₂)
+           old-v₂
+           (validity-of-derive ρ {consistency} t₂)
+           (R[f,g⊝f] old-v₂ v₂′) ⟩
+        old-v₂ ⟦⊕⟧ (v₂′ ⟦⊝⟧ old-v₂)
+      ≡⟨ f⊕[g⊝f]=g old-v₂ v₂′ ⟩
+        v₂′
+      ∎
+      where old-v₂ = ⟦ t₂ ⟧ (ignore ρ)
+
+    v₁′v₂′=[v₁⊕dv₁][v₂⊕dv₂] : v₁′ v₂′ ≡ (v₁ ⟦⊕⟧ dv₁) (v₂ ⟦⊕⟧ dv₂)
+    v₁′v₂′=[v₁⊕dv₁][v₂⊕dv₂] = sym (cong₂ (λ f x → f x) v₁⊕dv₁=v₁′ v₂⊕dv₂=v₂′)
+
+    [v₁⊕dv₁][v₂⊕dv₂]=v₁v₂⊕dv₁v₂dv₂ :
+      (v₁ ⟦⊕⟧ dv₁) (v₂ ⟦⊕⟧ dv₂) ≡ v₁ v₂ ⟦⊕⟧ dv₁ v₂ dv₂
+    [v₁⊕dv₁][v₂⊕dv₂]=v₁v₂⊕dv₁v₂dv₂ = proj₂ (valid-dv₁ v₂ dv₂ valid-dv₂)
+
+    v₁′v₂′⊝v₁v₂=v₁v₂⊕dv₁v₂dv₂⊝v₁v₂ :
+      v₁′ v₂′ ⟦⊝⟧ v₁ v₂ ≡ v₁ v₂ ⟦⊕⟧ dv₁ v₂ dv₂ ⟦⊝⟧ v₁ v₂
+    v₁′v₂′⊝v₁v₂=v₁v₂⊕dv₁v₂dv₂⊝v₁v₂ =
+      cong₂ _⟦⊝⟧_
+        (trans v₁′v₂′=[v₁⊕dv₁][v₂⊕dv₂] [v₁⊕dv₁][v₂⊕dv₂]=v₁v₂⊕dv₁v₂dv₂)
+        refl
+
+    R[v₁v₂,dv₁v₂dv₂] : valid-Δ (v₁ v₂) (dv₁ v₂ dv₂)
+    R[v₁v₂,dv₁v₂dv₂] = proj₁ (valid-dv₁ v₂ dv₂ valid-dv₂)
+
+    dv₁v₂dv₂=v₁v₂⊕dv₁v₂dv₂⊝v₁v₂ :
+      as-Δ τ₂ is dv₁ v₂ dv₂ ext-equiv-to v₁ v₂ ⟦⊕⟧ dv₁ v₂ dv₂ ⟦⊝⟧ v₁ v₂
+    dv₁v₂dv₂=v₁v₂⊕dv₁v₂dv₂⊝v₁v₂ =
+      df=f⊕df⊝f (v₁ v₂) (dv₁ v₂ dv₂) R[v₁v₂,dv₁v₂dv₂]
+
+    dv₁v₂dv₂=v₁′v₂′⊝v₁v₂ : as-Δ τ₂ is dv₁ v₂ dv₂ ext-equiv-to v₁′ v₂′ ⟦⊝⟧ v₁ v₂
+    dv₁v₂dv₂=v₁′v₂′⊝v₁v₂ rewrite v₁′v₂′⊝v₁v₂=v₁v₂⊕dv₁v₂dv₂⊝v₁v₂ =
+      dv₁v₂dv₂=v₁v₂⊕dv₁v₂dv₂⊝v₁v₂
+
+    ext-Δ[t₁t₂] :
+      as-Δ τ₂ is
+      ⟦ derive t₁ ⟧ ρ (⟦ weaken Γ≼ΔΓ t₂ ⟧ ρ) (⟦ derive t₂ ⟧ ρ)
+      ext-equiv-to
+      ⟦ t₁ ⟧ (update ρ {consistency}) (⟦ t₂ ⟧ (update ρ {consistency}))
+      ⟦⊝⟧ ⟦ t₁ ⟧ (⟦ Γ≼ΔΓ ⟧ ρ) (⟦ t₂ ⟧ (⟦ Γ≼ΔΓ ⟧ ρ))
+    ext-Δ[t₁t₂] rewrite sym v₂=old-v₂ = dv₁v₂dv₂=v₁′v₂′⊝v₁v₂
 
