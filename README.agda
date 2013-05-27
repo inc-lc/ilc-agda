@@ -47,6 +47,7 @@ open import Denotational.Evaluation.Total
 open import Denotational.Changes
 open import Denotational.Equivalence
 open import Denotational.ValidChanges
+open import Denotational.WeakValidChanges
 
 open import ChangeContexts
 open import ChangeContextLifting

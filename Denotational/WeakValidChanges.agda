@@ -38,6 +38,7 @@ strong-to-weak-validity {τ ⇒ τ₁} {v} {dv} s-valid-v-dv s ds _ = strong-to-
     dv-s-ds-valid-on-v-s = proj₁ proofs
     dv-is-correct-for-v-on-s-and-ds = proj₂ proofs
 
+{-
 -- This proof doesn't go through: the desired equivalence is too
 -- strong, and we can't fill the holes because dv is arbitrary.
 
@@ -97,8 +98,11 @@ diff-apply-proof-weak-f {τ₁} {τ₂} df f df-valid dv v dv-valid =
   ≡⟨ diff-apply-proof-weak {τ₂} (df v dv) (f v) (proj₁ (df-valid v dv dv-valid)) ⟩
     df v dv
   ∎ where open ≡-Reasoning
+-}
 
--- We should try doing the proofs with this:
+-- A stronger delta equivalence. Note this isn't a congruence; it
+-- should be possible to define some congruence rules, but those will
+-- be more complex.
 
 data _≈_ : {τ : Type} → ⟦ Δ-Type τ ⟧ → ⟦ Δ-Type τ ⟧ → Set where
   --base : ∀ (v : ⟦ bool ⟧) → v ≈ v
