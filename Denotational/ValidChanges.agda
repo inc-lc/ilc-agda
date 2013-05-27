@@ -14,26 +14,29 @@ open import Denotational.Changes
 open import Denotational.EqualityLemmas
 open import Denotational.Equivalence
 
--- DEFINITION of valid changes via a logical relation
+-- DEFINITION of strongly valid changes
+
+_is-correct-for_on_and_ : ∀ {σ τ : Type} → ⟦ Δ-Type (σ ⇒ τ) ⟧ → ⟦ σ ⇒ τ ⟧ → ⟦ σ ⟧ → ⟦ Δ-Type σ ⟧ → Set
+df is-correct-for f on s and ds =
+  (apply df f) (apply ds s) ≡ apply (df s ds) (f s)
 
 {-
-What I wanted to write:
+-- Strong validity, defined as a datatype:
 
 data Valid-Δ : {T : Type} → (v : ⟦ T ⟧) → (dv : ⟦ Δ-Type T ⟧) → Set where
-  base : (v : ⟦ bool ⟧) → (dv : ⟦ Δ-Type bool ⟧) → ValidΔ v dv
+  base : (v : ⟦ bool ⟧) → (dv : ⟦ Δ-Type bool ⟧) → Valid-Δ v dv
   fun : ∀ {S T} → (f : ⟦ S ⇒ T ⟧) → (df : ⟦ Δ-Type (S ⇒ T) ⟧) →
-    (∀ (s : ⟦ S ⟧) ds → (ValidΔ (f s) (df s ds)) × ((apply df f) (apply ds s) ≡ apply (df s ds) (f s))) → 
-    ValidΔ f df
+    (∀ (s : ⟦ S ⟧) ds → (Valid-Δ (f s) (df s ds)) × df is-correct-for f on s and ds) → 
+    Valid-Δ f df
 -}
 
--- What I had to write:
--- Note: now I could go back to using a datatype, since the datatype is now strictly positive.
+-- Strong validity, defined through a function producing a type:
 Valid-Δ : {τ : Type} → ⟦ τ ⟧ → ⟦ Δ-Type τ ⟧ → Set
 Valid-Δ {bool} v dv = ⊤
 Valid-Δ {S ⇒ T} f df =
-  ∀ (s : ⟦ S ⟧) ds {- (valid-w : Valid-Δ s ds) -} →
+  ∀ (s : ⟦ S ⟧) ds →
     Valid-Δ (f s) (df s ds) ×
-    (apply df f) (apply ds s) ≡ apply (df s ds) (f s)
+    df is-correct-for f on s and ds
 
 invalid-changes-exist : ¬ (∀ {τ} v dv → Valid-Δ {τ} v dv)
 invalid-changes-exist k with k (λ x → x) (λ x dx → false) false true
