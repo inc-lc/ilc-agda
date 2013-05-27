@@ -590,7 +590,96 @@ validity-of-derive {Γ} {τ₁ ⇒ τ₂}
       ∎)
   where open ≡-Reasoning
 
-validity-of-derive ρ (app t t₁) = {!!}
+validity-of-derive ρ {consistency} (app {τ₁} {τ₂} t₁ t₂)
+  = R[⟦t₁t₂⟧,⟦Δ[t₁t₂]⟧]
+  where
+    open ≡-Reasoning
+    v₁ : ⟦ τ₁ ⇒ τ₂ ⟧
+    v₁ = ⟦ t₁ ⟧ (ignore ρ)
+    v₂ : ⟦ τ₁ ⟧
+    v₂ = ⟦ weaken Γ≼ΔΓ t₂ ⟧ ρ
+
+    dv₁ : ⟦ Δ-Type (τ₁ ⇒ τ₂) ⟧
+    dv₁ = ⟦ derive t₁ ⟧ ρ
+    dv₂ : ⟦ Δ-Type τ₁ ⟧
+    dv₂ = ⟦ derive t₂ ⟧ ρ
+
+    v₁′ : ⟦ τ₁ ⇒ τ₂ ⟧
+    v₁′ = ⟦ t₁ ⟧ (update ρ {consistency})
+    v₂′ : ⟦ τ₁ ⟧
+    v₂′ = ⟦ t₂ ⟧ (update ρ {consistency})
+
+    v₂=old-v₂ : v₂ ≡ ⟦ t₂ ⟧ (ignore ρ)
+    v₂=old-v₂ = weaken-sound {subctx = Γ≼ΔΓ} t₂ ρ
+
+    valid-dv₁ : valid-Δ v₁ dv₁
+    valid-dv₁ = validity-of-derive ρ {consistency} t₁
+  
+    valid-dv₂ : valid-Δ v₂ dv₂
+    valid-dv₂ rewrite v₂=old-v₂ =
+      validity-of-derive ρ {consistency} t₂
+
+    R[v₁v₂,dv₁v₂dv₂] : valid-Δ (v₁ v₂) (dv₁ v₂ dv₂)
+    R[v₁v₂,dv₁v₂dv₂] = proj₁ (valid-dv₁ v₂ dv₂ valid-dv₂)
+
+    ⟦t₁t₂⟧=v₁v₂ : ⟦ app t₁ t₂ ⟧ (ignore ρ) ≡ v₁ v₂
+    ⟦t₁t₂⟧=v₁v₂ rewrite (sym v₂=old-v₂) = refl
+
+    ⟦Δ[t₁t₂]⟧=dv₁v₂dv₂ : ⟦ derive (app t₁ t₂) ⟧ ρ ≡ dv₁ v₂ dv₂
+    ⟦Δ[t₁t₂]⟧=dv₁v₂dv₂ = refl
+
+    R[⟦t₁t₂⟧,dv₁v₂dv₂] : valid-Δ (⟦ app t₁ t₂ ⟧ (ignore ρ)) (dv₁ v₂ dv₂)
+    R[⟦t₁t₂⟧,dv₁v₂dv₂] rewrite ⟦t₁t₂⟧=v₁v₂ = R[v₁v₂,dv₁v₂dv₂]
+
+    -- What I want to write:
+    {-
+        R[⟦t₁t₂⟧,⟦Δ[t₁t₂]⟧] :
+          valid-Δ (⟦ app t₁ t₂ ⟧ (ignore ρ)) (⟦ derive (app t₁ t₂) ⟧ ρ)
+        R[⟦t₁t₂⟧,⟦Δ[t₁t₂]⟧] rewrite ⟦Δ[t₁t₂]⟧=dv₁v₂dv₂ = R[⟦t₁t₂⟧,dv₁v₂dv₂]
+    -}
+
+    -- What I have to write:
+
+    R : {τ : Type} → {v : ⟦ τ ⟧} → {dv₁ dv₂ : ⟦ Δ-Type τ ⟧} →
+        dv₁ ≡ dv₂ → valid-Δ v dv₁ → valid-Δ v dv₂
+
+    R {nats} dv₁=dv₂ refl = cong₂ (λ f x → f x) dv₁=dv₂ refl
+
+    --R {τ₁ ⇒ τ₂} dv₁=dv₂ valid-dv₁ rewrite dv₁=dv₂ = {!valid-dv₁!}
+    R {τ₁ ⇒ τ₂} {v} {dv₁} {dv₂} dv₁=dv₂ valid-dv₁ =
+      λ s ds R[s,ds] →
+        R {τ₂} {v s} {dv₁ s ds} {dv₂ s ds}
+           (cong₂ (λ f x → f x)
+                  (cong₂ (λ f x → f x) dv₁=dv₂ refl) refl)
+           (proj₁ (valid-dv₁ s ds R[s,ds]))
+        ,
+        (begin
+          v (s ⟦⊕⟧ ds) ⟦⊕⟧ dv₂ (s ⟦⊕⟧ ds) (⟦derive⟧ (s ⟦⊕⟧ ds))
+        ≡⟨ cong₂ _⟦⊕⟧_
+                 {x = v (s ⟦⊕⟧ ds)} refl
+                 (cong₂ (λ f x → f x)
+                        (cong₂ (λ f x → f x) (sym dv₁=dv₂) refl) refl) ⟩
+          v (s ⟦⊕⟧ ds) ⟦⊕⟧ dv₁ (s ⟦⊕⟧ ds) (⟦derive⟧ (s ⟦⊕⟧ ds))
+        ≡⟨ sym (proj₂ (valid-dv₁
+               (s ⟦⊕⟧ ds)
+               (⟦derive⟧ (s ⟦⊕⟧ ds))
+               (R[f,Δf] (s ⟦⊕⟧ ds)))) ⟩
+          (v ⟦⊕⟧ dv₁) (s ⟦⊕⟧ ds ⟦⊕⟧ ⟦derive⟧ (s ⟦⊕⟧ ds))
+        ≡⟨ cong (v ⟦⊕⟧ dv₁) (f⊕Δf=f (s ⟦⊕⟧ ds)) ⟩
+          (v ⟦⊕⟧ dv₁) (s ⟦⊕⟧ ds)
+        ≡⟨ proj₂ (valid-dv₁ s ds R[s,ds]) ⟩
+          v s ⟦⊕⟧ dv₁ s ds
+        ≡⟨ cong₂ _⟦⊕⟧_
+                 {x = v s} refl
+                 (cong₂ (λ f x → f x)
+                        (cong₂ (λ f x → f x) dv₁=dv₂ refl) refl) ⟩
+          v s ⟦⊕⟧ dv₂ s ds
+        ∎) where open ≡-Reasoning
+
+    R[⟦t₁t₂⟧,⟦Δ[t₁t₂]⟧] :
+      valid-Δ (⟦ app t₁ t₂ ⟧ (ignore ρ)) (⟦ derive (app t₁ t₂) ⟧ ρ)
+    R[⟦t₁t₂⟧,⟦Δ[t₁t₂]⟧] = R ⟦Δ[t₁t₂]⟧=dv₁v₂dv₂ R[⟦t₁t₂⟧,dv₁v₂dv₂]
+
 
 correctness-of-derive ρ (var x) = correctness-of-deriveVar ρ x
 
@@ -719,4 +808,41 @@ correctness-of-derive ρ {consistency} (app {τ₁} {τ₂} {Γ} t₁ t₂) =
       ⟦ t₁ ⟧ (update ρ {consistency}) (⟦ t₂ ⟧ (update ρ {consistency}))
       ⟦⊝⟧ ⟦ t₁ ⟧ (⟦ Γ≼ΔΓ ⟧ ρ) (⟦ t₂ ⟧ (⟦ Γ≼ΔΓ ⟧ ρ))
     ext-Δ[t₁t₂] rewrite sym v₂=old-v₂ = dv₁v₂dv₂=v₁′v₂′⊝v₁v₂
+
+correctness-on-closed-terms : ∀ {τ₁ τ₂} →
+  ∀ (f : Term ∅ (τ₁ ⇒ τ₂)) →
+  ∀ (s : Term ∅ τ₁) (ds : Term ∅ (Δ-Type τ₁))
+    {R[v,dv] : valid-Δ (⟦ s ⟧ ∅) (⟦ ds ⟧ ∅)} →
+    ⟦ f ⟧ ∅ (⟦ s ⟧ ∅ ⟦⊕⟧ ⟦ ds ⟧ ∅)
+    ≡
+    ⟦ f ⟧ ∅ (⟦ s ⟧ ∅) ⟦⊕⟧ ⟦ derive f ⟧ ∅ (⟦ s ⟧ ∅) (⟦ ds ⟧ ∅)
+
+correctness-on-closed-terms {τ₁} {τ₂} f s ds {R[v,dv]} =
+  begin
+    h (v ⟦⊕⟧ dv)
+  ≡⟨ cong₂ (λ f x → f x)
+           (sym (f⊕[g⊝f]=g h h))
+           refl ⟩
+    (h ⟦⊕⟧ (h ⟦⊝⟧ h)) (v ⟦⊕⟧ dv)
+  ≡⟨ cong₂ (λ f x → f x)
+      (sym (extract-Δequiv
+        (correctness-of-derive ∅ f)
+        h
+        (validity-of-derive ∅ {dρ=∅} f)
+        (R[f,g⊝f] h h)))
+      refl ⟩
+    (h ⟦⊕⟧ Δh) (v ⟦⊕⟧ dv)
+  ≡⟨ proj₂ (validity-of-derive ∅ {dρ=∅} f v dv R[v,dv]) ⟩
+    h v ⟦⊕⟧ Δh v dv
+  ∎
+  where
+    open ≡-Reasoning
+    h : ⟦ τ₁ ⇒ τ₂ ⟧
+    h = ⟦ f ⟧ ∅
+    Δh : ⟦ Δ-Type (τ₁ ⇒ τ₂) ⟧
+    Δh = ⟦ derive f ⟧ ∅
+    v : ⟦ τ₁ ⟧
+    v = ⟦ s ⟧ ∅
+    dv : ⟦ Δ-Type τ₁ ⟧
+    dv = ⟦ ds ⟧ ∅
 
