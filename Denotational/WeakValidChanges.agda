@@ -32,11 +32,13 @@ Weak-Valid-Δ {S ⇒ T} f df =
 
 strong-to-weak-validity : ∀ {τ : Type} {v : ⟦ τ ⟧} {dv} → Valid-Δ v dv → Weak-Valid-Δ v dv
 strong-to-weak-validity {bool} _ = tt
-strong-to-weak-validity {τ ⇒ τ₁} {v} {dv} s-valid-v-dv s ds _ = strong-to-weak-validity dv-s-ds-valid-on-v-s , dv-is-correct-for-v-on-s-and-ds
-  where
+strong-to-weak-validity {τ ⇒ τ₁} {v} {dv} s-valid-v-dv = λ s ds _ → 
+  let
     proofs = s-valid-v-dv s ds
     dv-s-ds-valid-on-v-s = proj₁ proofs
     dv-is-correct-for-v-on-s-and-ds = proj₂ proofs
+  in
+    strong-to-weak-validity dv-s-ds-valid-on-v-s , dv-is-correct-for-v-on-s-and-ds
 
 {-
 -- This proof doesn't go through: the desired equivalence is too
