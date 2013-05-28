@@ -60,9 +60,6 @@ data Term : Context -> Type -> Set where
                       (f : Term Γ (τ ⇒ τ)) → (z : Term Γ τ)
                     → Term Γ τ
 
-  -- Change to nats = replacement Church pairs
-  -- 3 -> 5 ::= λf. f 3 5
-
 infix 8 _≼_
 
 data _≼_ : (Γ₁ Γ₂ : Context) → Set where
@@ -76,6 +73,9 @@ data _≼_ : (Γ₁ Γ₂ : Context) → Set where
 
 ≼-reflexive : ∀ {Γ₁ Γ₂} → Γ₁ ≡ Γ₂ → Γ₁ ≼ Γ₂
 ≼-reflexive refl = ≼-reflexivity
+
+Γ≼Γ : ∀ {Γ} → Γ ≼ Γ
+Γ≼Γ = ≼-reflexive refl
 
 ≼-transitive : Transitive _≼_
 ≼-transitive ∅≼∅ rel1 = rel1
@@ -211,6 +211,29 @@ weaken-sound (foldNat n f z) ρ = {!!}
 Δ-Type : Type → Type
 Δ-Type nats = (nats ⇒ nats ⇒ nats) ⇒ nats
 Δ-Type (τ₁ ⇒ τ₂) = τ₁ ⇒ Δ-Type τ₁ ⇒ Δ-Type τ₂
+
+-- Combination as type-indexed family of terms
+-- _⊕_ : ∀ {τ Γ} →  TODO: IMPLEMENT ME!! {!!}
+
+-- Replacement-pairs on all types as syntactic sugar
+
+replace_by_ : ∀ {τ Γ} → (old : Term Γ τ) (new : Term Γ τ)
+                      → Term Γ (Δ-Type τ)
+
+-- replace n by m = λ f . f n m
+-- replace f by g = λ x . λ dx . replace (f x) by (g (x ⊕ dx))
+--
+-- Remark. Amazingly, weakening is identical to arbitrary
+-- legal adjustment of de-Bruijn indices.
+replace_by_ {nats} {Γ} old new =
+  abs (app (app (var this) (weaken drop-f old)) (weaken drop-f new))
+  where drop-f = drop _ • Γ≼Γ
+-- Think: the new must compute upon changes...
+replace_by_ {τ₁ ⇒ τ₂} old new =
+  abs (abs (replace (app (weaken drop! old) (var (that this)))
+                 by (app (weaken drop! new) {!!})))
+  where drop! = drop (Δ-Type τ₁) • drop τ₁ • Γ≼Γ
+
 
 -- It is clear that ⟦⊝⟧ exists on the semantic level:
 -- there exists an Agda value to describe the change between any
@@ -420,8 +443,8 @@ derive (abs t) = abs (abs (derive t))
 -- derive(f s) = derive(f) s derive(s)
 derive (app f s) = app (app (derive f) (weaken Γ≼ΔΓ s)) (derive s)
 
--- derive (foldNat f n z) =
-derive (foldNat f n z) =  {!!}
+-- derive (foldNat n f z) = ?
+derive (foldNat n f z) =  {!!}
 
 -- Extensional equivalence for changes
 data as-Δ_is_ext-equiv-to_ :
