@@ -11,7 +11,7 @@ Checklist of stuff to add when adding syntactic constructs
 
 -}
 
-module A where
+module Extension-00 where
 
 open import Data.Product
 open import Data.Nat using (ℕ)
