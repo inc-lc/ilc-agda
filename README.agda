@@ -21,15 +21,9 @@ module README where
 -- The formalization is split across the following files.
 -- TODO: document them more.
 
--- Note that we use two postulates currently:
-
--- 1. function extensionality (in
---    `Denotational.ExtensionalityPostulate`), known to be consistent
---    with intensional type theory.
---
--- 2. Temporarily, we use `diff-apply` as a postulate, which is only
---    true in a slightly weaker form, `diff-apply-proof` - we are
---    adapting the proofs to use the latter.
+-- Note that we postulate function extensionality (in
+-- `Denotational.ExtensionalityPostulate`), known to be consistent
+-- with intensional type theory.
 
 open import Syntactic.Types
 open import Syntactic.Contexts Type

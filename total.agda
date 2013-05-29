@@ -23,13 +23,24 @@ open import ChangeContextLifting
 open import PropsDelta
 open import SymbolicDerivation
 
+{-
+
+-- This proof will not go through, because diff-apply does not work
+-- and the correctness theorem needs to be weaker.
+
+-- An alternative development is available for most features of the
+-- calculus, and we'll port it here later (issue #45).
+
 -- CORRECTNESS of derivation
 
 derive-var-correct : ∀ {Γ τ} → (ρ : ⟦ Δ-Context Γ ⟧) → (x : Var Γ τ) →
   diff (⟦ x ⟧ (update ρ)) (⟦ x ⟧ (ignore ρ)) ≡
   ⟦ derive-var x ⟧ ρ
+derive-var-correct = {!!}
+{-
 derive-var-correct (dv • v • ρ) this = diff-apply dv v
 derive-var-correct (dv • v • ρ) (that x) = derive-var-correct ρ x
+-}
 
 derive-term-correct : ∀ {Γ₁ Γ₂ τ} → (Γ′ : Δ-Context Γ₁ ≼ Γ₂) → (t : Term Γ₁ τ) →
   Δ Γ′ t ≈ derive-term Γ′ t
@@ -99,3 +110,5 @@ derive-term-correct Γ′ (if t₁ t₂ t₃) =
   ∎ where open ≈-Reasoning
 
 derive-term-correct Γ′ (Δ Γ″ t) = ≈-Δ Γ′ (derive-term-correct Γ″ t)
+
+-}

@@ -51,18 +51,14 @@ diff-derive {τ₁ ⇒ τ₂} v = ≡-refl
 
 diff-derive {bool} b = a-xor-a-false b
 
--- XXX: as given, this is false!
+-- Here used to live diff-apply, which turned out to be incorrect. For
+-- a correct version, see diff-apply-proof in
+-- Denotational.ValidChanges
+{-
+-- false:
 postulate
   diff-apply : ∀ {τ} (dv : ⟦ Δ-Type τ ⟧) (v : ⟦ τ ⟧) →
     diff (apply dv v) v ≡ dv
-
-{-
-diff-apply {τ₁ ⇒ τ₂} df f = ext (λ v → ext (λ dv →
-  {!!}))
-diff-apply {bool} true true = bool
-diff-apply {bool} true false = bool
-diff-apply {bool} false true = bool
-diff-apply {bool} false false = bool
 -}
 
 apply-diff : ∀ {τ} (v₁ v₂ : ⟦ τ ⟧) →
