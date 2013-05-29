@@ -11,11 +11,14 @@ Checklist of stuff to add when adding syntactic constructs
 
 
 This file explores introducing folds over natural numbers
-into the object language.
+into the object language. It is identical to the system T
+described in §2.7 of the file below under the name λ→N:
+
+http://www.cs.nott.ac.uk/~txa/publ/mgs04.pdf
 
 -}
 
-module Extension-00 where
+module System-T where
 
 open import Data.Nat using
   ( ℕ
@@ -517,7 +520,7 @@ derive (app f s) = app (app (derive f) (weaken Γ≼ΔΓ s)) (derive s)
 --     -- core is a Church pair (core₁, core₂)
 --     -- where core₁ is the result of applying f to z min[n,n′] times
 --     -- and core₂ is the change to core₁ caused by changes to f and z.
---     core = foldNat (λ g . g z Δz)
+--     core = foldNat (λ g . g z dz)
 --                    (λ p . λ g . g (f (p fst)) (df (p fst) (p snd)))
 --                    min[n,n′]
 --     core₁ = core fst
