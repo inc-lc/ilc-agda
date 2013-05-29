@@ -2,29 +2,39 @@
 
 Checklist of stuff to add when adding syntactic constructs
 
-- derive (symbolic derivation; most important!)
 - weaken
 - ⟦_⟧Term
 - weaken-sound
+- derive (symbolic derivation)
 - validity-of-derive
 - correctness-of-derive
+
+
+This file explores introducing folds over natural numbers
+into the object language.
 
 -}
 
 module Extension-00 where
 
+open import Data.Nat using
+  ( ℕ
+  ; suc
+  ; fold
+  ; _+_
+  ; _∸_ -- x ∸ y = max(0, x - y)
+  )
+
 open import Data.Product
-open import Data.Nat using (ℕ)
 open import Data.Unit using (⊤)
 
 open import Relation.Binary.PropositionalEquality
 
-open import Level using
-  (zero ; Level ; suc)
+import Level using (zero ; Level ; suc)
 open import Relation.Binary using
   (Reflexive ; Transitive ; Preorder ; IsPreorder)
 
-postulate extensionality : Extensionality zero zero
+postulate extensionality : Extensionality Level.zero Level.zero
 
 data Type : Set where
   nats : Type
@@ -55,10 +65,11 @@ data Term : Context -> Type -> Set where
   app : ∀ {τ₁ τ₂ Γ} → (t₁ : Term Γ (τ₁ ⇒ τ₂)) (t₂ : Term Γ τ₁)
                    → Term Γ τ₂
 
-  -- ad-hoc extensions
-  foldNat : ∀ {Γ τ} → (n : Term Γ nats) →
-                      (f : Term Γ (τ ⇒ τ)) → (z : Term Γ τ)
+  foldNat : ∀ {Γ τ} → (z : Term Γ τ) → (f : Term Γ (τ ⇒ τ))
+                    → (n : Term Γ nats)
                     → Term Γ τ
+  _plus_ : ∀ {Γ} → (m : Term Γ nats) → (n : Term Γ nats) → Term Γ nats
+  _minus_ : ∀ {Γ} → (m : Term Γ nats) → (n : Term Γ nats) → Term Γ nats
 
 infix 8 _≼_
 
@@ -122,9 +133,12 @@ weaken subctx (app t₁ t₂) = app (weaken subctx t₁) (weaken subctx t₂)
 weaken subctx (var x) = var (weakenVar subctx x)
 weaken subctx (nat x) = nat x
 
-weaken subctx (foldNat n f z) = {!!}
+weaken subctx (foldNat z f n) = 
+  foldNat (weaken subctx z) (weaken subctx f) (weaken subctx n)
+weaken subctx (m plus n) = (weaken subctx m) plus (weaken subctx n)
+weaken subctx (m minus n) = (weaken subctx m) minus (weaken subctx n)
 
-record Meaning (Syntax : Set) {ℓ : Level} : Set (suc ℓ) where
+record Meaning (Syntax : Set) {ℓ : Level.Level} : Set (Level.suc ℓ) where
   constructor
     meaning
   field
@@ -186,7 +200,11 @@ weakenVar-sound (drop τ • subctx) (that x) (v • ρ) =
 ⟦ var x ⟧Term ρ = ⟦ x ⟧ ρ
 ⟦ nat n ⟧Term ρ = n
 
-⟦ foldNat n f z ⟧Term ρ = {!!}
+⟦ foldNat z f n ⟧Term ρ with ⟦ n ⟧Term ρ
+... | i = fold (⟦ z ⟧Term ρ) (⟦ f ⟧Term ρ) i
+⟦ m plus  n ⟧Term ρ = ⟦ m ⟧Term ρ + ⟦ n ⟧Term ρ
+⟦ m minus n ⟧Term ρ = ⟦ m ⟧Term ρ ∸ ⟦ n ⟧Term ρ
+
 
 meaningOfTerm : ∀ {Γ τ} → Meaning (Term Γ τ)
 meaningOfTerm = meaning ⟦_⟧Term
@@ -203,6 +221,8 @@ weaken-sound {subctx = subctx} (var x) ρ = weakenVar-sound subctx x ρ
 weaken-sound (nat n) ρ = refl
 
 weaken-sound (foldNat n f z) ρ = {!!}
+weaken-sound (m plus n) ρ = {!!}
+weaken-sound (m minus n) ρ = {!!}
 
 -- Changes to ℕ are replacement Church pairs. The only arguments
 -- of conern are `fst` and `snd`, so the Church pairs don't have
@@ -212,27 +232,63 @@ weaken-sound (foldNat n f z) ρ = {!!}
 Δ-Type nats = (nats ⇒ nats ⇒ nats) ⇒ nats
 Δ-Type (τ₁ ⇒ τ₂) = τ₁ ⇒ Δ-Type τ₁ ⇒ Δ-Type τ₂
 
--- Combination as type-indexed family of terms
--- _⊕_ : ∀ {τ Γ} →  TODO: IMPLEMENT ME!! {!!}
+fst : ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ τ)
+snd : ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ τ)
+fst = abs (abs (var (that this)))
+snd = abs (abs (var this))
 
--- Replacement-pairs on all types as syntactic sugar
+-- Syntactic sugars
+-- * if0-then-else
+-- * change application
+-- * term difference
+-- * replacement pairs
+
+infix 4 if0_then_else_
+
+if0_then_else_ : ∀ {τ Γ} → Term Γ nats → Term Γ τ → Term Γ τ → Term Γ τ
+if0 condition then then-branch else else-branch =
+  foldNat then-branch (abs (weaken (drop _ • Γ≼Γ) else-branch)) condition
+
+_⊕_ : ∀ {τ Γ} → Term Γ τ → Term Γ (Δ-Type τ) → Term Γ τ
+_⊝_ : ∀ {τ Γ} → Term Γ τ → Term Γ τ → Term Γ (Δ-Type τ)
 
 replace_by_ : ∀ {τ Γ} → (old : Term Γ τ) (new : Term Γ τ)
                       → Term Γ (Δ-Type τ)
 
+-- Term difference is replacement because symbolic
+-- derivation isn't avaliable at object level yet
+s ⊝ t = replace s by t
+
+-- n ⊕ dn = dn snd
+-- f ⊕ df = λ x . f x ⊕ df x (x ⊝ x)
+--
+-- Replacing same by same is used to get the nil change,
+-- because symbolic derivation is not part of the object
+-- language.
+_⊕_ {nats} t dt = app dt snd
+_⊕_ {τ₁ ⇒ τ₂} t dt = abs ((app t′ x) ⊕ (app (app dt′ x) (x ⊝ x)))
+  where
+    drop-it = drop τ₁ • Γ≼Γ
+    x = var this
+    t′ = weaken drop-it t
+    dt′ = weaken drop-it dt
+
 -- replace n by m = λ f . f n m
 -- replace f by g = λ x . λ dx . replace (f x) by (g (x ⊕ dx))
 --
--- Remark. Amazingly, weakening is identical to arbitrary
+-- Amazingly, weakening is identical to arbitrary
 -- legal adjustment of de-Bruijn indices.
 replace_by_ {nats} {Γ} old new =
   abs (app (app (var this) (weaken drop-f old)) (weaken drop-f new))
   where drop-f = drop _ • Γ≼Γ
 -- Think: the new must compute upon changes...
 replace_by_ {τ₁ ⇒ τ₂} old new =
-  abs (abs (replace (app (weaken drop! old) (var (that this)))
-                 by (app (weaken drop! new) {!!})))
-  where drop! = drop (Δ-Type τ₁) • drop τ₁ • Γ≼Γ
+  abs (abs (replace (app (weaken drop! old) x)
+                 by (app (weaken drop! new) (x ⊕ dx))))
+  where
+    drop! = drop (Δ-Type τ₁) • drop τ₁ • Γ≼Γ
+    dx = var this
+    x = var (that this)
 
 
 -- It is clear that ⟦⊝⟧ exists on the semantic level:
@@ -443,8 +499,36 @@ derive (abs t) = abs (abs (derive t))
 -- derive(f s) = derive(f) s derive(s)
 derive (app f s) = app (app (derive f) (weaken Γ≼ΔΓ s)) (derive s)
 
--- derive (foldNat n f z) = ?
-derive (foldNat n f z) =  {!!}
+-- derive (foldNat z f n) =
+--   let
+--     dz = derive z
+--     df = derive f
+--     dn = derive n
+--     n′ = dn snd
+--   in
+--     if (n = n′) -- if0 (n′ ∸ n) + (n ∸ n′)
+--       core₂
+--     if (n < n′) -- else if0 (n - n′)
+--       (replace (λ x . x) by (λ x . foldNat x f (n′ ∸ n))) core₁ core₂
+--     if (n > n′) -- else
+--       (replace (λ x . foldNat x f (n ∸ n′)) by (λ x . x)) core₁ core₂
+--   where
+--     min[n,n′] = if (n < n′) then n else n′
+--     -- core is a Church pair (core₁, core₂)
+--     -- where core₁ is the result of applying f to z min[n,n′] times
+--     -- and core₂ is the change to core₁ caused by changes to f and z.
+--     core = foldNat (λ g . g z Δz)
+--                    (λ p . λ g . g (f (p fst)) (df (p fst) (p snd)))
+--                    min[n,n′]
+--     core₁ = core fst
+--     core₂ = core snd
+derive (foldNat z f n) =  {!!}
+
+-- derive (m plus n) = ?
+derive (m plus n) = {!!}
+
+-- derive (m minus n) = ?
+derive (m minus n) = {!!}
 
 -- Extensional equivalence for changes
 data as-Δ_is_ext-equiv-to_ :
@@ -729,7 +813,9 @@ validity-of-derive ρ {consistency} (app {τ₁} {τ₂} t₁ t₂)
       valid-Δ (⟦ app t₁ t₂ ⟧ (ignore ρ)) (⟦ derive (app t₁ t₂) ⟧ ρ)
     R[⟦t₁t₂⟧,⟦Δ[t₁t₂]⟧] = R ⟦Δ[t₁t₂]⟧=dv₁v₂dv₂ R[⟦t₁t₂⟧,dv₁v₂dv₂]
 
-validity-of-derive ρ {consistency} (foldNat n f z) = {!!}
+validity-of-derive ρ {consistency} (foldNat z f n) = {!!}
+validity-of-derive ρ {consistency} (m plus n) = {!!}
+validity-of-derive ρ {consistency} (m minus n) = {!!}
 
 
 correctness-of-derive ρ (var x) = correctness-of-deriveVar ρ x
@@ -861,7 +947,13 @@ correctness-of-derive ρ {consistency} (app {τ₁} {τ₂} {Γ} t₁ t₂) =
     ext-Δ[t₁t₂] rewrite sym v₂=old-v₂ = dv₁v₂dv₂=v₁′v₂′⊝v₁v₂
 
 correctness-of-derive {Γ} {τ}
-  ρ {consistency} (foldNat n f z) = {!!}
+  ρ {consistency} (foldNat z f n) = {!!}
+
+correctness-of-derive {Γ} {nats}
+  ρ {consistency} (m plus n) = {!!}
+
+correctness-of-derive {Γ} {nats}
+  ρ {consistency} (m minus n) = {!!}
 
 correctness-on-closed-terms : ∀ {τ₁ τ₂} →
   ∀ (f : Term ∅ (τ₁ ⇒ τ₂)) →
