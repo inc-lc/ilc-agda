@@ -16,12 +16,20 @@ described in /examples.md, "Map.mapValues", fast:
     old = fromAscList  [(1, 1), (2, 2) .. (n, n)]
     res = incVal old = [(1, 2), (2, 3) .. (n, n + 1)]
 
+
 TODO
-X. Replace ℕ by ℤ
-2. Introduce addition
-3. Add MapBags and map
-4. Figure out a way to communicate to a derivative that
-   certain changes are always nil (in this case, `+1`).
+X. Stop not getting why hole in half₁-WF can't be filled
+X. Prove well-foundedness of half₁
+X. Fix singleton
+3. Make sure this file has no hole
+   X. Replace ℕ by ℤ
+   0. Introduce addition
+   0. Add MapBags and map
+   0. Figure out a way to communicate to a derivative that
+      certain changes are always nil (in this case, `+1`).
+
+4. Finish ExplicitNils
+5. Consider appending ExplicitNils
 
 
 Checklist: Adding syntactic constructs
@@ -68,6 +76,7 @@ open import Relation.Binary using
 open import Relation.Binary.PropositionalEquality
 
 import Level
+import Data.Product as Product
 
 postulate extensionality : Extensionality Level.zero Level.zero
 
@@ -76,13 +85,12 @@ data NatMap : Set where
   ∅ : NatMap
   ℕtree : (v : ℤ) → (left : NatMap) → (right : NatMap) → NatMap
 
-{- To understand why there must be an empty NatMap,
-   observe the termination checker's complaint upon
-   seeing Haskell's empty NatMap:
-
-emptyMap : NatMap
-emptyMap = ℕtree (+ 0) emptyMap emptyMap
--}
+-- To understand why there must be an empty NatMap,
+-- observe the termination checker's complaint upon
+-- seeing Haskell's empty NatMap:
+--
+--     emptyMap : NatMap
+--     emptyMap = ℕtree (+ 0) emptyMap emptyMap
 
 data Oddity : Set where
   odd  : Oddity
@@ -102,6 +110,8 @@ if-odd k then thenBranch else elseBranch with oddity k
 ... | even = elseBranch
 
 -- oddity-index k = (oddity k , (k - 1) / 2)
+-- Here to please termination checker so that ℕlookup
+-- doesn't have to pass well-foundedness-proofs around
 oddity-index : ℕ → Oddity × ℕ
 oddity-index 0 = (even , 0)
 oddity-index 1 = (odd  , 0)
@@ -111,14 +121,14 @@ oddity-index (suc (suc k)) = (oddity-k , suc [k-1]/2) where
   oddity-k = proj₁ oddity-index-k
   [k-1]/2  = proj₂ oddity-index-k
 
--- Copied from Induction.Nat.Examples (declared private)
-
+-- Computes next key after going down 1 level of a nat tree
 half₁ : ℕ → ℕ
 half₁ 0 = 0
 half₁ 1 = 0
 half₁ 2 = 0
 half₁ (suc (suc n)) = suc (half₁ n)
 
+-- Nonzero n holds a proof that n != 0.
 data Nonzero : ℕ → Set where
   suc : (n : ℕ) → Nonzero (suc n)
 
@@ -126,23 +136,13 @@ data Nonzero : ℕ → Set where
 ≤′-suc ≤′-refl = ≤′-refl
 ≤′-suc (≤′-step le) = ≤′-step (≤′-suc le)
 
-half₁-β≡ : ∀ {n : ℕ} → Nonzero n → half₁ (suc (suc n)) ≡ suc (half₁ n)
-half₁-β≡ {0} ()
-half₁-β≡ {suc n} nz = refl
-
 half₁-WF : ∀ (n : ℕ) → Nonzero n → suc (half₁ n) ≤′ n
 half₁-WF 0 ()
 half₁-WF 1 _ = ≤′-refl
 half₁-WF 2 _ = ≤′-step ≤′-refl
 half₁-WF (suc (suc (suc n))) _ =
-  ≤′-suc {suc (half₁ (suc n))} {suc (suc n)} {!half₁-WF (suc n) ?!}
--- TODO:
--- 0. Stop not getting why hole#0 can't be filled
--- 1. Prove well-foundedness of half₁
--- 2. Fix singleton
--- 3. Make sure this file has no hole
--- 4. Finish ExplicitNils
--- 5. Consider appending ExplicitNils
+  ≤′-suc {suc (half₁ (suc n))} {suc (suc n)}
+         (≤′-step (half₁-WF (suc n) (suc n)))
 
 -- Here to please the termination checker
 singleton : ℕ → ℤ → NatMap
@@ -150,27 +150,15 @@ singleton k v = loop k where
   loop : ℕ → NatMap
   loop = <-rec _ λ
     { 0 _ → ℕtree v ∅ ∅
-    ; n rec →
+    ; (suc n₀) rec →
       let
-        next = half₁ n
-      in -- TODO: Case distinction
-        rec next {!!}
+        n = suc n₀
+        next = rec (half₁ n) (half₁-WF n (suc n₀))
+      in
+        if-odd n
+        then ℕtree (+ 0) next ∅
+        else ℕtree (+ 0) ∅ next
     }
-
-{-
-cRec _ λ
-  { 0 _ → (0 , ℕtree v ∅ ∅)
-  ; 1 _ → (100 , ℕtree (+ 0) (ℕtree v ∅ ∅) ∅)
-  ; 2 _ → (200 , ℕtree (+ 0) ∅ (ℕtree v ∅ ∅))
-  ; (suc (suc n)) (_ , self , _) →
-      let
-        [[n+2]-1]/2 = suc (proj₁ self)
-        half-map    =      proj₂ self
-      in if-odd n
-          then ([[n+2]-1]/2 , ℕtree (+ 0) half-map ∅)
-          else ([[n+2]-1]/2 , ℕtree (+ 0) ∅ half-map)
-  }
--}
 
 ℕlookup : ℕ → NatMap → ℤ
 ℕlookup _ ∅ = (+ 0)
@@ -179,13 +167,27 @@ cRec _ λ
 ... | (odd  , [k-1]/2) = ℕlookup [k-1]/2 left
 ... | (even , [k-1]/2) = ℕlookup [k-1]/2 right
 
--- `→` and `in` are keywords
-ℕset_⇒_within_ : ℕ → ℤ → NatMap → NatMap
-ℕset k ⇒ v within ∅ = singleton k v
-ℕset 0 ⇒ v within (ℕtree v₀ left right) = ℕtree v left right
-ℕset k ⇒ v within (ℕtree v₀ left right) with oddity-index k
-... | (odd  , [k-1]/2) = ℕtree v₀ left (ℕset [k-1]/2 ⇒ v within right)
-... | (even , [k-1]/2) = ℕtree v₀ (ℕset [k-1]/2 ⇒ v within left) right
+-- `update` in the sense of
+-- Data.Sequence.update : Int → a → Seq a → Seq a
+ℕupdate : ℕ → ℤ → NatMap → NatMap
+ℕupdate k v ∅ = singleton k v
+ℕupdate 0 v (ℕtree v₀ left right) = ℕtree v left right
+ℕupdate k v (ℕtree v₀ left right) with oddity-index k
+... | (odd  , [k-1]/2) = ℕtree v₀ (ℕupdate [k-1]/2 v left) right
+... | (even , [k-1]/2) = ℕtree v₀ left (ℕupdate [k-1]/2 v right)
+
+MapBag = NatMap × NatMap
+
+emptyBag : MapBag
+emptyBag = (∅ , ∅)
+
+lookup : ℤ → MapBag → ℤ
+lookup -[1+ k ] (negative , nonnegative) = ℕlookup k negative
+lookup   (+ k)  (negative , nonnegative) = ℕlookup k nonnegative
+
+update : ℤ → ℤ → MapBag → MapBag
+update -[1+ k ] v (neg , pos) = (ℕupdate k v neg , pos)
+update  ( + k ) v (neg , pos) = (neg , ℕupdate k v pos)
 
 -- We implement nothing but the necessary NatMap operations to save time:
 -- union, difference, mapValues.
@@ -195,20 +197,58 @@ cRec _ λ
 ℕmapValues f (ℕtree v left right) =
   ℕtree (f v) (ℕmapValues f left) (ℕmapValues f right)
 
-MapBag = NatMap × NatMap
-
-lookup : ℤ → MapBag → ℤ
-lookup -[1+ k ] b = ℕlookup k (proj₁ b)
-lookup   (+ k)  b = ℕlookup k (proj₂ b)
-
-set_⇒_within_ : ℤ → ℤ → MapBag → MapBag
-set -[1+ k ] ⇒ v within (neg , pos) = (ℕset k ⇒ v within neg , pos)
-set    + k   ⇒ v within (neg , pos) = (neg , ℕset k ⇒ v within pos)
-
 mapValues : (ℤ → ℤ) → MapBag → MapBag
 mapValues f (neg , pos) = (ℕmapValues f neg , ℕmapValues f pos)
 
-{-
+ℕunion : NatMap → NatMap → NatMap
+ℕunion ∅ b = b
+ℕunion b ∅ = b
+ℕunion (ℕtree v₁ left₁ right₁) (ℕtree v₂ left₂ right₂) =
+  ℕtree (v₁ + v₂) (ℕunion left₁ left₂) (ℕunion right₁ right₂)
+
+-- Prelude.(++) : [a] → [a] → [a]
+_++_ : MapBag → MapBag → MapBag
+b₁ ++ b₂ = Product.zip ℕunion ℕunion b₁ b₂
+
+infixr 5 _++_
+
+ℕdiff : NatMap → NatMap → NatMap
+ℕdiff ∅ b = ∅
+ℕdiff b ∅ = b
+ℕdiff (ℕtree v₁ left₁ right₁) (ℕtree v₂ left₂ right₂) =
+  ℕtree (v₁ - v₂) (ℕdiff left₁ left₂) (ℕdiff right₁ right₂)
+
+-- Data.Map.(\\) : Map k a → Map k b → Map k a (where b = a = ℤ)
+_\\_ : MapBag → MapBag → MapBag
+b₁ \\ b₂ = Product.zip ℕdiff ℕdiff b₁ b₂
+
+record Meaning (Syntax : Set) {ℓ : Level.Level} : Set (Level.suc ℓ) where
+  constructor
+    meaning
+  field
+    {Semantics} : Set ℓ
+    ⟨_⟩⟦_⟧ : Syntax → Semantics
+
+open Meaning {{...}} public
+  renaming (⟨_⟩⟦_⟧ to ⟦_⟧)
+
+-- Bag's extensional equivalence:
+-- Remove Quinean "identity without identity" on bags
+-- (keys with 0 multiplicities and no subkeys are as good
+-- as not to exist).
+
+data ℕEmpty : NatMap → Set where
+  is-empty : ℕEmpty ∅
+  0-mult : ∀ {left right} → ℕEmpty left → ℕEmpty right →
+             ℕEmpty (ℕtree (+ 0) left right)
+
+Empty : MapBag → Set
+Empty (neg , pos) = ℕEmpty neg × ℕEmpty pos
+
+postulate
+  ext-bag : ∀ {b₁ b₂} → Empty (b₁ \\ b₂) → b₁ ≡ b₂
+
+infixl 9 _\\_
 
 data Type : Set where
   ints : Type
@@ -242,6 +282,9 @@ data Term : Context -> Type -> Set where
   -- Change to ints = replacement Church pairs
   -- 3 -> 5 ::= λf. f 3 5
 
+  -- Change to bags = a summand
+  -- b₁ -> b₂ ::= b₂ \\ b₁
+
 infix 8 _≼_
 
 data _≼_ : (Γ₁ Γ₂ : Context) → Set where
@@ -263,16 +306,6 @@ weaken subctx (int x) = int x
 weaken subctx (bag b) = bag b
 weaken subctx (add t₁ t₂) = add (weaken subctx t₁) (weaken subctx t₂)
 weaken subctx (map f b) = map (weaken subctx f) (weaken subctx b)
-
-record Meaning (Syntax : Set) {ℓ : Level.Level} : Set (Level.suc ℓ) where
-  constructor
-    meaning
-  field
-    {Semantics} : Set ℓ
-    ⟨_⟩⟦_⟧ : Syntax → Semantics
-
-open Meaning {{...}} public
-  renaming (⟨_⟩⟦_⟧ to ⟦_⟧)
 
 ⟦_⟧Type : Type -> Set
 ⟦ ints ⟧Type = ℤ
@@ -353,6 +386,9 @@ weaken-sound (map f b) ρ = cong₂ mapValues (weaken-sound f ρ)
 -- Changes to ℤ are replacement Church pairs. The only arguments
 -- of conern are `fst` and `snd`, so the Church pairs don't have
 -- to be polymorphic.
+--
+-- Changes on mapbags are mapbags. They allow negative multiplicities
+-- to begin with.
 
 Δ-Type : Type → Type
 Δ-Type ints = (ints ⇒ ints ⇒ ints) ⇒ ints
@@ -376,21 +412,21 @@ infixl 6 _⟦⊝⟧_
 ⟦snd⟧ : ℤ → ℤ → ℤ
 
 ⟦derive⟧ {ints} n = λ f → f n n
-⟦derive⟧ {bags} b = ∅
+⟦derive⟧ {bags} b = emptyBag
 ⟦derive⟧ {τ₁ ⇒ τ₂} f = λ v dv → f (v ⟦⊕⟧ dv) ⟦⊝⟧ f v
 
 _⟦⊝⟧_ {ints} m n = λ f → f n m
-_⟦⊝⟧_ {bags} b₁ b₂ = {!!}
+_⟦⊝⟧_ {bags} b₁ b₂ = b₁ \\ b₂
 _⟦⊝⟧_ {τ₁ ⇒ τ₂} f₁ f₂ = λ v dv → f₁ (v ⟦⊕⟧ dv) ⟦⊝⟧ f₂ v
 -- m ⟦⊝⟧ n ::= replace n by m
 
 _⟦⊕⟧_ {ints} n dn = dn ⟦snd⟧
-_⟦⊕⟧_ {bags} b db = {!!}
+_⟦⊕⟧_ {bags} b db = b ++ db
 _⟦⊕⟧_ {τ₁ ⇒ τ₂} f df = λ v → f v ⟦⊕⟧ df v (⟦derive⟧ v)
 
 ⟦fst⟧ m n = m
 ⟦snd⟧ m n = n
-
+{-
 -- Cool lemmas
 
 f⟦⊝⟧f=⟦deriv⟧f : ∀ {τ : Type} (f : ⟦ τ ⟧) → f ⟦⊝⟧ f ≡ ⟦derive⟧ f
