@@ -130,3 +130,55 @@ weaken ≼₁ (var x) = var (lift ≼₁ x)
 weaken ≼₁ true = true
 weaken ≼₁ false = false
 weaken ≼₁ (if e₁ e₂ e₃) = if (weaken ≼₁ e₁) (weaken ≼₁ e₂) (weaken ≼₁ e₃)
+
+-- SYMBOLIC EXECUTION
+--
+-- Naming Convention:
+-- Γ ⟪_⟫X is like ⟦_⟧X but for symbolic execution in context Γ.
+
+_⟪_⟫Type : Context → Type → Set
+Γ₁ ⟪ τ₁ ⇒ τ₂ ⟫Type = ∀ {Γ₂} → Γ₁ ≼ Γ₂ → Γ₂ ⟪ τ₁ ⟫Type → Γ₂ ⟪ τ₂ ⟫Type
+Γ₁ ⟪ bool ⟫Type = Term Γ₁ bool
+
+module _ (Γ : Context) where
+  import Denotational.Environments
+  module SymEnv = Denotational.Environments Type (λ τ → Γ ⟪ τ ⟫Type)
+
+  open SymEnv public using ()
+    renaming (⟦_⟧Context to _⟪_⟫Context; ⟦_⟧Var to _⟪_⟫Var_)
+
+liftVal : ∀ {τ Γ₁ Γ₂} → Γ₁ ≼ Γ₂ → Γ₁ ⟪ τ ⟫Type → Γ₂ ⟪ τ ⟫Type
+liftVal {τ₁ ⇒ τ₂} ≼₁ v₁ = λ ≼₂ v₂ → v₁ (≼-trans ≼₁ ≼₂) v₂
+liftVal {bool} ≼₁ v = weaken ≼₁ v
+
+liftEnv : ∀ {Γ Γ₁ Γ₂} → Γ₁ ≼ Γ₂ → Γ₁ ⟪ Γ ⟫Context → Γ₂ ⟪ Γ ⟫Context
+liftEnv {∅} ≼₁ ∅ = SymEnv.∅
+liftEnv {τ • Γ} ≼₁ (v • ρ) = liftVal ≼₁ v SymEnv.• liftEnv ≼₁ ρ
+
+mixed-if : ∀ {Γ₁} τ → (t₁ : Term Γ₁ bool) (v₂ v₃ : Γ₁ ⟪ τ ⟫Type) → Γ₁ ⟪ τ ⟫Type
+mixed-if (τ₁ ⇒ τ₂) t₁ v₂ v₃ = λ ≼₁ v → mixed-if τ₂ (weaken ≼₁ t₁) (v₃ ≼₁ v) (v₃ ≼₁ v)
+mixed-if bool t₁ t₂ t₃ = if t₁ t₂ t₃
+
+_⟪_⟫Term_ : ∀ Γ₁ {Γ τ} → Term Γ τ → Γ₁ ⟪ Γ ⟫Context → Γ₁ ⟪ τ ⟫Type
+Γ₁ ⟪ abs t ⟫Term ρ = λ {Γ₂} ≼₁ v → Γ₂ ⟪ t ⟫Term (v SymEnv.• liftEnv ≼₁ ρ)
+Γ₁ ⟪ app t₁ t₂ ⟫Term ρ = (Γ₁ ⟪ t₁ ⟫Term ρ) ≼-refl (Γ₁ ⟪ t₂ ⟫Term ρ)
+Γ₁ ⟪ var x ⟫Term ρ = Γ₁ ⟪ x ⟫Var ρ
+Γ₁ ⟪ true ⟫Term ρ = true
+Γ₁ ⟪ false ⟫Term ρ = false
+Γ₁ ⟪ if t₁ t₂ t₃ ⟫Term ρ = mixed-if _ (Γ₁ ⟪ t₁ ⟫Term ρ) (Γ₁ ⟪ t₂ ⟫Term ρ) (Γ₁ ⟪ t₂ ⟫Term ρ)
+
+↓ : ∀ {Γ} τ → Γ ⟪ τ ⟫Type → Term Γ τ
+↑ : ∀ {Γ} τ → Term Γ τ → Γ ⟪ τ ⟫Type
+
+↓ (τ₁ ⇒ τ₂) v = abs (↓ τ₂ (v (drop τ₁ • ≼-refl) (↑ τ₁ (var this))))
+↓ bool v = v
+
+↑ (τ₁ ⇒ τ₂) t = λ ≼₁ v → ↑ τ₂ (app (weaken ≼₁ t) (↓ τ₁ v))
+↑ bool t = t
+
+↑-Context : ∀ {Γ} → Γ ⟪ Γ ⟫Context
+↑-Context {∅} = SymEnv.∅
+↑-Context {τ • Γ} = ↑ τ (var this) SymEnv.• liftEnv (drop τ • ≼-refl) ↑-Context
+
+norm : ∀ {Γ τ} → Term Γ τ → Term Γ τ
+norm {Γ} {τ} t = ↓ τ (Γ ⟪ t ⟫Term ↑-Context)
