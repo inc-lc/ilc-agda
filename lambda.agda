@@ -3,9 +3,7 @@ module lambda where
 open import Relation.Binary.PropositionalEquality
 
 open import Syntactic.Types public
-open import Syntactic.Contexts Type public hiding (lift)
-
-open Prefixes
+open import Syntactic.Contexts Type public
 
 open import Denotational.Notation
 open import Denotational.Values public
@@ -125,10 +123,10 @@ meaningOfVal = meaning ⟦_⟧Val
 
 -- Weaken a term to a super context
 
-weaken : ∀ {Γ₁ Γ₂ Γ₃ τ} → Term (Γ₁ ⋎ Γ₃) τ → Term (Γ₁ ⋎ Γ₂ ⋎ Γ₃) τ
-weaken {Γ₁} {Γ₂} (abs  {τ₁ = τ} t) = abs (weaken {τ • Γ₁} {Γ₂} t)
-weaken {Γ₁} {Γ₂} (app t₁ t₂) = app (weaken {Γ₁} {Γ₂} t₁) (weaken {Γ₁} {Γ₂} t₂)
-weaken {Γ₁} {Γ₂} (var x) = var (lift {Γ₁} {Γ₂} x)
-weaken {Γ₁} {Γ₂} true = true
-weaken {Γ₁} {Γ₂} false = false
-weaken {Γ₁} {Γ₂} (if e₁ e₂ e₃) = if (weaken {Γ₁} {Γ₂} e₁) (weaken {Γ₁} {Γ₂} e₂) (weaken {Γ₁} {Γ₂} e₃)
+weaken : ∀ {Γ₁ Γ₂ τ} → Γ₁ ≼ Γ₂ → Term Γ₁ τ → Term Γ₂ τ
+weaken ≼₁ (abs t) = abs (weaken (keep _ • ≼₁) t)
+weaken ≼₁ (app t₁ t₂) = app (weaken ≼₁ t₁) (weaken ≼₁ t₂)
+weaken ≼₁ (var x) = var (lift ≼₁ x)
+weaken ≼₁ true = true
+weaken ≼₁ false = false
+weaken ≼₁ (if e₁ e₂ e₃) = if (weaken ≼₁ e₁) (weaken ≼₁ e₂) (weaken ≼₁ e₃)
