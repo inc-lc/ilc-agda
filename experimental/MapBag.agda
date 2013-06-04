@@ -80,10 +80,25 @@ import Data.Product as Product
 
 postulate extensionality : Extensionality Level.zero Level.zero
 
--- Map nats to ints with default 0
-data NatMap : Set where
-  ∅ : NatMap
-  ℕtree : (v : ℤ) → (left : NatMap) → (right : NatMap) → NatMap
+-- Map ints to ints with default 0
+data MapBag : Set where
+  ∅ : MapBag
+  btree : (v : ℤ) → (left : MapBag) → (right : MapBag) → MapBag
+
+-- Bag's extensional equivalence:
+-- Remove Quinean "identity without identity" on bags
+-- (keys with 0 multiplicities and no subkeys are as good
+-- as not to exist).
+
+data Empty : MapBag → Set where
+  ∅-is-empty : Empty ∅
+  vacant : ∀ {left right} → Empty left → Empty right →
+             Empty (btree (+ 0) left right)
+
+_\\_ : MapBag → MapBag → MapBag -- Bag difference
+
+-- THIS introduces inconsistency haha
+postulate ext-bag : ∀ {b₁ b₂} → Empty (b₁ \\ b₂) → b₁ ≡ b₂
 
 -- To understand why there must be an empty NatMap,
 -- observe the termination checker's complaint upon
@@ -145,110 +160,84 @@ half₁-WF (suc (suc (suc n))) _ =
          (≤′-step (half₁-WF (suc n) (suc n)))
 
 -- Here to please the termination checker
-singleton : ℕ → ℤ → NatMap
-singleton k v = loop k where
-  loop : ℕ → NatMap
+ℕsingleton : ℕ → ℤ → MapBag
+ℕsingleton k v = loop k where
+  loop : ℕ → MapBag
   loop = <-rec _ λ
-    { 0 _ → ℕtree v ∅ ∅
+    { 0 _ → btree v ∅ ∅
     ; (suc n₀) rec →
       let
         n = suc n₀
         next = rec (half₁ n) (half₁-WF n (suc n₀))
       in
         if-odd n
-        then ℕtree (+ 0) next ∅
-        else ℕtree (+ 0) ∅ next
+        then btree (+ 0) next ∅
+        else btree (+ 0) ∅ next
     }
 
-ℕlookup : ℕ → NatMap → ℤ
+ℕlookup : ℕ → MapBag → ℤ
 ℕlookup _ ∅ = (+ 0)
-ℕlookup 0 (ℕtree v _ _) = v
-ℕlookup k (ℕtree _ left right) with oddity-index k
+ℕlookup 0 (btree v _ _) = v
+ℕlookup k (btree _ left right) with oddity-index k
 ... | (odd  , [k-1]/2) = ℕlookup [k-1]/2 left
 ... | (even , [k-1]/2) = ℕlookup [k-1]/2 right
 
 -- `update` in the sense of
 -- Data.Sequence.update : Int → a → Seq a → Seq a
-ℕupdate : ℕ → ℤ → NatMap → NatMap
-ℕupdate k v ∅ = singleton k v
-ℕupdate 0 v (ℕtree v₀ left right) = ℕtree v left right
-ℕupdate k v (ℕtree v₀ left right) with oddity-index k
-... | (odd  , [k-1]/2) = ℕtree v₀ (ℕupdate [k-1]/2 v left) right
-... | (even , [k-1]/2) = ℕtree v₀ left (ℕupdate [k-1]/2 v right)
+ℕupdate : ℕ → ℤ → MapBag → MapBag
+ℕupdate k v ∅ = ℕsingleton k v
+ℕupdate 0 v (btree v₀ left right) = btree v left right
+ℕupdate k v (btree v₀ left right) with oddity-index k
+... | (odd  , [k-1]/2) = btree v₀ (ℕupdate [k-1]/2 v left) right
+... | (even , [k-1]/2) = btree v₀ left (ℕupdate [k-1]/2 v right)
 
-MapBag = NatMap × NatMap
+-- Inject ℤ into ℕ
 
-emptyBag : MapBag
-emptyBag = (∅ , ∅)
+double : ℕ → ℕ
+double 0 = 0
+double (suc n) = suc (suc (double n))
+
+ℤ⇒ℕ : ℤ → ℕ
+ℤ⇒ℕ  ( + n ) = double n
+ℤ⇒ℕ -[1+ n ] = suc (double n)
+
+_◦_ : {A : Set} {B : A -> Set} {C : (x : A) -> B x -> Set}
+      (f : {x : A} (y : B x) -> C x y) (g : (x : A) -> B x)
+      (x : A) -> C x (g x)
+(f ◦ g) = \ x -> f (g x)
 
 lookup : ℤ → MapBag → ℤ
-lookup -[1+ k ] (negative , nonnegative) = ℕlookup k negative
-lookup   (+ k)  (negative , nonnegative) = ℕlookup k nonnegative
+lookup = ℕlookup ◦ ℤ⇒ℕ
 
 update : ℤ → ℤ → MapBag → MapBag
-update -[1+ k ] v (neg , pos) = (ℕupdate k v neg , pos)
-update  ( + k ) v (neg , pos) = (neg , ℕupdate k v pos)
+update = ℕupdate ◦ ℤ⇒ℕ
 
 -- We implement nothing but the necessary NatMap operations to save time:
 -- union, difference, mapValues.
 
-ℕmapValues : (ℤ → ℤ) → NatMap → NatMap
-ℕmapValues _ ∅ = ∅
-ℕmapValues f (ℕtree v left right) =
-  ℕtree (f v) (ℕmapValues f left) (ℕmapValues f right)
-
 mapValues : (ℤ → ℤ) → MapBag → MapBag
-mapValues f (neg , pos) = (ℕmapValues f neg , ℕmapValues f pos)
+mapValues _ ∅ = ∅
+mapValues f (btree v left right) =
+  btree (f v) (mapValues f left) (mapValues f right)
 
-ℕunion : NatMap → NatMap → NatMap
-ℕunion ∅ b = b
-ℕunion b ∅ = b
-ℕunion (ℕtree v₁ left₁ right₁) (ℕtree v₂ left₂ right₂) =
-  ℕtree (v₁ + v₂) (ℕunion left₁ left₂) (ℕunion right₁ right₂)
-
--- Prelude.(++) : [a] → [a] → [a]
+-- Associativity of ++ follows Scala (left), fixity follows Haskell (5).
 _++_ : MapBag → MapBag → MapBag
-b₁ ++ b₂ = Product.zip ℕunion ℕunion b₁ b₂
+∅ ++ b = b
+b ++ ∅ = b
+(btree v₁ left₁ right₁) ++ (btree v₂ left₂ right₂) =
+  btree (v₁ + v₂) (left₁ ++ left₂) (right₁ ++ right₂)
 
-infixr 5 _++_
-
-ℕdiff : NatMap → NatMap → NatMap
-ℕdiff ∅ b = ∅
-ℕdiff b ∅ = b
-ℕdiff (ℕtree v₁ left₁ right₁) (ℕtree v₂ left₂ right₂) =
-  ℕtree (v₁ - v₂) (ℕdiff left₁ left₂) (ℕdiff right₁ right₂)
+infixl 5 _++_
 
 -- Data.Map.(\\) : Map k a → Map k b → Map k a (where b = a = ℤ)
-_\\_ : MapBag → MapBag → MapBag
-b₁ \\ b₂ = Product.zip ℕdiff ℕdiff b₁ b₂
-
-record Meaning (Syntax : Set) {ℓ : Level.Level} : Set (Level.suc ℓ) where
-  constructor
-    meaning
-  field
-    {Semantics} : Set ℓ
-    ⟨_⟩⟦_⟧ : Syntax → Semantics
-
-open Meaning {{...}} public
-  renaming (⟨_⟩⟦_⟧ to ⟦_⟧)
-
--- Bag's extensional equivalence:
--- Remove Quinean "identity without identity" on bags
--- (keys with 0 multiplicities and no subkeys are as good
--- as not to exist).
-
-data ℕEmpty : NatMap → Set where
-  is-empty : ℕEmpty ∅
-  0-mult : ∀ {left right} → ℕEmpty left → ℕEmpty right →
-             ℕEmpty (ℕtree (+ 0) left right)
-
-Empty : MapBag → Set
-Empty (neg , pos) = ℕEmpty neg × ℕEmpty pos
-
-postulate
-  ext-bag : ∀ {b₁ b₂} → Empty (b₁ \\ b₂) → b₁ ≡ b₂
-
 infixl 9 _\\_
+
+∅ \\ b = ∅
+b \\ ∅ = b
+(btree v₁ left₁ right₁) \\ (btree v₂ left₂ right₂) =
+  btree (v₁ - v₂) (left₁ \\ left₂) (right₁ \\ right₂)
+
+-- Here begins the language definition.
 
 data Type : Set where
   ints : Type
@@ -306,6 +295,16 @@ weaken subctx (int x) = int x
 weaken subctx (bag b) = bag b
 weaken subctx (add t₁ t₂) = add (weaken subctx t₁) (weaken subctx t₂)
 weaken subctx (map f b) = map (weaken subctx f) (weaken subctx b)
+
+record Meaning (Syntax : Set) {ℓ : Level.Level} : Set (Level.suc ℓ) where
+  constructor
+    meaning
+  field
+    {Semantics} : Set ℓ
+    ⟨_⟩⟦_⟧ : Syntax → Semantics
+
+open Meaning {{...}} public
+  renaming (⟨_⟩⟦_⟧ to ⟦_⟧)
 
 ⟦_⟧Type : Type -> Set
 ⟦ ints ⟧Type = ℤ
@@ -412,7 +411,7 @@ infixl 6 _⟦⊝⟧_
 ⟦snd⟧ : ℤ → ℤ → ℤ
 
 ⟦derive⟧ {ints} n = λ f → f n n
-⟦derive⟧ {bags} b = emptyBag
+⟦derive⟧ {bags} b = ∅
 ⟦derive⟧ {τ₁ ⇒ τ₂} f = λ v dv → f (v ⟦⊕⟧ dv) ⟦⊝⟧ f v
 
 _⟦⊝⟧_ {ints} m n = λ f → f n m
@@ -426,14 +425,38 @@ _⟦⊕⟧_ {τ₁ ⇒ τ₂} f df = λ v → f v ⟦⊕⟧ df v (⟦derive⟧ v
 
 ⟦fst⟧ m n = m
 ⟦snd⟧ m n = n
-{-
+
 -- Cool lemmas
+
+n-n=0 : ∀ {n : ℤ} → n - n ≡ (+ 0)
+n-n=0 { -[1+     0 ]} = refl
+n-n=0 { -[1+ suc n ]} = n-n=0 { -[1+ n ]} -- 'ware that comment symbol
+n-n=0 { +      0 } = refl
+n-n=0 { + (suc n)} = n-n=0 { -[1+ n ]}
+
+b\\∅=b : ∀ {b} → b \\ ∅ ≡ b
+b\\∅=b {∅} = refl
+b\\∅=b {btree v b b₁} = refl
+
+b\\b=∅ : ∀ {b} → b \\ b ≡ ∅
+b\\b=∅ {b} = ext-bag void where
+  loop : (b : MapBag) → Empty (b \\ b)
+  loop b = {!!}
+  void : Empty (b \\ b \\ ∅)
+  void rewrite b\\∅=b {b \\ b} = loop b
+
+
+{-
+  go rewrite n-n=0 {v}
+  ext-bag (vacant₁ (b\\b=∅ {left}) (b\\b=∅ {right}))
+-}
+
 
 f⟦⊝⟧f=⟦deriv⟧f : ∀ {τ : Type} (f : ⟦ τ ⟧) → f ⟦⊝⟧ f ≡ ⟦derive⟧ f
 f⟦⊝⟧f=⟦deriv⟧f {ints} f = refl
 f⟦⊝⟧f=⟦deriv⟧f {bags} b = {!!}
 f⟦⊝⟧f=⟦deriv⟧f {τ₁ ⇒ τ₂} f = refl
-
+{-
 f⊕[g⊝f]=g : ∀ {τ : Type} (f g : ⟦ τ ⟧) → f ⟦⊕⟧ (g ⟦⊝⟧ f) ≡ g
 
 f⊕Δf=f : ∀ {τ : Type} (f : ⟦ τ ⟧) → f ⟦⊕⟧ (⟦derive⟧ f) ≡ f
