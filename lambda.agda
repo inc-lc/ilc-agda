@@ -156,7 +156,7 @@ liftEnv {∅} ≼₁ ∅ = SymEnv.∅
 liftEnv {τ • Γ} ≼₁ (v • ρ) = liftVal ≼₁ v SymEnv.• liftEnv ≼₁ ρ
 
 mixed-if : ∀ {Γ₁} τ → (t₁ : Term Γ₁ bool) (v₂ v₃ : Γ₁ ⟪ τ ⟫Type) → Γ₁ ⟪ τ ⟫Type
-mixed-if (τ₁ ⇒ τ₂) t₁ v₂ v₃ = λ ≼₁ v → mixed-if τ₂ (weaken ≼₁ t₁) (v₃ ≼₁ v) (v₃ ≼₁ v)
+mixed-if (τ₁ ⇒ τ₂) t₁ v₂ v₃ = λ ≼₁ v → mixed-if τ₂ (weaken ≼₁ t₁) (v₂ ≼₁ v) (v₃ ≼₁ v)
 mixed-if bool t₁ t₂ t₃ = if t₁ t₂ t₃
 
 _⟪_⟫Term_ : ∀ Γ₁ {Γ τ} → Term Γ τ → Γ₁ ⟪ Γ ⟫Context → Γ₁ ⟪ τ ⟫Type
