@@ -182,3 +182,50 @@ _⟪_⟫Term_ : ∀ Γ₁ {Γ τ} → Term Γ τ → Γ₁ ⟪ Γ ⟫Context →
 
 norm : ∀ {Γ τ} → Term Γ τ → Term Γ τ
 norm {Γ} {τ} t = ↓ τ (Γ ⟪ t ⟫Term ↑-Context)
+
+-- SYMBOLIC DERIVATION
+--
+-- compare derive with _⟪_⟫_Term
+-- and derive-var with ⟦_⟧Var
+
+Δ-Type : Type → Type
+Δ-Type (τ₁ ⇒ τ₂) = τ₁ ⇒ Δ-Type τ₁ ⇒ Δ-Type τ₂
+Δ-Type bool = bool
+
+Δ-Context : Context → Context
+Δ-Context ∅ = ∅
+Δ-Context (τ • Γ) = Δ-Type τ • Δ-Context Γ
+
+xor₃ : ∀ {Γ} → Term Γ bool → Term Γ bool → Term Γ bool → Term Γ bool
+xor₃ t₁ t₂ t₃
+  = if t₁ (if t₂ t₃ (if t₃ false true)) (if t₂ (if t₃ false true) t₃)
+
+derive-if : ∀ {τ Γ₁} →
+  (t dt : Term Γ₁ bool) →
+  (v₁ : Γ₁ ⟪ τ ⟫Type) (dv₁ : Γ₁ ⟪ Δ-Type τ ⟫Type) →
+  (v₂ : Γ₁ ⟪ τ ⟫Type) (dv₂ : Γ₁ ⟪ Δ-Type τ ⟫Type) →
+  Γ₁ ⟪ Δ-Type τ ⟫Type
+derive-if {τ₁ ⇒ τ₂} t dt v₁ dv₁ v₂ dv₂ =
+  λ ≼₁ v ≼₂ dv → let ≼₃ = ≼-trans ≼₁ ≼₂ in
+    derive-if (weaken ≼₃ t) (weaken ≼₃ dt)
+              (v₁ ≼₃ (liftVal ≼₂ v)) (dv₁ ≼₁ v ≼₂ dv)
+              (v₂ ≼₃ (liftVal ≼₂ v)) (dv₂ ≼₁ v ≼₂ dv)
+derive-if {bool} t₁ dt₁ t₂ dt₂ t₃ dt₃ =
+  if dt₁ (if t₁ (xor₃ t₂ t₃ dt₃) (xor₃ t₂ t₃ dt₂)) (if t₁ dt₃ dt₂)
+
+derive-var : ∀ {Γ₁ Γ τ} → Var Γ τ → Γ₁ ⟪ Δ-Context Γ ⟫Context → Γ₁ ⟪ Δ-Type τ ⟫Type
+derive-var this (dv SymEnv.• dρ) = dv
+derive-var (that x) (dv SymEnv.• dρ) = derive-var x dρ
+
+derive : ∀ {Γ₁ Γ τ} → Term Γ τ → Γ₁ ⟪ Γ ⟫Context → Γ₁ ⟪ Δ-Context Γ ⟫Context → Γ₁ ⟪ Δ-Type τ ⟫Type
+derive (abs t) ρ dρ =
+  λ ≼₁ v ≼₂ dv → derive t (liftVal ≼₂ v SymEnv.• liftEnv (≼-trans ≼₁ ≼₂) ρ) (dv SymEnv.• liftEnv (≼-trans ≼₁ ≼₂) dρ)
+derive (app t₁ t₂) ρ dρ =
+  derive t₁ ρ dρ ≼-refl (_ ⟪ t₂ ⟫Term ρ) ≼-refl (derive t₂ ρ dρ)
+derive (var x) ρ dρ = derive-var x dρ
+derive true ρ dρ = false
+derive false ρ dρ = false
+derive {Γ₁} (if t₁ t₂ t₃) ρ dρ =
+  derive-if (Γ₁ ⟪ t₁ ⟫Term ρ) (derive t₁ ρ dρ)
+            (Γ₁ ⟪ t₂ ⟫Term ρ) (derive t₂ ρ dρ)
+            (Γ₁ ⟪ t₃ ⟫Term ρ) (derive t₃ ρ dρ)
