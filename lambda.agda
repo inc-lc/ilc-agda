@@ -1,5 +1,6 @@
 module lambda where
 
+open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
 
 open import Syntactic.Types public
@@ -20,6 +21,28 @@ data Term : Context → Type → Set where
 
   true false : ∀ {Γ} → Term Γ bool
   if : ∀ {Γ τ} → (t₁ : Term Γ bool) (t₂ t₃ : Term Γ τ) → Term Γ τ
+
+same-var : ∀ {Γ τ} → (x₁ x₂ : Var Γ τ) → Bool
+same-var this this = true
+same-var this (that x₂) = false
+same-var (that x₁) this = false
+same-var (that x₁) (that x₂) = same-var x₁ x₂
+
+same-term : ∀ {Γ τ} → (t₁ t₂ : Term Γ τ) → Bool
+same-term (abs t₁) (abs t₂) = same-term t₁ t₂
+same-term (abs t₁) _ = false
+same-term (app {Γ} {τ₁} t₁ t₂) (app .{Γ} {τ₂} t₃ t₄) with τ₁ ≟ τ₂
+same-term (app t₁ t₂) (app t₃ t₄) | yes refl = same-term t₁ t₃ ∧ same-term t₂ t₄
+same-term (app t₁ t₂) (app t₃ t₄) | no ¬p = false
+same-term (app t₁ t₂) _ = false
+same-term (var x₁) (var x₂) = same-var x₁ x₂
+same-term (var x₁) _ = false
+same-term true true = true
+same-term true _ = false
+same-term false false = true
+same-term false _ = false
+same-term (if t₁ t₂ t₃) (if t₄ t₅ t₆) = same-term t₁ t₄ ∧ same-term t₂ t₅ ∧ same-term t₃ t₆
+same-term (if t₁ t₂ t₃) _ = false
 
 -- Denotational Semantics
 
@@ -155,9 +178,15 @@ liftEnv : ∀ {Γ Γ₁ Γ₂} → Γ₁ ≼ Γ₂ → Γ₁ ⟪ Γ ⟫Context �
 liftEnv {∅} ≼₁ ∅ = SymEnv.∅
 liftEnv {τ • Γ} ≼₁ (v • ρ) = liftVal ≼₁ v SymEnv.• liftEnv ≼₁ ρ
 
+if′ : ∀ {Γ} → Term Γ bool → Term Γ bool → Term Γ bool → Term Γ bool
+if′ true t₂ t₃ = t₂
+if′ false t₂ t₃ = t₃
+if′ t₁ true false = t₁
+if′ t₁ t₂ t₃ = if same-term t₂ t₃ then t₂ else if t₁ t₂ t₃
+
 mixed-if : ∀ {Γ₁} τ → (t₁ : Term Γ₁ bool) (v₂ v₃ : Γ₁ ⟪ τ ⟫Type) → Γ₁ ⟪ τ ⟫Type
 mixed-if (τ₁ ⇒ τ₂) t₁ v₂ v₃ = λ ≼₁ v → mixed-if τ₂ (weaken ≼₁ t₁) (v₂ ≼₁ v) (v₃ ≼₁ v)
-mixed-if bool t₁ t₂ t₃ = if t₁ t₂ t₃
+mixed-if bool t₁ t₂ t₃ = if′ t₁ t₂ t₃
 
 _⟪_⟫Term_ : ∀ Γ₁ {Γ τ} → Term Γ τ → Γ₁ ⟪ Γ ⟫Context → Γ₁ ⟪ τ ⟫Type
 Γ₁ ⟪ abs t ⟫Term ρ = λ {Γ₂} ≼₁ v → Γ₂ ⟪ t ⟫Term (v SymEnv.• liftEnv ≼₁ ρ)
@@ -198,7 +227,7 @@ norm {Γ} {τ} t = ↓ τ (Γ ⟪ t ⟫Term ↑-Context)
 
 xor₃ : ∀ {Γ} → Term Γ bool → Term Γ bool → Term Γ bool → Term Γ bool
 xor₃ t₁ t₂ t₃
-  = if t₁ (if t₂ t₃ (if t₃ false true)) (if t₂ (if t₃ false true) t₃)
+  = if′ t₁ (if′ t₂ t₃ (if′ t₃ false true)) (if′ t₂ (if′ t₃ false true) t₃)
 
 derive-if : ∀ {τ Γ₁} →
   (t dt : Term Γ₁ bool) →
@@ -211,7 +240,7 @@ derive-if {τ₁ ⇒ τ₂} t dt v₁ dv₁ v₂ dv₂ =
               (v₁ ≼₃ (liftVal ≼₂ v)) (dv₁ ≼₁ v ≼₂ dv)
               (v₂ ≼₃ (liftVal ≼₂ v)) (dv₂ ≼₁ v ≼₂ dv)
 derive-if {bool} t₁ dt₁ t₂ dt₂ t₃ dt₃ =
-  if dt₁ (if t₁ (xor₃ t₂ t₃ dt₃) (xor₃ t₂ t₃ dt₂)) (if t₁ dt₃ dt₂)
+  if′ dt₁ (if′ t₁ (xor₃ dt₃ t₂ t₃) (xor₃ dt₂ t₂ t₃)) (if′ t₁ dt₃ dt₂)
 
 derive-var : ∀ {Γ₁ Γ τ} → Var Γ τ → Γ₁ ⟪ Δ-Context Γ ⟫Context → Γ₁ ⟪ Δ-Type τ ⟫Type
 derive-var this (dv SymEnv.• dρ) = dv
