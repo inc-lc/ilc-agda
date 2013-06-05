@@ -21,13 +21,15 @@ n⊖n≡0 (ℕ.suc n) = n⊖n≡0 n
 ----------------
 
 
-b\\b=∅ : ∀ {{b : Bag}} → b \\ b ≡ empty
+b\\b=∅ : ∀ {b : Bag} → b \\ b ≡ empty
 
-∅++b=b : ∀ {{b : Bag}} → empty ++ b ≡ b
+∅++b=b : ∀ {b : Bag} → empty ++ b ≡ b
 
-b\\∅=b : ∀ {{b : Bag}} → b \\ empty ≡ b
+b\\∅=b : ∀ {b : Bag} → b \\ empty ≡ b
 
-b++[d\\b]=d : ∀ {{b d : Bag}} → b ++ (d \\ b) ≡ d
+++d=\\-d : ∀ {b d : Bag} → b ++ d ≡ b \\ map₂ -_ d
+
+b++[d\\b]=d : ∀ {b d : Bag} → b ++ (d \\ b) ≡ d
 
 
 ------------
@@ -51,14 +53,31 @@ neb\\neb=∅ {i ∷ neb} with nonzero? (i - i)
 ... | inj₁ _ rewrite neb\\neb=∅ {neb} = refl
 ... | inj₂ 0≠0 rewrite neb\\neb=∅ {neb} | i-i=0 {i} = absurd 0≠0
 
+++d=\\-d {inj₁ ∅} {inj₁ ∅} = refl
+++d=\\-d {inj₁ ∅} {inj₂ (i ∷ y)} = {!!}
+++d=\\-d {inj₂ y} {d} = {!!}
+++d=\\-d {inj₁ ∅} {inj₂ (singleton i i≠0)}
+  rewrite ∅++b=b {inj₂ (singleton i i≠0)}
+  with nonzero? i | nonzero? (+ 0 - i)
+... | inj₂ _ | inj₂ 0-i≠0 =
+  begin
+    {!!}
+  ≡⟨ {!!} ⟩
+    {!inj₂ (singleton (- i) ?)!}
+  ∎ where open ≡-Reasoning
+... | inj₁ i=0 | _ rewrite i=0 = absurd i≠0
+++d=\\-d {inj₁ ∅} {inj₂ (singleton (+ 0) i≠0)} | _ | _ = absurd i≠0
+++d=\\-d {inj₁ ∅} {inj₂ (singleton (+ (ℕ.suc n)) i≠0)}
+  | inj₂ (positive .n) | inj₁ ()
+++d=\\-d {inj₁ ∅} {inj₂ (singleton -[1+ n ] i≠0)}
+  | inj₂ (negative .n) | inj₁ ()
 
+b\\b=∅ {inj₁ ∅} = refl
+b\\b=∅ {inj₂ neb} = neb\\neb=∅ {neb}
 
-b\\b=∅ {{inj₁ ∅}} = refl
-b\\b=∅ {{inj₂ neb}} = neb\\neb=∅ {neb}
+∅++b=b {b} = {!!}
 
-∅++b=b {{b}} = {!!}
-
-b\\∅=b {{b}} = {!!}
+b\\∅=b {b} = {!!}
 
 negate : ∀ {i} → Nonzero i → Nonzero (- i)
 negate (negative n) = positive n
@@ -99,9 +118,9 @@ negateSingleton {i} {i≠0} | inj₂ _ | inj₂ 0-i≠0 =
     inj₂ (singleton (- i) (negate i≠0))
   ∎  where open ≡-Reasoning
 
-b++[∅\\b]=∅ : ∀ {{b}} → b ++ (empty \\ b) ≡ empty
-b++[∅\\b]=∅ {{inj₁ ∅}} = refl
-b++[∅\\b]=∅ {{inj₂ (singleton i i≠0)}} =
+b++[∅\\b]=∅ : ∀ {b} → b ++ (empty \\ b) ≡ empty
+b++[∅\\b]=∅ {inj₁ ∅} = refl
+b++[∅\\b]=∅ {inj₂ (singleton i i≠0)} =
   begin
     inj₂ (singleton i i≠0) ++
       mapNonempty₂ (λ j → + 0 - j) (singleton i i≠0)
@@ -113,9 +132,9 @@ b++[∅\\b]=∅ {{inj₂ (singleton i i≠0)}} =
   ≡⟨ {!!} ⟩
     inj₁ ∅
   ∎ where open ≡-Reasoning
-b++[∅\\b]=∅ {{inj₂ (i ∷ y)}} = {!!}
+b++[∅\\b]=∅ {inj₂ (i ∷ y)} = {!!}
 
-b++[d\\b]=d {{inj₁ ∅}} {{d}} rewrite b\\∅=b {{d}} | ∅++b=b {{d}} = refl
-b++[d\\b]=d {{b}} {{inj₁ ∅}} = b++[∅\\b]=∅
-b++[d\\b]=d {{inj₂ neb}} {{inj₂ y}} = {!!}
+b++[d\\b]=d {inj₁ ∅} {d} rewrite b\\∅=b {d} | ∅++b=b {d} = refl
+b++[d\\b]=d {b} {inj₁ ∅} = b++[∅\\b]=∅ {b}
+b++[d\\b]=d {inj₂ neb} {inj₂ y} = {!!}
 

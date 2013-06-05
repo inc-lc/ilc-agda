@@ -1,35 +1,23 @@
 {-
-
-Introducing the MapBag, which can be considered a bag
-of ℤ with negative multiplicities, or a map from
-ℤ to ℤ with default value 0.
-
-The initial goal of this file is to make the 5th example
+The goal of this file is to make the 3rd example
 described in /examples.md, "Map.mapValues", fast:
 
-    -- Haskell's Data.Map.map is Scala's Map.mapValues
-    map :: (a -> b) -> Map k a -> Map k b
-    
-    incVal :: Map Integer Integer -> Map Integer Integer
-    incVal = map (+1)
+    inc :: Bag Integer -> Bag Integer
+    inc = map (+1)
 
-    old = fromAscList  [(1, 1), (2, 2) .. (n, n)]
-    res = incVal old = [(1, 2), (2, 3) .. (n, n + 1)]
-
+    old = fromList [1, 2 .. n - 1, n]
+    res = inc old = [2, 3 .. n, n + 1]
 
 TODO
-X. Stop not getting why hole in half₁-WF can't be filled
-X. Prove well-foundedness of half₁
-X. Fix singleton
-3. Make sure this file has no hole
+1. Make sure this file has no hole
    X. Replace ℕ by ℤ
+   0. Replace ℤ by ℕ -- our bags are bags of nats now.
    0. Introduce addition
    0. Add MapBags and map
    0. Figure out a way to communicate to a derivative that
       certain changes are always nil (in this case, `+1`).
-
-4. Finish ExplicitNils
-5. Consider appending ExplicitNils
+2. Finish ExplicitNils
+3. Consider appending ExplicitNils
 
 
 Checklist: Adding syntactic constructs
@@ -58,16 +46,21 @@ Checklist: Adding types
 
 -}
 
-module MapBag where
+module NatBag where
+
+open import Data.NatBag renaming
+  (map to mapBag ; empty to emptyBag)
+
+open import Data.NatBag.Properties using
+  (b\\b=∅)
+
+open import Data.Nat
 
 open import Data.Unit using
   (⊤)
-open import Data.Nat using
-  (ℕ ; suc ; _≤′_ ; ≤′-refl ; ≤′-step)
-open import Induction.Nat using
-  (<-rec)
-open import Data.Integer using
-  (ℤ ; +_ ; -[1+_] ; _+_ ; _-_)
+
+import Data.Integer as ℤ
+
 open import Data.Product using
   (_×_ ; _,_ ; proj₁ ; proj₂)
 open import Relation.Binary using
@@ -80,167 +73,9 @@ import Data.Product as Product
 
 postulate extensionality : Extensionality Level.zero Level.zero
 
--- Map ints to ints with default 0
-data MapBag : Set where
-  ∅ : MapBag
-  btree : (v : ℤ) → (left : MapBag) → (right : MapBag) → MapBag
-
--- Bag's extensional equivalence:
--- Remove Quinean "identity without identity" on bags
--- (keys with 0 multiplicities and no subkeys are as good
--- as not to exist).
-
-data Empty : MapBag → Set where
-  ∅-is-empty : Empty ∅
-  vacant : ∀ {left right} → Empty left → Empty right →
-             Empty (btree (+ 0) left right)
-
-_\\_ : MapBag → MapBag → MapBag -- Bag difference
-
--- THIS introduces inconsistency haha
-postulate ext-bag : ∀ {b₁ b₂} → Empty (b₁ \\ b₂) → b₁ ≡ b₂
-
--- To understand why there must be an empty NatMap,
--- observe the termination checker's complaint upon
--- seeing Haskell's empty NatMap:
---
---     emptyMap : NatMap
---     emptyMap = ℕtree (+ 0) emptyMap emptyMap
-
-data Oddity : Set where
-  odd  : Oddity
-  even : Oddity
-
-oddity : ℕ → Oddity
-oddity 0 = even
-oddity 1 = odd
-oddity (suc (suc n)) = oddity n
-
--- Elimination form of Oddity to please termination checker
--- ... eventually.
-
-if-odd_then_else_ : ∀ {A : Set} → ℕ → A → A → A
-if-odd k then thenBranch else elseBranch with oddity k
-... | odd  = thenBranch
-... | even = elseBranch
-
--- oddity-index k = (oddity k , (k - 1) / 2)
--- Here to please termination checker so that ℕlookup
--- doesn't have to pass well-foundedness-proofs around
-oddity-index : ℕ → Oddity × ℕ
-oddity-index 0 = (even , 0)
-oddity-index 1 = (odd  , 0)
-oddity-index 2 = (even , 0)
-oddity-index (suc (suc k)) = (oddity-k , suc [k-1]/2) where
-  oddity-index-k = oddity-index k
-  oddity-k = proj₁ oddity-index-k
-  [k-1]/2  = proj₂ oddity-index-k
-
--- Computes next key after going down 1 level of a nat tree
-half₁ : ℕ → ℕ
-half₁ 0 = 0
-half₁ 1 = 0
-half₁ 2 = 0
-half₁ (suc (suc n)) = suc (half₁ n)
-
--- Nonzero n holds a proof that n != 0.
-data Nonzero : ℕ → Set where
-  suc : (n : ℕ) → Nonzero (suc n)
-
-≤′-suc : ∀ {m n : ℕ} → m ≤′ n → (suc m) ≤′ (suc n)
-≤′-suc ≤′-refl = ≤′-refl
-≤′-suc (≤′-step le) = ≤′-step (≤′-suc le)
-
-half₁-WF : ∀ (n : ℕ) → Nonzero n → suc (half₁ n) ≤′ n
-half₁-WF 0 ()
-half₁-WF 1 _ = ≤′-refl
-half₁-WF 2 _ = ≤′-step ≤′-refl
-half₁-WF (suc (suc (suc n))) _ =
-  ≤′-suc {suc (half₁ (suc n))} {suc (suc n)}
-         (≤′-step (half₁-WF (suc n) (suc n)))
-
--- Here to please the termination checker
-ℕsingleton : ℕ → ℤ → MapBag
-ℕsingleton k v = loop k where
-  loop : ℕ → MapBag
-  loop = <-rec _ λ
-    { 0 _ → btree v ∅ ∅
-    ; (suc n₀) rec →
-      let
-        n = suc n₀
-        next = rec (half₁ n) (half₁-WF n (suc n₀))
-      in
-        if-odd n
-        then btree (+ 0) next ∅
-        else btree (+ 0) ∅ next
-    }
-
-ℕlookup : ℕ → MapBag → ℤ
-ℕlookup _ ∅ = (+ 0)
-ℕlookup 0 (btree v _ _) = v
-ℕlookup k (btree _ left right) with oddity-index k
-... | (odd  , [k-1]/2) = ℕlookup [k-1]/2 left
-... | (even , [k-1]/2) = ℕlookup [k-1]/2 right
-
--- `update` in the sense of
--- Data.Sequence.update : Int → a → Seq a → Seq a
-ℕupdate : ℕ → ℤ → MapBag → MapBag
-ℕupdate k v ∅ = ℕsingleton k v
-ℕupdate 0 v (btree v₀ left right) = btree v left right
-ℕupdate k v (btree v₀ left right) with oddity-index k
-... | (odd  , [k-1]/2) = btree v₀ (ℕupdate [k-1]/2 v left) right
-... | (even , [k-1]/2) = btree v₀ left (ℕupdate [k-1]/2 v right)
-
--- Inject ℤ into ℕ
-
-double : ℕ → ℕ
-double 0 = 0
-double (suc n) = suc (suc (double n))
-
-ℤ⇒ℕ : ℤ → ℕ
-ℤ⇒ℕ  ( + n ) = double n
-ℤ⇒ℕ -[1+ n ] = suc (double n)
-
-_◦_ : {A : Set} {B : A -> Set} {C : (x : A) -> B x -> Set}
-      (f : {x : A} (y : B x) -> C x y) (g : (x : A) -> B x)
-      (x : A) -> C x (g x)
-(f ◦ g) = \ x -> f (g x)
-
-lookup : ℤ → MapBag → ℤ
-lookup = ℕlookup ◦ ℤ⇒ℕ
-
-update : ℤ → ℤ → MapBag → MapBag
-update = ℕupdate ◦ ℤ⇒ℕ
-
--- We implement nothing but the necessary NatMap operations to save time:
--- union, difference, mapValues.
-
-mapValues : (ℤ → ℤ) → MapBag → MapBag
-mapValues _ ∅ = ∅
-mapValues f (btree v left right) =
-  btree (f v) (mapValues f left) (mapValues f right)
-
--- Associativity of ++ follows Scala (left), fixity follows Haskell (5).
-_++_ : MapBag → MapBag → MapBag
-∅ ++ b = b
-b ++ ∅ = b
-(btree v₁ left₁ right₁) ++ (btree v₂ left₂ right₂) =
-  btree (v₁ + v₂) (left₁ ++ left₂) (right₁ ++ right₂)
-
-infixl 5 _++_
-
--- Data.Map.(\\) : Map k a → Map k b → Map k a (where b = a = ℤ)
-infixl 9 _\\_
-
-∅ \\ b = ∅
-b \\ ∅ = b
-(btree v₁ left₁ right₁) \\ (btree v₂ left₂ right₂) =
-  btree (v₁ - v₂) (left₁ \\ left₂) (right₁ \\ right₂)
-
--- Here begins the language definition.
 
 data Type : Set where
-  ints : Type
+  nats : Type
   bags : Type
   _⇒_ : (τ₁ τ₂ : Type) → Type
 
@@ -258,17 +93,17 @@ data Var : Context → Type → Set where
 
 data Term : Context -> Type -> Set where
 
-  int : ∀ {Γ} → (n : ℤ) → Term Γ ints
-  bag : ∀ {Γ} → (b : MapBag) → Term Γ bags
-  add : ∀ {Γ} → (t₁ : Term Γ ints) → (t₂ : Term Γ ints) → Term Γ ints
-  map : ∀ {Γ} → (f : Term Γ (ints ⇒ ints)) → (b : Term Γ bags) → Term Γ bags
+  nat : ∀ {Γ} → (n : ℕ) → Term Γ nats
+  bag : ∀ {Γ} → (b : Bag) → Term Γ bags
+  add : ∀ {Γ} → (t₁ : Term Γ nats) → (t₂ : Term Γ nats) → Term Γ nats
+  map : ∀ {Γ} → (f : Term Γ (nats ⇒ nats)) → (b : Term Γ bags) → Term Γ bags
 
   var : ∀ {Γ τ} → (x : Var Γ τ) → Term Γ τ
   abs : ∀ {τ₁ τ₂ Γ} → (t : Term (τ₁ • Γ) τ₂) → Term Γ (τ₁ ⇒ τ₂)
   app : ∀ {τ₁ τ₂ Γ} → (t₁ : Term Γ (τ₁ ⇒ τ₂)) (t₂ : Term Γ τ₁)
                    → Term Γ τ₂
 
-  -- Change to ints = replacement Church pairs
+  -- Change to nats = replacement Church pairs
   -- 3 -> 5 ::= λf. f 3 5
 
   -- Change to bags = a summand
@@ -291,7 +126,7 @@ weaken : ∀ {Γ₁ Γ₂ τ} → (subctx : Γ₁ ≼ Γ₂) → Term Γ₁ τ �
 weaken subctx (abs {τ} t) = abs (weaken (keep τ • subctx) t)
 weaken subctx (app t₁ t₂) = app (weaken subctx t₁) (weaken subctx t₂)
 weaken subctx (var x) = var (weakenVar subctx x)
-weaken subctx (int x) = int x
+weaken subctx (nat x) = nat x
 weaken subctx (bag b) = bag b
 weaken subctx (add t₁ t₂) = add (weaken subctx t₁) (weaken subctx t₂)
 weaken subctx (map f b) = map (weaken subctx f) (weaken subctx b)
@@ -307,8 +142,8 @@ open Meaning {{...}} public
   renaming (⟨_⟩⟦_⟧ to ⟦_⟧)
 
 ⟦_⟧Type : Type -> Set
-⟦ ints ⟧Type = ℤ
-⟦ bags ⟧Type = MapBag
+⟦ nats ⟧Type = ℕ
+⟦ bags ⟧Type = Bag
 ⟦ τ₁ ⇒ τ₂ ⟧Type = ⟦ τ₁ ⟧Type → ⟦ τ₂ ⟧Type
 
 meaningOfType : Meaning Type
@@ -357,10 +192,10 @@ weakenVar-sound (drop τ • subctx) (that x) (v • ρ) =
 ⟦ abs t ⟧Term ρ = λ v → ⟦ t ⟧Term (v • ρ)
 ⟦ app t₁ t₂ ⟧Term ρ = (⟦ t₁ ⟧Term ρ) (⟦ t₂ ⟧Term ρ)
 ⟦ var x ⟧Term ρ = ⟦ x ⟧ ρ
-⟦ int n ⟧Term ρ = n
+⟦ nat n ⟧Term ρ = n
 ⟦ bag b ⟧Term ρ = b
 ⟦ add m n ⟧Term ρ = ⟦ m ⟧Term ρ + ⟦ n ⟧Term ρ
-⟦ map f b ⟧Term ρ = mapValues (⟦ f ⟧Term ρ) (⟦ b ⟧Term ρ)
+⟦ map f b ⟧Term ρ = mapBag (⟦ f ⟧Term ρ) (⟦ b ⟧Term ρ)
 
 meaningOfTerm : ∀ {Γ τ} → Meaning (Term Γ τ)
 meaningOfTerm = meaning ⟦_⟧Term
@@ -375,22 +210,22 @@ weaken-sound : ∀ {Γ₁ Γ₂ τ} {subctx : Γ₁ ≼ Γ₂} (t : Term Γ₁ �
 weaken-sound (abs t) ρ = extensionality (λ v → weaken-sound t (v • ρ))
 weaken-sound (app t₁ t₂) ρ = weaken-sound t₁ ρ ⟨$⟩ weaken-sound t₂ ρ
 weaken-sound {subctx = subctx} (var x) ρ = weakenVar-sound subctx x ρ
-weaken-sound (int n) ρ = refl
+weaken-sound (nat n) ρ = refl
 
 weaken-sound (bag b) ρ = refl
 weaken-sound (add m n) ρ = cong₂ _+_ (weaken-sound m ρ) (weaken-sound n ρ)
-weaken-sound (map f b) ρ = cong₂ mapValues (weaken-sound f ρ)
-                                           (weaken-sound b ρ)
+weaken-sound (map f b) ρ = cong₂ mapBag (weaken-sound f ρ)
+                                        (weaken-sound b ρ)
 
--- Changes to ℤ are replacement Church pairs. The only arguments
+-- Changes to ℕ are replacement Church pairs. The only arguments
 -- of conern are `fst` and `snd`, so the Church pairs don't have
 -- to be polymorphic.
 --
--- Changes on mapbags are mapbags. They allow negative multiplicities
+-- Changes on bags are bags. They allow negative multiplicities
 -- to begin with.
 
 Δ-Type : Type → Type
-Δ-Type ints = (ints ⇒ ints ⇒ ints) ⇒ ints
+Δ-Type nats = (nats ⇒ nats ⇒ nats) ⇒ nats
 Δ-Type bags = bags
 Δ-Type (τ₁ ⇒ τ₂) = τ₁ ⇒ Δ-Type τ₁ ⇒ Δ-Type τ₂
 
@@ -407,19 +242,19 @@ _⟦⊝⟧_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ Δ-Type τ ⟧
 infixl 6 _⟦⊕⟧_
 infixl 6 _⟦⊝⟧_
 
-⟦fst⟧ : ℤ → ℤ → ℤ
-⟦snd⟧ : ℤ → ℤ → ℤ
+⟦fst⟧ : ℕ → ℕ → ℕ
+⟦snd⟧ : ℕ → ℕ → ℕ
 
-⟦derive⟧ {ints} n = λ f → f n n
-⟦derive⟧ {bags} b = ∅
+⟦derive⟧ {nats} n = λ f → f n n
+⟦derive⟧ {bags} b = emptyBag
 ⟦derive⟧ {τ₁ ⇒ τ₂} f = λ v dv → f (v ⟦⊕⟧ dv) ⟦⊝⟧ f v
 
-_⟦⊝⟧_ {ints} m n = λ f → f n m
+_⟦⊝⟧_ {nats} m n = λ f → f n m
 _⟦⊝⟧_ {bags} b₁ b₂ = b₁ \\ b₂
 _⟦⊝⟧_ {τ₁ ⇒ τ₂} f₁ f₂ = λ v dv → f₁ (v ⟦⊕⟧ dv) ⟦⊝⟧ f₂ v
 -- m ⟦⊝⟧ n ::= replace n by m
 
-_⟦⊕⟧_ {ints} n dn = dn ⟦snd⟧
+_⟦⊕⟧_ {nats} n dn = dn ⟦snd⟧
 _⟦⊕⟧_ {bags} b db = b ++ db
 _⟦⊕⟧_ {τ₁ ⇒ τ₂} f df = λ v → f v ⟦⊕⟧ df v (⟦derive⟧ v)
 
@@ -428,40 +263,16 @@ _⟦⊕⟧_ {τ₁ ⇒ τ₂} f df = λ v → f v ⟦⊕⟧ df v (⟦derive⟧ v
 
 -- Cool lemmas
 
-n-n=0 : ∀ {n : ℤ} → n - n ≡ (+ 0)
-n-n=0 { -[1+     0 ]} = refl
-n-n=0 { -[1+ suc n ]} = n-n=0 { -[1+ n ]} -- 'ware that comment symbol
-n-n=0 { +      0 } = refl
-n-n=0 { + (suc n)} = n-n=0 { -[1+ n ]}
-
-b\\∅=b : ∀ {b} → b \\ ∅ ≡ b
-b\\∅=b {∅} = refl
-b\\∅=b {btree v b b₁} = refl
-
-b\\b=∅ : ∀ {b} → b \\ b ≡ ∅
-b\\b=∅ {b} = ext-bag void where
-  loop : (b : MapBag) → Empty (b \\ b)
-  loop b = {!!}
-  void : Empty (b \\ b \\ ∅)
-  void rewrite b\\∅=b {b \\ b} = loop b
-
-
-{-
-  go rewrite n-n=0 {v}
-  ext-bag (vacant₁ (b\\b=∅ {left}) (b\\b=∅ {right}))
--}
-
-
 f⟦⊝⟧f=⟦deriv⟧f : ∀ {τ : Type} (f : ⟦ τ ⟧) → f ⟦⊝⟧ f ≡ ⟦derive⟧ f
-f⟦⊝⟧f=⟦deriv⟧f {ints} f = refl
-f⟦⊝⟧f=⟦deriv⟧f {bags} b = {!!}
+f⟦⊝⟧f=⟦deriv⟧f {nats} f = refl
+f⟦⊝⟧f=⟦deriv⟧f {bags} b = b\\b=∅
 f⟦⊝⟧f=⟦deriv⟧f {τ₁ ⇒ τ₂} f = refl
-{-
+
 f⊕[g⊝f]=g : ∀ {τ : Type} (f g : ⟦ τ ⟧) → f ⟦⊕⟧ (g ⟦⊝⟧ f) ≡ g
 
 f⊕Δf=f : ∀ {τ : Type} (f : ⟦ τ ⟧) → f ⟦⊕⟧ (⟦derive⟧ f) ≡ f
 
-f⊕[g⊝f]=g {ints} m n = refl
+f⊕[g⊝f]=g {nats} m n = refl
 f⊕[g⊝f]=g {bags} b₁ b₂ = {!!}
 f⊕[g⊝f]=g {τ₁ ⇒ τ₂} f g = extensionality (λ x →
     begin
@@ -477,7 +288,7 @@ f⊕[g⊝f]=g {τ₁ ⇒ τ₂} f g = extensionality (λ x →
     ∎
   ) where open ≡-Reasoning
 
-f⊕Δf=f {ints} n = refl
+f⊕Δf=f {nats} n = refl
 f⊕Δf=f {bags} b = {!!}
 f⊕Δf=f {τ₁ ⇒ τ₂} f = extensionality (λ x →
     begin
@@ -490,9 +301,9 @@ f⊕Δf=f {τ₁ ⇒ τ₂} f = extensionality (λ x →
       f x
     ∎
   ) where open ≡-Reasoning
-
+{-
 valid-Δ : {τ : Type} → ⟦ τ ⟧ → ⟦ Δ-Type τ ⟧ → Set
-valid-Δ {ints} n dn = n ≡ dn ⟦fst⟧
+valid-Δ {nats} n dn = n ≡ dn ⟦fst⟧
 valid-Δ {bags} b db = {!!}
 valid-Δ {τ₁ ⇒ τ₂} f df =
   ∀ (s : ⟦ τ₁ ⟧) (ds : ⟦ Δ-Type τ₁ ⟧) (R[s,ds] : valid-Δ s ds) →
@@ -500,7 +311,7 @@ valid-Δ {τ₁ ⇒ τ₂} f df =
     (f ⟦⊕⟧ df) (s ⟦⊕⟧ ds) ≡ f s ⟦⊕⟧ df s ds -- (valid-Δ:2)
 
 R[f,g⊝f] : ∀ {τ} (f g : ⟦ τ ⟧) → valid-Δ {τ} f (g ⟦⊝⟧ f)
-R[f,g⊝f] {ints} m n = refl
+R[f,g⊝f] {nats} m n = refl
 R[f,g⊝f] {bags} b₁ b₂ = {!!}
 R[f,g⊝f] {τ₁ ⇒ τ₂} f g = λ x dx R[x,dx] →
   R[f,g⊝f] {τ₂} (f x) (g (x ⟦⊕⟧ dx)) -- (valid-Δ:1)
@@ -587,7 +398,7 @@ deriveVar (that x) = that (that (deriveVar x))
 derive : ∀ {Γ τ} → Term Γ τ → Term (Δ-Context Γ) (Δ-Type τ)
 
 -- derive(n) = λf. f n n
-derive (int n) = abs (app (app (var this) (int n)) (int n))
+derive (nat n) = abs (app (app (var this) (nat n)) (nat n))
 
 -- derive(x) = dx
 derive (var x) = var (deriveVar x)
@@ -665,8 +476,8 @@ df=f⊕df⊝f :
   ∀ {τ} (f : ⟦ τ ⟧) (df : ⟦ Δ-Type τ ⟧) →
     valid-Δ f df → df ≈ (f ⟦⊕⟧ df ⟦⊝⟧ f) :Δ τ
 
--- Case int: this REFL is more obvious to Agda than to a human.
-df=f⊕df⊝f {ints} n dn valid-n-dn =
+-- Case nat: this REFL is more obvious to Agda than to a human.
+df=f⊕df⊝f {nats} n dn valid-n-dn =
   ext-Δ (λ m valid-m-dn valid-rhs → refl)
 
 df=f⊕df⊝f {bags} b db valid-b-db = {!!}
@@ -741,7 +552,7 @@ validity-of-deriveVar {τ₀ • Γ} {τ}
 validity-of-derive ρ {consistency} (var x) =
   validity-of-deriveVar ρ {consistency} x
 
-validity-of-derive ρ (int n) = refl
+validity-of-derive ρ (nat n) = refl
 
 validity-of-derive {Γ} {τ₁ ⇒ τ₂}
   ρ {consistency} (abs t) = λ v dv R[v,dv] →
@@ -849,7 +660,7 @@ validity-of-derive ρ {consistency} (app {τ₁} {τ₂} t₁ t₂)
     R : {τ : Type} → {v : ⟦ τ ⟧} → {dv₁ dv₂ : ⟦ Δ-Type τ ⟧} →
         dv₁ ≡ dv₂ → valid-Δ v dv₁ → valid-Δ v dv₂
 
-    R {ints} dv₁=dv₂ refl = cong₂ (λ f x → f x) dv₁=dv₂ refl
+    R {nats} dv₁=dv₂ refl = cong₂ (λ f x → f x) dv₁=dv₂ refl
 
     R {bags} dv₁=dv₂ _ = {!!}
 
@@ -892,7 +703,7 @@ validity-of-derive ρ {consistency} _ = {!!}
 
 correctness-of-derive ρ (var x) = correctness-of-deriveVar ρ x
 
-correctness-of-derive ρ (int n) = ext-Δ (λ _ _ _ → refl)
+correctness-of-derive ρ (nat n) = ext-Δ (λ _ _ _ → refl)
 
 correctness-of-derive {Γ} {τ₁ ⇒ τ₂}
   ρ {consistency} (abs {.τ₁} {.τ₂} t) =
