@@ -13,7 +13,7 @@ module Data.NatBag where
 open import Data.Nat hiding (zero) renaming (_+_ to plus)
 open import Data.Integer renaming (suc to +1 ; pred to -1)
 open import Data.Maybe.Core
-open import Data.Sum
+open import Data.Sum hiding (map)
 
 -----------
 -- Types --
@@ -51,11 +51,10 @@ update : ℕ → ℤ → Bag → Bag
 
 updateWith : ℕ → (ℤ → ℤ) → Bag → Bag
 
-map₁ : (ℕ → ℕ) → Bag → Bag -- map on bags, mapKeys on maps
+map : (ℕ → ℕ) → Bag → Bag -- map on bags, mapKeys on maps
 
 map₂ : (ℤ → ℤ) → Bag → Bag -- mapValues on maps
 
-{- TODO: Wait for map.
 zipWith : (ℤ → ℤ → ℤ) → Bag → Bag → Bag
 
 _++_ : Bag → Bag → Bag
@@ -63,7 +62,6 @@ infixr 5 _++_ -- right-associativity follows Haskell, for efficiency
 
 _\\_ : Bag → Bag → Bag
 infixl 9 _\\_ -- fixity follows Haskell's Data.Map.(\\)
--}
 
 --------------------
 -- Implementation --
@@ -74,6 +72,10 @@ insert n bag = updateWith n +1 bag
 delete n bag = updateWith n -1 bag
 
 update n i bag = updateWith n (λ _ → i) bag
+
+_++_ = zipWith _+_
+
+_\\_ = zipWith _-_
 
 zero : ℤ
 zero = + 0
@@ -117,39 +119,56 @@ lookup n (inj₁ ∅) = zero
 lookup n (inj₂ bag) = lookupNonempty n bag
 
 -- It is possible to get empty bags by mapping over a nonempty bag:
--- map₁ (λ _ → 3) { 1 ⇒ 5 , 2 ⇒ -5 }
+-- map (λ _ → 3) { 1 ⇒ 5 , 2 ⇒ -5 }
 mapKeysFrom : ℕ → (ℕ → ℕ) → NonemptyBag → Bag
 mapKeysFrom n f (singleton i i≠0) = inj₂ (makeSingleton (f n) i i≠0)
 mapKeysFrom n f (i ∷ bag) with nonzero? i
 ... | nothing = mapKeysFrom (suc n) f bag
 ... | just i≠0 = updateWith (f n) (λ j → j + i) (mapKeysFrom (suc n) f bag)
 
-map₁ f (inj₁ ∅) = empty
-map₁ f (inj₂ bag) = mapKeysFrom 0 f bag
+map f (inj₁ ∅) = empty
+map f (inj₂ bag) = mapKeysFrom 0 f bag
+
+mapNonempty₂ : (ℤ → ℤ) → NonemptyBag → Bag
+mapNonempty₂ f (singleton i i≠0) with nonzero? (f i)
+... | nothing = empty
+... | just j≠0 = inj₂ (singleton (f i) j≠0)
+mapNonempty₂ f (i ∷ bag₀)
+  with mapNonempty₂ f bag₀ | nonzero? (f i)
+... | inj₁ ∅   | nothing  = empty
+... | inj₁ ∅   | just j≠0 = inj₂ (singleton (f i) j≠0)
+... | inj₂ bag | _        = inj₂ (f i ∷ bag)
 
 map₂ f (inj₁ ∅) = empty
-map₂ f (inj₂ (singleton i i≠0)) = {!!}
-map₂ f (inj₂ (i ∷ bag₀)) with map₂ f (inj₂ bag₀) | nonzero? i | nonzero? (f i)
--- If an element has multiplicity 0, it should not be mapped over.
--- Conceptually, we are mapping over the values of this infinite
--- map not by f, but by {case 0 => 0}.orElse(f).
-... | inj₁ ∅   | nothing  | _        = empty
-... | inj₂ bag | nothing  | _        = inj₂ (zero ∷ bag)
-... | inj₁ ∅   | just i≠0 | nothing  = empty
-... | inj₁ ∅   | just i≠0 | just j≠0 = inj₂ (singleton (f i) j≠0)
-... | inj₂ bag | just i≠0 | _        = inj₂ (f i ∷ bag)
+map₂ f (inj₂ b) = mapNonempty₂ f b
 
-{- TODO: Redefine in terms of zipWith, which will be defined
-         in terms of map.
--- The union of nonempty bags (with possibly negative
--- multiplicities) can be empty.
-unionNonempty : NonemptyBag → NonemptyBag → Bag
-unionNonempty (singleton i i≠0) (singleton j j≠0) with nonzero? (i + j)
+zipLeft : (ℤ → ℤ → ℤ) → NonemptyBag → Bag
+zipLeft f b₁ = mapNonempty₂ (λ x → f x zero) b₁
+
+zipRight : (ℤ → ℤ → ℤ) → NonemptyBag → Bag
+zipRight f b₂ = mapNonempty₂ (λ y → f zero y) b₂
+
+zipNonempty : (ℤ → ℤ → ℤ) → NonemptyBag → NonemptyBag → Bag
+zipNonempty f (singleton i i≠0) (singleton j j≠0) with nonzero? (f i j)
 ... | nothing = empty
-... | just k≠0 = inj₂ (singleton (i + j) k≠0)
-unionNonempty (singleton i i≠0) (j ∷ b₂) = inj₂ (i + j ∷ b₂)
+... | just k≠0 = inj₂ (singleton (f i j) k≠0)
+zipNonempty f (singleton i i≠0) (j ∷ b₂)
+  with zipRight f b₂ | nonzero? (f i j)
+... | inj₁ ∅ | nothing = empty
+... | inj₁ ∅ | just k≠0 = inj₂ (singleton (f i j) k≠0)
+... | inj₂ bag | _ = inj₂ (f i j ∷ bag)
+zipNonempty f (i ∷ b₁) (singleton j j≠0)
+  with zipLeft f b₁ | nonzero? (f i j)
+... | inj₁ ∅ | nothing = empty
+... | inj₁ ∅ | just k≠0 = inj₂ (singleton (f i j) k≠0)
+... | inj₂ bag | _ = inj₂ (f i j ∷ bag)
+zipNonempty f (i ∷ b₁) (j ∷ b₂)
+  with zipNonempty f b₁ b₂ | nonzero? (f i j)
+... | inj₁ ∅ | nothing = empty
+... | inj₁ ∅ | just k≠0 = inj₂ (singleton (f i j) k≠0)
+... | inj₂ bag | _ = inj₂ (f i j ∷ bag)
 
-inj₁ ∅ ++ b₂ = b₂
-b₁ ++ inj₁ ∅ = b₁
-(inj₂ b₁) ++ (inj₂ b₂) = (unionNonempty b₁ b₂)
--}
+zipWith f (inj₁ ∅) (inj₁ ∅) = empty
+zipWith f (inj₁ ∅) (inj₂ b₂) = zipRight f b₂
+zipWith f (inj₂ b₁) (inj₁ ∅) = zipLeft f b₁
+zipWith f (inj₂ b₁) (inj₂ b₂) = zipNonempty f b₁ b₂
