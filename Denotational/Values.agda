@@ -7,7 +7,7 @@ module Denotational.Values where
 --
 -- In fact, we only describe a single model here.
 
-open import Data.Bool public
+open import Data.Bool public hiding (_≟_)
 open import Denotational.Notation
 open import Syntactic.Types
 
