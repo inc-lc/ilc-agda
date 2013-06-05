@@ -258,3 +258,36 @@ derive {Γ₁} (if t₁ t₂ t₃) ρ dρ =
   derive-if (Γ₁ ⟪ t₁ ⟫Term ρ) (derive t₁ ρ dρ)
             (Γ₁ ⟪ t₂ ⟫Term ρ) (derive t₂ ρ dρ)
             (Γ₁ ⟪ t₃ ⟫Term ρ) (derive t₃ ρ dρ)
+
+derive-closed : ∀ {τ} → Term ∅ τ → Term ∅ (Δ-Type τ)
+derive-closed {τ} t = ↓ (Δ-Type τ) (derive t SymEnv.∅ SymEnv.∅)
+
+-- TESTS
+
+id-term : ∀ τ → Term ∅ (τ ⇒ τ)
+id-term τ = abs (var this)
+
+not-term : Term ∅ (bool ⇒ bool)
+not-term = abs (if (var this) false true)
+
+xor-term : Term ∅ (bool ⇒ bool ⇒ bool)
+xor-term = abs (abs (if (var this)
+                        (if (var (that this)) false true)
+                        (if (var (that this)) true false)))
+
+-- derive (λ x → x) ≡ λ x dx → dx
+test₁ : derive-closed (id-term bool) ≡ abs (abs (var this))
+test₁ = refl
+
+-- derive (λ x → not x) ≡ λ x dx → dx
+test₂ : derive-closed not-term ≡ abs (abs (var this))
+test₂ = refl
+
+-- derive (λ a b → a xor b) ≡ λ a da b db → db xor da
+test₃ :
+  derive-closed xor-term ≡
+  abs (abs (abs (abs
+    (if (var this)
+        (if (var (that (that this))) false true)
+        (var (that (that this)))))))
+test₃ = refl
