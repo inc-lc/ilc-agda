@@ -586,25 +586,6 @@ correctness-of-deriveVar {τ₀ • Γ₀} {τ}
 
 module Foo where
 
-open import NatBag
-
-open import Data.NatBag renaming
-  (map to mapBag ; empty to emptyBag ; update to updateBag)
-open import Relation.Binary.PropositionalEquality
-open import Data.Nat
-
-open import Data.Unit using
-  (⊤ ; tt)
-
-import Data.Integer as ℤ
-
-open import Data.Product using
-  (_×_ ; _,_ ; proj₁ ; proj₂)
-open import Relation.Binary using
-  (Reflexive ; Transitive ; Preorder ; IsPreorder)
-
-import Level
-import Data.Product as Product
 correctness-of-derive : ∀ {Γ τ} →
   ∀ (ρ : ⟦ Δ-Context Γ ⟧) {consistency : Consistent-Δenv ρ} →
   ∀ (t : Term Γ τ) →
