@@ -30,8 +30,6 @@ b\\∅=b : ∀ {b : Bag} → b \\ empty ≡ b
 
 ∅\\b=-b : ∀ {b : Bag} → empty \\ b ≡ map₂ -_ b
 
--- ++d=\\-d : ∀ {b d : Bag} → b ++ d ≡ b \\ map₂ -_ d
-
 b++[d\\b]=d : ∀ {b d : Bag} → b ++ (d \\ b) ≡ d
 
 
@@ -62,27 +60,6 @@ neb\\neb=∅ {singleton i i≠0} with nonzero? (i - i)
 neb\\neb=∅ {i ∷ neb} with nonzero? (i - i)
 ... | inj₁ _ rewrite neb\\neb=∅ {neb} = refl
 ... | inj₂ 0≠0 rewrite neb\\neb=∅ {neb} | i-i=0 {i} = absurd 0≠0
-
-{-
-++d=\\-d {inj₁ ∅} {inj₁ ∅} = refl
-++d=\\-d {inj₁ ∅} {inj₂ (i ∷ y)} = {!!}
-++d=\\-d {inj₂ y} {d} = {!!}
-++d=\\-d {inj₁ ∅} {inj₂ (singleton i i≠0)}
-  rewrite ∅++b=b {inj₂ (singleton i i≠0)}
-  with nonzero? i | nonzero? (+ 0 - i)
-... | inj₂ _ | inj₂ 0-i≠0 =
-  begin
-    {!!}
-  ≡⟨ {!!} ⟩
-    {!inj₂ (singleton (- i) ?)!}
-  ∎ where open ≡-Reasoning
-... | inj₁ i=0 | _ rewrite i=0 = absurd i≠0
-++d=\\-d {inj₁ ∅} {inj₂ (singleton (+ 0) i≠0)} | _ | _ = absurd i≠0
-++d=\\-d {inj₁ ∅} {inj₂ (singleton (+ (ℕ.suc n)) i≠0)}
-  | inj₂ (positive .n) | inj₁ ()
-++d=\\-d {inj₁ ∅} {inj₂ (singleton -[1+ n ] i≠0)}
-  | inj₂ (negative .n) | inj₁ ()
--}
 
 b\\b=∅ {inj₁ ∅} = refl
 b\\b=∅ {inj₂ neb} = neb\\neb=∅ {neb}
@@ -143,20 +120,6 @@ annihilate : ∀ {i i≠0} →
 annihilate {i} with nonzero? (i - i)
 ... | inj₁ i-i=0 = λ {i≠0} → refl
 ... | inj₂ i-i≠0 = absurd[i-i≠0] {i} i-i≠0
-
-{-
-left-is-not-right : ∀ {A B : Set} {a : A} {b : B} →
-                    inj₁ a ≡ inj₂ b → ∀ {X : Set} → X
-left-is-not-right = λ {A} {B} {a} {b} → λ ()
-
-never-both : ∀ {A B : Set} {sum : A ⊎ B} {a b} →
-               sum ≡ inj₁ a → sum ≡ inj₂ b → ∀ {X : Set} → X
-never-both s=a s=b = left-is-not-right (trans (sym s=a) s=b)
-
-empty-bag? : ∀ (b : Bag) → (b ≡ inj₁ ∅) ⊎ Σ NonemptyBag (λ neb → b ≡ inj₂ neb)
-empty-bag? (inj₁ ∅) = inj₁ refl
-empty-bag? (inj₂ neb) = inj₂ (neb , refl)
--}
 
 b++[∅\\b]=∅ : ∀ {b} → b ++ (empty \\ b) ≡ empty
 b++[∅\\b]=∅ {inj₁ ∅} = refl
