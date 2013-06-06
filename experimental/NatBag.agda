@@ -56,12 +56,25 @@ open import Relation.Binary.PropositionalEquality
 -- We postulate necessary properties now to be able
 -- to work on derivation and remove them later.
 --
+-- Perhaps proving that bags form a group with
+-- emptyBag, ++, \\ is a necessity?
+--
 -- open import Data.NatBag.Properties
 postulate b\\b=∅ : ∀ {{b : Bag}} → b \\ b ≡ emptyBag
 postulate b++∅=b : ∀ {{b : Bag}} → b ++ emptyBag ≡ b
+postulate ∅++b=b : ∀ {{b : Bag}} → emptyBag ++ b ≡ b
 postulate b++[d\\b]=d : ∀ {b d} → b ++ (d \\ b) ≡ d
 postulate [b++d]\\b=d : ∀ {b d} → (b ++ d) \\ b ≡ d
 
+-- postulate a\\[b++c]=a\\b\\c : ∀ {a b c} → a \\ (b ++ c) ≡ a \\ b \\ c
+-- postulate [a++b]\\c=a\\c++b : ∀ {a b c} → (a ++ b) \\ c ≡ a \\ c ++ b
+-- postulate [a++b]\\c=a++b\\c : ∀ {a b c} → (a ++ b) \\ c ≡ a ++ b \\ c
+-- 
+-- and consequently:
+
+postulate
+  [a++b]\\[c++d]=[a\\c]++[b\\d] : ∀ {a b c d} →
+    (a ++ b) \\ (c ++ d) ≡ (a \\ c) ++ (b \\ d)
 
 open import Data.Nat
 
@@ -571,8 +584,27 @@ correctness-of-deriveVar {τ₀ • Γ₀} {τ}
   (dv • v • ρ) {dρ=dv•v•dρ₀ {.τ₀} {.v} {.dv} {.Γ₀} {.ρ} R[v,dv] _}
   (that x) = correctness-of-deriveVar ρ x
 
+module Foo where
 
+open import NatBag
 
+open import Data.NatBag renaming
+  (map to mapBag ; empty to emptyBag ; update to updateBag)
+open import Relation.Binary.PropositionalEquality
+open import Data.Nat
+
+open import Data.Unit using
+  (⊤ ; tt)
+
+import Data.Integer as ℤ
+
+open import Data.Product using
+  (_×_ ; _,_ ; proj₁ ; proj₂)
+open import Relation.Binary using
+  (Reflexive ; Transitive ; Preorder ; IsPreorder)
+
+import Level
+import Data.Product as Product
 correctness-of-derive : ∀ {Γ τ} →
   ∀ (ρ : ⟦ Δ-Context Γ ⟧) {consistency : Consistent-Δenv ρ} →
   ∀ (t : Term Γ τ) →
@@ -591,6 +623,23 @@ correctness-of-derive′ ρ {consistency} t
   rewrite weaken-sound {subctx = Γ≼ΔΓ} t ρ
   = correctness-of-derive ρ {consistency} t
 
+-- Mutually recursive lemma: diff-apply holds with propositional
+-- equality on bags
+
+db=b⊕db⊝b : ∀ {Γ : Context} →
+  (b : Term Γ bags) →
+  {ρ : ⟦ Δ-Context Γ ⟧} {consistency : Consistent-Δenv ρ} →
+  ⟦ derive b ⟧ ρ ≡ ⟦ b ⟧ (update ρ {consistency}) \\ ⟦ b ⟧ (ignore ρ)
+db=b⊕db⊝b b {ρ = ρ} {consistency = consistency} =
+  begin
+    ⟦ derive b ⟧ ρ
+  ≡⟨ {!!} ⟩
+    emptyBag ++ ⟦ derive b ⟧ ρ
+  ≡⟨ {!!} ⟩ -- extensional equivalence as changes applied to emptyBag
+    emptyBag ++ ⟦ b ⟧ (update ρ) \\ ⟦ b ⟧ (ignore ρ)
+  ≡⟨ {!!} ⟩
+    ⟦ b ⟧ (update ρ) \\ ⟦ b ⟧ (ignore ρ)
+  ∎ where open ≡-Reasoning
 
 -- Mutually recursive lemma: derivatives are valid
 
@@ -798,8 +847,6 @@ validity-of-derive ρ {consistency} (add m n) =
 
 correctness-of-derive ρ (var x) = correctness-of-deriveVar ρ x
 
-correctness-of-derive ρ (nat n) = ext-Δ (λ _ _ _ → refl)
-
 correctness-of-derive {Γ} {τ₁ ⇒ τ₂}
   ρ {consistency} (abs {.τ₁} {.τ₂} t) =
   ext-Δ {τ₁ ⇒ τ₂}
@@ -924,7 +971,73 @@ correctness-of-derive ρ {consistency} (app {τ₁} {τ₂} {Γ} t₁ t₂) =
       :Δ τ₂
     ext-Δ[t₁t₂] rewrite sym v₂=old-v₂ = dv₁v₂dv₂=v₁′v₂′⊝v₁v₂
 
+correctness-of-derive ρ (nat n) = ext-Δ (λ _ _ _ → refl)
+
+correctness-of-derive ρ (bag b) = ext-Δ (λ d _ _ →
+ begin
+   d ++ emptyBag
+  ≡⟨ cong₂ _++_ {x = d} refl (sym (b\\b=∅)) ⟩
+   d ++ (b \\ b)
+ ∎) where open ≡-Reasoning
+
+correctness-of-derive ρ {consistency} (add m n) = ext-Δ (λ _ _ _ →
+  begin
+    ⟦ weaken (drop _ • Γ≼Γ) (derive m) ⟧ (⟦snd⟧ • ρ) ⟦snd⟧
+    +
+    ⟦ weaken (drop _ • Γ≼Γ) (derive n) ⟧ (⟦snd⟧ • ρ) ⟦snd⟧
+  ≡⟨ refl ⟩
+    (⟦ m ⟧ (ignore ρ) ⟦⊕⟧ ⟦ weaken (drop _ • Γ≼Γ) (derive m) ⟧ (⟦snd⟧ • ρ))
+    +
+    (⟦ n ⟧ (ignore ρ) ⟦⊕⟧ ⟦ weaken (drop _ • Γ≼Γ) (derive n) ⟧ (⟦snd⟧ • ρ))
+  ≡⟨ cong₂ _+_
+       (cong₂ _⟦⊕⟧_ {x = ⟦ m ⟧ (ignore ρ)} refl
+         (weaken-derivative {t = m} {ρ = ρ}))
+       ((cong₂ _⟦⊕⟧_ {x = ⟦ n ⟧ (ignore ρ)} refl
+         (weaken-derivative {t = n} {ρ = ρ}))) ⟩
+    (⟦ m ⟧ (ignore ρ) ⟦⊕⟧ ⟦ derive m ⟧ ρ)
+    +
+    (⟦ n ⟧ (ignore ρ) ⟦⊕⟧ ⟦ derive n ⟧ ρ)
+  ≡⟨ cong₂ _+_
+       (extract-Δequiv (correctness-of-derive ρ {consistency} m)
+         (⟦ m ⟧ (ignore ρ))
+         (validity-of-derive ρ {consistency} m)
+         (R[f,g⊝f] (⟦ m ⟧ (ignore ρ)) (⟦ m ⟧ (update ρ {consistency}))))
+       ((extract-Δequiv (correctness-of-derive ρ {consistency} n)
+         (⟦ n ⟧ (ignore ρ))
+         (validity-of-derive ρ {consistency} n)
+         (R[f,g⊝f] (⟦ n ⟧ (ignore ρ)) (⟦ n ⟧ (update ρ {consistency}))))) ⟩
+    ⟦ m ⟧ (update ρ) + ⟦ n ⟧ (update ρ)
+  ∎
+  ) where
+    open ≡-Reasoning
+    identity-weakening : ∀ {Γ} {ρ : ⟦ Γ ⟧} → ⟦ Γ≼Γ {Γ} ⟧ ρ ≡ ρ
+    identity-weakening {∅} {∅} = refl
+    identity-weakening {τ • Γ} {v • ρ} =
+      cong₂ _•_ {x = v} refl (identity-weakening {Γ} {ρ})
+    weaken-derivative :
+      ∀ {τ Γ} {t : Term Γ τ} {ρ : ⟦ Δ-Context Γ ⟧}
+        → ⟦ weaken (drop _ • Γ≼Γ) (derive t) ⟧ (⟦snd⟧ • ρ)
+        ≡ ⟦ derive t ⟧ ρ
+    weaken-derivative {t = t} {ρ = ρ}
+      rewrite weaken-sound {subctx = drop _ • Γ≼Γ} (derive t) (⟦snd⟧ • ρ)
+            | identity-weakening {ρ = ρ}
+      = refl
+
+correctness-of-derive ρ {consistency} (union b d) = ext-Δ (λ c _ _ →
+  begin
+    c ++ (⟦ derive b ⟧ ρ ++ ⟦ derive d ⟧ ρ)
+  ≡⟨ {!!} ⟩
+    c ++ ((⟦ b ⟧ (update ρ) \\ ⟦ b ⟧ (ignore ρ))
+       ++ (⟦ d ⟧ (update ρ) \\ ⟦ d ⟧ (ignore ρ)))
+  ≡⟨ cong₂ _++_
+       {x = c} refl
+       [a++b]\\[c++d]=[a\\c]++[b\\d] ⟩
+    c ++ ((⟦ b ⟧ (update ρ) ++ ⟦ d ⟧ (update ρ))
+       \\ (⟦ b ⟧ (ignore ρ) ++ ⟦ d ⟧ (ignore ρ)))
+  ∎) where open ≡-Reasoning
+
 correctness-of-derive ρ {consistency} _ = {!!}
+
 
 correctness-on-closed-terms : ∀ {τ₁ τ₂} →
   ∀ (f : Term ∅ (τ₁ ⇒ τ₂)) →
@@ -962,4 +1075,3 @@ correctness-on-closed-terms {τ₁} {τ₂} f s ds {R[v,dv]} =
     v = ⟦ s ⟧ ∅
     dv : ⟦ Δ-Type τ₁ ⟧
     dv = ⟦ ds ⟧ ∅
-
