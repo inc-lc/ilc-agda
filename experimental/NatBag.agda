@@ -49,15 +49,24 @@ Checklist: Adding types
 module NatBag where
 
 open import Data.NatBag renaming
-  (map to mapBag ; empty to emptyBag)
+  (map to mapBag ; empty to emptyBag ; update to updateBag)
+open import Relation.Binary.PropositionalEquality
 
-open import Data.NatBag.Properties using
-  (b\\b=∅)
+-- This module has holes and can't be imported.
+-- We postulate necessary properties now to be able
+-- to work on derivation and remove them later.
+--
+-- open import Data.NatBag.Properties
+postulate b\\b=∅ : ∀ {{b : Bag}} → b \\ b ≡ emptyBag
+postulate b++∅=b : ∀ {{b : Bag}} → b ++ emptyBag ≡ b
+postulate b++[d\\b]=d : ∀ {b d} → b ++ (d \\ b) ≡ d
+postulate [b++d]\\b=d : ∀ {b d} → (b ++ d) \\ b ≡ d
+
 
 open import Data.Nat
 
 open import Data.Unit using
-  (⊤)
+  (⊤ ; tt)
 
 import Data.Integer as ℤ
 
@@ -65,8 +74,6 @@ open import Data.Product using
   (_×_ ; _,_ ; proj₁ ; proj₂)
 open import Relation.Binary using
   (Reflexive ; Transitive ; Preorder ; IsPreorder)
-
-open import Relation.Binary.PropositionalEquality
 
 import Level
 import Data.Product as Product
@@ -88,8 +95,8 @@ data Context : Set where
 infixr 9 _•_
 
 data Var : Context → Type → Set where
-  this : ∀ {Γ τ} → Var (τ • Γ) τ
-  that : ∀ {Γ τ τ′} → (x : Var Γ τ) → Var (τ′ • Γ) τ
+  this : ∀ {τ Γ} → Var (τ • Γ) τ
+  that : ∀ {τ τ′ Γ} → (x : Var Γ τ) → Var (τ′ • Γ) τ
 
 data Term : Context -> Type -> Set where
 
@@ -97,8 +104,10 @@ data Term : Context -> Type -> Set where
   bag : ∀ {Γ} → (b : Bag) → Term Γ bags
   add : ∀ {Γ} → (t₁ : Term Γ nats) → (t₂ : Term Γ nats) → Term Γ nats
   map : ∀ {Γ} → (f : Term Γ (nats ⇒ nats)) → (b : Term Γ bags) → Term Γ bags
+  union : ∀ {Γ} → (b₁ : Term Γ bags) → (b₂ : Term Γ bags) → Term Γ bags
+  diff : ∀ {Γ} → (b₁ : Term Γ bags) → (b₂ : Term Γ bags) → Term Γ bags
 
-  var : ∀ {Γ τ} → (x : Var Γ τ) → Term Γ τ
+  var : ∀ {τ Γ} → (x : Var Γ τ) → Term Γ τ
   abs : ∀ {τ₁ τ₂ Γ} → (t : Term (τ₁ • Γ) τ₂) → Term Γ (τ₁ ⇒ τ₂)
   app : ∀ {τ₁ τ₂ Γ} → (t₁ : Term Γ (τ₁ ⇒ τ₂)) (t₂ : Term Γ τ₁)
                    → Term Γ τ₂
@@ -116,6 +125,10 @@ data _≼_ : (Γ₁ Γ₂ : Context) → Set where
   keep_•_ : ∀ {Γ₁ Γ₂} → (τ : Type) → Γ₁ ≼ Γ₂ → τ • Γ₁ ≼ τ • Γ₂
   drop_•_ : ∀ {Γ₁ Γ₂} → (τ : Type) → Γ₁ ≼ Γ₂ → Γ₁ ≼ τ • Γ₂
 
+Γ≼Γ : ∀ {Γ} → Γ ≼ Γ
+Γ≼Γ {∅} = ∅≼∅
+Γ≼Γ {τ • Γ} = keep τ • Γ≼Γ {Γ}
+
 weakenVar : ∀ {Γ₁ Γ₂ τ} → Γ₁ ≼ Γ₂ → Var Γ₁ τ → Var Γ₂ τ
 weakenVar ∅≼∅ x = x
 weakenVar (keep τ₁ • subctx) this = this
@@ -130,6 +143,8 @@ weaken subctx (nat x) = nat x
 weaken subctx (bag b) = bag b
 weaken subctx (add t₁ t₂) = add (weaken subctx t₁) (weaken subctx t₂)
 weaken subctx (map f b) = map (weaken subctx f) (weaken subctx b)
+weaken subctx (union b₁ b₂) = union (weaken subctx b₁) (weaken subctx b₂)
+weaken subctx (diff b₁ b₂) = diff (weaken subctx b₁) (weaken subctx b₂)
 
 record Meaning (Syntax : Set) {ℓ : Level.Level} : Set (Level.suc ℓ) where
   constructor
@@ -196,6 +211,8 @@ weakenVar-sound (drop τ • subctx) (that x) (v • ρ) =
 ⟦ bag b ⟧Term ρ = b
 ⟦ add m n ⟧Term ρ = ⟦ m ⟧Term ρ + ⟦ n ⟧Term ρ
 ⟦ map f b ⟧Term ρ = mapBag (⟦ f ⟧Term ρ) (⟦ b ⟧Term ρ)
+⟦ union b d ⟧Term ρ = ⟦ b ⟧Term ρ ++ ⟦ d ⟧Term ρ
+⟦ diff b d ⟧Term ρ = ⟦ b ⟧Term ρ \\ ⟦ d ⟧Term ρ
 
 meaningOfTerm : ∀ {Γ τ} → Meaning (Term Γ τ)
 meaningOfTerm = meaning ⟦_⟧Term
@@ -214,8 +231,12 @@ weaken-sound (nat n) ρ = refl
 
 weaken-sound (bag b) ρ = refl
 weaken-sound (add m n) ρ = cong₂ _+_ (weaken-sound m ρ) (weaken-sound n ρ)
-weaken-sound (map f b) ρ = cong₂ mapBag (weaken-sound f ρ)
-                                        (weaken-sound b ρ)
+weaken-sound (map f b) ρ =
+  cong₂ mapBag (weaken-sound f ρ) (weaken-sound b ρ)
+weaken-sound (union b d) ρ =
+  cong₂ _++_ (weaken-sound b ρ) (weaken-sound d ρ)
+weaken-sound (diff b d) ρ =
+  cong₂ _\\_ (weaken-sound b ρ) (weaken-sound d ρ)
 
 -- Changes to ℕ are replacement Church pairs. The only arguments
 -- of conern are `fst` and `snd`, so the Church pairs don't have
@@ -229,22 +250,39 @@ weaken-sound (map f b) ρ = cong₂ mapBag (weaken-sound f ρ)
 Δ-Type bags = bags
 Δ-Type (τ₁ ⇒ τ₂) = τ₁ ⇒ Δ-Type τ₁ ⇒ Δ-Type τ₂
 
+Δ-Context : Context → Context
+Δ-Context ∅ = ∅
+Δ-Context (τ • Γ) = Δ-Type τ • τ • Δ-Context Γ -- push τ, then push Δτ.
+
+Γ≼ΔΓ : ∀ {Γ} → Γ ≼ Δ-Context Γ
+Γ≼ΔΓ {∅} = ∅≼∅
+Γ≼ΔΓ {τ • Γ} = drop Δ-Type τ • (keep τ • Γ≼ΔΓ)
+
 -- It is clear that ⟦⊝⟧ exists on the semantic level:
 -- there exists an Agda value to describe the change between any
 -- two Agda values denoted by terms. If we have (not dependently-
 -- typed) arrays, no term denotes the change between two arrays
 -- of different lengths. Thus no full abstraction.
 
-⟦derive⟧ : ∀ {τ} → ⟦ τ ⟧ → ⟦ Δ-Type τ ⟧
 _⟦⊕⟧_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ Δ-Type τ ⟧ → ⟦ τ ⟧
 _⟦⊝⟧_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ Δ-Type τ ⟧
+_⊝_ : ∀ {τ Γ} → Term Γ τ → Term Γ τ → Term Γ (Δ-Type τ)
+_⊕_ : ∀ {τ Γ} → Term Γ τ → Term Γ (Δ-Type τ) → Term Γ τ
 
 infixl 6 _⟦⊕⟧_
 infixl 6 _⟦⊝⟧_
+infixl 6 _⊝_
+infixl 6 _⊕_
 
-⟦fst⟧ : ℕ → ℕ → ℕ
-⟦snd⟧ : ℕ → ℕ → ℕ
+⟦fst⟧ ⟦snd⟧ : ℕ → ℕ → ℕ
+⟦fst⟧ m n = m
+⟦snd⟧ m n = n
 
+fst snd : ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ τ)
+fst = abs (abs (var (that this)))
+snd = abs (abs (var this))
+
+⟦derive⟧ : ∀ {τ} → ⟦ τ ⟧ → ⟦ Δ-Type τ ⟧
 ⟦derive⟧ {nats} n = λ f → f n n
 ⟦derive⟧ {bags} b = emptyBag
 ⟦derive⟧ {τ₁ ⇒ τ₂} f = λ v dv → f (v ⟦⊕⟧ dv) ⟦⊝⟧ f v
@@ -254,12 +292,30 @@ _⟦⊝⟧_ {bags} b₁ b₂ = b₁ \\ b₂
 _⟦⊝⟧_ {τ₁ ⇒ τ₂} f₁ f₂ = λ v dv → f₁ (v ⟦⊕⟧ dv) ⟦⊝⟧ f₂ v
 -- m ⟦⊝⟧ n ::= replace n by m
 
+-- m ⊝ n = λ f. f n m
+_⊝_ {nats} m n =
+  abs (app (app (var this)
+    (weaken (drop _ • Γ≼Γ) n)) (weaken (drop _ • Γ≼Γ) m))
+-- d ⊝ b = d \\ b
+_⊝_ {bags} d b = weaken Γ≼Γ (diff d b)
+-- g ⊝ f = λ x. λ dx. g (x ⊕ dx) ⊝ f x -- Incurs recomputation!
+_⊝_ {τ ⇒ τ₁} g f =
+  abs (abs ((app (weaken (drop _ • drop _ • Γ≼Γ) g)
+            (var (that this) ⊕ var this))
+          ⊝ app (weaken (drop _ • drop _ • Γ≼Γ) f) (var (that this))))
+
+_⊕_ {nats} n dn = app dn snd
+_⊕_ {bags} b db = union b db
+-- f ⊕ df = λ x. f x ⊕ df x (x ⊝ x) -- Incurs recomputation!
+_⊕_ {τ ⇒ τ₁} f df =
+  abs (app (weaken (drop _ • Γ≼Γ) f) (var this)
+    ⊕ app (app (weaken (drop _ • Γ≼Γ) df)
+                (var this)) ((var this) ⊝ (var this)))
+
+
 _⟦⊕⟧_ {nats} n dn = dn ⟦snd⟧
 _⟦⊕⟧_ {bags} b db = b ++ db
 _⟦⊕⟧_ {τ₁ ⇒ τ₂} f df = λ v → f v ⟦⊕⟧ df v (⟦derive⟧ v)
-
-⟦fst⟧ m n = m
-⟦snd⟧ m n = n
 
 -- Cool lemmas
 
@@ -273,7 +329,7 @@ f⊕[g⊝f]=g : ∀ {τ : Type} (f g : ⟦ τ ⟧) → f ⟦⊕⟧ (g ⟦⊝⟧ 
 f⊕Δf=f : ∀ {τ : Type} (f : ⟦ τ ⟧) → f ⟦⊕⟧ (⟦derive⟧ f) ≡ f
 
 f⊕[g⊝f]=g {nats} m n = refl
-f⊕[g⊝f]=g {bags} b₁ b₂ = {!!}
+f⊕[g⊝f]=g {bags} b₁ b₂ = b++[d\\b]=d {b₁} {b₂}
 f⊕[g⊝f]=g {τ₁ ⇒ τ₂} f g = extensionality (λ x →
     begin
       (f ⟦⊕⟧ (g ⟦⊝⟧ f)) x
@@ -289,7 +345,7 @@ f⊕[g⊝f]=g {τ₁ ⇒ τ₂} f g = extensionality (λ x →
   ) where open ≡-Reasoning
 
 f⊕Δf=f {nats} n = refl
-f⊕Δf=f {bags} b = {!!}
+f⊕Δf=f {bags} b = b++∅=b
 f⊕Δf=f {τ₁ ⇒ τ₂} f = extensionality (λ x →
     begin
       (f ⟦⊕⟧ ⟦derive⟧ f) x
@@ -301,10 +357,10 @@ f⊕Δf=f {τ₁ ⇒ τ₂} f = extensionality (λ x →
       f x
     ∎
   ) where open ≡-Reasoning
-{-
+
 valid-Δ : {τ : Type} → ⟦ τ ⟧ → ⟦ Δ-Type τ ⟧ → Set
 valid-Δ {nats} n dn = n ≡ dn ⟦fst⟧
-valid-Δ {bags} b db = {!!}
+valid-Δ {bags} b db = ⊤ -- all bags are vald for all other bags
 valid-Δ {τ₁ ⇒ τ₂} f df =
   ∀ (s : ⟦ τ₁ ⟧) (ds : ⟦ Δ-Type τ₁ ⟧) (R[s,ds] : valid-Δ s ds) →
     valid-Δ (f s) (df s ds) ×              -- (valid-Δ:1)
@@ -312,7 +368,7 @@ valid-Δ {τ₁ ⇒ τ₂} f df =
 
 R[f,g⊝f] : ∀ {τ} (f g : ⟦ τ ⟧) → valid-Δ {τ} f (g ⟦⊝⟧ f)
 R[f,g⊝f] {nats} m n = refl
-R[f,g⊝f] {bags} b₁ b₂ = {!!}
+R[f,g⊝f] {bags} b₁ b₂ = tt
 R[f,g⊝f] {τ₁ ⇒ τ₂} f g = λ x dx R[x,dx] →
   R[f,g⊝f] {τ₂} (f x) (g (x ⟦⊕⟧ dx)) -- (valid-Δ:1)
   , -- tuple constructor
@@ -334,26 +390,6 @@ R[f,g⊝f] {τ₁ ⇒ τ₂} f g = λ x dx R[x,dx] →
 R[f,Δf] : ∀ {τ} (f : ⟦ τ ⟧) → valid-Δ {τ} f (⟦derive⟧ f)
 R[f,Δf] f rewrite sym (f⟦⊝⟧f=⟦deriv⟧f f) = R[f,g⊝f] f f
 
-Δ-Context : Context → Context
-Δ-Context ∅ = ∅
-Δ-Context (τ • Γ) = Δ-Type τ • τ • Δ-Context Γ -- push τ, then push Δτ.
-
-Γ≼ΔΓ : ∀ {Γ} → Γ ≼ Δ-Context Γ
-Γ≼ΔΓ {∅} = ∅≼∅
-Γ≼ΔΓ {τ • Γ} = drop Δ-Type τ • (keep τ • Γ≼ΔΓ)
-
--- Data type to hold proofs that environments are valid
-data Valid-Δenv : {Γ : Context} (ρ : ⟦ Γ ⟧) (Δρ : ⟦ Δ-Context Γ ⟧) → Set
- where
-  -- Base case: the empty environment is its own valid Δ-environment.
-  ρ=∅ : Valid-Δenv {∅} ∅ ∅
-  -- Induction case: the change introduced therein should be valid,
-  -- and the smaller Δ-environment should be valid as well.
-  ρ=v•ρ₀ : ∀ {τ : Type} {v : ⟦ τ ⟧} {dv : ⟦ Δ-Type τ ⟧}
-            {Γ₀ : Context} {ρ₀ : ⟦ Γ₀ ⟧} {dρ₀ : ⟦ Δ-Context Γ₀ ⟧} →
-            valid-Δ v dv → Valid-Δenv ρ₀ dρ₀ →
-            Valid-Δenv {τ • Γ₀} (v • ρ₀) (dv • v • dρ₀)
-
 -- Data type to hold proofs that a Δ-env is consistent with self
 data Consistent-Δenv : {Γ : Context} (dρ : ⟦ Δ-Context Γ ⟧) → Set
  where
@@ -365,17 +401,6 @@ data Consistent-Δenv : {Γ : Context} (dρ : ⟦ Δ-Context Γ ⟧) → Set
                  {Γ₀ : Context} {dρ₀ : ⟦ Δ-Context Γ₀ ⟧} →
                  valid-Δ v dv → Consistent-Δenv dρ₀ →
                  Consistent-Δenv {τ • Γ₀} (dv • v • dρ₀)
-
--- If a Δ-environment is valid for some other environment,
--- then it is also consistent with itself.
-
-valid-Δenv-is-consistent :
-   ∀ {Γ : Context} {ρ : ⟦ Γ ⟧} {dρ : ⟦ Δ-Context Γ ⟧} →
-    Valid-Δenv ρ dρ → Consistent-Δenv dρ
-
-valid-Δenv-is-consistent ρ=∅ = dρ=∅
-valid-Δenv-is-consistent (ρ=v•ρ₀ valid[v,dv] valid[ρ₀,dρ₀]) =
-  dρ=dv•v•dρ₀ valid[v,dv] (valid-Δenv-is-consistent valid[ρ₀,dρ₀])
 
 -- finally, update and ignore
 
@@ -409,7 +434,28 @@ derive (abs t) = abs (abs (derive t))
 -- derive(f s) = derive(f) s derive(s)
 derive (app f s) = app (app (derive f) (weaken Γ≼ΔΓ s)) (derive s)
 
-derive _ = {!!}
+-- derive(x + y) = replace (x + y) by (dx snd + dy snd)
+--               = λ f. f (x + y) (dx snd + dy snd)
+derive (add x y) =
+  abs (app (app (var this)
+    (add (weaken (drop _ • Γ≼ΔΓ) x) (weaken (drop _ • Γ≼ΔΓ) y)))
+    (add (app (weaken (drop _ • Γ≼Γ) (derive x)) snd)
+         (app (weaken (drop _ • Γ≼Γ) (derive y)) snd)))
+
+-- derive(bag) = ∅
+derive (bag b) = bag emptyBag
+
+-- derive(map f b) = map (f ⊕ df) (b ⊕ db) ⊝ map f b
+derive (map f b) = map ((weaken Γ≼ΔΓ f) ⊕ derive f)
+                       ((weaken Γ≼ΔΓ b) ⊕ derive b)
+                 ⊝ weaken Γ≼ΔΓ (map f b)
+
+-- derive(b ++ d) = derive(b) ++ derive(d)
+derive (union b d) = union (derive b) (derive d)
+
+-- derive(b \\ d) = derive(b) \\ derive(d)
+derive (diff b d) = diff (derive b) (derive d)
+
 
 -- Extensional equivalence for changes
 data Extensionally-equivalent-as-changes :
@@ -480,7 +526,13 @@ df=f⊕df⊝f :
 df=f⊕df⊝f {nats} n dn valid-n-dn =
   ext-Δ (λ m valid-m-dn valid-rhs → refl)
 
-df=f⊕df⊝f {bags} b db valid-b-db = {!!}
+-- Case bags: rely on set-theoretic interpretation of bags.
+df=f⊕df⊝f {bags} b db valid-b-db = ext-Δ (λ d _ _ →
+  begin -- Reasoning done in 1 step. Here for clarity only.
+    d ⟦⊕⟧ db
+  ≡⟨ cong₂ _⟦⊕⟧_ {x = d} refl (sym ([b++d]\\b=d {b} {db})) ⟩
+    d ⟦⊕⟧ (b ⟦⊕⟧ db ⟦⊝⟧ b)
+  ∎) where open ≡-Reasoning
 
 df=f⊕df⊝f {τ₁ ⇒ τ₂} f df R[f,df] = ext-Δ (
   λ g R[g,df] R[g,f⊕df⊝f] →
@@ -503,8 +555,6 @@ df=f⊕df⊝f {τ₁ ⇒ τ₂} f df R[f,df] = ext-Δ (
     )
   )
   where open ≡-Reasoning
-
-
 
 correctness-of-deriveVar : ∀ {Γ τ} →
   ∀ (ρ : ⟦ Δ-Context Γ ⟧) {consistency : Consistent-Δenv ρ} →
@@ -530,7 +580,20 @@ correctness-of-derive : ∀ {Γ τ} →
     (⟦ derive t ⟧ ρ)
   ≈ (⟦ t ⟧ (update ρ {consistency}) ⟦⊝⟧ ⟦ t ⟧ (ignore ρ)) :Δ τ
 
+correctness-of-derive′ : ∀ {Γ τ} →
+  ∀ (ρ : ⟦ Δ-Context Γ ⟧) {consistency : Consistent-Δenv ρ} →
+  ∀ (t : Term Γ τ) →
+
+    (⟦ derive t ⟧ ρ)
+  ≈ (⟦ t ⟧ (update ρ {consistency}) ⟦⊝⟧ ⟦ weaken Γ≼ΔΓ t ⟧ ρ) :Δ τ
+
+correctness-of-derive′ ρ {consistency} t
+  rewrite weaken-sound {subctx = Γ≼ΔΓ} t ρ
+  = correctness-of-derive ρ {consistency} t
+
+
 -- Mutually recursive lemma: derivatives are valid
+
 validity-of-derive : ∀ {Γ τ} →
   ∀ (ρ : ⟦ Δ-Context Γ ⟧) {consistency : Consistent-Δenv ρ} →
   ∀ (t : Term Γ τ) →
@@ -551,8 +614,6 @@ validity-of-deriveVar {τ₀ • Γ} {τ}
 
 validity-of-derive ρ {consistency} (var x) =
   validity-of-deriveVar ρ {consistency} x
-
-validity-of-derive ρ (nat n) = refl
 
 validity-of-derive {Γ} {τ₁ ⇒ τ₂}
   ρ {consistency} (abs t) = λ v dv R[v,dv] →
@@ -662,7 +723,7 @@ validity-of-derive ρ {consistency} (app {τ₁} {τ₂} t₁ t₂)
 
     R {nats} dv₁=dv₂ refl = cong₂ (λ f x → f x) dv₁=dv₂ refl
 
-    R {bags} dv₁=dv₂ _ = {!!}
+    R {bags} dv₁=dv₂ _ = tt
 
     --R {τ₁ ⇒ τ₂} dv₁=dv₂ valid-dv₁ rewrite dv₁=dv₂ = {!valid-dv₁!}
     R {τ₁ ⇒ τ₂} {v} {dv₁} {dv₂} dv₁=dv₂ valid-dv₁ =
@@ -699,7 +760,41 @@ validity-of-derive ρ {consistency} (app {τ₁} {τ₂} t₁ t₂)
       valid-Δ (⟦ app t₁ t₂ ⟧ (ignore ρ)) (⟦ derive (app t₁ t₂) ⟧ ρ)
     R[⟦t₁t₂⟧,⟦Δ[t₁t₂]⟧] = R ⟦Δ[t₁t₂]⟧=dv₁v₂dv₂ R[⟦t₁t₂⟧,dv₁v₂dv₂]
 
-validity-of-derive ρ {consistency} _ = {!!}
+-- Validity of deriving bag-typed terms is trivial.
+
+validity-of-derive ρ (bag b) = tt
+
+validity-of-derive ρ (map f b) = tt
+
+validity-of-derive ρ (union b d) = tt
+
+validity-of-derive ρ (diff d b) = tt
+
+validity-of-derive ρ (nat n) = refl
+
+validity-of-derive ρ {consistency} (add m n) =
+  begin
+    ⟦ m ⟧ (ignore ρ) + ⟦ n ⟧ (ignore ρ)
+  ≡⟨ cong₂ _+_
+       (sym (weaken-sound m (⟦fst⟧ • ρ)))
+       (sym (weaken-sound n (⟦fst⟧ • ρ))) ⟩
+    (⟦ weaken (drop _ • Γ≼ΔΓ) m ⟧ (⟦fst⟧ • ρ) +
+     ⟦ weaken (drop _ • Γ≼ΔΓ) n ⟧ (⟦fst⟧ • ρ))
+  ≡⟨ refl ⟩
+    ⟦ abs (app (app (var this)
+        (add (weaken (drop _ • Γ≼ΔΓ) m) (weaken (drop _ • Γ≼ΔΓ) n)))
+        (add (app (weaken (drop _ • Γ≼Γ) (derive m)) snd)
+          (app (weaken (drop _ • Γ≼Γ) (derive n)) snd)))
+    ⟧ ρ ⟦fst⟧
+  ≡⟨ refl ⟩
+    ⟦ derive (add m n) ⟧ ρ ⟦fst⟧
+  ∎ where
+    open ≡-Reasoning
+    blah : ℕ
+    blah =
+      ⟦ add (app (weaken (drop _ • Γ≼Γ) (derive m)) snd)
+        (app (weaken (drop _ • Γ≼Γ) (derive n)) snd) ⟧
+      (⟦fst⟧ • ρ)
 
 correctness-of-derive ρ (var x) = correctness-of-deriveVar ρ x
 
@@ -867,6 +962,4 @@ correctness-on-closed-terms {τ₁} {τ₂} f s ds {R[v,dv]} =
     v = ⟦ s ⟧ ∅
     dv : ⟦ Δ-Type τ₁ ⟧
     dv = ⟦ ds ⟧ ∅
-
--}
 
