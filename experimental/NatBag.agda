@@ -614,12 +614,14 @@ db=b⊕db⊝b : ∀ {Γ : Context} →
 db=b⊕db⊝b b {ρ = ρ} {consistency = consistency} =
   begin
     ⟦ derive b ⟧ ρ
-  ≡⟨ {!!} ⟩
+  ≡⟨ sym (∅++b=b {{⟦ derive b ⟧ ρ}}) ⟩
     emptyBag ++ ⟦ derive b ⟧ ρ
-  ≡⟨ {!!} ⟩ -- extensional equivalence as changes applied to emptyBag
-    emptyBag ++ ⟦ b ⟧ (update ρ) \\ ⟦ b ⟧ (ignore ρ)
-  ≡⟨ {!!} ⟩
-    ⟦ b ⟧ (update ρ) \\ ⟦ b ⟧ (ignore ρ)
+  ≡⟨ extract-Δequiv
+       (correctness-of-derive ρ {consistency} b)
+       emptyBag tt tt ⟩
+    emptyBag ++ (⟦ b ⟧ (update ρ {consistency}) \\ ⟦ b ⟧ (ignore ρ))
+  ≡⟨ ∅++b=b {{⟦ b ⟧ (update ρ {consistency}) \\ ⟦ b ⟧ (ignore ρ)}} ⟩
+    ⟦ b ⟧ (update ρ {consistency}) \\ ⟦ b ⟧ (ignore ρ)
   ∎ where open ≡-Reasoning
 
 -- Mutually recursive lemma: derivatives are valid
@@ -1007,14 +1009,22 @@ correctness-of-derive ρ {consistency} (add m n) = ext-Δ (λ _ _ _ →
 correctness-of-derive ρ {consistency} (union b d) = ext-Δ (λ c _ _ →
   begin
     c ++ (⟦ derive b ⟧ ρ ++ ⟦ derive d ⟧ ρ)
-  ≡⟨ {!!} ⟩
-    c ++ ((⟦ b ⟧ (update ρ) \\ ⟦ b ⟧ (ignore ρ))
-       ++ (⟦ d ⟧ (update ρ) \\ ⟦ d ⟧ (ignore ρ)))
   ≡⟨ cong₂ _++_
        {x = c} refl
-       [a++b]\\[c++d]=[a\\c]++[b\\d] ⟩
-    c ++ ((⟦ b ⟧ (update ρ) ++ ⟦ d ⟧ (update ρ))
-       \\ (⟦ b ⟧ (ignore ρ) ++ ⟦ d ⟧ (ignore ρ)))
+       (cong₂ _++_
+         (db=b⊕db⊝b b)
+         (db=b⊕db⊝b d)) ⟩
+    c ++ ((⟦ b ⟧ (update ρ {consistency}) \\ ⟦ b ⟧ (ignore ρ))
+       ++ (⟦ d ⟧ (update ρ {consistency}) \\ ⟦ d ⟧ (ignore ρ)))
+  ≡⟨ cong₂ _++_
+       {x = c} refl
+       (sym ([a++b]\\[c++d]=[a\\c]++[b\\d]
+             {⟦ b ⟧ (update ρ {consistency})} 
+             {⟦ d ⟧ (update ρ {consistency})}
+             {⟦ b ⟧ (ignore ρ)} {⟦ d ⟧ (ignore ρ)})) ⟩
+    c ++ ((⟦ b ⟧ (update ρ {consistency})
+        ++ ⟦ d ⟧ (update ρ {consistency}))
+        \\(⟦ b ⟧ (ignore ρ) ++ ⟦ d ⟧ (ignore ρ)))
   ∎) where open ≡-Reasoning
 
 correctness-of-derive ρ {consistency} _ = {!!}
