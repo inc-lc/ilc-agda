@@ -21,21 +21,35 @@ n⊖n≡0 (ℕ.suc n) = n⊖n≡0 n
 -- Statements --
 ----------------
 
+-- Caution: Please convert all implicit bag argument to
+-- instance bag argument in the next iteration so that
+-- using the lemmas here incurs less typing overhead.
+-- Leave the implicit arguments on multivariate lemmas,
+-- though.
+--
+-- TODO: Convert bags from a sum to an ADT so that
+-- constructor names give hints to the bag type,
+-- and a set-theoretic development can write things
+-- like ∀ {b} → ∅ ⊆ b.
 
-b\\b=∅ : ∀ {b : Bag} → b \\ b ≡ empty
 
-∅++b=b : ∀ {b : Bag} → empty ++ b ≡ b
+b\\b=∅ : ∀ {b} → b \\ b ≡ empty
 
-b\\∅=b : ∀ {b : Bag} → b \\ empty ≡ b
+∅++b=b : ∀ {b} → empty ++ b ≡ b
 
-∅\\b=-b : ∀ {b : Bag} → empty \\ b ≡ map₂ -_ b
+b\\∅=b : ∀ {b} → b \\ empty ≡ b
 
-b++[d\\b]=d : ∀ {b d : Bag} → b ++ (d \\ b) ≡ d
+b++∅=b : ∀ {{b}} → b ++ empty ≡ b
 
+b++[d\\b]=d : ∀ {b d} → b ++ (d \\ b) ≡ d
+
+[b++d]\\b=d : ∀ {b d} → (b ++ d) \\ b ≡ d
 
 ------------
 -- Proofs --
 ------------
+
+b++∅=b = {!!}
 
 i-i=0 : ∀ {i : ℤ} → (i - i) ≡ (+ 0)
 i-i=0 {+ ℕ.zero} = refl
@@ -67,8 +81,6 @@ b\\b=∅ {inj₂ neb} = neb\\neb=∅ {neb}
 ∅++b=b {b} = {!!}
 
 b\\∅=b {b} = {!!}
-
-∅\\b=-b {b} = {!!}
 
 negate : ∀ {i} → Nonzero i → Nonzero (- i)
 negate (negative n) = positive n
@@ -117,9 +129,20 @@ absurd[i-i≠0] { -[1+ ℕ.suc n ]} = absurd[i-i≠0] { -[1+ n ]}
 
 annihilate : ∀ {i i≠0} →
   inj₂ (singleton i i≠0) ++ inj₂ (singleton (- i) (negate i≠0)) ≡ inj₁ ∅
+
 annihilate {i} with nonzero? (i - i)
 ... | inj₁ i-i=0 = λ {i≠0} → refl
 ... | inj₂ i-i≠0 = absurd[i-i≠0] {i} i-i≠0
+{-
+Follow-up question to
+https://github.com/ps-mr/ilc/commit/978e3f94e70762904e077bb4d51d6b7b17695103#commitcomment-3367105
+
+Mysterious error message when the case above is replaced by the one
+below.
+
+annihilate {i} with i - i
+... | w = ?
+-}
 
 b++[∅\\b]=∅ : ∀ {b} → b ++ (empty \\ b) ≡ empty
 b++[∅\\b]=∅ {inj₁ ∅} = refl
@@ -133,9 +156,11 @@ b++[∅\\b]=∅ {inj₂ (singleton i i≠0)} =
   ≡⟨ annihilate {i} {i≠0} ⟩
     inj₁ ∅
   ∎ where open ≡-Reasoning
-b++[∅\\b]=∅ {inj₂ (i ∷ y)} = {!!}
+
+b++[∅\\b]=∅ {inj₂ (i ∷ y)} = ?
 
 b++[d\\b]=d {inj₁ ∅} {d} rewrite b\\∅=b {d} | ∅++b=b {d} = refl
 b++[d\\b]=d {b} {inj₁ ∅} = b++[∅\\b]=∅ {b}
 b++[d\\b]=d {inj₂ b} {inj₂ d} = {!!}
 
+[b++d]\\b=d = {!!}
