@@ -11,13 +11,14 @@ described in /examples.md, "Map.mapValues", fast:
 TODO
 1. Make sure this file has no hole
    X. Replace ℕ by ℤ
-   0. Replace ℤ by ℕ -- our bags are bags of nats now.
-   0. Introduce addition
-   0. Add MapBags and map
+   X. Replace ℤ by ℕ -- our bags are bags of nats now.
+   X. Introduce addition
+   X. Add MapBags and map
+2. Test it out with `inc` as primitive
+3. Finish ExplicitNils
    0. Figure out a way to communicate to a derivative that
       certain changes are always nil (in this case, `+1`).
-2. Finish ExplicitNils
-3. Consider appending ExplicitNils
+4. Consider appending ExplicitNils
 
 
 Checklist: Adding syntactic constructs
@@ -75,6 +76,9 @@ postulate [b++d]\\b=d : ∀ {b d} → (b ++ d) \\ b ≡ d
 postulate
   [a++b]\\[c++d]=[a\\c]++[b\\d] : ∀ {a b c d} →
     (a ++ b) \\ (c ++ d) ≡ (a \\ c) ++ (b \\ d)
+postulate
+  [a\\b]\\[c\\d]=[a\\c]\\[b\\d] : ∀ {a b c d} →
+    (a \\ b) \\ (c \\ d) ≡ (a \\ c) \\ (b \\ d)
 
 open import Data.Nat
 
@@ -205,6 +209,11 @@ meaningOfVar = meaning ⟦_⟧Var
 meaningOf≼ : ∀ {Γ₁ Γ₂} → Meaning (Γ₁ ≼ Γ₂)
 meaningOf≼ = meaning ⟦_⟧≼
 
+identity-weakening : ∀ {Γ} {ρ : ⟦ Γ ⟧} → ⟦ Γ≼Γ {Γ} ⟧ ρ ≡ ρ
+identity-weakening {∅} {∅} = refl
+identity-weakening {τ • Γ} {v • ρ} =
+  cong₂ _•_ {x = v} refl (identity-weakening {Γ} {ρ})
+
 weakenVar-sound : ∀ {Γ₁ Γ₂ τ} (subctx : Γ₁ ≼ Γ₂) (x : Var Γ₁ τ) →
   ∀ (ρ : ⟦ Γ₂ ⟧) → ⟦ weakenVar subctx x ⟧ ρ ≡ ⟦ x ⟧ (⟦ subctx ⟧ ρ)
 weakenVar-sound ∅≼∅ () ρ
@@ -233,7 +242,9 @@ meaningOfTerm = meaning ⟦_⟧Term
 _⟨$⟩_ : ∀ {τ₁ τ₂} {v₁ v₂ : ⟦ τ₁ ⇒ τ₂ ⟧} {v₃ v₄ : ⟦ τ₁ ⟧} →
   v₁ ≡ v₂ → v₃ ≡ v₄ → v₁ v₃ ≡ v₂ v₄
 _⟨$⟩_ = cong₂ (λ x y → x y)
-infix 0 _⟨$⟩_ -- infix 0 $ in Haskell
+
+-- infix 0 $ in Haskell
+infixl 0 _⟨$⟩_
 
 weaken-sound : ∀ {Γ₁ Γ₂ τ} {subctx : Γ₁ ≼ Γ₂} (t : Term Γ₁ τ) →
   ∀ (ρ : ⟦ Γ₂ ⟧) → ⟦ weaken subctx t ⟧ ρ ≡ ⟦ t ⟧ (⟦ subctx ⟧ ρ)
@@ -310,7 +321,7 @@ _⊝_ {nats} m n =
   abs (app (app (var this)
     (weaken (drop _ • Γ≼Γ) n)) (weaken (drop _ • Γ≼Γ) m))
 -- d ⊝ b = d \\ b
-_⊝_ {bags} d b = weaken Γ≼Γ (diff d b)
+_⊝_ {bags} d b = diff d b
 -- g ⊝ f = λ x. λ dx. g (x ⊕ dx) ⊝ f x -- Incurs recomputation!
 _⊝_ {τ ⇒ τ₁} g f =
   abs (abs ((app (weaken (drop _ • drop _ • Γ≼Γ) g)
@@ -604,8 +615,9 @@ correctness-of-derive′ ρ {consistency} t
   rewrite weaken-sound {subctx = Γ≼ΔΓ} t ρ
   = correctness-of-derive ρ {consistency} t
 
--- Mutually recursive lemma: diff-apply holds with propositional
--- equality on bags
+-- Mutually recursive lemmas
+
+-- diff-apply holds with propositional equality on bags
 
 db=b⊕db⊝b : ∀ {Γ : Context} →
   (b : Term Γ bags) →
@@ -624,12 +636,92 @@ db=b⊕db⊝b b {ρ = ρ} {consistency = consistency} =
     ⟦ b ⟧ (update ρ {consistency}) \\ ⟦ b ⟧ (ignore ρ)
   ∎ where open ≡-Reasoning
 
--- Mutually recursive lemma: derivatives are valid
+-- Semantic brackets preserve ⊕ and ⊝
+
+⊕-preservation : ∀ {τ Γ} →
+  {t : Term Γ τ} {dt : Term Γ (Δ-Type τ)} → {ρ : ⟦ Γ ⟧} →
+  ⟦ t ⊕ dt ⟧ ρ ≡ ⟦ t ⟧ ρ ⟦⊕⟧ ⟦ dt ⟧ ρ
+
+⊝-preservation : ∀ {τ Γ} →
+  {s : Term Γ τ} {t : Term Γ τ} → {ρ : ⟦ Γ ⟧} →
+  ⟦ s ⊝ t ⟧ ρ ≡ ⟦ s ⟧ ρ ⟦⊝⟧ ⟦ t ⟧ ρ
+
+⊕-preservation {nats} {Γ} {t} {dt} {ρ} = refl
+⊕-preservation {bags} {Γ} {t} {dt} {ρ} = refl
+⊕-preservation {τ₁ ⇒ τ₂} {Γ} {t} {dt} {ρ} = extensionality (λ x →
+  begin
+    ⟦ app (weaken (drop τ₁ • Γ≼Γ) t) (var this) ⊕
+      app (app (weaken (drop τ₁ • Γ≼Γ) dt) (var this))
+      (var this ⊝ var this) ⟧ (x • ρ)
+  ≡⟨ ⊕-preservation ⟩
+    ⟦ app (weaken (drop τ₁ • Γ≼Γ) t) (var this) ⟧ (x • ρ)
+    ⟦⊕⟧
+    ⟦ app (app (weaken (drop τ₁ • Γ≼Γ) dt) (var this))
+      (var this ⊝ var this) ⟧ (x • ρ)
+  ≡⟨ cong₂ _⟦⊕⟧_
+       (trans (weaken-sound {subctx = drop _ • Γ≼Γ} t (x • ρ))
+              (cong ⟦ t ⟧ identity-weakening)
+        ⟨$⟩ refl)
+       (trans (weaken-sound {subctx = drop _ • Γ≼Γ} dt (x • ρ))
+              (cong ⟦ dt ⟧ identity-weakening)
+        ⟨$⟩ refl ⟨$⟩ refl) ⟩
+    ⟦ t ⟧ ρ x ⟦⊕⟧ ⟦ dt ⟧ ρ x (⟦ (var this ⊝ var this) ⟧ (x • ρ))
+  ≡⟨ cong (λ hole → ⟦ t ⟧ ρ x ⟦⊕⟧ ⟦ dt ⟧ ρ x hole)
+          (⊝-preservation {τ₁} {τ₁ • Γ} {var this} {var this}) ⟩
+    ⟦ t ⟧ ρ x ⟦⊕⟧ ⟦ dt ⟧ ρ x (x ⟦⊝⟧ x)
+  ≡⟨ cong (λ hole → ⟦ t ⟧ ρ x ⟦⊕⟧ ⟦ dt ⟧ ρ x hole) (f⟦⊝⟧f=⟦deriv⟧f x) ⟩
+    ⟦ t ⟧ ρ x ⟦⊕⟧ ⟦ dt ⟧ ρ x (⟦derive⟧ x)
+  ∎) where open ≡-Reasoning
+
+⊝-preservation {nats} {Γ} {s} {t} {ρ} = extensionality (λ f →
+  cong₂ f
+    (trans (weaken-sound t (f • ρ)) (cong ⟦ t ⟧ identity-weakening))
+    (trans (weaken-sound s (f • ρ)) (cong ⟦ s ⟧ identity-weakening)))
+⊝-preservation {bags} {Γ} {s} {t} {ρ} = refl
+⊝-preservation {τ₁ ⇒ τ₂} {Γ} {s} {t} {ρ} =
+  extensionality (λ x →
+  extensionality (λ dx →
+  begin
+    ⟦ app (weaken (drop _ • drop _ • Γ≼Γ) s)
+      (var (that this) ⊕ var this)
+      ⊝
+      app (weaken (drop _ • drop _ • Γ≼Γ) t) (var (that this)) ⟧
+    (dx • x • ρ)
+  ≡⟨ ⊝-preservation
+     {s = app (weaken (drop _ • drop _ • Γ≼Γ) s)
+              (var (that this) ⊕ var this)}
+     {t = app (weaken (drop _ • drop _ • Γ≼Γ) t)
+               (var (that this))} ⟩
+    ⟦ weaken (drop _ • drop _ • Γ≼Γ) s ⟧ (dx • x • ρ)
+      (⟦ var (that this) ⊕ var this ⟧ (dx • x • ρ))
+    ⟦⊝⟧
+    ⟦ weaken (drop _ • drop _ • Γ≼Γ) t ⟧ (dx • x • ρ)
+      (⟦ (var (that this)) ⟧ (dx • x • ρ))
+  ≡⟨ cong₂ _⟦⊝⟧_
+       (trans (weaken-sound s (dx • x • ρ))
+              (cong ⟦ s ⟧ identity-weakening)
+        ⟨$⟩ ⊕-preservation {t = var (that this)} {dt = var this})
+       (trans (weaken-sound t (dx • x • ρ))
+              (cong ⟦ t ⟧ identity-weakening)
+        ⟨$⟩ refl) ⟩
+    ⟦ s ⟧ ρ (x ⟦⊕⟧ dx) ⟦⊝⟧ ⟦ t ⟧ ρ x
+  ∎)) where open ≡-Reasoning
+
+-- Derivatives are valid
 
 validity-of-derive : ∀ {Γ τ} →
   ∀ (ρ : ⟦ Δ-Context Γ ⟧) {consistency : Consistent-Δenv ρ} →
   ∀ (t : Term Γ τ) →
   valid-Δ (⟦ t ⟧ (ignore ρ)) (⟦ derive t ⟧ ρ)
+
+validity-of-derive′ : ∀ {Γ τ} →
+  ∀ (ρ : ⟦ Δ-Context Γ ⟧) {consistency : Consistent-Δenv ρ} →
+  ∀ (t : Term Γ τ) →
+  valid-Δ (⟦ weaken Γ≼ΔΓ t ⟧ ρ) (⟦ derive t ⟧ ρ)
+
+validity-of-derive′ ρ {consistency} t
+  rewrite weaken-sound {subctx = Γ≼ΔΓ} t ρ
+  = validity-of-derive ρ {consistency} t
 
 validity-of-deriveVar : ∀ {Γ τ} →
   ∀ (ρ : ⟦ Δ-Context Γ ⟧) {consistency : Consistent-Δenv ρ} →
@@ -993,10 +1085,6 @@ correctness-of-derive ρ {consistency} (add m n) = ext-Δ (λ _ _ _ →
   ∎
   ) where
     open ≡-Reasoning
-    identity-weakening : ∀ {Γ} {ρ : ⟦ Γ ⟧} → ⟦ Γ≼Γ {Γ} ⟧ ρ ≡ ρ
-    identity-weakening {∅} {∅} = refl
-    identity-weakening {τ • Γ} {v • ρ} =
-      cong₂ _•_ {x = v} refl (identity-weakening {Γ} {ρ})
     weaken-derivative :
       ∀ {τ Γ} {t : Term Γ τ} {ρ : ⟦ Δ-Context Γ ⟧}
         → ⟦ weaken (drop _ • Γ≼Γ) (derive t) ⟧ (⟦snd⟧ • ρ)
@@ -1027,7 +1115,64 @@ correctness-of-derive ρ {consistency} (union b d) = ext-Δ (λ c _ _ →
         \\(⟦ b ⟧ (ignore ρ) ++ ⟦ d ⟧ (ignore ρ)))
   ∎) where open ≡-Reasoning
 
-correctness-of-derive ρ {consistency} _ = {!!}
+correctness-of-derive ρ {consistency} (diff b d) = ext-Δ (λ c _ _ →
+  begin
+    c ++ ⟦ derive b ⟧ ρ \\ ⟦ derive d ⟧ ρ
+  ≡⟨ cong₂ _++_
+       {x = c} refl
+       (cong₂ _\\_
+         (db=b⊕db⊝b b)
+         (db=b⊕db⊝b d)) ⟩
+    c ++  (⟦ b ⟧ (update ρ {consistency}) \\ ⟦ b ⟧ (ignore ρ))
+       \\ (⟦ d ⟧ (update ρ {consistency}) \\ ⟦ d ⟧ (ignore ρ))
+  ≡⟨ cong₂ _++_
+       {x = c} refl
+       ([a\\b]\\[c\\d]=[a\\c]\\[b\\d]
+             {⟦ b ⟧ (update ρ {consistency})} {⟦ b ⟧ (ignore ρ)}
+             {⟦ d ⟧ (update ρ {consistency})} {⟦ d ⟧ (ignore ρ)}) ⟩
+    c ++  (⟦ b ⟧ (update ρ) \\ ⟦ d ⟧ (update ρ))
+       \\ (⟦ b ⟧ (ignore ρ) \\ ⟦ d ⟧ (ignore ρ))
+  ∎) where open ≡-Reasoning
+
+
+correctness-of-derive ρ {consistency} (map f b) = ext-Δ (λ c _ _ →
+  begin
+    c ++
+       (mapBag (⟦ weaken Γ≼ΔΓ f ⊕ derive f ⟧ ρ)
+               (⟦ weaken Γ≼ΔΓ b ⟧ ρ ++ ⟦ derive b ⟧ ρ))
+       \\
+       (mapBag (⟦ weaken Γ≼ΔΓ f ⟧ ρ) (⟦ weaken Γ≼ΔΓ b ⟧ ρ))
+  ≡⟨ cong₂ _++_
+       {x = c} refl
+       (cong₂ _\\_
+          (cong₂ mapBag
+            (⊕-preservation { t = weaken Γ≼ΔΓ f}
+                            {dt = derive f} {ρ = ρ})
+            (extract-Δequiv
+              (correctness-of-derive′ ρ {consistency} b)
+              (⟦ weaken Γ≼ΔΓ b ⟧ ρ) tt tt))
+          (cong₂ mapBag
+            (weaken-sound f ρ) (weaken-sound b ρ))) ⟩
+    c ++
+       (mapBag (⟦ weaken Γ≼ΔΓ f ⟧ ρ ⟦⊕⟧ ⟦ derive f ⟧ ρ) -- ⊕-preservation
+               (⟦ weaken Γ≼ΔΓ b ⟧ ρ ++                 -- correctness′
+                ⟦ b ⟧ (update ρ {consistency}) \\ ⟦ weaken Γ≼ΔΓ b ⟧ ρ))
+       \\
+       (mapBag (⟦ f ⟧ (ignore ρ)) (⟦ b ⟧ (ignore ρ)))   -- weaken-sound
+  ≡⟨ cong₂ (λ hole-f hole-b → c ++ mapBag hole-f hole-b
+            \\ mapBag (⟦ f ⟧ (ignore ρ)) (⟦ b ⟧ (ignore ρ)))
+       (trans
+         (extract-Δequiv
+           (correctness-of-derive′ ρ {consistency} f)
+           (⟦ weaken Γ≼ΔΓ f ⟧ ρ)
+           (validity-of-derive′ ρ {consistency} f)
+           (R[f,g⊝f] (⟦ weaken Γ≼ΔΓ f ⟧ ρ) (⟦ f ⟧ (update ρ))))
+         (f⊕[g⊝f]=g (⟦ weaken Γ≼ΔΓ f ⟧ ρ) (⟦ f ⟧ (update ρ))))
+       (b++[d\\b]=d {⟦ weaken Γ≼ΔΓ b ⟧ ρ} {⟦ b ⟧ (update ρ)})
+        ⟩
+    c ++  mapBag (⟦ f ⟧ (update ρ)) (⟦ b ⟧ (update ρ))
+       \\ mapBag (⟦ f ⟧ (ignore ρ)) (⟦ b ⟧ (ignore ρ))
+  ∎) where open ≡-Reasoning
 
 
 correctness-on-closed-terms : ∀ {τ₁ τ₂} →
