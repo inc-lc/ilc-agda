@@ -1,6 +1,6 @@
 {-
 The goal of this file is to make the 3rd example
-described in /examples.md, "Map.mapValues", fast:
+described in /examples.md fast:
 
     inc :: Bag Integer -> Bag Integer
     inc = map (+1)
@@ -119,15 +119,16 @@ data Term : Context -> Type -> Set where
 
   nat : ∀ {Γ} → (n : ℕ) → Term Γ nats
   bag : ∀ {Γ} → (b : Bag) → Term Γ bags
-  add : ∀ {Γ} → (t₁ : Term Γ nats) → (t₂ : Term Γ nats) → Term Γ nats
-  map : ∀ {Γ} → (f : Term Γ (nats ⇒ nats)) → (b : Term Γ bags) → Term Γ bags
-  union : ∀ {Γ} → (b₁ : Term Γ bags) → (b₂ : Term Γ bags) → Term Γ bags
-  diff : ∀ {Γ} → (b₁ : Term Γ bags) → (b₂ : Term Γ bags) → Term Γ bags
 
   var : ∀ {τ Γ} → (x : Var Γ τ) → Term Γ τ
   abs : ∀ {τ₁ τ₂ Γ} → (t : Term (τ₁ • Γ) τ₂) → Term Γ (τ₁ ⇒ τ₂)
   app : ∀ {τ₁ τ₂ Γ} → (t₁ : Term Γ (τ₁ ⇒ τ₂)) (t₂ : Term Γ τ₁)
                    → Term Γ τ₂
+
+  add : ∀ {Γ} → (t₁ : Term Γ nats) → (t₂ : Term Γ nats) → Term Γ nats
+  map : ∀ {Γ} → (f : Term Γ (nats ⇒ nats)) → (b : Term Γ bags) → Term Γ bags
+  diff : ∀ {Γ} → (b₁ : Term Γ bags) → (b₂ : Term Γ bags) → Term Γ bags
+  union : ∀ {Γ} → (b₁ : Term Γ bags) → (b₂ : Term Γ bags) → Term Γ bags
 
   -- Change to nats = replacement Church pairs
   -- 3 -> 5 ::= λf. f 3 5
