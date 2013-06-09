@@ -120,10 +120,60 @@ close-enough {τ₁ ⇒ τ₂} df dg (abide args) =
 
 syntax close-enough df dg args = df ≈ dg WRT args
 
-honesty-is-the-best-policy : ∀ {τ Γ} {t : Term Γ τ} →
+too-close : ∀ {τ Γ} {args : Args τ} →
+  {df dg : Term (Δ-Context Γ) (Δ-Type τ)} {ρ : ⟦ Δ-Context Γ ⟧} →
+  df ≡ dg → ⟦ df ⟧ ρ ≈ ⟦ dg ⟧ ρ WRT args
+
+too-close {nats}{_}{_} {df} {dg} {ρ} = cong (λ hole → ⟦ hole ⟧ ρ)
+too-close {bags}{_}{_} {df} {dg} {ρ} = {!!}
+too-close {τ₁ ⇒ τ₂}{_}{_} {df} {dg} {ρ} = {!!}
+
+honestyVar : {τ : Type} → {Γ : Context} →
+  (args : Args τ) → (vars : Vars Γ) →
+  (x : Var Γ τ) → derive (var x) ≡ derive' args vars (var x)
+honestyVar ∅-nat vars x = refl
+honestyVar ∅-bag vars x = refl
+honestyVar (abide args) vars x = refl
+honestyVar (alter args) vars x = refl
+
+honesty-is-the-best-policy : ∀ {τ Γ} (t : Term Γ τ) →
   (args : Args τ) → (vars : Vars Γ) →
   (ρ : ⟦ Δ-Context Γ ⟧) → Honest vars ρ →
   ⟦ derive t ⟧ ρ ≈ ⟦ derive' args vars t ⟧ ρ WRT args
 
-honesty-is-the-best-policy = {!!}
+honesty-is-the-best-policy {nats} {Γ} (nat n) args vars ρ honesty =
+  begin
+    ⟦ derive (nat n) ⟧ ρ
+  ≡⟨ cong (λ hole → ⟦ hole ⟧ ρ) (lemma Γ args vars) ⟩
+    ⟦ derive' args vars (nat n) ⟧ ρ
+  ∎ where
+    open ≡-Reasoning
+    lemma : (Γ : Context) (args : Args nats) (vars : Vars Γ) →
+      derive (nat n) ≡ derive' {nats} {Γ} args vars (nat n)
+    lemma ∅ ∅-nat ∅ = refl
+    lemma (τ • Γ) ∅-nat (abide vars) = refl
+    lemma (τ • Γ) ∅-nat (alter vars) = refl
+
+honesty-is-the-best-policy {bags} {Γ} (bag b) args vars ρ honesty =
+  begin
+    ⟦ derive (bag b) ⟧ ρ
+  ≡⟨ cong (λ hole → ⟦ hole ⟧ ρ) (lemma Γ args vars) ⟩
+    ⟦ derive' args vars (bag b) ⟧ ρ
+  ∎ where
+    open ≡-Reasoning
+    lemma : (Γ : Context) (args : Args bags) (vars : Vars Γ) →
+      derive (bag b) ≡ derive' {bags} {Γ} args vars (bag b)
+    lemma ∅ ∅-bag ∅ = refl
+    lemma (τ • Γ) ∅-bag (abide vars) = refl
+    lemma (τ • Γ) ∅-bag (alter vars) = refl
+
+honesty-is-the-best-policy {τ} {Γ} (var x) args vars ρ honesty =
+  too-close {τ} {Γ} (honestyVar args vars x)
+
+honesty-is-the-best-policy (abs t) args vars ρ honesty = {!!}
+honesty-is-the-best-policy (app f x) args vars ρ honesty = {!!}
+honesty-is-the-best-policy (add m n) args vars ρ honesty = {!!}
+honesty-is-the-best-policy (map f b) args vars ρ honesty = {!!}
+honesty-is-the-best-policy (diff b d) args vars ρ honesty = {!!}
+honesty-is-the-best-policy (union b d) args vars ρ honesty = {!!}
 
