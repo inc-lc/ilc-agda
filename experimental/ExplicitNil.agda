@@ -181,13 +181,11 @@ stabilityVar : ∀ {τ Γ} → (x : Var Γ τ) (vars : Vars Γ) →
 stabilityVar this (alter vars) () (alter honesty)
 stabilityVar this (abide vars) refl (abide proof honesty) = proof
 
-stabilityVar {τ} {τ′ • Γ } (that x) (abide vars) truth (abide _ honesty) =
-  stabilityVar x vars (trans eq2 truth) honesty
-  where
-    eq2 : stableVar x vars ≡ stableVar (that {τ} {τ′} {Γ} x) (abide vars)
-    eq2 = refl
+stabilityVar {τ} {τ′ • Γ } (that x) (abide vars) truth (abide _ honesty)
+  = stabilityVar x vars truth honesty
 
-stabilityVar (that x) (alter vars) truth honesty = {!ditto!}
+stabilityVar {τ} {τ′ • Γ } (that x) (alter vars) truth (alter honesty)
+  = stabilityVar x vars truth honesty
 
 -- A term does not change if its free variables are unchanging.
 stability : ∀ {τ Γ} → (t : Term Γ τ) (vars : Vars Γ) →
@@ -200,12 +198,7 @@ stability (nat n) vars truth {ρ} _ = refl
 stability (bag b) vars truth {ρ} _ = b++∅=b
 
 stability (var x) vars truth {ρ} honesty =
-  {!!}
-  where
-    eq1  : stableVar x vars ≡ stable (var x) vars
-    eq1  = refl
-    tVar : stableVar x vars ≡ true
-    tVar = trans eq1 truth
+  stabilityVar x vars truth honesty
 
 stability (abs t) vars truth {ρ} honesty = {!!}
 stability (app t t₁) vars truth {ρ} honesty = {!!}
