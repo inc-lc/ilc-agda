@@ -15,6 +15,31 @@ open import Relation.Binary.PropositionalEquality
 open import Relation.Binary using
   (Reflexive ; Transitive ; Preorder ; IsPreorder)
 
+-- Useful statements about Boolean
+∧-proj₁ : ∀ {a b} → a ∧ b ≡ true → a ≡ true
+∧-proj₁ {false} {_} ()
+∧-proj₁ {true} {false} ()
+∧-proj₁ {true} {true} eq = refl
+
+∧-proj₂ : ∀ {a b} → a ∧ b ≡ true → b ≡ true
+∧-proj₂ {false} {_} ()
+∧-proj₂ {true} {false} ()
+∧-proj₂ {true} {true} eq = refl
+
+-- Extending correctness-on-closed-terms
+extended-correctness : ∀ {τ₁ τ₂ Γ} →
+  (f : Term Γ (τ₁ ⇒ τ₂)) (x : Term Γ τ₁)
+    {ρ : ⟦ Δ-Context Γ ⟧} {consistency : Consistent-Δenv ρ} →
+    ⟦ weaken Γ≼ΔΓ f ⟧ ρ (⟦ weaken Γ≼ΔΓ x ⟧ ρ)
+    ⟦⊕⟧ ⟦ derive f ⟧ ρ (⟦ weaken Γ≼ΔΓ x ⟧ ρ) (⟦ derive x ⟧ ρ)
+  ≡ (⟦ weaken Γ≼ΔΓ f ⟧ ρ ⟦⊕⟧ ⟦ derive f ⟧ ρ)
+    (⟦ weaken Γ≼ΔΓ x ⟧ ρ ⟦⊕⟧ ⟦ derive x ⟧ ρ)
+
+extended-correctness {τ₁} {τ₂} {Γ} f x {ρ} {consistency} = sym (proj₂
+  (validity-of-derive′ ρ {consistency} f
+    (⟦ weaken Γ≼ΔΓ x ⟧ ρ) (⟦ derive x ⟧ ρ)
+    (validity-of-derive′ ρ {consistency} x)))
+
 -- Debug tool
 absurd! : ∀ {A B : Set} → B → A → A → B
 absurd! b _ _ = b
@@ -53,26 +78,6 @@ stable (add m n) vars = stable m vars ∧ stable n vars
 stable (map f b) vars = stable f vars ∧ stable b vars
 stable (diff b d) vars = stable b vars ∧ stable d vars
 stable (union b d) vars = stable b vars ∧ stable d vars
-
-{-
--- Reformulating stableness as a decidable relation
--- Not sure if it is necessary or not.
-data StableVar : ∀ {τ Γ} → Var Γ τ → Vars Γ → Set where
-  abide-this : ∀ {τ Γ} → {vars : Vars Γ} → StableVar this (abide {τ} vars)
-  abide-that : ∀ {τ Γ τ′} → {x : Var Γ τ} → {vars : Vars Γ} →
-    StableVar x vars → StableVar (that {τ} {τ′} x) (abide vars)
-  alter-that : ∀ {τ Γ τ′} → {x : Var Γ τ} → {vars : Vars Γ} →
-    StableVar x vars → StableVar (that {τ} {τ′} x) (alter vars)
-
-data Stable : ∀ {τ Γ} → Term Γ τ → Vars Γ → Set where
-  stable-nat : ∀ {Γ n vars} → Stable {nats} {Γ} (nat n) vars
-  stable-bag : ∀ {Γ b vars} → Stable {bags} {Γ} (bag b) vars
-  stable-var : ∀ {τ Γ x vars} →
-               StableVar {τ} {Γ} x vars → Stable (var x) vars
-  stable-abs : ∀ {τ₁ τ₂ Γ vars} {t : Term (τ₁ • Γ) τ₂} →
-               Stable t (abide vars) → Stable (abs t) vars
-  -- TODO app add map diff union
--}
 
 expect-volatility : {τ : Type} → Args τ
 expect-volatility {τ₁ ⇒ τ₂} = alter expect-volatility
@@ -141,21 +146,13 @@ close-enough : ∀ {τ : Type} → ⟦ Δ-Type τ ⟧ → ⟦ Δ-Type τ ⟧ →
 close-enough {nats} df dg args = df ≡ dg -- extensionally
 close-enough {bags} df dg args = df ≡ dg -- literally
 close-enough {τ₁ ⇒ τ₂} df dg (alter args) =
-  ∀ {x dx} → close-enough (df x dx) (dg x dx) args
+  ∀ {x dx} {R[x,dx] : valid-Δ x dx}
+  → close-enough (df x dx) (dg x dx) args
 close-enough {τ₁ ⇒ τ₂} df dg (abide args) =
-  ∀ {x dx} → x ⟦⊕⟧ dx ≡ x → close-enough (df x dx) (dg x dx) args
+  ∀ {x dx} {validity : valid-Δ x dx}
+  → x ⟦⊕⟧ dx ≡ x → close-enough (df x dx) (dg x dx) args
 
 syntax close-enough df dg args = df ≈ dg WRT args
-
-volatility⇒identity :
-  ∀ {τ} {df dg : ⟦ Δ-Type τ ⟧} →
-    df ≈ dg WRT (expect-volatility {τ}) → df ≡ dg
-
-volatility⇒identity {nats} df≈dg = df≈dg
-volatility⇒identity {bags} df≈dg = df≈dg
-volatility⇒identity {τ₁ ⇒ τ₂} {df} {dg} df≈dg =
-  extensionality (λ x → extensionality (λ dx →
-    volatility⇒identity {τ₂} (df≈dg {x} {dx})))
 
 df≈df : ∀ {τ} {df : ⟦ Δ-Type τ ⟧} {args : Args τ} → df ≈ df WRT args
 df≈df {nats} = refl
@@ -190,7 +187,7 @@ stabilityVar {τ} {τ′ • Γ } (that x) (alter vars) truth (alter honesty)
 -- A term does not change if its free variables are unchanging.
 stability : ∀ {τ Γ} → (t : Term Γ τ) (vars : Vars Γ) →
   stable t vars ≡ true →
-  ∀ {ρ : ⟦ Δ-Context Γ ⟧} → Honest vars ρ →
+  ∀ {ρ : ⟦ Δ-Context Γ ⟧} {_ : Consistent-Δenv ρ} → Honest vars ρ →
     ⟦ weaken Γ≼ΔΓ t ⟧ ρ ⟦⊕⟧ ⟦ derive t ⟧ ρ ≡ ⟦ weaken Γ≼ΔΓ t ⟧ ρ
 
 stability (nat n) vars truth {ρ} _ = refl
@@ -200,12 +197,57 @@ stability (bag b) vars truth {ρ} _ = b++∅=b
 stability (var x) vars truth {ρ} honesty =
   stabilityVar x vars truth honesty
 
-stability (abs t) vars truth {ρ} honesty = {!!}
-stability (app t t₁) vars truth {ρ} honesty = {!!}
-stability (add t t₁) vars truth {ρ} honesty = {!!}
-stability (map t t₁) vars truth {ρ} honesty = {!!}
-stability (diff t t₁) vars truth {ρ} honesty = {!!}
-stability (union t t₁) vars truth {ρ} honesty = {!!}
+stability (abs {τ₁} {τ₂} {Γ} t) vars truth {ρ} {consistency} honesty =
+  extensionality (λ v → let
+    dv : ⟦ Δ-Type τ₁ ⟧
+    dv = ⟦derive⟧ v
+    mutual-weakening : ⟦ weaken (keep τ₁ • Γ≼ΔΓ) t ⟧ (v • ρ)
+                     ≡ ⟦ weaken Γ≼ΔΓ t ⟧ (dv • v • ρ)
+    mutual-weakening =
+      trans (weaken-sound t (v • ρ))
+            (trans (cong (λ hole → ⟦ t ⟧ hole)
+                     {x = ⟦ keep τ₁ • Γ≼ΔΓ ⟧ (v • ρ)}
+                     {y = ⟦ Γ≼ΔΓ ⟧ (dv • v • ρ)}
+                     refl)
+                   (sym (weaken-sound t (dv • v • ρ))))
+  in
+    begin
+      ⟦ weaken (keep τ₁ • Γ≼ΔΓ) t ⟧ (v • ρ) ⟦⊕⟧ ⟦ derive t ⟧ (dv • v • ρ)
+    ≡⟨ cong (λ hole → hole ⟦⊕⟧ ⟦ derive t ⟧ (dv • v • ρ))
+            mutual-weakening ⟩
+      ⟦ weaken Γ≼ΔΓ t ⟧ (dv • v • ρ) ⟦⊕⟧ ⟦ derive t ⟧ (dv • v • ρ)
+    ≡⟨ stability t (abide vars) truth
+         {dv • v • ρ}
+         {dρ=dv•v•dρ₀ (R[f,Δf] v) consistency}
+         (abide (f⊕Δf=f v) honesty) ⟩
+      ⟦ weaken Γ≼ΔΓ t ⟧ (dv • v • ρ)
+    ≡⟨ sym mutual-weakening ⟩
+      ⟦ weaken (keep τ₁ • Γ≼ΔΓ) t ⟧ (v • ρ)
+    ∎
+  ) where open ≡-Reasoning
+
+stability (app s t) vars truth {ρ} {consistency} honesty =
+  let
+    f  = ⟦ weaken Γ≼ΔΓ s ⟧ ρ
+    x  = ⟦ weaken Γ≼ΔΓ t ⟧ ρ
+    df = ⟦ derive s ⟧ ρ
+    dx = ⟦ derive t ⟧ ρ
+  in
+    begin
+      f x ⟦⊕⟧ df x dx
+    ≡⟨ extended-correctness s t {ρ} {consistency} ⟩
+      (f ⟦⊕⟧ df) (x ⟦⊕⟧ dx)
+    ≡⟨ stability s vars (∧-proj₁ truth) {ρ} {consistency} honesty ⟨$⟩
+       stability t vars
+         (∧-proj₂ {stable s vars} truth)
+         {ρ} {consistency} honesty ⟩
+      f x
+    ∎ where open ≡-Reasoning
+
+stability (add s t) vars truth {ρ} honesty = {!!}
+stability (map s t) vars truth {ρ} honesty = {!!}
+stability (diff s t) vars truth {ρ} honesty = {!!}
+stability (union s t) vars truth {ρ} honesty = {!!}
 
 honestyVar : {τ : Type} → {Γ : Context} →
   (args : Args τ) → (vars : Vars Γ) →
@@ -220,12 +262,17 @@ honestyVar (alter args) vars x = refl
 -- the same result as the original derivation.
 honesty-is-the-best-policy : ∀ {τ Γ} (t : Term Γ τ) →
   (args : Args τ) → (vars : Vars Γ) →
-  (ρ : ⟦ Δ-Context Γ ⟧) → Honest vars ρ →
+  (ρ : ⟦ Δ-Context Γ ⟧) → {_ : Consistent-Δenv ρ} → Honest vars ρ →
   ⟦ derive t ⟧ ρ ≈ ⟦ derive' args vars t ⟧ ρ WRT args
 
-honesty-is-the-best-policy (app f s) args vars ρ honesty
+honesty-is-the-best-policy (app f s) args vars ρ {consistency} honesty
   with stable s vars | inspect (stable s) vars
 ... | true  | [ truth ] = {!!}
+-- Task after stability
+-- --------------------
+-- To use close-enough on f, must have validity of optimized derivative
+-- of s. Validity should follow from constant expectation of volatility.
+--
 --  absurd! {!!} (stability s vars truth {ρ}) {!!}
 
 ... | false | [ falsehood ] = {!!}
@@ -259,13 +306,19 @@ honesty-is-the-best-policy {bags} {Γ} (bag b) args vars ρ honesty =
 honesty-is-the-best-policy {τ} {Γ} (var x) args vars ρ honesty =
   too-close {τ} {Γ} (honestyVar args vars x)
 
-honesty-is-the-best-policy (abs t) (abide args) vars ρ honesty =
-  λ {x} {dx} x⊕dx=x → honesty-is-the-best-policy
-    t args (abide vars) (dx • x • ρ) (abide x⊕dx=x honesty)
+honesty-is-the-best-policy (abs t) (abide args)
+  vars ρ {consistency} honesty =
+  λ {x} {dx} {R[x,dx]} x⊕dx=x → honesty-is-the-best-policy
+    t args (abide vars)
+    (dx • x • ρ) {dρ=dv•v•dρ₀ R[x,dx] consistency}
+    (abide x⊕dx=x honesty)
 
-honesty-is-the-best-policy (abs t) (alter args) vars ρ honesty =
-  λ {x} {dx} → honesty-is-the-best-policy
-    t args (alter vars) (dx • x • ρ) (alter honesty)
+honesty-is-the-best-policy (abs t) (alter args)
+  vars ρ {consistency} honesty =
+  λ {x} {dx} {R[x,dx]} → honesty-is-the-best-policy
+    t args (alter vars)
+    (dx • x • ρ) {dρ=dv•v•dρ₀ R[x,dx] consistency}
+    (alter honesty)
 
 honesty-is-the-best-policy (add m n) args vars ρ honesty = {!!}
 honesty-is-the-best-policy (map f b) args vars ρ honesty = {!!}
