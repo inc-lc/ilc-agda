@@ -10,7 +10,7 @@ open import NatBag
 open import Data.Bool
 open import Data.Product hiding (map)
 open import Data.Nat using (ℕ)
-open import Data.Unit using (⊤)
+open import Data.Unit using (⊤ ; tt)
 open import Relation.Binary.PropositionalEquality
 open import Relation.Binary using
   (Reflexive ; Transitive ; Preorder ; IsPreorder)
@@ -48,6 +48,26 @@ stable (add m n) vars = stable m vars ∧ stable n vars
 stable (map f b) vars = stable f vars ∧ stable b vars
 stable (diff b d) vars = stable b vars ∧ stable d vars
 stable (union b d) vars = stable b vars ∧ stable d vars
+
+{-
+-- Reformulating stableness as a decidable relation
+-- Not sure if it is necessary or not.
+data StableVar : ∀ {τ Γ} → Var Γ τ → Vars Γ → Set where
+  abide-this : ∀ {τ Γ} → {vars : Vars Γ} → StableVar this (abide {τ} vars)
+  abide-that : ∀ {τ Γ τ′} → {x : Var Γ τ} → {vars : Vars Γ} →
+    StableVar x vars → StableVar (that {τ} {τ′} x) (abide vars)
+  alter-that : ∀ {τ Γ τ′} → {x : Var Γ τ} → {vars : Vars Γ} →
+    StableVar x vars → StableVar (that {τ} {τ′} x) (alter vars)
+
+data Stable : ∀ {τ Γ} → Term Γ τ → Vars Γ → Set where
+  stable-nat : ∀ {Γ n vars} → Stable {nats} {Γ} (nat n) vars
+  stable-bag : ∀ {Γ b vars} → Stable {bags} {Γ} (bag b) vars
+  stable-var : ∀ {τ Γ x vars} →
+               StableVar {τ} {Γ} x vars → Stable (var x) vars
+  stable-abs : ∀ {τ₁ τ₂ Γ vars} {t : Term (τ₁ • Γ) τ₂} →
+               Stable t (abide vars) → Stable (abs t) vars
+  -- TODO app add map diff union
+-}
 
 expect-volatility : {τ : Type} → Args τ
 expect-volatility {τ₁ ⇒ τ₂} = alter expect-volatility
@@ -102,9 +122,11 @@ derive' args vars constant-or-variable = derive constant-or-variable
 data Honest : ∀ {Γ} → Vars Γ → ⟦ Δ-Context Γ ⟧ → Set where
   clearly : Honest ∅ ∅
   alter : ∀ {Γ τ v dv} → {vars : Vars Γ} → {ρ : ⟦ Δ-Context Γ ⟧} →
+          Honest {Γ} vars ρ →
           Honest {τ • Γ} (alter vars) (dv • v • ρ)
   abide : ∀ {Γ τ v dv} → {vars : Vars Γ} → {ρ : ⟦ Δ-Context Γ ⟧} →
           v ⟦⊕⟧ dv ≡ v →
+          Honest {Γ} vars ρ →
           Honest {τ • Γ} (abide vars) (dv • v • ρ)
 
 -- Two Δ-values are close enough w.r.t. a set of arguments if they
@@ -120,13 +142,24 @@ close-enough {τ₁ ⇒ τ₂} df dg (abide args) =
 
 syntax close-enough df dg args = df ≈ dg WRT args
 
+df≈df : ∀ {τ} {df : ⟦ Δ-Type τ ⟧} {args : Args τ} → df ≈ df WRT args
+df≈df {nats} = refl
+df≈df {bags} = refl
+df≈df {τ₁ ⇒ τ₂} {df} {abide args} =
+  λ {x} {dx} _ → df≈df {τ₂} {df x dx} {args}
+df≈df {τ₁ ⇒ τ₂} {df} {alter args} =
+  λ {x} {dx}   → df≈df {τ₂} {df x dx} {args}
+
 too-close : ∀ {τ Γ} {args : Args τ} →
   {df dg : Term (Δ-Context Γ) (Δ-Type τ)} {ρ : ⟦ Δ-Context Γ ⟧} →
   df ≡ dg → ⟦ df ⟧ ρ ≈ ⟦ dg ⟧ ρ WRT args
 
-too-close {nats}{_}{_} {df} {dg} {ρ} = cong (λ hole → ⟦ hole ⟧ ρ)
-too-close {bags}{_}{_} {df} {dg} {ρ} = {!!}
-too-close {τ₁ ⇒ τ₂}{_}{_} {df} {dg} {ρ} = {!!}
+too-close {nats}{_}{_} {df} {dg} {ρ} df=dg =
+  cong (λ hole → ⟦ hole ⟧ ρ) df=dg
+too-close {bags}{_}{_} {df} {dg} {ρ} df=dg =
+  cong (λ hole → ⟦ hole ⟧ ρ) df=dg
+too-close {τ₁ ⇒ τ₂}{_} {args} {df} {dg} {ρ} df=dg
+  rewrite df=dg = df≈df {τ₁ ⇒ τ₂} {⟦ dg ⟧ ρ} {args}
 
 honestyVar : {τ : Type} → {Γ : Context} →
   (args : Args τ) → (vars : Vars Γ) →
@@ -140,6 +173,20 @@ honesty-is-the-best-policy : ∀ {τ Γ} (t : Term Γ τ) →
   (args : Args τ) → (vars : Vars Γ) →
   (ρ : ⟦ Δ-Context Γ ⟧) → Honest vars ρ →
   ⟦ derive t ⟧ ρ ≈ ⟦ derive' args vars t ⟧ ρ WRT args
+
+-- A term does not change if its free variables are unchanging.
+stability : ∀ {τ Γ} → (t : Term Γ τ) (vars : Vars Γ) →
+  T (stable t vars) →
+  ∀ {A : Set} → A
+-- Conclusion is absurdity for now
+-- to test usability inside case t-app.
+-- Using T (stable t vars) as a condition is not enough.
+stability t vars truth = {!!}
+
+honesty-is-the-best-policy (app f s) args vars ρ honesty
+  with stable s vars
+... | true = stability s vars {!tt!}
+... | false = {!!}
 
 honesty-is-the-best-policy {nats} {Γ} (nat n) args vars ρ honesty =
   begin
@@ -170,8 +217,14 @@ honesty-is-the-best-policy {bags} {Γ} (bag b) args vars ρ honesty =
 honesty-is-the-best-policy {τ} {Γ} (var x) args vars ρ honesty =
   too-close {τ} {Γ} (honestyVar args vars x)
 
-honesty-is-the-best-policy (abs t) args vars ρ honesty = {!!}
-honesty-is-the-best-policy (app f x) args vars ρ honesty = {!!}
+honesty-is-the-best-policy (abs t) (abide args) vars ρ honesty =
+  λ {x} {dx} x⊕dx=x → honesty-is-the-best-policy
+    t args (abide vars) (dx • x • ρ) (abide x⊕dx=x honesty)
+
+honesty-is-the-best-policy (abs t) (alter args) vars ρ honesty =
+  λ {x} {dx} → honesty-is-the-best-policy
+    t args (alter vars) (dx • x • ρ) (alter honesty)
+
 honesty-is-the-best-policy (add m n) args vars ρ honesty = {!!}
 honesty-is-the-best-policy (map f b) args vars ρ honesty = {!!}
 honesty-is-the-best-policy (diff b d) args vars ρ honesty = {!!}
