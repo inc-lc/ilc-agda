@@ -15,6 +15,11 @@ open import Relation.Binary.PropositionalEquality
 open import Relation.Binary using
   (Reflexive ; Transitive ; Preorder ; IsPreorder)
 
+-- Debug tool
+absurd! : ∀ {A B : Set} → B → A → A → B
+absurd! b _ _ = b
+
+
 data Args : (τ : Type) → Set where
   ∅-nat : Args nats
   ∅-bag : Args bags
@@ -142,6 +147,16 @@ close-enough {τ₁ ⇒ τ₂} df dg (abide args) =
 
 syntax close-enough df dg args = df ≈ dg WRT args
 
+volatility⇒identity :
+  ∀ {τ} {df dg : ⟦ Δ-Type τ ⟧} →
+    df ≈ dg WRT (expect-volatility {τ}) → df ≡ dg
+
+volatility⇒identity {nats} df≈dg = df≈dg
+volatility⇒identity {bags} df≈dg = df≈dg
+volatility⇒identity {τ₁ ⇒ τ₂} {df} {dg} df≈dg =
+  extensionality (λ x → extensionality (λ dx →
+    volatility⇒identity {τ₂} (df≈dg {x} {dx})))
+
 df≈df : ∀ {τ} {df : ⟦ Δ-Type τ ⟧} {args : Args τ} → df ≈ df WRT args
 df≈df {nats} = refl
 df≈df {bags} = refl
@@ -154,12 +169,50 @@ too-close : ∀ {τ Γ} {args : Args τ} →
   {df dg : Term (Δ-Context Γ) (Δ-Type τ)} {ρ : ⟦ Δ-Context Γ ⟧} →
   df ≡ dg → ⟦ df ⟧ ρ ≈ ⟦ dg ⟧ ρ WRT args
 
-too-close {nats}{_}{_} {df} {dg} {ρ} df=dg =
-  cong (λ hole → ⟦ hole ⟧ ρ) df=dg
-too-close {bags}{_}{_} {df} {dg} {ρ} df=dg =
-  cong (λ hole → ⟦ hole ⟧ ρ) df=dg
-too-close {τ₁ ⇒ τ₂}{_} {args} {df} {dg} {ρ} df=dg
-  rewrite df=dg = df≈df {τ₁ ⇒ τ₂} {⟦ dg ⟧ ρ} {args}
+too-close {τ}{_} {args} {df} {dg} {ρ} df=dg
+  rewrite df=dg = df≈df {τ} {⟦ dg ⟧ ρ} {args}
+
+-- A variable does not change if its value is unchanging.
+stabilityVar : ∀ {τ Γ} → (x : Var Γ τ) (vars : Vars Γ) →
+  stableVar x vars ≡ true →
+  ∀ {ρ : ⟦ Δ-Context Γ ⟧} → Honest vars ρ →
+    ⟦ weakenVar Γ≼ΔΓ x ⟧ ρ ⟦⊕⟧ ⟦ deriveVar x ⟧ ρ ≡ ⟦ weakenVar Γ≼ΔΓ x ⟧ ρ
+
+stabilityVar this (alter vars) () (alter honesty)
+stabilityVar this (abide vars) refl (abide proof honesty) = proof
+
+stabilityVar {τ} {τ′ • Γ } (that x) (abide vars) truth (abide _ honesty) =
+  stabilityVar x vars (trans eq2 truth) honesty
+  where
+    eq2 : stableVar x vars ≡ stableVar (that {τ} {τ′} {Γ} x) (abide vars)
+    eq2 = refl
+
+stabilityVar (that x) (alter vars) truth honesty = {!ditto!}
+
+-- A term does not change if its free variables are unchanging.
+stability : ∀ {τ Γ} → (t : Term Γ τ) (vars : Vars Γ) →
+  stable t vars ≡ true →
+  ∀ {ρ : ⟦ Δ-Context Γ ⟧} → Honest vars ρ →
+    ⟦ weaken Γ≼ΔΓ t ⟧ ρ ⟦⊕⟧ ⟦ derive t ⟧ ρ ≡ ⟦ weaken Γ≼ΔΓ t ⟧ ρ
+
+stability (nat n) vars truth {ρ} _ = refl
+
+stability (bag b) vars truth {ρ} _ = b++∅=b
+
+stability (var x) vars truth {ρ} honesty =
+  {!!}
+  where
+    eq1  : stableVar x vars ≡ stable (var x) vars
+    eq1  = refl
+    tVar : stableVar x vars ≡ true
+    tVar = trans eq1 truth
+
+stability (abs t) vars truth {ρ} honesty = {!!}
+stability (app t t₁) vars truth {ρ} honesty = {!!}
+stability (add t t₁) vars truth {ρ} honesty = {!!}
+stability (map t t₁) vars truth {ρ} honesty = {!!}
+stability (diff t t₁) vars truth {ρ} honesty = {!!}
+stability (union t t₁) vars truth {ρ} honesty = {!!}
 
 honestyVar : {τ : Type} → {Γ : Context} →
   (args : Args τ) → (vars : Vars Γ) →
@@ -169,24 +222,20 @@ honestyVar ∅-bag vars x = refl
 honestyVar (abide args) vars x = refl
 honestyVar (alter args) vars x = refl
 
+-- If both the environment and the future arguments are honest
+-- about nil changes, then the optimized derivation delivers
+-- the same result as the original derivation.
 honesty-is-the-best-policy : ∀ {τ Γ} (t : Term Γ τ) →
   (args : Args τ) → (vars : Vars Γ) →
   (ρ : ⟦ Δ-Context Γ ⟧) → Honest vars ρ →
   ⟦ derive t ⟧ ρ ≈ ⟦ derive' args vars t ⟧ ρ WRT args
 
--- A term does not change if its free variables are unchanging.
-stability : ∀ {τ Γ} → (t : Term Γ τ) (vars : Vars Γ) →
-  T (stable t vars) →
-  ∀ {A : Set} → A
--- Conclusion is absurdity for now
--- to test usability inside case t-app.
--- Using T (stable t vars) as a condition is not enough.
-stability t vars truth = {!!}
-
 honesty-is-the-best-policy (app f s) args vars ρ honesty
-  with stable s vars
-... | true = stability s vars {!tt!}
-... | false = {!!}
+  with stable s vars | inspect (stable s) vars
+... | true  | [ truth ] = {!!}
+--  absurd! {!!} (stability s vars truth {ρ}) {!!}
+
+... | false | [ falsehood ] = {!!}
 
 honesty-is-the-best-policy {nats} {Γ} (nat n) args vars ρ honesty =
   begin
