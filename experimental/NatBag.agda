@@ -8,19 +8,6 @@ described in /examples.md fast:
     old = fromList [1, 2 .. n - 1, n]
     res = inc old = [2, 3 .. n, n + 1]
 
-TODO
-1. Make sure this file has no hole
-   X. Replace ℕ by ℤ
-   X. Replace ℤ by ℕ -- our bags are bags of nats now.
-   X. Introduce addition
-   X. Add MapBags and map
-2. Test it out with `inc` as primitive
-3. Finish ExplicitNils
-   0. Figure out a way to communicate to a derivative that
-      certain changes are always nil (in this case, `+1`).
-4. Consider appending ExplicitNils
-
-
 Checklist: Adding syntactic constructs
 
 - weaken
