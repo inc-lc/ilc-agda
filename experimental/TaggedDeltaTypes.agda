@@ -204,7 +204,7 @@ data Δ-Context : Set where
 Env : Context → Set
 Env Γ = ⟦ Γ ⟧Context
 
-private data Δ-Term : Δ-Context → Δ-Type → Set
+data Δ-Term : Δ-Context → Δ-Type → Set
 
 -- Syntax of Δ-Types
 -- ...   is mutually recursive with semantics of Δ-Terms,
@@ -215,8 +215,7 @@ private data Δ-Term : Δ-Context → Δ-Type → Set
 -- which is mutually recursive with v⊕[u⊝v]=v, et cetera.
 ⟦_⟧Δτ : Δ-Type → Set
 Δ-Env : Context → Set
-private
-  ⟦_⟧Δ : ∀ {τ : Type} {Γ : Context}
+⟦_⟧Δ : ∀ {τ : Type} {Γ : Context}
     → Δ-Term (Δ Γ) (Δ τ) → Δ-Env Γ → ⟦ Δ τ ⟧Δτ
 _⊕_ : ∀ {τ : Type} → ⟦ τ ⟧ → ⟦ Δ τ ⟧Δτ → ⟦ τ ⟧
 _⊝_ : ∀ {τ : Type} → ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ Δ τ ⟧Δτ
@@ -228,8 +227,7 @@ update : ∀ {Γ : Context} → (ρ : Δ-Env Γ) → ⟦ Γ ⟧
 
 infixl 6 _⊕_ _⊝_ -- as with + - in GHC.Num
 
-abstract
- data Δ-Term where
+data Δ-Term where
   -- changes to numbers are replacement pairs
   Δnat : ∀ {Γ} → (old : ℕ) → (new : ℕ) → Δ-Term (Δ Γ) (Δ nats)
   -- changes to bags are bags
@@ -360,28 +358,27 @@ update {τ • Γ} (cons v dv R[v,dv] ρ) = (v ⊕ dv) • update ρ
 -- because its argument is identical to that of ⟦_⟧Var.
 
 -- ⟦_⟧Δ : ∀ {τ Γ} → Δ-Term (Δ Γ) (Δ τ) → Δ-Env Γ → ⟦ Δ τ ⟧Δτ
-abstract
- ⟦ Δnat old new ⟧Δ ρ = (old , new)
- ⟦ Δbag db ⟧Δ ρ = db
- ⟦ Δvar x ⟧Δ ρ = ⟦ x ⟧ΔVar ρ
- ⟦ Δabs t ⟧Δ ρ = λ v dv R[v,dv] → ⟦ t ⟧Δ (cons v dv R[v,dv] ρ)
- ⟦ Δapp ds t dt R[dt,t] ⟧Δ ρ =
-   ⟦ ds ⟧Δ ρ (⟦ t ⟧ (ignore ρ)) (⟦ dt ⟧Δ ρ) R[dt,t]
- ⟦ Δadd ds dt ⟧Δ ρ =
-   let
-     (old-s , new-s) = ⟦ ds ⟧Δ ρ
-     (old-t , new-t) = ⟦ dt ⟧Δ ρ
-   in
-     (old-s + old-t , new-s + new-t)
- ⟦ Δmap₀ f df b db ⟧Δ ρ =
-   let
-     v  = ⟦ b ⟧ (ignore ρ)
-     h  = ⟦ f ⟧ (ignore ρ)
-     dv = ⟦ db ⟧Δ ρ
-     dh = ⟦ df ⟧Δ ρ
-   in
-     mapBag (h ⊕ dh) (v ⊕ dv) \\ mapBag h v
- ⟦ Δmap₁ f db ⟧Δ ρ = mapBag (⟦ f ⟧ (ignore ρ)) (⟦ db ⟧Δ ρ)
+⟦ Δnat old new ⟧Δ ρ = (old , new)
+⟦ Δbag db ⟧Δ ρ = db
+⟦ Δvar x ⟧Δ ρ = ⟦ x ⟧ΔVar ρ
+⟦ Δabs t ⟧Δ ρ = λ v dv R[v,dv] → ⟦ t ⟧Δ (cons v dv R[v,dv] ρ)
+⟦ Δapp ds t dt R[dt,t] ⟧Δ ρ =
+  ⟦ ds ⟧Δ ρ (⟦ t ⟧ (ignore ρ)) (⟦ dt ⟧Δ ρ) R[dt,t]
+⟦ Δadd ds dt ⟧Δ ρ =
+  let
+    (old-s , new-s) = ⟦ ds ⟧Δ ρ
+    (old-t , new-t) = ⟦ dt ⟧Δ ρ
+  in
+    (old-s + old-t , new-s + new-t)
+⟦ Δmap₀ f df b db ⟧Δ ρ =
+  let
+    v  = ⟦ b ⟧ (ignore ρ)
+    h  = ⟦ f ⟧ (ignore ρ)
+    dv = ⟦ db ⟧Δ ρ
+    dh = ⟦ df ⟧Δ ρ
+  in
+    mapBag (h ⊕ dh) (v ⊕ dv) \\ mapBag h v
+⟦ Δmap₁ f db ⟧Δ ρ = mapBag (⟦ f ⟧ (ignore ρ)) (⟦ db ⟧Δ ρ)
 
 meaning-ΔTerm : ∀ {τ Γ} → Meaning (Δ-Term (Δ Γ) (Δ τ))
 meaning-ΔTerm = meaning ⟦_⟧Δ
@@ -390,10 +387,34 @@ meaning-ΔTerm = meaning ⟦_⟧Δ
 -- Program transformation and correctness (entangled) --
 --------------------------------------------------------
 
+Δ-equiv : ∀ {τ : Type} → (du : ⟦ Δ τ ⟧Δτ) (dv : ⟦ Δ τ ⟧Δτ) → Set
+Δ-equiv {τ} du dv =
+  ∀ {v : ⟦ τ ⟧} (R[v,du] : valid v du) (R[v,dv] : valid v dv) →
+    v ⊕ du ≡ v ⊕ dv
+
 derive : ∀ {τ Γ} → Term Γ τ → Δ-Term (Δ Γ) (Δ τ)
 
 validity : ∀ {τ Γ} {t : Term Γ τ} {ρ : Δ-Env Γ} →
   valid (⟦ t ⟧ (ignore ρ)) (⟦ derive t ⟧ ρ)
+
+correctness : ∀ {τ Γ} {t : Term Γ τ} {ρ : Δ-Env Γ} →
+  Δ-equiv (⟦ derive t ⟧ ρ) (⟦ t ⟧ (update ρ) ⊝ ⟦ t ⟧ (ignore ρ))
+
+corollary : ∀ {τ Γ} {t : Term Γ τ} {ρ : Δ-Env Γ} →
+  ⟦ t ⟧ (ignore ρ) ⊕ ⟦ derive t ⟧ ρ ≡ ⟦ t ⟧ (update ρ)
+
+corollary {τ} {Γ} {t} {ρ} =
+  let
+    v = ⟦ t ⟧ (ignore ρ)
+    v′ = ⟦ t ⟧ (update ρ)
+  in
+    begin
+      v ⊕ ⟦ derive t ⟧ ρ
+    ≡⟨ correctness {τ} {Γ} {t} {ρ} {v} validity R[v,u⊝v] ⟩
+      v ⊕ (v′ ⊝ v)
+    ≡⟨ v⊕[u⊝v]=u ⟩
+      v′
+    ∎ where open ≡-Reasoning
 
 -- derive : ∀ {τ Γ} → Term Γ τ → Δ-Term (Δ Γ) (Δ τ)
 derive (nat n) = Δnat n n
@@ -410,11 +431,32 @@ validity-var : ∀ {τ Γ} → (x : Var Γ τ) →
 validity-var this {cons v dv R[v,dv] ρ} = R[v,dv]
 validity-var (that x) {cons v dv R[v,dv] ρ} = validity-var x
 
-validity {nats} {Γ} {nat n} {ρ} = {!!}
+validity {nats} {Γ} {nat n} = refl
+validity {bags} {Γ} {bag b} = tt
+validity {τ} {Γ} {var x} = validity-var x
+validity {nats} {Γ} {add s t} = cong₂ _+_ R[s,ds] R[t,dt]
+  where R[s,ds] = validity {nats} {Γ} {s}
+        R[t,dt] = validity {nats} {Γ} {t}
+validity {bags} {Γ} {map f b} = tt
 
-validity {bags} {Γ} {bag b} = {!!}
-validity {τ} {Γ} {var x} = {!!}
-validity {τ₁ ⇒ τ₂} {Γ} {abs t} = {!!}
-validity {τ} {Γ} {app t t₁} = {!!}
-validity {nats} {Γ} {add t t₁} = {!!}
-validity {bags} {Γ} {map t t₁} = {!!}
+validity {τ₁ ⇒ τ₂} {Γ} {abs t} {ρ} = λ v dv R[v,dv] →
+  let
+    v′ = v ⊕ dv
+    dv′ = v′ ⊝ v′
+    ρ₁ = cons v  dv R[v,dv] ρ
+    ρ₂ = cons v′ dv′ R[v,u⊝v] ρ
+  in
+    validity {_} {_} {t} {ρ₁}
+    ,
+    (begin
+      ⟦ t ⟧ (ignore ρ₂) ⊕ ⟦ derive t ⟧ ρ₂
+    ≡⟨ corollary {_} {_} {t} {ρ₂} ⟩
+      ⟦ t ⟧ (update ρ₂)
+    ≡⟨ {!!} ⟩
+      ⟦ t ⟧ (ignore ρ₁) ⊕ ⟦ derive t ⟧ ρ₁
+    ∎) where open ≡-Reasoning
+
+
+validity {τ} {Γ} {app s t} = {!!}
+
+correctness = {!!}
