@@ -1,13 +1,12 @@
 {-
-Bug generator for Agda 2.3.2
+Bug reproducer for Agda 2.3.2
 
-Typechecking this file yields the following message:
+Type-checking produces a funny error message:
 
-An internal error has occurred. Please report this as a bug.
-Location of the error: src/full/Agda/TypeChecking/Conversion.hs:428
+blowUpSparseVec (n = 2) aux i=3 j=4 length l = 1
 -}
 
-module Bug2 where
+module Bug3 where
 
 open import Data.NatBag renaming
   (map to mapBag ; empty to emptyBag ; update to updateBag)
@@ -207,7 +206,7 @@ data Δ-Context : Set where
 Env : Context → Set
 Env Γ = ⟦ Γ ⟧Context
 
-private data Δ-Term : Δ-Context → Δ-Type → Set
+data Δ-Term : Δ-Context → Δ-Type → Set
 
 -- Syntax of Δ-Types
 -- ...   is mutually recursive with semantics of Δ-Terms,
@@ -230,8 +229,7 @@ update : ∀ {Γ : Context} → (ρ : Δ-Env Γ) → ⟦ Γ ⟧
 
 infixl 6 _⊕_ _⊝_ -- as with + - in GHC.Num
 
-abstract
- data Δ-Term where
+data Δ-Term where
   -- changes to numbers are replacement pairs
   Δnat : ∀ {Γ} → (old : ℕ) → (new : ℕ) → Δ-Term (Δ Γ) (Δ nats)
   -- changes to bags are bags
@@ -362,28 +360,27 @@ update {τ • Γ} (cons v dv R[v,dv] ρ) = (v ⊕ dv) • update ρ
 -- because its argument is identical to that of ⟦_⟧Var.
 
 -- ⟦_⟧Δ : ∀ {τ Γ} → Δ-Term (Δ Γ) (Δ τ) → Δ-Env Γ → ⟦ Δ τ ⟧Δτ
-abstract
- ⟦ Δnat old new ⟧Δ ρ = (old , new)
- ⟦ Δbag db ⟧Δ ρ = db
- ⟦ Δvar x ⟧Δ ρ = ⟦ x ⟧ΔVar ρ
- ⟦ Δabs t ⟧Δ ρ = λ v dv R[v,dv] → ⟦ t ⟧Δ (cons v dv R[v,dv] ρ)
- ⟦ Δapp ds t dt R[dt,t] ⟧Δ ρ =
-   ⟦ ds ⟧Δ ρ (⟦ t ⟧ (ignore ρ)) (⟦ dt ⟧Δ ρ) R[dt,t]
- ⟦ Δadd ds dt ⟧Δ ρ =
-   let
-     (old-s , new-s) = ⟦ ds ⟧Δ ρ
-     (old-t , new-t) = ⟦ dt ⟧Δ ρ
-   in
-     (old-s + old-t , new-s + new-t)
- ⟦ Δmap₀ f df b db ⟧Δ ρ =
-   let
-     v  = ⟦ b ⟧ (ignore ρ)
-     h  = ⟦ f ⟧ (ignore ρ)
-     dv = ⟦ db ⟧Δ ρ
-     dh = ⟦ df ⟧Δ ρ
-   in
-     mapBag (h ⊕ dh) (v ⊕ dv) \\ mapBag h v
- ⟦ Δmap₁ f db ⟧Δ ρ = mapBag (⟦ f ⟧ (ignore ρ)) (⟦ db ⟧Δ ρ)
+⟦ Δnat old new ⟧Δ ρ = (old , new)
+⟦ Δbag db ⟧Δ ρ = db
+⟦ Δvar x ⟧Δ ρ = ⟦ x ⟧ΔVar ρ
+⟦ Δabs t ⟧Δ ρ = λ v dv R[v,dv] → ⟦ t ⟧Δ (cons v dv R[v,dv] ρ)
+⟦ Δapp ds t dt R[dt,t] ⟧Δ ρ =
+  ⟦ ds ⟧Δ ρ (⟦ t ⟧ (ignore ρ)) (⟦ dt ⟧Δ ρ) R[dt,t]
+⟦ Δadd ds dt ⟧Δ ρ =
+  let
+    (old-s , new-s) = ⟦ ds ⟧Δ ρ
+    (old-t , new-t) = ⟦ dt ⟧Δ ρ
+  in
+    (old-s + old-t , new-s + new-t)
+⟦ Δmap₀ f df b db ⟧Δ ρ =
+  let
+    v  = ⟦ b ⟧ (ignore ρ)
+    h  = ⟦ f ⟧ (ignore ρ)
+    dv = ⟦ db ⟧Δ ρ
+    dh = ⟦ df ⟧Δ ρ
+  in
+    mapBag (h ⊕ dh) (v ⊕ dv) \\ mapBag h v
+⟦ Δmap₁ f db ⟧Δ ρ = mapBag (⟦ f ⟧ (ignore ρ)) (⟦ db ⟧Δ ρ)
 
 meaning-ΔTerm : ∀ {τ Γ} → Meaning (Δ-Term (Δ Γ) (Δ τ))
 meaning-ΔTerm = meaning ⟦_⟧Δ
@@ -412,19 +409,26 @@ validity-var : ∀ {τ Γ} → (x : Var Γ τ) →
 validity-var this {cons v dv R[v,dv] ρ} = R[v,dv]
 validity-var (that x) {cons v dv R[v,dv] ρ} = validity-var x
 
---validity {nats} {Γ} {nat n} {∅} = ?
-validity {nats} {∅}    {nat n} {∅} =
-  begin
-    n
-  ≡⟨ ? ⟩
-    proj₁ (n , n)
-  ≡⟨ {!!} ⟩
-    proj₁ (⟦ Δnat n n ⟧ ∅)
-  ∎ where open ≡-Reasoning
-validity {nats} {τ • Γ} {nat n} {ρ} = {!!}
-validity {bags} {Γ} {bag b} = {!!}
-validity {τ} {Γ} {var x} = {!!}
-validity {τ₁ ⇒ τ₂} {Γ} {abs t} = {!!}
-validity {τ} {Γ} {app t t₁} = {!!}
-validity {nats} {Γ} {add t t₁} = {!!}
-validity {bags} {Γ} {map t t₁} = {!!}
+validity {nats} {Γ} {nat n} = refl
+validity {bags} {Γ} {bag b} = tt
+validity {τ} {Γ} {var x} = validity-var x
+validity {nats} {Γ} {add s t} = cong₂ _+_ R[s,ds] R[t,dt]
+  where R[s,ds] = validity {nats} {Γ} {s}
+        R[t,dt] = validity {nats} {Γ} {t}
+validity {bags} {Γ} {map f b} = tt
+
+validity {τ₁ ⇒ τ₂} {Γ} {abs t} {ρ} = λ v dv R[v,dv] →
+  let
+    v′ = v ⊕ dv
+    ρ′ = cons v dv R[v,dv] ρ
+  in
+    validity {_} {_} {t} {ρ′}
+    ,
+    (begin
+      {!!}
+    ≡⟨ {!!} ⟩
+      {!⟦ t ⟧ (ignore ρ′) ⊕ ⟦ derive t ⟧ ρ′!}
+    ∎) where open ≡-Reasoning
+
+
+validity {τ} {Γ} {app s t} = {!!}
