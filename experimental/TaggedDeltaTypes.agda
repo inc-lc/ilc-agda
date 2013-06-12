@@ -387,38 +387,17 @@ meaning-ΔTerm = meaning ⟦_⟧Δ
 -- Program transformation and correctness (entangled) --
 --------------------------------------------------------
 
-Δ-equiv : ∀ {τ : Type} → (du : ⟦ Δ τ ⟧Δτ) (dv : ⟦ Δ τ ⟧Δτ) → Set
-Δ-equiv {τ} du dv =
-  ∀ {v : ⟦ τ ⟧} (R[v,du] : valid v du) (R[v,dv] : valid v dv) →
-    v ⊕ du ≡ v ⊕ dv
-
 derive : ∀ {τ Γ} → Term Γ τ → Δ-Term (Δ Γ) (Δ τ)
 
 validity : ∀ {τ Γ} {t : Term Γ τ} {ρ : Δ-Env Γ} →
   valid (⟦ t ⟧ (ignore ρ)) (⟦ derive t ⟧ ρ)
 
 correctness : ∀ {τ Γ} {t : Term Γ τ} {ρ : Δ-Env Γ} →
-  Δ-equiv (⟦ derive t ⟧ ρ) (⟦ t ⟧ (update ρ) ⊝ ⟦ t ⟧ (ignore ρ))
-
-corollary : ∀ {τ Γ} {t : Term Γ τ} {ρ : Δ-Env Γ} →
   ⟦ t ⟧ (ignore ρ) ⊕ ⟦ derive t ⟧ ρ ≡ ⟦ t ⟧ (update ρ)
-
-corollary {τ} {Γ} {t} {ρ} =
-  let
-    v = ⟦ t ⟧ (ignore ρ)
-    v′ = ⟦ t ⟧ (update ρ)
-  in
-    begin
-      v ⊕ ⟦ derive t ⟧ ρ
-    ≡⟨ correctness {τ} {Γ} {t} {ρ} {v} validity R[v,u⊝v] ⟩
-      v ⊕ (v′ ⊝ v)
-    ≡⟨ v⊕[u⊝v]=u ⟩
-      v′
-    ∎ where open ≡-Reasoning
 
 -- derive : ∀ {τ Γ} → Term Γ τ → Δ-Term (Δ Γ) (Δ τ)
 derive (nat n) = Δnat n n
-derive (bag b) = Δbag b
+derive (bag b) = Δbag emptyBag
 derive (var x) = Δvar x
 derive (abs t) = Δabs (derive t)
 derive (app s t) = Δapp (derive s) t (derive t) validity
@@ -431,15 +410,20 @@ validity-var : ∀ {τ Γ} → (x : Var Γ τ) →
 validity-var this {cons v dv R[v,dv] ρ} = R[v,dv]
 validity-var (that x) {cons v dv R[v,dv] ρ} = validity-var x
 
-validity {nats} {Γ} {nat n} = refl
-validity {bags} {Γ} {bag b} = tt
-validity {τ} {Γ} {var x} = validity-var x
-validity {nats} {Γ} {add s t} = cong₂ _+_ R[s,ds] R[t,dt]
-  where R[s,ds] = validity {nats} {Γ} {s}
-        R[t,dt] = validity {nats} {Γ} {t}
-validity {bags} {Γ} {map f b} = tt
+validity {t = nat n} = refl
+validity {t = bag b} = tt
+validity {t = var x} = validity-var x
+validity {t = map f b} = tt
+validity {t = add s t} = cong₂ _+_ (validity {t = s}) (validity {t = t})
 
-validity {τ₁ ⇒ τ₂} {Γ} {abs t} {ρ} = λ v dv R[v,dv] →
+validity {t = app s t} {ρ} =
+  let
+    v = ⟦ t ⟧ (ignore ρ)
+    dv = ⟦ derive t ⟧ ρ
+  in
+    proj₁ (validity {t = s} {ρ} v dv (validity {t = t} {ρ}))
+
+validity {t = abs t} {ρ} = λ v dv R[v,dv] →
   let
     v′ = v ⊕ dv
     dv′ = v′ ⊝ v′
@@ -450,20 +434,54 @@ validity {τ₁ ⇒ τ₂} {Γ} {abs t} {ρ} = λ v dv R[v,dv] →
     ,
     (begin
       ⟦ t ⟧ (ignore ρ₂) ⊕ ⟦ derive t ⟧ ρ₂
-    ≡⟨ corollary {t = t} {ρ₂} ⟩
+    ≡⟨ correctness {t = t} {ρ₂} ⟩
       ⟦ t ⟧ (update ρ₂)
     ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • update ρ)) v⊕[u⊝v]=u ⟩
       ⟦ t ⟧ (update ρ₁)
-    ≡⟨ sym (corollary {t = t} {ρ₁}) ⟩
+    ≡⟨ sym (correctness {t = t} {ρ₁}) ⟩
       ⟦ t ⟧ (ignore ρ₁) ⊕ ⟦ derive t ⟧ ρ₁
     ∎) where open ≡-Reasoning
 
-validity {τ} {Γ} {app s t} {ρ} =
+correctVar : ∀ {τ Γ} {x : Var Γ τ} {ρ : Δ-Env Γ} →
+  ⟦ x ⟧ (ignore ρ) ⊕ ⟦ x ⟧ΔVar ρ ≡ ⟦ x ⟧ (update ρ)
+
+correctVar {x = this  } {cons v dv R[v,dv] ρ} = refl
+correctVar {x = that y} {cons v dv R[v,dv] ρ} = correctVar {x = y} {ρ}
+
+correctness {t = nat n} = refl
+correctness {t = bag b} = b++∅=b
+correctness {t = var x} = correctVar {x = x}
+
+correctness {t = add s t} =
+  cong₂ _+_ (correctness {t = s}) (correctness {t = t})
+
+correctness {t = map s t} {ρ} =
+  trans (b++[d\\b]=d {mapBag f b} {mapBag (f ⊕ df) (b ⊕ db)})
+        (cong₂ mapBag (correctness {t = s}) (correctness {t = t}))
+  where
+    f = ⟦ s ⟧ (ignore ρ)
+    b = ⟦ t ⟧ (ignore ρ)
+    df = ⟦ derive s ⟧ ρ
+    db = ⟦ derive t ⟧ ρ
+
+correctness {t = app s t} {ρ} =
   let
     v = ⟦ t ⟧ (ignore ρ)
     dv = ⟦ derive t ⟧ ρ
+  in trans
+     (sym (proj₂ (validity {t = s} {ρ} v dv (validity {t = t} {ρ}))))
+     (correctness {t = s} ⟨$⟩ correctness {t = t})
+
+correctness {τ₁ ⇒ τ₂} {Γ} {abs t} {ρ} = extensionality (λ v →
+  let
+    ρ′ : Δ-Env (τ₁ • Γ)
+    ρ′ = cons v (v ⊝ v) R[v,u⊝v] ρ
   in
-    proj₁ (validity {t = s} {ρ} v dv (validity {t = t} {ρ}))
-
-correctness = {!!}
-
+    begin
+      ⟦ t ⟧ (ignore ρ′) ⊕ ⟦ derive t ⟧ ρ′
+    ≡⟨ correctness {t = t} {ρ′} ⟩
+      ⟦ t ⟧ (update ρ′)
+    ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • update ρ)) v⊕[u⊝v]=u ⟩
+      ⟦ t ⟧ (v • update ρ)
+    ∎
+  ) where open ≡-Reasoning
