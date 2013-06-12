@@ -202,49 +202,32 @@ weaken-sound (map f b) ρ =
 -- Syntax and semantics of changes (they are entangled) --
 ----------------------------------------------------------
 
--- Descriptions of whether free variables or future arguments
--- are expected to change.
+data Δ-Type : Set where
+  nats : Δ-Type
+  bags : Δ-Type
+  alter_⇒_ : Δ-Type → Δ-Type → Δ-Type
+  abide_⇒_ : Δ-Type → Δ-Type → Δ-Type
 
-data Args : (τ : Type) → Set where
-  ∅-nat : Args nats
-  ∅-bag : Args bags
-  abide : ∀ {τ₁ τ₂} → (args : Args τ₂) → Args (τ₁ ⇒ τ₂)
-  alter : ∀ {τ₁ τ₂} → (args : Args τ₂) → Args (τ₁ ⇒ τ₂)
+data Δ-Context : Set where
+  ∅ : Δ-Context
+  alter_•_ : Δ-Type → Δ-Context → Δ-Context
+  abide_•_ : Δ-Type → Δ-Context → Δ-Context
 
-data Vars : Context → Set where
-  ∅ : Vars ∅
-  abide : ∀ {τ Γ} → Vars Γ → Vars (τ • Γ) -- is in the set
-  alter : ∀ {τ Γ} → Vars Γ → Vars (τ • Γ) -- is out of the set
+-- Convert a type/context to a Δ-type/Δ-context without any
+-- assumption about arguments
 
-fickle-args : {τ : Type} → Args τ
-fickle-args {τ₁ ⇒ τ₂} = alter fickle-args
-fickle-args {nats} = ∅-nat
-fickle-args {bags} = ∅-bag
+Δ-type : Type → Δ-Type
+Δ-type nats = nats
+Δ-type bags = bags
+Δ-type (τ₁ ⇒ τ₂) = alter Δ-type τ₁ ⇒ Δ-type τ₂
 
-fickle-vars : {Γ : Context} → Vars Γ
-fickle-vars {∅} = ∅
-fickle-vars {τ • Γ} = alter fickle-vars
-
-cdr : ∀ {τ Γ} → Vars (τ • Γ) → Vars Γ
-cdr (abide vars) = vars
-cdr (alter vars) = vars
+Δ-context : Context → Δ-Context
+Δ-context ∅ = ∅
+Δ-context (τ • Γ) = alter Δ-type τ • Δ-context Γ
 
 {-
 
-data Δ-Type : (τ : Type) → {args : Args τ} → Set where
-  Δ : (τ : Type) → {args : Args τ} → Δ-Type τ {args}
-
 ⟦_⟧ΔType : ∀ {τ args} → Δ-Type τ {args} → Set
-⟦ Δ nats ⟧ΔType = ℕ × ℕ
-⟦ Δ bags ⟧ΔType = Bag
-⟦ Δ (τ₁ ⇒ τ₂) {alter args} ⟧ΔType =
-  ∀ {args₁} →
-  (v : ⟦ τ₁ ⟧) → (dv : ⟦ Δ τ₁ {args₁} ⟧ΔType) → valid v dv →
-  ⟦ Δ τ₂ {args} ⟧ΔType
-
-meaning-ΔType : MeaningΔ Type
-meaning-ΔType = meaningΔ ⟦_⟧ΔType
-
 
 data Δ-Env : (Γ : Context) → {vars : Vars Γ} → Set
 data Δ-Term : (Γ : Context) → Type → {vars : Vars Γ} → Set
@@ -304,6 +287,16 @@ data Δ-Term where
   Δmap₁ : ∀ {Γ vars} →
     ( f :   Term Γ (nats ⇒ nats)) (db : Δ-Term Γ bags {vars}) →
     Δ-Term Γ bags {vars}
+
+⟦ Δ nats ⟧ΔType = ℕ × ℕ
+⟦ Δ bags ⟧ΔType = Bag
+⟦ Δ (τ₁ ⇒ τ₂) {alter args} ⟧ΔType =
+  ∀ {args₁} →
+  (v : ⟦ τ₁ ⟧) → (dv : ⟦ Δ τ₁ {args₁} ⟧ΔType) → valid v dv →
+  ⟦ Δ τ₂ {args} ⟧ΔType
+
+meaning-ΔType : MeaningΔ Type
+meaning-ΔType = meaningΔ ⟦_⟧ΔType
 
 record MeaningΔ
   (Syntax : Set) {ℓ : Level.Level} : Set (Level.suc ℓ) where
