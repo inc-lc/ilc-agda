@@ -1,73 +1,38 @@
 {-
-The goal of this file is to make the 3rd example
-described in /examples.md fast:
+The goal of this file is to support maps over bags.
 
-    inc :: Bag Integer -> Bag Integer
-    inc = map (+1)
+    map :: (ℕ → ℕ) → Bag ℕ → Bag ℕ
 
-    old = fromList [1, 2 .. n - 1, n]
-    res = inc old = [2, 3 .. n, n + 1]
-
-Checklist: Adding syntactic constructs
-
-- weaken
-- ⟦_⟧Term
-- weaken-sound
-- derive (symbolic derivation)
-- validity-of-derive
-- correctness-of-derive
-
-Checklist: Adding types
-
-- ⟦_⟧Type
-- Δ-Type
-- ⟦derive⟧
-- _⟦⊝⟧_
-- _⟦⊕⟧_
-- f⟦⊝⟧f=⟦deriv⟧f
-- f⊕[g⊝f]=g
-- f⊕Δf=f
-- valid-Δ
-- R[f,g⊝f]
-- df=f⊕df⊝f
-- R (inside validity-of-derive)
-
+    old = fromList       [1, 2 .. n - 1, n]
+    res = map (+1) old = [2, 3 .. n, n + 1]
 -}
 
 module NatBag where
 
-open import Data.NatBag renaming
-  (map to mapBag ; empty to emptyBag ; update to updateBag)
 open import Relation.Binary.PropositionalEquality
+open import Data.Nat
 
--- This module has holes and can't be imported.
--- We postulate necessary properties now to be able
--- to work on derivation and remove them later.
---
--- Perhaps proving that bags form a group with
--- emptyBag, ++, \\ is a necessity?
---
+-- open import Data.NatBag renaming
+--   (map to mapBag ; empty to emptyBag ; update to updateBag)
 -- open import Data.NatBag.Properties
-postulate b\\b=∅ : ∀ {{b : Bag}} → b \\ b ≡ emptyBag
-postulate b++∅=b : ∀ {{b : Bag}} → b ++ emptyBag ≡ b
-postulate ∅++b=b : ∀ {{b : Bag}} → emptyBag ++ b ≡ b
+postulate Bag : Set
+postulate emptyBag : Bag
+postulate mapBag : (ℕ → ℕ) → Bag → Bag
+postulate _++_ : Bag → Bag → Bag
+postulate _\\_ : Bag → Bag → Bag
+infixr 5 _++_
+infixl 9 _\\_
+postulate b\\b=∅ : ∀ {b : Bag} → b \\ b ≡ emptyBag
+postulate b++∅=b : ∀ {b : Bag} → b ++ emptyBag ≡ b
+postulate ∅++b=b : ∀ {b : Bag} → emptyBag ++ b ≡ b
 postulate b++[d\\b]=d : ∀ {b d} → b ++ (d \\ b) ≡ d
 postulate [b++d]\\b=d : ∀ {b d} → (b ++ d) \\ b ≡ d
-
--- postulate a\\[b++c]=a\\b\\c : ∀ {a b c} → a \\ (b ++ c) ≡ a \\ b \\ c
--- postulate [a++b]\\c=a\\c++b : ∀ {a b c} → (a ++ b) \\ c ≡ a \\ c ++ b
--- postulate [a++b]\\c=a++b\\c : ∀ {a b c} → (a ++ b) \\ c ≡ a ++ b \\ c
--- 
--- and consequently:
-
 postulate
   [a++b]\\[c++d]=[a\\c]++[b\\d] : ∀ {a b c d} →
     (a ++ b) \\ (c ++ d) ≡ (a \\ c) ++ (b \\ d)
 postulate
   [a\\b]\\[c\\d]=[a\\c]\\[b\\d] : ∀ {a b c d} →
     (a \\ b) \\ (c \\ d) ≡ (a \\ c) \\ (b \\ d)
-
-open import Data.Nat
 
 open import Data.Unit using
   (⊤ ; tt)
@@ -614,13 +579,13 @@ db=b⊕db⊝b : ∀ {Γ : Context} →
 db=b⊕db⊝b b {ρ = ρ} {consistency = consistency} =
   begin
     ⟦ derive b ⟧ ρ
-  ≡⟨ sym (∅++b=b {{⟦ derive b ⟧ ρ}}) ⟩
+  ≡⟨ sym (∅++b=b {⟦ derive b ⟧ ρ}) ⟩
     emptyBag ++ ⟦ derive b ⟧ ρ
   ≡⟨ extract-Δequiv
        (correctness-of-derive ρ {consistency} b)
        emptyBag tt tt ⟩
     emptyBag ++ (⟦ b ⟧ (update ρ {consistency}) \\ ⟦ b ⟧ (ignore ρ))
-  ≡⟨ ∅++b=b {{⟦ b ⟧ (update ρ {consistency}) \\ ⟦ b ⟧ (ignore ρ)}} ⟩
+  ≡⟨ ∅++b=b {⟦ b ⟧ (update ρ {consistency}) \\ ⟦ b ⟧ (ignore ρ)} ⟩
     ⟦ b ⟧ (update ρ {consistency}) \\ ⟦ b ⟧ (ignore ρ)
   ∎ where open ≡-Reasoning
 
