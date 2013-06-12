@@ -6,8 +6,6 @@ enough for the purpose of having explicit nil changes.
 
 module TaggedDeltaTypes where
 
-open import Data.NatBag renaming
-  (map to mapBag ; empty to emptyBag ; update to updateBag)
 open import Relation.Binary.PropositionalEquality
 open import Data.Nat
 open import Data.Unit using (⊤ ; tt)
@@ -21,10 +19,19 @@ import Level
 -- Postulates: Extensionality and bag properties (#55)
 postulate extensionality : Extensionality Level.zero Level.zero
 --
+-- open import Data.NatBag renaming
+--   (map to mapBag ; empty to emptyBag ; update to updateBag)
 -- open import Data.NatBag.Properties
-postulate b\\b=∅ : ∀ {{b : Bag}} → b \\ b ≡ emptyBag
-postulate b++∅=b : ∀ {{b : Bag}} → b ++ emptyBag ≡ b
-postulate ∅++b=b : ∀ {{b : Bag}} → emptyBag ++ b ≡ b
+postulate Bag : Set
+postulate emptyBag : Bag
+postulate mapBag : (ℕ → ℕ) → Bag → Bag
+postulate _++_ : Bag → Bag → Bag
+postulate _\\_ : Bag → Bag → Bag
+infixr 5 _++_
+infixl 9 _\\_
+postulate b\\b=∅ : ∀ {b : Bag} → b \\ b ≡ emptyBag
+postulate b++∅=b : ∀ {b : Bag} → b ++ emptyBag ≡ b
+postulate ∅++b=b : ∀ {b : Bag} → emptyBag ++ b ≡ b
 postulate b++[d\\b]=d : ∀ {b d} → b ++ (d \\ b) ≡ d
 postulate [b++d]\\b=d : ∀ {b d} → (b ++ d) \\ b ≡ d
 postulate
@@ -222,7 +229,23 @@ cdr : ∀ {τ Γ} → Vars (τ • Γ) → Vars Γ
 cdr (abide vars) = vars
 cdr (alter vars) = vars
 
-⟦_⟧ΔType : Type → Set -- TODO: Delete me
+{-
+
+data Δ-Type : (τ : Type) → {args : Args τ} → Set where
+  Δ : (τ : Type) → {args : Args τ} → Δ-Type τ {args}
+
+⟦_⟧ΔType : ∀ {τ args} → Δ-Type τ {args} → Set
+⟦ Δ nats ⟧ΔType = ℕ × ℕ
+⟦ Δ bags ⟧ΔType = Bag
+⟦ Δ (τ₁ ⇒ τ₂) {alter args} ⟧ΔType =
+  ∀ {args₁} →
+  (v : ⟦ τ₁ ⟧) → (dv : ⟦ Δ τ₁ {args₁} ⟧ΔType) → valid v dv →
+  ⟦ Δ τ₂ {args} ⟧ΔType
+
+meaning-ΔType : MeaningΔ Type
+meaning-ΔType = meaningΔ ⟦_⟧ΔType
+
+
 data Δ-Env : (Γ : Context) → {vars : Vars Γ} → Set
 data Δ-Term : (Γ : Context) → Type → {vars : Vars Γ} → Set
 
@@ -292,15 +315,6 @@ record MeaningΔ
 
 open MeaningΔ {{...}} public
   renaming (⟨_⟩⟦_⟧Δ to ⟦_⟧Δ)
-
--- ⟦_⟧ΔType : Type → Set
-⟦ nats ⟧ΔType = ℕ × ℕ
-⟦ bags ⟧ΔType = Bag
-⟦ τ₁ ⇒ τ₂ ⟧ΔType =
-  (v : ⟦ τ₁ ⟧) → (dv : ⟦ τ₁ ⟧ΔType) → valid v dv → ⟦ τ₂ ⟧ΔType
-
-meaning-ΔType : MeaningΔ Type
-meaning-ΔType = meaningΔ ⟦_⟧ΔType
 
 _⊕_ {nats}   n dn = proj₂ dn
 _⊕_ {bags}   b db = b ++ db
@@ -533,4 +547,5 @@ correctness {τ₁ ⇒ τ₂} {Γ} {abs t} {ρ} = extensionality (λ v →
       ⟦ t ⟧ (v • update ρ)
     ∎
   ) where open ≡-Reasoning
+-}
 -}

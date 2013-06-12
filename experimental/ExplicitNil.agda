@@ -7,9 +7,6 @@ module ExplicitNil where
 
 open import TaggedDeltaTypes
 
-open import Data.NatBag renaming
-  (map to mapBag ; empty to emptyBag ; update to updateBag)
-
 open import Data.Bool
 open import Data.Product hiding (map)
 open import Data.Nat using (ℕ)
