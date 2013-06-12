@@ -207,8 +207,8 @@ Env Γ = ⟦ Γ ⟧Context
 data Δ-Term : Δ-Context → Δ-Type → Set
 
 -- Syntax of Δ-Types
--- ...   is mutually recursive with semantics of Δ-Terms,
--- (because it embeds validity proofs)
+-- ...   is mutually recursive with semantics of Δ-Terms
+-- (because it embeds validity proofs),
 -- which is mutually recursive with validity and Δ-environments,
 -- which is mutually recursive with ⊕,
 -- which is mutually recursive with ⊝ and R[v,v⊝v],
@@ -238,11 +238,11 @@ data Δ-Term where
   Δabs : ∀ {τ₁ τ₂ Γ} → (t : Δ-Term (Δ (τ₁ • Γ)) (Δ τ₂)) →
          Δ-Term (Δ Γ) (Δ (τ₁ ⇒ τ₂))
   -- changes to applications are applications of a value and a change
-  Δapp : ∀ {τ₁ τ₂ Γ} →(ds : Δ-Term (Δ Γ) (Δ (τ₁ ⇒ τ₂)))
+  Δapp : ∀ {τ₁ τ₂ Γ} → (ds : Δ-Term (Δ Γ) (Δ (τ₁ ⇒ τ₂)))
                     → ( t :   Term    Γ      τ₁)
                     → (dt : Δ-Term (Δ Γ) (Δ  τ₁))
                     → (R[t,dt] : {ρ : Δ-Env Γ} → -- 'Tis but a proof.
-                                 valid (⟦ t ⟧ (ignore ρ)) (⟦ dt ⟧Δ ρ)) →
+                          valid (⟦ t ⟧ (ignore ρ)) (⟦ dt ⟧Δ ρ)) →
          Δ-Term (Δ Γ) (Δ τ₂)
   -- changes to addition are changes to their components
   Δadd : ∀ {Γ} → (ds : Δ-Term (Δ Γ) (Δ nats))
@@ -315,9 +315,9 @@ R[v,u⊝v] {τ₁ ⇒ τ₂} {u} {v} = λ w dw R[w,dw] →
     ,
     (begin
       (v ⊕ (u ⊝ v)) w′
-    ≡⟨ cong (λ hole → hole w′) (v⊕[u⊝v]=u {_} {u} {v}) ⟩
+    ≡⟨ cong (λ hole → hole w′) (v⊕[u⊝v]=u {u = u} {v}) ⟩
       u w′
-    ≡⟨ sym (v⊕[u⊝v]=u {_} {u w′} {v w}) ⟩
+    ≡⟨ sym (v⊕[u⊝v]=u {u = u w′} {v w}) ⟩
       v w ⊕ (u ⊝ v) w dw R[w,dw]
     ∎) where open ≡-Reasoning
 
@@ -326,10 +326,10 @@ record Quadruple
   (D : (a : A) → (b : B a) → (c : C a b) → Set): Set where
   constructor cons
   field
-    car    : A
-    cadr   : B car
-    caddr  : C car cadr
-    cadddr : D car cadr caddr
+    car   : A
+    cadr  : B car
+    caddr : C car cadr
+    cdddr : D car cadr caddr
 
 open Quadruple public
 
@@ -443,20 +443,27 @@ validity {τ₁ ⇒ τ₂} {Γ} {abs t} {ρ} = λ v dv R[v,dv] →
   let
     v′ = v ⊕ dv
     dv′ = v′ ⊝ v′
-    ρ₁ = cons v  dv R[v,dv] ρ
+    ρ₁ = cons v dv R[v,dv] ρ
     ρ₂ = cons v′ dv′ R[v,u⊝v] ρ
   in
-    validity {_} {_} {t} {ρ₁}
+    validity {t = t} {ρ₁}
     ,
     (begin
       ⟦ t ⟧ (ignore ρ₂) ⊕ ⟦ derive t ⟧ ρ₂
-    ≡⟨ corollary {_} {_} {t} {ρ₂} ⟩
+    ≡⟨ corollary {t = t} {ρ₂} ⟩
       ⟦ t ⟧ (update ρ₂)
-    ≡⟨ {!!} ⟩
+    ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • update ρ)) v⊕[u⊝v]=u ⟩
+      ⟦ t ⟧ (update ρ₁)
+    ≡⟨ sym (corollary {t = t} {ρ₁}) ⟩
       ⟦ t ⟧ (ignore ρ₁) ⊕ ⟦ derive t ⟧ ρ₁
     ∎) where open ≡-Reasoning
 
-
-validity {τ} {Γ} {app s t} = {!!}
+validity {τ} {Γ} {app s t} {ρ} =
+  let
+    v = ⟦ t ⟧ (ignore ρ)
+    dv = ⟦ derive t ⟧ ρ
+  in
+    proj₁ (validity {t = s} {ρ} v dv (validity {t = t} {ρ}))
 
 correctness = {!!}
+
