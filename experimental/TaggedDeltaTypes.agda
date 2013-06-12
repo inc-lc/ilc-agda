@@ -195,33 +195,6 @@ weaken-sound (map f b) ρ =
 -- Syntax and semantics of changes (they are entangled) --
 ----------------------------------------------------------
 
-Env : Context → Set
-Env Γ = ⟦ Γ ⟧Context
-
-data Δ-Term : Context → Type → Set
-
--- Syntax of Δ-Types
--- ...   is mutually recursive with semantics of Δ-Terms
--- (because it embeds validity proofs),
--- which is mutually recursive with validity and Δ-environments,
--- which is mutually recursive with ⊕,
--- which is mutually recursive with ⊝ and R[v,v⊝v],
--- which is mutually recursive with v⊕[u⊝v]=v, et cetera.
-data Vars : Context → Set
-⟦_⟧ΔType : Type → Set
-Δ-Env : (Γ : Context) {- → Vars Γ -} → Set
-⟦_⟧ΔTerm : ∀ {τ : Type} {Γ : Context}
-    → Δ-Term Γ τ → Δ-Env Γ {-vars-} → ⟦ τ ⟧ΔType
-_⊕_ : ∀ {τ : Type} → ⟦ τ ⟧ → ⟦ τ ⟧ΔType → ⟦ τ ⟧
-_⊝_ : ∀ {τ : Type} → ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ τ ⟧ΔType
-valid : {τ : Type} → ⟦ τ ⟧ → ⟦ τ ⟧ΔType → Set
-R[v,u⊝v] : ∀ {τ : Type} {u v : ⟦ τ ⟧} → valid {τ} v (u ⊝ v)
-v⊕[u⊝v]=u : ∀ {τ : Type} {u v : ⟦ τ ⟧} → v ⊕ (u ⊝ v) ≡ u
-ignore : ∀ {Γ : Context} {-vars-} → (ρ : Δ-Env Γ {-vars-}) → ⟦ Γ ⟧
-update : ∀ {Γ : Context} {-vars-} → (ρ : Δ-Env Γ {-vars-}) → ⟦ Γ ⟧
-
-infixl 6 _⊕_ _⊝_ -- as with + - in GHC.Num
-
 -- Descriptions of whether free variables or future arguments
 -- are expected to change.
 
@@ -231,53 +204,83 @@ data Args : (τ : Type) → Set where
   abide : ∀ {τ₁ τ₂} → (args : Args τ₂) → Args (τ₁ ⇒ τ₂)
   alter : ∀ {τ₁ τ₂} → (args : Args τ₂) → Args (τ₁ ⇒ τ₂)
 
-data Vars where
+data Vars : Context → Set where
   ∅ : Vars ∅
   abide : ∀ {τ Γ} → Vars Γ → Vars (τ • Γ) -- is in the set
   alter : ∀ {τ Γ} → Vars Γ → Vars (τ • Γ) -- is out of the set
 
--- A description of variables is honest w.r.t. a Δ-environment
--- if every variable described as stable receives the nil change.
+fickle-args : {τ : Type} → Args τ
+fickle-args {τ₁ ⇒ τ₂} = alter fickle-args
+fickle-args {nats} = ∅-nat
+fickle-args {bags} = ∅-bag
 
-data Honest : ∀ {Γ} → Δ-Env Γ → Vars Γ → Set
+fickle-vars : {Γ : Context} → Vars Γ
+fickle-vars {∅} = ∅
+fickle-vars {τ • Γ} = alter fickle-vars
+
+cdr : ∀ {τ Γ} → Vars (τ • Γ) → Vars Γ
+cdr (abide vars) = vars
+cdr (alter vars) = vars
+
+⟦_⟧ΔType : Type → Set -- TODO: Delete me
+data Δ-Env : (Γ : Context) → {vars : Vars Γ} → Set
+data Δ-Term : (Γ : Context) → Type → {vars : Vars Γ} → Set
+
+⟦_⟧ΔTerm : ∀ {τ : Type} {Γ : Context} {vars}
+    → Δ-Term Γ τ {vars} → Δ-Env Γ {vars} → ⟦ τ ⟧ΔType
+_⊕_ : ∀ {τ : Type} → ⟦ τ ⟧ → ⟦ τ ⟧ΔType → ⟦ τ ⟧
+_⊝_ : ∀ {τ : Type} → ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ τ ⟧ΔType
+valid : {τ : Type} → ⟦ τ ⟧ → ⟦ τ ⟧ΔType → Set
+R[v,u⊝v] : ∀ {τ : Type} {u v : ⟦ τ ⟧} → valid {τ} v (u ⊝ v)
+v⊕[u⊝v]=u : ∀ {τ : Type} {u v : ⟦ τ ⟧} → v ⊕ (u ⊝ v) ≡ u
+ignore : ∀ {Γ : Context} {vars} → (ρ : Δ-Env Γ {vars}) → ⟦ Γ ⟧
+update : ∀ {Γ : Context} {vars} → (ρ : Δ-Env Γ {vars}) → ⟦ Γ ⟧
+
+infixl 6 _⊕_ _⊝_ -- as with + - in GHC.Num
 
 data Δ-Term where
   -- changes to numbers are replacement pairs
-  Δnat : ∀ {Γ} → -- {vars : Vars Γ} →
-    (old : ℕ) → (new : ℕ) → Δ-Term Γ nats
+  Δnat : ∀ {Γ vars} →
+    (old : ℕ) → (new : ℕ) → Δ-Term Γ nats {vars}
   -- changes to bags are bags
-  Δbag : ∀ {Γ} → -- {vars : Vars Γ} →
-    (db : Bag) → Δ-Term Γ bags
+  Δbag : ∀ {Γ vars} →
+    (db : Bag) → Δ-Term Γ bags {vars}
   -- changes to variables are variables
-  Δvar : ∀ {τ Γ} → -- {vars : Vars Γ} →
-    (x : Var Γ τ) → Δ-Term Γ τ
+  Δvar : ∀ {τ Γ vars} →
+    (x : Var Γ τ) → Δ-Term Γ τ {vars}
   -- changes to abstractions are binders of x and dx
-  Δabs : ∀ {τ₁ τ₂ Γ} → (t : Δ-Term (τ₁ • Γ) τ₂) →
-         Δ-Term Γ (τ₁ ⇒ τ₂)
+  -- There are two kinds of those: One who expects the argument
+  -- to change, and one who does not.
+  Δabs : ∀ {τ₁ τ₂ Γ vars} → (t : Δ-Term (τ₁ • Γ) τ₂ {alter vars}) →
+         Δ-Term Γ (τ₁ ⇒ τ₂) {vars}
+  Δabs₀ : ∀ {τ₁ τ₂ Γ vars} → (t : Δ-Term (τ₁ • Γ) τ₂ {abide vars}) →
+          Δ-Term Γ (τ₁ ⇒ τ₂) {vars}
   -- changes to applications are applications of a value and a change
-  Δapp : ∀ {τ₁ τ₂ Γ} →
-    (ds : Δ-Term Γ (τ₁ ⇒ τ₂))
+  Δapp : ∀ {τ₁ τ₂ Γ vars}
+    (ds : Δ-Term Γ (τ₁ ⇒ τ₂) {vars})
     ( t :   Term Γ τ₁)
-    (dt : Δ-Term Γ τ₁)
+    (dt : Δ-Term Γ τ₁ {vars})
     (R[t,dt] : {ρ : Δ-Env Γ {-vars-}} →
       valid (⟦ t ⟧ (ignore ρ)) (⟦ dt ⟧ΔTerm ρ)) →
-    Δ-Term Γ τ₂
+    Δ-Term Γ τ₂ {vars}
   -- changes to addition are changes to their components
-  Δadd : ∀ {Γ} → (ds : Δ-Term Γ nats)
-               → (dt : Δ-Term Γ nats) →
-         Δ-Term Γ nats
+  Δadd : ∀ {Γ vars}
+    (ds : Δ-Term Γ nats {vars})
+    (dt : Δ-Term Γ nats {vars}) →
+    Δ-Term Γ nats {vars}
   -- There are two kinds of changes to maps:
   -- 0. recomputation,
   -- 1. mapping over changes,
   -- the latter used only with some form of isNil available.
-  Δmap₀ : ∀ {Γ} → ( f :   Term Γ (nats ⇒ nats))
-                → (df : Δ-Term Γ (nats ⇒ nats))
-                → ( b :   Term Γ bags)
-                → (db : Δ-Term Γ bags)
-          → Δ-Term Γ bags
-  Δmap₁ : ∀ {Γ} → ( f :   Term Γ (nats ⇒ nats))
-                → (db : Δ-Term Γ bags)
-          → Δ-Term Γ bags
+  Δmap₀ : ∀ {Γ vars} →
+    ( f :   Term Γ (nats ⇒ nats))
+    (df : Δ-Term Γ (nats ⇒ nats) {vars})
+    ( b :   Term Γ bags)
+    (db : Δ-Term Γ bags {vars}) →
+    Δ-Term Γ bags {vars}
+  Δmap₁ : ∀ {Γ vars} →
+    ( f :   Term Γ (nats ⇒ nats)) (db : Δ-Term Γ bags {vars}) →
+    Δ-Term Γ bags {vars}
 
 record MeaningΔ
   (Syntax : Set) {ℓ : Level.Level} : Set (Level.suc ℓ) where
@@ -293,7 +296,7 @@ open MeaningΔ {{...}} public
 -- ⟦_⟧ΔType : Type → Set
 ⟦ nats ⟧ΔType = ℕ × ℕ
 ⟦ bags ⟧ΔType = Bag
-⟦ (τ₁ ⇒ τ₂) ⟧ΔType =
+⟦ τ₁ ⇒ τ₂ ⟧ΔType =
   (v : ⟦ τ₁ ⟧) → (dv : ⟦ τ₁ ⟧ΔType) → valid v dv → ⟦ τ₂ ⟧ΔType
 
 meaning-ΔType : MeaningΔ Type
@@ -356,58 +359,52 @@ record Quadruple
 
 open Quadruple public
 
--- The type of environments ensures their consistency.
--- Δ-Env : Context → Set
-Δ-Env ∅ = EmptySet
-Δ-Env (τ • Γ) = Quadruple
-  ⟦ τ ⟧
-  (λ v → ⟦ τ ⟧ΔType)
-  (λ v dv → valid v dv)
-  (λ v dv R[v,dv] → Δ-Env Γ)
+-- The type of environments ensures their consistency and honesty.
+-- Δ-Env : (Γ : Context) → {vars : Vars Γ} → Set
+data Δ-Env where
+  ∅ : Δ-Env ∅ {∅}
+  abide : ∀ {τ Γ vars} →
+    (v : ⟦ τ ⟧) → (dv : ⟦ τ ⟧Δ) → valid v dv → v ⊕ dv ≡ v →
+    Δ-Env Γ {vars} → Δ-Env (τ • Γ) {abide vars}
+  alter : ∀ {τ Γ vars} →
+    (v : ⟦ τ ⟧) → (dv : ⟦ τ ⟧Δ) → valid v dv →
+    Δ-Env Γ {vars} → Δ-Env (τ • Γ) {alter vars}
 
-data Honest where
-  clearly : Honest ∅ ∅
-  alter : ∀ {Γ τ v dv R[v,dv]} {ρ : Δ-Env Γ} {vars : Vars Γ} →
-          Honest {Γ} ρ vars →
-          Honest {τ • Γ} (cons v dv R[v,dv] ρ) (alter vars)
-  abide : ∀ {Γ τ v dv R[v,dv]} {ρ : Δ-Env Γ} {vars : Vars Γ} →
-          v ⊕ dv ≡ v →
-          Honest {Γ} ρ vars →
-          Honest {τ • Γ} (cons v dv R[v,dv] ρ) (abide vars)
+‖_‖ : ∀ {τ Γ vars} → Δ-Env (τ • Γ) {vars} →
+  Quadruple ⟦ τ ⟧ (λ _ → ⟦ τ ⟧Δ) (λ v dv → valid v dv)
+    (λ _ _ _ → Δ-Env Γ {cdr vars})
 
-fickle-args : {τ : Type} → Args τ
-fickle-args {τ₁ ⇒ τ₂} = alter fickle-args
-fickle-args {nats} = ∅-nat
-fickle-args {bags} = ∅-bag
-
-fickle-vars : {Γ : Context} → Vars Γ
-fickle-vars {∅} = ∅
-fickle-vars {τ • Γ} = alter fickle-vars
-
-vacuous-honesty : ∀ {Γ} {ρ : Δ-Env Γ} → Honest ρ fickle-vars
-vacuous-honesty {∅} {∅} = clearly
-vacuous-honesty {τ • Γ} {cons v dv R[v,dv] ρ} = alter vacuous-honesty
+‖ abide v dv R[v,dv] _ ρ ‖ = cons v dv R[v,dv] ρ
+‖ alter v dv R[v,dv]   ρ ‖ = cons v dv R[v,dv] ρ
 
 -- ignore : ∀ {Γ : Context} → (ρ : Δ-Env Γ) → Env Γ
 ignore {∅} ρ = ∅
-ignore {τ • Γ} (cons v dv R[v,dv] ρ) = v • ignore ρ
+ignore {τ • Γ} ρ′ with ‖ ρ′ ‖
+... | (cons v dv R[v,dv] ρ) = v • ignore ρ
 
 -- update : ∀ {Γ : Context} → (ρ : Δ-Env Γ) → Env Γ
 update {∅} ρ = ∅
-update {τ • Γ} (cons v dv R[v,dv] ρ) = (v ⊕ dv) • update ρ
+update {τ • Γ} ρ′ with ‖ ρ′ ‖
+... | (cons v dv R[v,dv] ρ) = (v ⊕ dv) • update ρ
 
-⟦_⟧ΔVar : ∀ {τ Γ} → Var Γ τ → Δ-Env Γ → ⟦ τ ⟧ΔType
-⟦ this   ⟧ΔVar (cons v dv R[v,dv] ρ) = dv
-⟦ that x ⟧ΔVar (cons v dv R[v,dv] ρ) = ⟦ x ⟧ΔVar ρ
+⟦_⟧ΔVar : ∀ {τ Γ vars} → Var Γ τ → Δ-Env Γ {vars} → ⟦ τ ⟧ΔType
+⟦ this   ⟧ΔVar ρ′ with ‖ ρ′ ‖
+... | (cons v dv R[v,dv] ρ) = dv
+⟦ that x ⟧ΔVar ρ′ with ‖ ρ′ ‖
+... | (cons v dv R[v,dv] ρ) = ⟦ x ⟧ΔVar ρ
 
-meaning-ΔVar : ∀ {τ Γ} → MeaningΔ (Var Γ τ)
-meaning-ΔVar = meaningΔ ⟦_⟧ΔVar
+meaning-ΔVar : ∀ {τ Γ} {vars : Vars Γ} → MeaningΔ (Var Γ τ)
+meaning-ΔVar {τ} {Γ} {vars} = meaningΔ (⟦_⟧ΔVar {τ} {Γ} {vars})
 
--- ⟦_⟧ΔTerm : ∀ {τ Γ} → Δ-Term Γ τ → Δ-Env Γ → ⟦ τ ⟧ΔType
+-- ⟦_⟧ΔTerm : ∀ {τ Γ vars} →
+--   Δ-Term Γ τ {vars} → Δ-Env Γ {vars} → ⟦ τ ⟧ΔType
 ⟦ Δnat old new ⟧ΔTerm ρ = (old , new)
 ⟦ Δbag db ⟧ΔTerm ρ = db
 ⟦ Δvar x ⟧ΔTerm ρ = ⟦ x ⟧ΔVar ρ
-⟦ Δabs t ⟧ΔTerm ρ = λ v dv R[v,dv] → ⟦ t ⟧ΔTerm (cons v dv R[v,dv] ρ)
+⟦ Δabs t ⟧ΔTerm ρ =
+  λ v dv R[v,dv]          → ⟦ t ⟧ΔTerm (alter v dv R[v,dv] ρ)
+⟦ Δabs₀ t ⟧ΔTerm ρ =
+  λ v dv R[v,dv] {-v⊕dv=v-} → ⟦ t ⟧ΔTerm (abide v dv R[v,dv] {!v⊕dv=v!} ρ)
 ⟦ Δapp ds t dt R[dt,t] ⟧ΔTerm ρ =
   ⟦ ds ⟧ΔTerm ρ (⟦ t ⟧ (ignore ρ)) (⟦ dt ⟧ΔTerm ρ) R[dt,t]
   --(R[dt,t] {ρ} {honesty = {!!}})
@@ -427,12 +424,13 @@ meaning-ΔVar = meaningΔ ⟦_⟧ΔVar
     mapBag (h ⊕ dh) (v ⊕ dv) \\ mapBag h v
 ⟦ Δmap₁ f db ⟧ΔTerm ρ = mapBag (⟦ f ⟧ (ignore ρ)) (⟦ db ⟧ΔTerm ρ)
 
-meaning-ΔTerm-0 : ∀ {τ Γ} → Meaning (Δ-Term Γ τ)
+meaning-ΔTerm-0 : ∀ {τ Γ vars} → Meaning (Δ-Term Γ τ {vars})
 meaning-ΔTerm-0 = meaning ⟦_⟧ΔTerm
 
-meaning-ΔTerm-1 : ∀ {τ Γ} → MeaningΔ (Δ-Term Γ τ)
+meaning-ΔTerm-1 : ∀ {τ Γ vars} → MeaningΔ (Δ-Term Γ τ {vars})
 meaning-ΔTerm-1 = meaningΔ ⟦_⟧ΔTerm
 
+{-
 --------------------------------------------------------
 -- Program transformation and correctness (entangled) --
 --------------------------------------------------------
@@ -535,3 +533,4 @@ correctness {τ₁ ⇒ τ₂} {Γ} {abs t} {ρ} = extensionality (λ v →
       ⟦ t ⟧ (v • update ρ)
     ∎
   ) where open ≡-Reasoning
+-}
