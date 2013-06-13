@@ -6,9 +6,10 @@ enough for the purpose of having explicit nil changes.
 
 module TaggedDeltaTypes where
 
+open import Data.NatBag renaming
+  (map to mapBag ; empty to emptyBag ; update to updateBag)
 open import Relation.Binary.PropositionalEquality
 open import Data.Nat
-open import Data.Bool
 open import Data.Unit using (⊤ ; tt)
 import Data.Integer as ℤ
 import Data.Product as Product
@@ -20,19 +21,10 @@ import Level
 -- Postulates: Extensionality and bag properties (#55)
 postulate extensionality : Extensionality Level.zero Level.zero
 --
--- open import Data.NatBag renaming
---   (map to mapBag ; empty to emptyBag ; update to updateBag)
 -- open import Data.NatBag.Properties
-postulate Bag : Set
-postulate emptyBag : Bag
-postulate mapBag : (ℕ → ℕ) → Bag → Bag
-postulate _++_ : Bag → Bag → Bag
-postulate _\\_ : Bag → Bag → Bag
-infixr 5 _++_
-infixl 9 _\\_
-postulate b\\b=∅ : ∀ {b : Bag} → b \\ b ≡ emptyBag
-postulate b++∅=b : ∀ {b : Bag} → b ++ emptyBag ≡ b
-postulate ∅++b=b : ∀ {b : Bag} → emptyBag ++ b ≡ b
+postulate b\\b=∅ : ∀ {{b : Bag}} → b \\ b ≡ emptyBag
+postulate b++∅=b : ∀ {{b : Bag}} → b ++ emptyBag ≡ b
+postulate ∅++b=b : ∀ {{b : Bag}} → emptyBag ++ b ≡ b
 postulate b++[d\\b]=d : ∀ {b d} → b ++ (d \\ b) ≡ d
 postulate [b++d]\\b=d : ∀ {b d} → (b ++ d) \\ b ≡ d
 postulate
@@ -204,152 +196,102 @@ weaken-sound (map f b) ρ =
 ----------------------------------------------------------
 
 data Δ-Type : Set where
-  nats : Δ-Type
-  bags : Δ-Type
-  alter_⇒_ : Δ-Type → Δ-Type → Δ-Type
-  abide_⇒_ : Δ-Type → Δ-Type → Δ-Type
+  Δ : (τ : Type) → Δ-Type
 
 data Δ-Context : Set where
-  ∅ : Δ-Context
-  alter_•_ : Δ-Type → Δ-Context → Δ-Context
-  abide_•_ : Δ-Type → Δ-Context → Δ-Context
+  Δ : (Γ : Context) → Δ-Context
 
-erase : Δ-Type → Type
-erase nats = nats
-erase bags = bags
-erase (alter τ₁ ⇒ τ₂) = erase τ₁ ⇒ erase τ₂
-erase (abide τ₁ ⇒ τ₂) = erase τ₁ ⇒ erase τ₂
-
-forget : Δ-Context → Context
-forget ∅ = ∅
-forget (alter τ • ρ) = erase τ • forget ρ
-forget (abide τ • ρ) = erase τ • forget ρ
-
--- Convert a type/context to a Δ-type/Δ-context without any
--- assumption about arguments
-
-Δ-type : Type → Δ-Type
-Δ-type nats = nats
-Δ-type bags = bags
-Δ-type (τ₁ ⇒ τ₂) = alter Δ-type τ₁ ⇒ Δ-type τ₂
-
-Δ-context : Context → Δ-Context
-Δ-context ∅ = ∅
-Δ-context (τ • Γ) = alter Δ-type τ • Δ-context Γ
+Env : Context → Set
+Env Γ = ⟦ Γ ⟧Context
 
 data Δ-Term : Δ-Context → Δ-Type → Set
-data ⟦_⟧ΔContext : Δ-Context → Set
 
-⟦_⟧ΔType : Δ-Type → Set
-⟦_⟧ΔTerm : ∀ {τ Γ} → Δ-Term Γ τ → ⟦ Γ ⟧ΔContext → ⟦ τ ⟧ΔType
-_⊕_ : ∀ {τ} → ⟦ erase τ ⟧ → ⟦ τ ⟧ΔType → ⟦ erase τ ⟧
-_⊝_ : ∀ {τ} → ⟦ erase τ ⟧ → ⟦ erase τ ⟧ → ⟦ τ ⟧ΔType
-valid : ∀ {τ} → ⟦ erase τ ⟧ → ⟦ τ ⟧ΔType → Set
-R[v,u⊝v] : ∀ {τ} {u v : ⟦ erase τ ⟧} → valid {τ} v (u ⊝ v)
-v⊕[u⊝v]=u : ∀ {τ} {u v : ⟦ erase τ ⟧} → v ⊕ (_⊝_ {τ} u v) ≡ u
-ignore : ∀ {Γ} → ⟦ Γ ⟧ΔContext → ⟦ forget Γ ⟧
-update : ∀ {Γ} → ⟦ Γ ⟧ΔContext → ⟦ forget Γ ⟧
+-- Syntax of Δ-Types
+-- ...   is mutually recursive with semantics of Δ-Terms
+-- (because it embeds validity proofs),
+-- which is mutually recursive with validity and Δ-environments,
+-- which is mutually recursive with ⊕,
+-- which is mutually recursive with ⊝ and R[v,v⊝v],
+-- which is mutually recursive with v⊕[u⊝v]=v, et cetera.
+⟦_⟧Δτ : Δ-Type → Set
+Δ-Env : Context → Set
+⟦_⟧Δ : ∀ {τ : Type} {Γ : Context}
+    → Δ-Term (Δ Γ) (Δ τ) → Δ-Env Γ → ⟦ Δ τ ⟧Δτ
+_⊕_ : ∀ {τ : Type} → ⟦ τ ⟧ → ⟦ Δ τ ⟧Δτ → ⟦ τ ⟧
+_⊝_ : ∀ {τ : Type} → ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ Δ τ ⟧Δτ
+valid : {τ : Type} → ⟦ τ ⟧ → ⟦ Δ τ ⟧Δτ → Set
+R[v,u⊝v] : ∀ {τ : Type} {u v : ⟦ τ ⟧} → valid {τ} v (u ⊝ v)
+v⊕[u⊝v]=u : ∀ {τ : Type} {u v : ⟦ τ ⟧} → v ⊕ (u ⊝ v) ≡ u
+ignore : ∀ {Γ : Context} → (ρ : Δ-Env Γ) → ⟦ Γ ⟧
+update : ∀ {Γ : Context} → (ρ : Δ-Env Γ) → ⟦ Γ ⟧
+
 infixl 6 _⊕_ _⊝_ -- as with + - in GHC.Num
 
 data Δ-Term where
   -- changes to numbers are replacement pairs
-  Δnat : ∀ {Γ} → (old : ℕ) → (new : ℕ) → Δ-Term Γ nats
+  Δnat : ∀ {Γ} → (old : ℕ) → (new : ℕ) → Δ-Term (Δ Γ) (Δ nats)
   -- changes to bags are bags
-  Δbag : ∀ {Γ} → (db : Bag) → Δ-Term Γ bags
+  Δbag : ∀ {Γ} → (db : Bag) → Δ-Term (Δ Γ) (Δ bags)
   -- changes to variables are variables
-  Δvar : ∀ {τ Γ} → (x : Var (forget Γ) (erase τ)) → Δ-Term Γ τ
+  Δvar : ∀ {τ Γ} → (x : Var Γ τ) → Δ-Term (Δ Γ) (Δ τ)
   -- changes to abstractions are binders of x and dx
-  -- There are two kinds of those: One who expects the argument
-  -- to change, and one who does not.
-  Δabs₀ : ∀ {τ₁ τ₂ Γ}
-    (t : Δ-Term (abide τ₁ • Γ) τ₂) →
-    Δ-Term Γ (abide τ₁ ⇒ τ₂)
-  Δabs₁ : ∀ {τ₁ τ₂ Γ}
-    (t : Δ-Term (alter τ₁ • Γ) τ₂) →
-    Δ-Term Γ (alter τ₁ ⇒ τ₂)
-{-
-  Δapp₀ : ∀ {τ₁ τ₂ Γ}
-    (ds : Δ-Term Γ (abide τ₁ ⇒ τ₂))
-    (t : Term (forget Γ) (erase τ₁))
-    (dt : Δ-Term Γ τ₁)
-    {R[t,dt] : ∀ {ρ : ⟦
--}
-    
-{-
+  Δabs : ∀ {τ₁ τ₂ Γ} → (t : Δ-Term (Δ (τ₁ • Γ)) (Δ τ₂)) →
+         Δ-Term (Δ Γ) (Δ (τ₁ ⇒ τ₂))
   -- changes to applications are applications of a value and a change
-  Δapp : ∀ {τ₁ τ₂ Γ vars}
-    (ds : Δ-Term Γ (τ₁ ⇒ τ₂) {vars})
-    ( t :   Term Γ τ₁)
-    (dt : Δ-Term Γ τ₁ {vars})
-    (R[t,dt] : {ρ : Δ-Env Γ {-vars-}} →
-      valid (⟦ t ⟧ (ignore ρ)) (⟦ dt ⟧ΔTerm ρ)) →
-    Δ-Term Γ τ₂ {vars}
+  Δapp : ∀ {τ₁ τ₂ Γ} → (ds : Δ-Term (Δ Γ) (Δ (τ₁ ⇒ τ₂)))
+                    → ( t :   Term    Γ      τ₁)
+                    → (dt : Δ-Term (Δ Γ) (Δ  τ₁))
+                    → (R[t,dt] : {ρ : Δ-Env Γ} → -- 'Tis but a proof.
+                          valid (⟦ t ⟧ (ignore ρ)) (⟦ dt ⟧Δ ρ)) →
+         Δ-Term (Δ Γ) (Δ τ₂)
   -- changes to addition are changes to their components
-  Δadd : ∀ {Γ vars}
-    (ds : Δ-Term Γ nats {vars})
-    (dt : Δ-Term Γ nats {vars}) →
-    Δ-Term Γ nats {vars}
+  Δadd : ∀ {Γ} → (ds : Δ-Term (Δ Γ) (Δ nats))
+               → (dt : Δ-Term (Δ Γ) (Δ nats)) →
+         Δ-Term (Δ Γ) (Δ nats)
   -- There are two kinds of changes to maps:
   -- 0. recomputation,
   -- 1. mapping over changes,
   -- the latter used only with some form of isNil available.
-  Δmap₀ : ∀ {Γ vars} →
-    ( f :   Term Γ (nats ⇒ nats))
-    (df : Δ-Term Γ (nats ⇒ nats) {vars})
-    ( b :   Term Γ bags)
-    (db : Δ-Term Γ bags {vars}) →
-    Δ-Term Γ bags {vars}
-  Δmap₁ : ∀ {Γ vars} →
-    ( f :   Term Γ (nats ⇒ nats)) (db : Δ-Term Γ bags {vars}) →
-    Δ-Term Γ bags {vars}
--}
+  Δmap₀ : ∀ {Γ} → ( f :   Term    Γ     (nats ⇒ nats))
+                → (df : Δ-Term (Δ Γ) (Δ (nats ⇒ nats)))
+                → ( b :   Term    Γ     bags)
+                → (db : Δ-Term (Δ Γ) (Δ bags))
+          → Δ-Term (Δ Γ) (Δ bags)
+  Δmap₁ : ∀ {Γ} → ( f :   Term    Γ     (nats ⇒ nats))
+                → (db : Δ-Term (Δ Γ) (Δ bags))
+          → Δ-Term (Δ Γ) (Δ bags)
 
--- ⟦_⟧ΔType : Δ-Type → Set
-⟦ nats ⟧ΔType = ℕ × ℕ
-⟦ bags ⟧ΔType = Bag
-⟦ alter τ₁ ⇒ τ₂ ⟧ΔType =
-  (v : ⟦ erase τ₁ ⟧) → (dv : ⟦ τ₁ ⟧ΔType) →
-  valid {τ₁} v dv →
-  ⟦ τ₂ ⟧ΔType
-⟦ abide τ₁ ⇒ τ₂ ⟧ΔType =
-  (v : ⟦ erase τ₁ ⟧) → (dv : ⟦ τ₁ ⟧ΔType) →
-  valid {τ₁} v dv → _⊕_ {τ₁} v dv ≡ v →
-  ⟦ τ₂ ⟧ΔType
+-- ⟦_⟧Δτ : Δ-Type → Set
+⟦ Δ nats ⟧Δτ = ℕ × ℕ
+⟦ Δ bags ⟧Δτ = Bag
+⟦ Δ (τ₁ ⇒ τ₂) ⟧Δτ =
+  (v : ⟦ τ₁ ⟧) → (dv : ⟦ Δ τ₁ ⟧Δτ) → valid v dv → ⟦ Δ τ₂ ⟧Δτ
 
-meaning-ΔType : Meaning Δ-Type
-meaning-ΔType = meaning ⟦_⟧ΔType
+meaning-Δτ : Meaning Δ-Type
+meaning-Δτ = meaning ⟦_⟧Δτ
 
-
--- _⊕_ : ∀ {τ} → ⟦ erase τ ⟧ → ⟦ τ ⟧ΔType → ⟦ erase τ ⟧
-_⊕_ = {!!}
-{-
 _⊕_ {nats}   n dn = proj₂ dn
 _⊕_ {bags}   b db = b ++ db
 _⊕_ {τ₁ ⇒ τ₂} f df = λ v → f v ⊕ df v (v ⊝ v) R[v,u⊝v]
--}
 
--- _⊝_ : ∀ {τ} → ⟦ erase τ ⟧ → ⟦ erase τ ⟧ → ⟦ τ ⟧ΔType
-_⊝_ = {!!}
-{-
 _⊝_ {nats}   m n = (n , m)
 _⊝_ {bags}   b d = b \\ d
 _⊝_ {τ₁ ⇒ τ₂} f g = λ v dv R[v,dv] → f (v ⊕ dv) ⊝ g v
--}
 
--- valid : ∀ {τ} → ⟦ erase τ ⟧ → ⟦ τ ⟧ΔType → Set
-valid _ _ = ⊤
-{-
+-- valid : {τ : Type} → ⟦ τ ⟧ → ⟦ Δ-Type τ ⟧ → Set
 valid {nats} n dn = n ≡ proj₁ dn
 valid {bags} b db = ⊤
 valid {τ₁ ⇒ τ₂} f df =
-  ∀ (v : ⟦ τ₁ ⟧) (dv : ⟦ τ₁ ⟧ΔType) (R[v,dv] : valid v dv)
+  ∀ (v : ⟦ τ₁ ⟧) (dv : ⟦ Δ τ₁ ⟧Δτ) (R[v,dv] : valid v dv)
   → valid (f v) (df v dv R[v,dv])
   × (f ⊕ df) (v ⊕ dv) ≡ f v ⊕ df v dv R[v,dv]
--}
 
--- v⊕[u⊝v]=u : ∀ {τ} {u v : ⟦ erase τ ⟧} → v ⊕ (_⊝_ {τ} u v) ≡ u
-v⊕[u⊝v]=u = {!!}
-{-
+eq1 : ∀ {τ₁ τ₂ : Type} {f : ⟦ τ₁ ⇒ τ₂ ⟧} {df} {x : ⟦ τ₁ ⟧} {dx} →
+      valid f df → (R[x,dx] : valid x dx) →
+      (f ⊕ df) (x ⊕ dx) ≡ f x ⊕ df x dx R[x,dx]
+
+eq1 R[f,df] R[x,dx] = proj₂ (R[f,df] _ _ R[x,dx])
+
 v⊕[u⊝v]=u {nats}   {u} {v} = refl
 v⊕[u⊝v]=u {bags}   {u} {v} = b++[d\\b]=d {v} {u}
 v⊕[u⊝v]=u {τ₁ ⇒ τ₂} {u} {v} = extensionality (λ w →
@@ -362,11 +304,7 @@ v⊕[u⊝v]=u {τ₁ ⇒ τ₂} {u} {v} = extensionality (λ w →
   ≡⟨ v⊕[u⊝v]=u ⟩
     u w
   ∎) where open ≡-Reasoning
--}
 
--- R[v,u⊝v] : ∀ {τ} {u v : ⟦ erase τ ⟧} → valid {τ} v (u ⊝ v)
-R[v,u⊝v] = tt
-{-
 R[v,u⊝v] {nats} {u} {v} = refl
 R[v,u⊝v] {bags} {u} {v} = tt
 R[v,u⊝v] {τ₁ ⇒ τ₂} {u} {v} = λ w dw R[w,dw] →
@@ -382,92 +320,74 @@ R[v,u⊝v] {τ₁ ⇒ τ₂} {u} {v} = λ w dw R[w,dw] →
     ≡⟨ sym (v⊕[u⊝v]=u {u = u w′} {v w}) ⟩
       v w ⊕ (u ⊝ v) w dw R[w,dw]
     ∎) where open ≡-Reasoning
--}
 
+record Quadruple
+  (A : Set) (B : A → Set) (C : (a : A) → B a → Set)
+  (D : (a : A) → (b : B a) → (c : C a b) → Set): Set where
+  constructor cons
+  field
+    car   : A
+    cadr  : B car
+    caddr : C car cadr
+    cdddr : D car cadr caddr
 
--- The type of environments ensures their consistency and honesty.
--- data ⟦_⟧ΔContext : Δ-Context → Set
-data ⟦_⟧ΔContext where
-  ∅ : ⟦ ∅ ⟧ΔContext
-  quad : ∀ {τ Γ}
-    (v : ⟦ erase τ ⟧)
-    (dv : ⟦ τ ⟧ΔType)
-    (R[v,dv] : valid {τ} v dv)
-    (ρ : ⟦ Γ ⟧ΔContext) →
-    ⟦ alter τ • Γ ⟧ΔContext
-  quint : ∀ {τ Γ}
-    (v : ⟦ erase τ ⟧)
-    (dv : ⟦ τ ⟧ΔType)
-    (R[v,dv] : valid {τ} v dv)
-    (v⊕dv=v : _⊕_ {τ} v dv ≡ v)
-    (ρ : ⟦ Γ ⟧ΔContext) →
-    ⟦ abide τ • Γ ⟧ΔContext
+open Quadruple public
 
-meaning-ΔContext : Meaning Δ-Context
-meaning-ΔContext = meaning ⟦_⟧ΔContext
+-- The type of environments ensures their consistency.
+-- Δ-Env : Context → Set
+Δ-Env ∅ = EmptySet
+Δ-Env (τ • Γ) = Quadruple
+  ⟦ τ ⟧
+  (λ v → ⟦ Δ τ ⟧Δτ)
+  (λ v dv → valid v dv)
+  (λ v dv R[v,dv] → Δ-Env Γ)
 
+-- ignore : ∀ {Γ : Context} → (ρ : Δ-Env Γ) → Env Γ
+ignore {∅} ρ = ∅
+ignore {τ • Γ} (cons v dv R[v,dv] ρ) = v • ignore ρ
 
--- ignore : ∀ {Γ} → ⟦ Γ ⟧ΔContext → ⟦ forget Γ ⟧
-ignore ∅ = ∅
-ignore (quad v dv R[v,dv] ρ) = v • ignore ρ
-ignore (quint v dv R[v,dv] v⊕dv=v ρ) = v • ignore ρ
+-- update : ∀ {Γ : Context} → (ρ : Δ-Env Γ) → Env Γ
+update {∅} ρ = ∅
+update {τ • Γ} (cons v dv R[v,dv] ρ) = (v ⊕ dv) • update ρ
 
--- update : ∀ {Γ} → ⟦ Γ ⟧ΔContext → ⟦ forget Γ ⟧
-update ∅ = ∅
-update (quad {τ} v dv R[v,dv] ρ) = (_⊕_ {τ} v dv) • update ρ
-update (quint {τ} v dv R[v,dv] v⊕dv=v ρ) = (_⊕_ {τ} v dv) • update ρ
+⟦_⟧ΔVar : ∀ {τ Γ} → Var Γ τ → Δ-Env Γ → ⟦ Δ τ ⟧Δτ
+⟦ this   ⟧ΔVar (cons v dv R[v,dv] ρ) = dv
+⟦ that x ⟧ΔVar (cons v dv R[v,dv] ρ) = ⟦ x ⟧ΔVar ρ
 
---⟦_⟧ΔVar : ∀ {τ} {Γ} → Var (forget Γ) (erase τ) → ⟦ Γ ⟧ → ⟦ τ ⟧
+-- ⟦_⟧ΔVar is not put into the Meaning type class
+-- because its argument is identical to that of ⟦_⟧Var.
 
-{-
-⟦_⟧ΔVar {alter τ • _} {.τ} this (quad _ dv _ _) = dv
-⟦_⟧ΔVar {abide τ • _} {.τ} this (quint _ dv _ _ _) = dv
-⟦_⟧ΔVar {alter _ • _} (that x) (quad _ _ _ ρ) = ⟦ x ⟧ΔVar ρ
-⟦_⟧ΔVar {abide _ • _} (that x) (quint _ _ _ _ ρ) = ⟦ x ⟧ΔVar ρ
--}
-
-
--- ⟦_⟧ΔTerm : ∀ {τ Γ} → Δ-Term Γ τ → ⟦ Γ ⟧ΔContext → ⟦ τ ⟧ΔType
-⟦_⟧ΔTerm _ _ = {!!}
-{-
-⟦ Δnat old new ⟧ΔTerm ρ = (old , new)
-⟦ Δbag db ⟧ΔTerm ρ = db
-⟦ Δvar x ⟧ΔTerm ρ = ⟦ x ⟧ΔVar ρ
-⟦ Δabs t ⟧ΔTerm ρ =
-  λ v dv R[v,dv]          → ⟦ t ⟧ΔTerm (alter v dv R[v,dv] ρ)
-⟦ Δabs₀ t ⟧ΔTerm ρ =
-  λ v dv R[v,dv] {-v⊕dv=v-} → ⟦ t ⟧ΔTerm (abide v dv R[v,dv] {!v⊕dv=v!} ρ)
-⟦ Δapp ds t dt R[dt,t] ⟧ΔTerm ρ =
-  ⟦ ds ⟧ΔTerm ρ (⟦ t ⟧ (ignore ρ)) (⟦ dt ⟧ΔTerm ρ) R[dt,t]
-  --(R[dt,t] {ρ} {honesty = {!!}})
-⟦ Δadd ds dt ⟧ΔTerm ρ =
+-- ⟦_⟧Δ : ∀ {τ Γ} → Δ-Term (Δ Γ) (Δ τ) → Δ-Env Γ → ⟦ Δ τ ⟧Δτ
+⟦ Δnat old new ⟧Δ ρ = (old , new)
+⟦ Δbag db ⟧Δ ρ = db
+⟦ Δvar x ⟧Δ ρ = ⟦ x ⟧ΔVar ρ
+⟦ Δabs t ⟧Δ ρ = λ v dv R[v,dv] → ⟦ t ⟧Δ (cons v dv R[v,dv] ρ)
+⟦ Δapp ds t dt R[dt,t] ⟧Δ ρ =
+  ⟦ ds ⟧Δ ρ (⟦ t ⟧ (ignore ρ)) (⟦ dt ⟧Δ ρ) R[dt,t]
+⟦ Δadd ds dt ⟧Δ ρ =
   let
-    (old-s , new-s) = ⟦ ds ⟧ΔTerm ρ
-    (old-t , new-t) = ⟦ dt ⟧ΔTerm ρ
+    (old-s , new-s) = ⟦ ds ⟧Δ ρ
+    (old-t , new-t) = ⟦ dt ⟧Δ ρ
   in
     (old-s + old-t , new-s + new-t)
-⟦ Δmap₀ f df b db ⟧ΔTerm ρ =
+⟦ Δmap₀ f df b db ⟧Δ ρ =
   let
     v  = ⟦ b ⟧ (ignore ρ)
     h  = ⟦ f ⟧ (ignore ρ)
-    dv = ⟦ db ⟧ΔTerm ρ
-    dh = ⟦ df ⟧ΔTerm ρ
+    dv = ⟦ db ⟧Δ ρ
+    dh = ⟦ df ⟧Δ ρ
   in
     mapBag (h ⊕ dh) (v ⊕ dv) \\ mapBag h v
-⟦ Δmap₁ f db ⟧ΔTerm ρ = mapBag (⟦ f ⟧ (ignore ρ)) (⟦ db ⟧ΔTerm ρ)
--}
+⟦ Δmap₁ f db ⟧Δ ρ = mapBag (⟦ f ⟧ (ignore ρ)) (⟦ db ⟧Δ ρ)
 
-meaning-ΔTerm : ∀ {τ Γ} → Meaning (Δ-Term Γ τ)
-meaning-ΔTerm = meaning ⟦_⟧ΔTerm
+meaning-ΔTerm : ∀ {τ Γ} → Meaning (Δ-Term (Δ Γ) (Δ τ))
+meaning-ΔTerm = meaning ⟦_⟧Δ
 
-
-
-{-
 --------------------------------------------------------
 -- Program transformation and correctness (entangled) --
 --------------------------------------------------------
 
-derive : ∀ {τ Γ} → Term Γ τ → Δ-Term Γ τ
+derive : ∀ {τ Γ} → Term Γ τ → Δ-Term (Δ Γ) (Δ τ)
 
 validity : ∀ {τ Γ} {t : Term Γ τ} {ρ : Δ-Env Γ} →
   valid (⟦ t ⟧ (ignore ρ)) (⟦ derive t ⟧ ρ)
@@ -475,7 +395,7 @@ validity : ∀ {τ Γ} {t : Term Γ τ} {ρ : Δ-Env Γ} →
 correctness : ∀ {τ Γ} {t : Term Γ τ} {ρ : Δ-Env Γ} →
   ⟦ t ⟧ (ignore ρ) ⊕ ⟦ derive t ⟧ ρ ≡ ⟦ t ⟧ (update ρ)
 
--- derive : ∀ {τ Γ} → Term Γ τ → Δ-Term Γ τ
+-- derive : ∀ {τ Γ} → Term Γ τ → Δ-Term (Δ Γ) (Δ τ)
 derive (nat n) = Δnat n n
 derive (bag b) = Δbag emptyBag
 derive (var x) = Δvar x
@@ -565,5 +485,3 @@ correctness {τ₁ ⇒ τ₂} {Γ} {abs t} {ρ} = extensionality (λ v →
       ⟦ t ⟧ (v • update ρ)
     ∎
   ) where open ≡-Reasoning
--}
-
