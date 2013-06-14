@@ -356,35 +356,35 @@ update {τ • Γ} (cons v dv R[v,dv] ρ) = (v ⊕ dv) • update ρ
 ⟦ this   ⟧ΔVar (cons v dv R[v,dv] ρ) = dv
 ⟦ that x ⟧ΔVar (cons v dv R[v,dv] ρ) = ⟦ x ⟧ΔVar ρ
 
-_is-valid-wrt_ : ∀ {τ Γ} → ΔTerm Γ τ → ΔEnv Γ → Set
+_is-valid-for_ : ∀ {τ Γ} → ΔTerm Γ τ → ΔEnv Γ → Set
 
 ⟦_⟧Δ : ∀ {τ Γ} →
-  (t : ΔTerm Γ τ) → (ρ : ΔEnv Γ) → t is-valid-wrt ρ →
+  (t : ΔTerm Γ τ) → (ρ : ΔEnv Γ) → t is-valid-for ρ →
   ΔVal τ
 
--- _is-valid-wrt_ : ∀ {τ Γ} → ΔTerm Γ τ → ΔEnv Γ → Set
-Δnat old new is-valid-wrt ρ = ⊤
-Δbag db is-valid-wrt ρ = ⊤
-Δvar x is-valid-wrt ρ = ⊤
+-- _is-valid-for_ : ∀ {τ Γ} → ΔTerm Γ τ → ΔEnv Γ → Set
+Δnat old new is-valid-for ρ = ⊤
+Δbag db is-valid-for ρ = ⊤
+Δvar x is-valid-for ρ = ⊤
 
-_is-valid-wrt_ {σ ⇒ τ} (Δabs dt) ρ =
+_is-valid-for_ {σ ⇒ τ} (Δabs dt) ρ =
   (v : ⟦ σ ⟧) (dv : ΔVal σ) (R[v,dv] : valid v dv) →
-  _is-valid-wrt_ dt (cons v dv R[v,dv] ρ)
+  _is-valid-for_ dt (cons v dv R[v,dv] ρ)
 
-Δapp ds t dt is-valid-wrt ρ = Quadruple
-  (ds is-valid-wrt ρ)
-  (λ _ → dt is-valid-wrt ρ)
+Δapp ds t dt is-valid-for ρ = Quadruple
+  (ds is-valid-for ρ)
+  (λ _ → dt is-valid-for ρ)
   (λ _ v-dt → valid (⟦ t ⟧ (ignore ρ)) (⟦ dt ⟧Δ ρ v-dt))
   (λ _ _ _ → ⊤)
 
-Δadd ds dt is-valid-wrt ρ = couple
-  (ds is-valid-wrt ρ)
-  (dt is-valid-wrt ρ)
+Δadd ds dt is-valid-for ρ = couple
+  (ds is-valid-for ρ)
+  (dt is-valid-for ρ)
 
-Δmap₀ s ds t dt is-valid-wrt ρ = couple
-  (ds is-valid-wrt ρ)
-  (dt is-valid-wrt ρ)
-_is-valid-wrt_ (Δmap₁ s db) ρ = db is-valid-wrt ρ
+Δmap₀ s ds t dt is-valid-for ρ = couple
+  (ds is-valid-for ρ)
+  (dt is-valid-for ρ)
+_is-valid-for_ (Δmap₁ s db) ρ = db is-valid-for ρ
 
 ⟦ Δnat old new ⟧Δ ρ tt = old , new
 ⟦ Δbag db ⟧Δ ρ tt = db
@@ -422,7 +422,7 @@ _is-valid-wrt_ (Δmap₁ s db) ρ = db is-valid-wrt ρ
 --
 -- Error message:
 -- Cannot instantiate the metavariable _872 to solution ((ρ : ΔEnv .Γ)
--- → t is-valid-wrt ρ → ΔVal .τ) since it contains the variable t
+-- → t is-valid-for ρ → ΔVal .τ) since it contains the variable t
 -- which is not in scope of the metavariable or irrelevant in the
 -- metavariable but relevant in the solution
 -- when checking that the expression ⟦_⟧Δ has type
@@ -449,30 +449,44 @@ derive (map f b) = Δmap₀ f (derive f) b (derive b)
 -- Correctness --
 -----------------
 
-unrestricted : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ} →
-  derive t is-valid-wrt ρ
+unrestricted : ∀ {τ Γ} (t : Term Γ τ) {ρ : ΔEnv Γ} →
+  derive t is-valid-for ρ
 
 validity : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ} →
-  valid (⟦ t ⟧ (ignore ρ)) (⟦ derive t ⟧Δ ρ (unrestricted {t = t}))
+  valid (⟦ t ⟧ (ignore ρ)) (⟦ derive t ⟧Δ ρ (unrestricted t))
 
 correctness : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ}
-  → ⟦ t ⟧ (ignore ρ) ⊕ ⟦ derive t ⟧Δ ρ (unrestricted {t = t})
+  → ⟦ t ⟧ (ignore ρ) ⊕ ⟦ derive t ⟧Δ ρ (unrestricted t)
   ≡ ⟦ t ⟧ (update ρ)
 
-unrestricted {t = nat n} = tt
-unrestricted {t = bag b} = tt
-unrestricted {t = var x} {ρ} = tt
-unrestricted {t = abs t} {ρ} = (λ _ _ _ → unrestricted {t = t})
-unrestricted {t = app s t} {ρ} = cons
-  (unrestricted {t = s})
-  (unrestricted {t = t})
+-- Corollary: (f ⊕ df) (v ⊕ dv) = f v ⊕ df v dv
+
+corollary : ∀ {σ τ Γ}
+  (s : Term Γ (σ ⇒ τ)) (t : Term Γ σ) {ρ : ΔEnv Γ} →
+    (⟦ s ⟧ (ignore ρ) ⊕ ⟦ derive s ⟧Δ ρ (unrestricted s))
+    (⟦ t ⟧ (ignore ρ) ⊕ ⟦ derive t ⟧Δ ρ (unrestricted t))
+  ≡  ⟦ s ⟧ (ignore ρ) (⟦ t ⟧ (ignore ρ)) ⊕
+     ⟦ derive s ⟧Δ ρ (unrestricted s) (⟦ t ⟧ (ignore ρ))
+    (⟦ derive t ⟧Δ ρ (unrestricted t)) (validity {t = t})
+
+corollary s t {ρ} = proj₂
+  (validity {t = s} (⟦ t ⟧ (ignore ρ))
+    (⟦ derive t ⟧Δ ρ (unrestricted t)) (validity {t = t}))
+
+unrestricted (nat n) = tt
+unrestricted (bag b) = tt
+unrestricted (var x) {ρ} = tt
+unrestricted (abs t) {ρ} = (λ _ _ _ → unrestricted t)
+unrestricted (app s t) {ρ} = cons
+  (unrestricted (s))
+  (unrestricted (t))
   (validity {t = t}) tt
-unrestricted {t = add s t} {ρ} = cons
-  (unrestricted {t = s})
-  (unrestricted {t = t}) tt tt
-unrestricted {t = map s t} {ρ} = cons
-  (unrestricted {t = s})
-  (unrestricted {t = t}) tt tt
+unrestricted (add s t) {ρ} = cons
+  (unrestricted (s))
+  (unrestricted (t)) tt tt
+unrestricted (map s t) {ρ} = cons
+  (unrestricted (s))
+  (unrestricted (t)) tt tt
 
 validity-var : ∀ {τ Γ} → (x : Var Γ τ) →
   ∀ {ρ : ΔEnv Γ} → valid (⟦ x ⟧ (ignore ρ)) (⟦ x ⟧ΔVar ρ)
@@ -489,7 +503,7 @@ validity {t = add s t} = cong₂ _+_ (validity {t = s}) (validity {t = t})
 validity {t = app s t} {ρ} =
   let
     v = ⟦ t ⟧ (ignore ρ)
-    dv = ⟦ derive t ⟧Δ ρ (unrestricted {t = t})
+    dv = ⟦ derive t ⟧Δ ρ (unrestricted t)
   in
     proj₁ (validity {t = s} {ρ} v dv (validity {t = t} {ρ}))
 
@@ -503,13 +517,13 @@ validity {t = abs t} {ρ} = λ v dv R[v,dv] →
     validity {t = t} {ρ₁}
     ,
     (begin
-      ⟦ t ⟧ (ignore ρ₂) ⊕ ⟦ derive t ⟧Δ ρ₂ (unrestricted {t = t})
+      ⟦ t ⟧ (ignore ρ₂) ⊕ ⟦ derive t ⟧Δ ρ₂ (unrestricted t)
     ≡⟨ correctness {t = t} {ρ₂} ⟩
       ⟦ t ⟧ (update ρ₂)
     ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • update ρ)) v⊕[u⊝v]=u ⟩
       ⟦ t ⟧ (update ρ₁)
     ≡⟨ sym (correctness {t = t} {ρ₁}) ⟩
-      ⟦ t ⟧ (ignore ρ₁) ⊕ ⟦ derive t ⟧Δ ρ₁ (unrestricted {t = t})
+      ⟦ t ⟧ (ignore ρ₁) ⊕ ⟦ derive t ⟧Δ ρ₁ (unrestricted t)
     ∎) where open ≡-Reasoning
 
 correctVar : ∀ {τ Γ} {x : Var Γ τ} {ρ : ΔEnv Γ} →
@@ -531,13 +545,13 @@ correctness {t = map s t} {ρ} =
   where
     f = ⟦ s ⟧ (ignore ρ)
     b = ⟦ t ⟧ (ignore ρ)
-    df = ⟦ derive s ⟧Δ ρ (unrestricted {t = s})
-    db = ⟦ derive t ⟧Δ ρ (unrestricted {t = t})
+    df = ⟦ derive s ⟧Δ ρ (unrestricted s)
+    db = ⟦ derive t ⟧Δ ρ (unrestricted t)
 
 correctness {t = app s t} {ρ} =
   let
     v = ⟦ t ⟧ (ignore ρ)
-    dv = ⟦ derive t ⟧Δ ρ (unrestricted {t = t})
+    dv = ⟦ derive t ⟧Δ ρ (unrestricted t)
   in trans
      (sym (proj₂ (validity {t = s} {ρ} v dv (validity {t = t} {ρ}))))
      (correctness {t = s} ⟨$⟩ correctness {t = t})
@@ -548,7 +562,7 @@ correctness {τ₁ ⇒ τ₂} {Γ} {abs t} {ρ} = extensionality (λ v →
     ρ′ = cons v (v ⊝ v) R[v,u⊝v] ρ
   in
     begin
-      ⟦ t ⟧ (ignore ρ′) ⊕ ⟦ derive t ⟧Δ ρ′ (unrestricted {t = t})
+      ⟦ t ⟧ (ignore ρ′) ⊕ ⟦ derive t ⟧Δ ρ′ (unrestricted t)
     ≡⟨ correctness {t = t} {ρ′} ⟩
       ⟦ t ⟧ (update ρ′)
     ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • update ρ)) v⊕[u⊝v]=u ⟩
