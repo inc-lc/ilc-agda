@@ -6,8 +6,6 @@ enough for the purpose of having explicit nil changes.
 
 module TaggedDeltaTypes where
 
-open import Data.NatBag renaming
-  (map to mapBag ; empty to emptyBag ; update to updateBag)
 open import Relation.Binary.PropositionalEquality
 open import Data.Nat
 open import Data.Unit using (⊤ ; tt)
@@ -18,13 +16,25 @@ open import Relation.Binary using
   (Reflexive ; Transitive ; Preorder ; IsPreorder)
 import Level
 
--- Postulates: Extensionality and bag properties (#55)
+---------------------------------------------------------
+-- Postulates: Extensionality and bag properties (#55) --
+---------------------------------------------------------
+
 postulate extensionality : Extensionality Level.zero Level.zero
---
+-- Instead of:
+-- open import Data.NatBag renaming
+---  (map to mapBag ; empty to emptyBag ; update to updateBag)
 -- open import Data.NatBag.Properties
-postulate b\\b=∅ : ∀ {{b : Bag}} → b \\ b ≡ emptyBag
-postulate b++∅=b : ∀ {{b : Bag}} → b ++ emptyBag ≡ b
-postulate ∅++b=b : ∀ {{b : Bag}} → emptyBag ++ b ≡ b
+postulate Bag : Set
+postulate emptyBag : Bag
+postulate mapBag : (ℕ → ℕ) → Bag → Bag
+postulate _++_ : Bag → Bag → Bag
+postulate _\\_ : Bag → Bag → Bag
+infixr 5 _++_
+infixl 9 _\\_
+postulate b\\b=∅ : ∀ {b : Bag} → b \\ b ≡ emptyBag
+postulate b++∅=b : ∀ {b : Bag} → b ++ emptyBag ≡ b
+postulate ∅++b=b : ∀ {b : Bag} → emptyBag ++ b ≡ b
 postulate b++[d\\b]=d : ∀ {b d} → b ++ (d \\ b) ≡ d
 postulate [b++d]\\b=d : ∀ {b d} → (b ++ d) \\ b ≡ d
 postulate
@@ -34,6 +44,28 @@ postulate
   [a\\b]\\[c\\d]=[a\\c]\\[b\\d] : ∀ {a b c d} →
     (a \\ b) \\ (c \\ d) ≡ (a \\ c) \\ (b \\ d)
 
+----------------------------
+-- Useful data structures --
+----------------------------
+
+record Quadruple
+  (A : Set) (B : A → Set) (C : (a : A) → B a → Set)
+  (D : (a : A) → (b : B a) → (c : C a b) → Set): Set where
+  constructor cons
+  field
+    car   : A
+    cadr  : B car
+    caddr : C car cadr
+    cdddr : D car cadr caddr
+
+open Quadruple public
+
+couple : Set → Set → Set
+couple A B = Quadruple A (λ _ → B) (λ _ _ → ⊤) (λ _ _ _ → ⊤)
+
+triple : Set → Set → Set → Set
+triple A B C = Quadruple A (λ _ → B) (λ _ _ → C) (λ _ _ _ → ⊤)
+
 ------------------------
 -- Syntax of programs --
 ------------------------
@@ -41,7 +73,7 @@ postulate
 data Type : Set where
   nats : Type
   bags : Type
-  _⇒_ : (τ₁ τ₂ : Type) → Type
+  _⇒_ : (σ τ : Type) → Type
 
 infixr 5 _⇒_
 
@@ -53,7 +85,7 @@ infixr 9 _•_
 
 data Var : Context → Type → Set where
   this : ∀ {τ Γ} → Var (τ • Γ) τ
-  that : ∀ {τ τ′ Γ} → (x : Var Γ τ) → Var (τ′ • Γ) τ
+  that : ∀ {σ τ Γ} → (x : Var Γ σ) → Var (τ • Γ) σ
 
 data Term : Context -> Type -> Set where
 
@@ -61,12 +93,12 @@ data Term : Context -> Type -> Set where
   bag : ∀ {Γ} → (b : Bag) → Term Γ bags
 
   var : ∀ {τ Γ} → (x : Var Γ τ) → Term Γ τ
-  abs : ∀ {τ₁ τ₂ Γ} → (t : Term (τ₁ • Γ) τ₂) → Term Γ (τ₁ ⇒ τ₂)
-  app : ∀ {τ₁ τ₂ Γ} → (s : Term Γ (τ₁ ⇒ τ₂)) (t : Term Γ τ₁)
-                   → Term Γ τ₂
+  abs : ∀ {σ τ Γ} → (t : Term (σ • Γ) τ) → Term Γ (σ ⇒ τ)
+  app : ∀ {σ τ Γ} → (s : Term Γ (σ ⇒ τ)) (t : Term Γ σ) → Term Γ τ
 
   add : ∀ {Γ} → (s : Term Γ nats) → (t : Term Γ nats) → Term Γ nats
-  map : ∀ {Γ} → (f : Term Γ (nats ⇒ nats)) → (b : Term Γ bags) → Term Γ bags
+  map : ∀ {Γ} → (f : Term Γ (nats ⇒ nats)) → (b : Term Γ bags) →
+    Term Γ bags
 
 infix 8 _≼_
 
@@ -191,110 +223,105 @@ weaken-sound (add m n) ρ = cong₂ _+_ (weaken-sound m ρ) (weaken-sound n ρ)
 weaken-sound (map f b) ρ =
   cong₂ mapBag (weaken-sound f ρ) (weaken-sound b ρ)
 
-----------------------------------------------------------
--- Syntax and semantics of changes (they are entangled) --
-----------------------------------------------------------
+-----------------------
+-- Syntax of changes --
+-----------------------
 
-data Δ-Type : Set where
-  Δ : (τ : Type) → Δ-Type
+-- Validity proofs are not literally embedded in terms.
+-- They are introduced and checked at interpretation time.
+-- Invalid programs are well-formed terms,
+-- they just denote the empty function.
+--
+-- Thus do we avoid the horrible mutual recursions between
+-- the syntax and semantics of changes and between the
+-- program transformation and its correctness, which drives
+-- the type checker to thrashing.
 
-data Δ-Context : Set where
-  Δ : (Γ : Context) → Δ-Context
-
-Env : Context → Set
-Env Γ = ⟦ Γ ⟧Context
-
-data Δ-Term : Δ-Context → Δ-Type → Set
-
--- Syntax of Δ-Types
--- ...   is mutually recursive with semantics of Δ-Terms
--- (because it embeds validity proofs),
--- which is mutually recursive with validity and Δ-environments,
--- which is mutually recursive with ⊕,
--- which is mutually recursive with ⊝ and R[v,v⊝v],
--- which is mutually recursive with v⊕[u⊝v]=v, et cetera.
-⟦_⟧Δτ : Δ-Type → Set
-Δ-Env : Context → Set
-⟦_⟧Δ : ∀ {τ : Type} {Γ : Context}
-    → Δ-Term (Δ Γ) (Δ τ) → Δ-Env Γ → ⟦ Δ τ ⟧Δτ
-_⊕_ : ∀ {τ : Type} → ⟦ τ ⟧ → ⟦ Δ τ ⟧Δτ → ⟦ τ ⟧
-_⊝_ : ∀ {τ : Type} → ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ Δ τ ⟧Δτ
-valid : {τ : Type} → ⟦ τ ⟧ → ⟦ Δ τ ⟧Δτ → Set
-R[v,u⊝v] : ∀ {τ : Type} {u v : ⟦ τ ⟧} → valid {τ} v (u ⊝ v)
-v⊕[u⊝v]=u : ∀ {τ : Type} {u v : ⟦ τ ⟧} → v ⊕ (u ⊝ v) ≡ u
-ignore : ∀ {Γ : Context} → (ρ : Δ-Env Γ) → ⟦ Γ ⟧
-update : ∀ {Γ : Context} → (ρ : Δ-Env Γ) → ⟦ Γ ⟧
-
-infixl 6 _⊕_ _⊝_ -- as with + - in GHC.Num
-
-data Δ-Term where
+data ΔTerm : Context → Type → Set where
   -- changes to numbers are replacement pairs
-  Δnat : ∀ {Γ} → (old : ℕ) → (new : ℕ) → Δ-Term (Δ Γ) (Δ nats)
+  Δnat : ∀ {Γ} → (old : ℕ) → (new : ℕ) → ΔTerm Γ nats
   -- changes to bags are bags
-  Δbag : ∀ {Γ} → (db : Bag) → Δ-Term (Δ Γ) (Δ bags)
+  Δbag : ∀ {Γ} → (db : Bag) → ΔTerm Γ bags
   -- changes to variables are variables
-  Δvar : ∀ {τ Γ} → (x : Var Γ τ) → Δ-Term (Δ Γ) (Δ τ)
+  Δvar : ∀ {τ Γ} → (x : Var Γ τ) → ΔTerm Γ τ
   -- changes to abstractions are binders of x and dx
-  Δabs : ∀ {τ₁ τ₂ Γ} → (t : Δ-Term (Δ (τ₁ • Γ)) (Δ τ₂)) →
-         Δ-Term (Δ Γ) (Δ (τ₁ ⇒ τ₂))
+  Δabs : ∀ {τ₁ τ₂ Γ} → (dt : ΔTerm (τ₁ • Γ) τ₂) →
+         ΔTerm Γ (τ₁ ⇒ τ₂)
   -- changes to applications are applications of a value and a change
-  Δapp : ∀ {τ₁ τ₂ Γ} → (ds : Δ-Term (Δ Γ) (Δ (τ₁ ⇒ τ₂)))
-                    → ( t :   Term    Γ      τ₁)
-                    → (dt : Δ-Term (Δ Γ) (Δ  τ₁))
-                    → (R[t,dt] : {ρ : Δ-Env Γ} → -- 'Tis but a proof.
-                          valid (⟦ t ⟧ (ignore ρ)) (⟦ dt ⟧Δ ρ)) →
-         Δ-Term (Δ Γ) (Δ τ₂)
+  Δapp : ∀ {σ τ Γ}
+    (ds : ΔTerm Γ (σ ⇒ τ))
+    ( t :  Term Γ σ)
+    (dt : ΔTerm Γ σ) →
+    ΔTerm Γ τ
   -- changes to addition are changes to their components
-  Δadd : ∀ {Γ} → (ds : Δ-Term (Δ Γ) (Δ nats))
-               → (dt : Δ-Term (Δ Γ) (Δ nats)) →
-         Δ-Term (Δ Γ) (Δ nats)
+  Δadd : ∀ {Γ}
+    (ds : ΔTerm Γ nats)
+    (dt : ΔTerm Γ nats) →
+    ΔTerm Γ nats
   -- There are two kinds of changes to maps:
   -- 0. recomputation,
   -- 1. mapping over changes,
   -- the latter used only with some form of isNil available.
-  Δmap₀ : ∀ {Γ} → ( f :   Term    Γ     (nats ⇒ nats))
-                → (df : Δ-Term (Δ Γ) (Δ (nats ⇒ nats)))
-                → ( b :   Term    Γ     bags)
-                → (db : Δ-Term (Δ Γ) (Δ bags))
-          → Δ-Term (Δ Γ) (Δ bags)
-  Δmap₁ : ∀ {Γ} → ( f :   Term    Γ     (nats ⇒ nats))
-                → (db : Δ-Term (Δ Γ) (Δ bags))
-          → Δ-Term (Δ Γ) (Δ bags)
+  Δmap₀ : ∀ {Γ}
+    ( s :   Term Γ (nats ⇒ nats))
+    (ds : ΔTerm Γ (nats ⇒ nats))
+    ( t :   Term Γ bags)
+    (dt : ΔTerm Γ bags) →
+    ΔTerm Γ bags
+  Δmap₁ : ∀ {Γ}
+    ( s :   Term Γ (nats ⇒ nats))
+    (dt : ΔTerm Γ bags) →
+    ΔTerm Γ bags
 
--- ⟦_⟧Δτ : Δ-Type → Set
-⟦ Δ nats ⟧Δτ = ℕ × ℕ
-⟦ Δ bags ⟧Δτ = Bag
-⟦ Δ (τ₁ ⇒ τ₂) ⟧Δτ =
-  (v : ⟦ τ₁ ⟧) → (dv : ⟦ Δ τ₁ ⟧Δτ) → valid v dv → ⟦ Δ τ₂ ⟧Δτ
+---------------------------------
+-- Semantic domains of changes --
+---------------------------------
 
-meaning-Δτ : Meaning Δ-Type
-meaning-Δτ = meaning ⟦_⟧Δτ
+ΔVal : Type → Set
+ΔEnv : Context → Set
+valid : ∀ {τ} → ⟦ τ ⟧ → ΔVal τ → Set
 
+-- ΔVal : Type → Set
+ΔVal nats = ℕ × ℕ
+ΔVal bags = Bag
+ΔVal (σ ⇒ τ) = (v : ⟦ σ ⟧) → (dv : ΔVal σ) → valid v dv → ΔVal τ
+
+-- ΔEnv : Context → Set
+ΔEnv ∅ = EmptySet
+ΔEnv (τ • Γ) = Quadruple
+  ⟦ τ ⟧
+  (λ _ → ΔVal τ)
+  (λ v dv → valid v dv)
+  (λ _ _ _ → ΔEnv Γ)
+
+_⊕_ : ∀ {τ} → ⟦ τ ⟧ → ΔVal τ → ⟦ τ ⟧
+_⊝_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → ΔVal τ
+infixl 6 _⊕_ _⊝_ -- as with + - in GHC.Num
+
+-- valid : ∀ {τ} → ⟦ τ ⟧ → ΔVal τ → Set
+valid {nats} n dn = n ≡ proj₁ dn
+valid {bags} b db = ⊤
+valid {σ ⇒ τ} f df =
+  ∀ (v : ⟦ σ ⟧) (dv : ΔVal σ) (R[v,dv] : valid v dv)
+  → valid (f v) (df v dv R[v,dv])
+  × (f ⊕ df) (v ⊕ dv) ≡ f v ⊕ df v dv R[v,dv]
+
+R[v,u⊝v] : ∀ {τ : Type} {u v : ⟦ τ ⟧} → valid {τ} v (u ⊝ v)
+
+-- _⊕_ : ∀ {τ} → ⟦ τ ⟧ → ΔVal τ → ⟦ τ ⟧
 _⊕_ {nats}   n dn = proj₂ dn
 _⊕_ {bags}   b db = b ++ db
 _⊕_ {τ₁ ⇒ τ₂} f df = λ v → f v ⊕ df v (v ⊝ v) R[v,u⊝v]
 
+-- _⊝_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → ΔVal τ
 _⊝_ {nats}   m n = (n , m)
 _⊝_ {bags}   b d = b \\ d
 _⊝_ {τ₁ ⇒ τ₂} f g = λ v dv R[v,dv] → f (v ⊕ dv) ⊝ g v
 
--- valid : {τ : Type} → ⟦ τ ⟧ → ⟦ Δ-Type τ ⟧ → Set
-valid {nats} n dn = n ≡ proj₁ dn
-valid {bags} b db = ⊤
-valid {τ₁ ⇒ τ₂} f df =
-  ∀ (v : ⟦ τ₁ ⟧) (dv : ⟦ Δ τ₁ ⟧Δτ) (R[v,dv] : valid v dv)
-  → valid (f v) (df v dv R[v,dv])
-  × (f ⊕ df) (v ⊕ dv) ≡ f v ⊕ df v dv R[v,dv]
-
-eq1 : ∀ {τ₁ τ₂ : Type} {f : ⟦ τ₁ ⇒ τ₂ ⟧} {df} {x : ⟦ τ₁ ⟧} {dx} →
-      valid f df → (R[x,dx] : valid x dx) →
-      (f ⊕ df) (x ⊕ dx) ≡ f x ⊕ df x dx R[x,dx]
-
-eq1 R[f,df] R[x,dx] = proj₂ (R[f,df] _ _ R[x,dx])
-
-v⊕[u⊝v]=u {nats}   {u} {v} = refl
-v⊕[u⊝v]=u {bags}   {u} {v} = b++[d\\b]=d {v} {u}
-v⊕[u⊝v]=u {τ₁ ⇒ τ₂} {u} {v} = extensionality (λ w →
+v⊕[u⊝v]=u : ∀ {τ : Type} {u v : ⟦ τ ⟧} → v ⊕ (u ⊝ v) ≡ u
+v⊕[u⊝v]=u {nats} {u} {v} = refl
+v⊕[u⊝v]=u {bags} {u} {v} = b++[d\\b]=d {v} {u}
+v⊕[u⊝v]=u {σ ⇒ τ} {u} {v} = extensionality (λ w →
   begin
     (v ⊕ (u ⊝ v)) w
   ≡⟨ refl ⟩ -- for clarity
@@ -305,13 +332,14 @@ v⊕[u⊝v]=u {τ₁ ⇒ τ₂} {u} {v} = extensionality (λ w →
     u w
   ∎) where open ≡-Reasoning
 
+-- R[v,u⊝v] : ∀ {τ : Type} {u v : ⟦ τ ⟧} → valid {τ} v (u ⊝ v)
 R[v,u⊝v] {nats} {u} {v} = refl
 R[v,u⊝v] {bags} {u} {v} = tt
-R[v,u⊝v] {τ₁ ⇒ τ₂} {u} {v} = λ w dw R[w,dw] →
+R[v,u⊝v] {σ ⇒ τ} {u} {v} = λ w dw R[w,dw] →
   let
     w′ = w ⊕ dw
   in
-    R[v,u⊝v] -- NOT a self recursion: implicit arguments are different.
+    R[v,u⊝v]
     ,
     (begin
       (v ⊕ (u ⊝ v)) w′
@@ -321,91 +349,142 @@ R[v,u⊝v] {τ₁ ⇒ τ₂} {u} {v} = λ w dw R[w,dw] →
       v w ⊕ (u ⊝ v) w dw R[w,dw]
     ∎) where open ≡-Reasoning
 
-record Quadruple
-  (A : Set) (B : A → Set) (C : (a : A) → B a → Set)
-  (D : (a : A) → (b : B a) → (c : C a b) → Set): Set where
-  constructor cons
-  field
-    car   : A
-    cadr  : B car
-    caddr : C car cadr
-    cdddr : D car cadr caddr
-
-open Quadruple public
-
--- The type of environments ensures their consistency.
--- Δ-Env : Context → Set
-Δ-Env ∅ = EmptySet
-Δ-Env (τ • Γ) = Quadruple
-  ⟦ τ ⟧
-  (λ v → ⟦ Δ τ ⟧Δτ)
-  (λ v dv → valid v dv)
-  (λ v dv R[v,dv] → Δ-Env Γ)
-
--- ignore : ∀ {Γ : Context} → (ρ : Δ-Env Γ) → Env Γ
+ignore : ∀ {Γ : Context} → (ρ : ΔEnv Γ) → ⟦ Γ ⟧
 ignore {∅} ρ = ∅
 ignore {τ • Γ} (cons v dv R[v,dv] ρ) = v • ignore ρ
 
--- update : ∀ {Γ : Context} → (ρ : Δ-Env Γ) → Env Γ
+update : ∀ {Γ : Context} → (ρ : ΔEnv Γ) → ⟦ Γ ⟧
 update {∅} ρ = ∅
 update {τ • Γ} (cons v dv R[v,dv] ρ) = (v ⊕ dv) • update ρ
 
-⟦_⟧ΔVar : ∀ {τ Γ} → Var Γ τ → Δ-Env Γ → ⟦ Δ τ ⟧Δτ
+--------------------------
+-- Semantics of changes --
+--------------------------
+
+⟦_⟧ΔVar : ∀ {τ Γ} → Var Γ τ → ΔEnv Γ → ΔVal τ
 ⟦ this   ⟧ΔVar (cons v dv R[v,dv] ρ) = dv
 ⟦ that x ⟧ΔVar (cons v dv R[v,dv] ρ) = ⟦ x ⟧ΔVar ρ
 
--- ⟦_⟧ΔVar is not put into the Meaning type class
--- because its argument is identical to that of ⟦_⟧Var.
+_is-valid-wrt_ : ∀ {τ Γ} → ΔTerm Γ τ → ΔEnv Γ → Set
 
--- ⟦_⟧Δ : ∀ {τ Γ} → Δ-Term (Δ Γ) (Δ τ) → Δ-Env Γ → ⟦ Δ τ ⟧Δτ
-⟦ Δnat old new ⟧Δ ρ = (old , new)
-⟦ Δbag db ⟧Δ ρ = db
-⟦ Δvar x ⟧Δ ρ = ⟦ x ⟧ΔVar ρ
-⟦ Δabs t ⟧Δ ρ = λ v dv R[v,dv] → ⟦ t ⟧Δ (cons v dv R[v,dv] ρ)
-⟦ Δapp ds t dt R[dt,t] ⟧Δ ρ =
-  ⟦ ds ⟧Δ ρ (⟦ t ⟧ (ignore ρ)) (⟦ dt ⟧Δ ρ) R[dt,t]
-⟦ Δadd ds dt ⟧Δ ρ =
+⟦_⟧Δ : ∀ {τ Γ} →
+  (t : ΔTerm Γ τ) → (ρ : ΔEnv Γ) → t is-valid-wrt ρ →
+  ΔVal τ
+
+-- _is-valid-wrt_ : ∀ {τ Γ} → ΔTerm Γ τ → ΔEnv Γ → Set
+Δnat old new is-valid-wrt ρ = ⊤
+Δbag db is-valid-wrt ρ = ⊤
+Δvar x is-valid-wrt ρ = ⊤
+
+_is-valid-wrt_ {σ ⇒ τ} (Δabs dt) ρ =
+  (v : ⟦ σ ⟧) (dv : ΔVal σ) (R[v,dv] : valid v dv) →
+  _is-valid-wrt_ dt (cons v dv R[v,dv] ρ)
+
+Δapp ds t dt is-valid-wrt ρ = Quadruple
+  (ds is-valid-wrt ρ)
+  (λ _ → dt is-valid-wrt ρ)
+  (λ _ v-dt → valid (⟦ t ⟧ (ignore ρ)) (⟦ dt ⟧Δ ρ v-dt))
+  (λ _ _ _ → ⊤)
+
+Δadd ds dt is-valid-wrt ρ = couple
+  (ds is-valid-wrt ρ)
+  (dt is-valid-wrt ρ)
+
+Δmap₀ s ds t dt is-valid-wrt ρ = couple
+  (ds is-valid-wrt ρ)
+  (dt is-valid-wrt ρ)
+_is-valid-wrt_ (Δmap₁ s db) ρ = db is-valid-wrt ρ
+
+⟦ Δnat old new ⟧Δ ρ tt = old , new
+⟦ Δbag db ⟧Δ ρ tt = db
+⟦ Δvar x ⟧Δ ρ tt = ⟦ x ⟧ΔVar ρ
+
+⟦ Δabs dt ⟧Δ ρ make-valid = λ v dv R[v,dv] →
+  ⟦ dt ⟧Δ (cons v dv R[v,dv] ρ) (make-valid v dv R[v,dv])
+
+⟦ Δapp ds t dt ⟧Δ ρ (cons v-ds v-dt R[ds,dt] _) =
+  ⟦ ds ⟧Δ ρ v-ds (⟦ t ⟧ (ignore ρ)) (⟦ dt ⟧Δ ρ v-dt) R[ds,dt]
+
+⟦ Δadd ds dt ⟧Δ ρ (cons v-ds v-dt _ _) =
   let
-    (old-s , new-s) = ⟦ ds ⟧Δ ρ
-    (old-t , new-t) = ⟦ dt ⟧Δ ρ
+    (old-s , new-s) = ⟦ ds ⟧Δ ρ v-ds
+    (old-t , new-t) = ⟦ dt ⟧Δ ρ v-dt
   in
     (old-s + old-t , new-s + new-t)
-⟦ Δmap₀ f df b db ⟧Δ ρ =
+
+⟦ Δmap₀ s ds t dt ⟧Δ ρ (cons v-ds v-dt _ _) =
   let
-    v  = ⟦ b ⟧ (ignore ρ)
-    h  = ⟦ f ⟧ (ignore ρ)
-    dv = ⟦ db ⟧Δ ρ
-    dh = ⟦ df ⟧Δ ρ
+    f  = ⟦ s ⟧ (ignore ρ)
+    v  = ⟦ t ⟧ (ignore ρ)
+    df = ⟦ ds ⟧Δ ρ v-ds
+    dv = ⟦ dt ⟧Δ ρ v-dt
   in
-    mapBag (h ⊕ dh) (v ⊕ dv) \\ mapBag h v
-⟦ Δmap₁ f db ⟧Δ ρ = mapBag (⟦ f ⟧ (ignore ρ)) (⟦ db ⟧Δ ρ)
+    mapBag (f ⊕ df) (v ⊕ dv) ⊝ mapBag f v
 
-meaning-ΔTerm : ∀ {τ Γ} → Meaning (Δ-Term (Δ Γ) (Δ τ))
-meaning-ΔTerm = meaning ⟦_⟧Δ
+⟦ Δmap₁ s dt ⟧Δ ρ v-dt = mapBag (⟦ s ⟧ (ignore ρ)) (⟦ dt ⟧Δ ρ v-dt)
 
---------------------------------------------------------
--- Program transformation and correctness (entangled) --
---------------------------------------------------------
+-- Minor issue about concrete syntax
+--
+-- Because ⟦_⟧Δ have dependently typed arguments,
+-- we can't make it an instance of the Meaning
+-- type class and can't use ⟦_⟧ on ΔTerms.
+--
+-- Error message:
+-- Cannot instantiate the metavariable _872 to solution ((ρ : ΔEnv .Γ)
+-- → t is-valid-wrt ρ → ΔVal .τ) since it contains the variable t
+-- which is not in scope of the metavariable or irrelevant in the
+-- metavariable but relevant in the solution
+-- when checking that the expression ⟦_⟧Δ has type
+-- ΔTerm .Γ .τ → _Semantics_872
+--
+--     meaning-ΔTerm : ∀ {τ Γ} → Meaning (ΔTerm Γ τ)
+--     meaning-ΔTerm = meaning ⟦_⟧Δ
 
-derive : ∀ {τ Γ} → Term Γ τ → Δ-Term (Δ Γ) (Δ τ)
+----------------------------
+-- Program transformation --
+----------------------------
 
-validity : ∀ {τ Γ} {t : Term Γ τ} {ρ : Δ-Env Γ} →
-  valid (⟦ t ⟧ (ignore ρ)) (⟦ derive t ⟧ ρ)
+derive : ∀ {τ Γ} → Term Γ τ → ΔTerm Γ τ
 
-correctness : ∀ {τ Γ} {t : Term Γ τ} {ρ : Δ-Env Γ} →
-  ⟦ t ⟧ (ignore ρ) ⊕ ⟦ derive t ⟧ ρ ≡ ⟦ t ⟧ (update ρ)
-
--- derive : ∀ {τ Γ} → Term Γ τ → Δ-Term (Δ Γ) (Δ τ)
 derive (nat n) = Δnat n n
 derive (bag b) = Δbag emptyBag
 derive (var x) = Δvar x
 derive (abs t) = Δabs (derive t)
-derive (app s t) = Δapp (derive s) t (derive t) validity
+derive (app s t) = Δapp (derive s) t (derive t)
 derive (add s t) = Δadd (derive s) (derive t)
 derive (map f b) = Δmap₀ f (derive f) b (derive b)
 
+-----------------
+-- Correctness --
+-----------------
+
+unrestricted : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ} →
+  derive t is-valid-wrt ρ
+
+validity : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ} →
+  valid (⟦ t ⟧ (ignore ρ)) (⟦ derive t ⟧Δ ρ (unrestricted {t = t}))
+
+correctness : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ}
+  → ⟦ t ⟧ (ignore ρ) ⊕ ⟦ derive t ⟧Δ ρ (unrestricted {t = t})
+  ≡ ⟦ t ⟧ (update ρ)
+
+unrestricted {t = nat n} = tt
+unrestricted {t = bag b} = tt
+unrestricted {t = var x} {ρ} = tt
+unrestricted {t = abs t} {ρ} = (λ _ _ _ → unrestricted {t = t})
+unrestricted {t = app s t} {ρ} = cons
+  (unrestricted {t = s})
+  (unrestricted {t = t})
+  (validity {t = t}) tt
+unrestricted {t = add s t} {ρ} = cons
+  (unrestricted {t = s})
+  (unrestricted {t = t}) tt tt
+unrestricted {t = map s t} {ρ} = cons
+  (unrestricted {t = s})
+  (unrestricted {t = t}) tt tt
+
 validity-var : ∀ {τ Γ} → (x : Var Γ τ) →
-  ∀ {ρ : Δ-Env Γ} → valid (⟦ x ⟧ (ignore ρ)) (⟦ x ⟧ΔVar ρ)
+  ∀ {ρ : ΔEnv Γ} → valid (⟦ x ⟧ (ignore ρ)) (⟦ x ⟧ΔVar ρ)
 
 validity-var this {cons v dv R[v,dv] ρ} = R[v,dv]
 validity-var (that x) {cons v dv R[v,dv] ρ} = validity-var x
@@ -419,7 +498,7 @@ validity {t = add s t} = cong₂ _+_ (validity {t = s}) (validity {t = t})
 validity {t = app s t} {ρ} =
   let
     v = ⟦ t ⟧ (ignore ρ)
-    dv = ⟦ derive t ⟧ ρ
+    dv = ⟦ derive t ⟧Δ ρ (unrestricted {t = t})
   in
     proj₁ (validity {t = s} {ρ} v dv (validity {t = t} {ρ}))
 
@@ -433,16 +512,16 @@ validity {t = abs t} {ρ} = λ v dv R[v,dv] →
     validity {t = t} {ρ₁}
     ,
     (begin
-      ⟦ t ⟧ (ignore ρ₂) ⊕ ⟦ derive t ⟧ ρ₂
+      ⟦ t ⟧ (ignore ρ₂) ⊕ ⟦ derive t ⟧Δ ρ₂ (unrestricted {t = t})
     ≡⟨ correctness {t = t} {ρ₂} ⟩
       ⟦ t ⟧ (update ρ₂)
     ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • update ρ)) v⊕[u⊝v]=u ⟩
       ⟦ t ⟧ (update ρ₁)
     ≡⟨ sym (correctness {t = t} {ρ₁}) ⟩
-      ⟦ t ⟧ (ignore ρ₁) ⊕ ⟦ derive t ⟧ ρ₁
+      ⟦ t ⟧ (ignore ρ₁) ⊕ ⟦ derive t ⟧Δ ρ₁ (unrestricted {t = t})
     ∎) where open ≡-Reasoning
 
-correctVar : ∀ {τ Γ} {x : Var Γ τ} {ρ : Δ-Env Γ} →
+correctVar : ∀ {τ Γ} {x : Var Γ τ} {ρ : ΔEnv Γ} →
   ⟦ x ⟧ (ignore ρ) ⊕ ⟦ x ⟧ΔVar ρ ≡ ⟦ x ⟧ (update ρ)
 
 correctVar {x = this  } {cons v dv R[v,dv] ρ} = refl
@@ -461,24 +540,24 @@ correctness {t = map s t} {ρ} =
   where
     f = ⟦ s ⟧ (ignore ρ)
     b = ⟦ t ⟧ (ignore ρ)
-    df = ⟦ derive s ⟧ ρ
-    db = ⟦ derive t ⟧ ρ
+    df = ⟦ derive s ⟧Δ ρ (unrestricted {t = s})
+    db = ⟦ derive t ⟧Δ ρ (unrestricted {t = t})
 
 correctness {t = app s t} {ρ} =
   let
     v = ⟦ t ⟧ (ignore ρ)
-    dv = ⟦ derive t ⟧ ρ
+    dv = ⟦ derive t ⟧Δ ρ (unrestricted {t = t})
   in trans
      (sym (proj₂ (validity {t = s} {ρ} v dv (validity {t = t} {ρ}))))
      (correctness {t = s} ⟨$⟩ correctness {t = t})
 
 correctness {τ₁ ⇒ τ₂} {Γ} {abs t} {ρ} = extensionality (λ v →
   let
-    ρ′ : Δ-Env (τ₁ • Γ)
+    ρ′ : ΔEnv (τ₁ • Γ)
     ρ′ = cons v (v ⊝ v) R[v,u⊝v] ρ
   in
     begin
-      ⟦ t ⟧ (ignore ρ′) ⊕ ⟦ derive t ⟧ ρ′
+      ⟦ t ⟧ (ignore ρ′) ⊕ ⟦ derive t ⟧Δ ρ′ (unrestricted {t = t})
     ≡⟨ correctness {t = t} {ρ′} ⟩
       ⟦ t ⟧ (update ρ′)
     ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • update ρ)) v⊕[u⊝v]=u ⟩
