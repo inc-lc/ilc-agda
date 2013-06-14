@@ -32,17 +32,8 @@ postulate _++_ : Bag → Bag → Bag
 postulate _\\_ : Bag → Bag → Bag
 infixr 5 _++_
 infixl 9 _\\_
-postulate b\\b=∅ : ∀ {b : Bag} → b \\ b ≡ emptyBag
 postulate b++∅=b : ∀ {b : Bag} → b ++ emptyBag ≡ b
-postulate ∅++b=b : ∀ {b : Bag} → emptyBag ++ b ≡ b
 postulate b++[d\\b]=d : ∀ {b d} → b ++ (d \\ b) ≡ d
-postulate [b++d]\\b=d : ∀ {b d} → (b ++ d) \\ b ≡ d
-postulate
-  [a++b]\\[c++d]=[a\\c]++[b\\d] : ∀ {a b c d} →
-    (a ++ b) \\ (c ++ d) ≡ (a \\ c) ++ (b \\ d)
-postulate
-  [a\\b]\\[c\\d]=[a\\c]\\[b\\d] : ∀ {a b c d} →
-    (a \\ b) \\ (c \\ d) ≡ (a \\ c) \\ (b \\ d)
 
 ----------------------------
 -- Useful data structures --
