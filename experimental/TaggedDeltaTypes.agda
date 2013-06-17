@@ -276,6 +276,10 @@ data ΔTerm : Context → Type → Set where
 ΔEnv : Context → Set
 valid : ∀ {τ} → ⟦ τ ⟧ → ΔVal τ → Set
 
+--
+-- ΔVal τ is intended to be the semantic domain for changes of values of type
+-- τ, which was obtained by ⟦ Δ-Type τ ⟧ in other formalizations.
+--
 -- ΔVal : Type → Set
 ΔVal nats = ℕ × ℕ
 ΔVal bags = Bag
