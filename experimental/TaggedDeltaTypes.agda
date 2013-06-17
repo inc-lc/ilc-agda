@@ -34,6 +34,10 @@ infixr 5 _++_
 infixl 9 _\\_
 postulate b++∅=b : ∀ {b : Bag} → b ++ emptyBag ≡ b
 postulate b++[d\\b]=d : ∀ {b d} → b ++ (d \\ b) ≡ d
+postulate [b++d]\\b=d : ∀ {b d} → (b ++ d) \\ b ≡ d
+postulate
+  map-over-++ : ∀ {f b d} →
+    mapBag f (b ++ d) ≡ mapBag f b ++ mapBag f d
 
 ----------------------------
 -- Useful data structures --
@@ -364,12 +368,12 @@ data Vars : Context → Set where
   abide : ∀ {τ Γ} → Vars Γ → Vars (τ • Γ)
 
 -- Declare everything in Γ to be volatile.
-select-none-in : (Γ : Context) → Vars Γ
-select-none-in ∅ = ∅
-select-none-in (τ • Γ) = alter (select-none-in Γ)
+select-none : {Γ : Context} → Vars Γ
+select-none {∅} = ∅
+select-none {τ • Γ} = alter (select-none {Γ})
 
 select-just : ∀ {τ Γ} → Var Γ τ → Vars Γ
-select-just {Γ = τ • Γ₀} this = abide (select-none-in Γ₀)
+select-just {Γ = τ • Γ₀} this = abide select-none
 select-just (that x) = alter (select-just x)
 
 -- De-facto union of free variables
@@ -387,8 +391,8 @@ tail (alter vars) = vars
 -- Free variables of a term.
 -- Free variables are marked as abiding, bound variables altering.
 FV : ∀ {τ Γ} → Term Γ τ → Vars Γ
-FV {Γ = Γ} (nat n) = select-none-in Γ
-FV {Γ = Γ} (bag b) = select-none-in Γ
+FV {Γ = Γ} (nat n) = select-none
+FV {Γ = Γ} (bag b) = select-none
 FV (var x) = select-just x
 FV (abs t) = tail (FV t)
 FV (app s t) = FV-union (FV s) (FV t)

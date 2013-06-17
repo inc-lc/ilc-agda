@@ -9,80 +9,14 @@ open import TaggedDeltaTypes
 
 open import Data.Nat
 open import Data.Bool
+open import Data.Sum hiding (map)
 open import Data.Product hiding (map)
 open import Data.Unit using (⊤ ; tt)
 open import Relation.Binary.PropositionalEquality
 open import Relation.Binary using
   (Reflexive ; Transitive ; Preorder ; IsPreorder)
-
------------------------------------
--- Describing the lack of change --
------------------------------------
-
-data Args : (τ : Type) → Set where
-  ∅-nat : Args nats
-  ∅-bag : Args bags
-  alter : ∀ {τ₁ τ₂} → (args : Args τ₂) → Args (τ₁ ⇒ τ₂)
-  abide : ∀ {τ₁ τ₂} → (args : Args τ₂) → Args (τ₁ ⇒ τ₂)
-
-expect-volatility : {τ : Type} → Args τ
-expect-volatility {τ₁ ⇒ τ₂} = alter expect-volatility
-expect-volatility {nats} = ∅-nat
-expect-volatility {bags} = ∅-bag
-
-proj-∧ : ∀ {a b} → a ∧ b ≡ true → a ≡ true × b ≡ true
-proj-∧ {false} {_} ()
-proj-∧ {true} {false} ()
-proj-∧ {true} {true} truth = refl , refl
-
---------------------------
--- Optimized derivation --
---------------------------
-
-derive' : ∀ {τ Γ} →
-  Term Γ τ → {args : Args τ} → {vars : Vars Γ} → ΔTerm Γ τ
-
-derive' (nat n) = derive (nat n)
-derive' (bag b) = derive (bag b)
-derive' (var x) = derive (var x)
-
-derive' (add s t) {∅-nat} {vars} =
-  Δadd (derive' s {∅-nat} {vars}) (derive' t {∅-nat} {vars})
-
-derive' (abs t) {alter args} {vars} = Δabs (derive' t {args} {alter vars})
-derive' (abs t) {abide args} {vars} = Δabs (derive' t {args} {abide vars})
-
-derive' (app s t) {args} {vars} =
-  if stable t vars
-  then Δapp (derive' s {abide args} {vars})
-          t (derive' t {expect-volatility} {vars})
-  else Δapp (derive' s {alter args} {vars})
-          t (derive' t {expect-volatility} {vars})
-
-derive' (map s t) {∅-bag} {vars} with stable s vars
-... | true  = Δmap₁ s (derive' t {∅-bag} {vars})
-... | false = Δmap₀ s (derive' s {abide ∅-nat} {vars})
-                t (derive' t {∅-bag} {vars})
-
------------------------------------------------------
--- A program equivalence preserved by optimization --
------------------------------------------------------
-
--- Two Δ-values are close enough w.r.t. a set of arguments if they
--- behave the same when fully applied (cf. extensionality) given
--- that each argument declared stable receives the nil change.
---
---     du ≈ dv wrt args
---
-close-enough : ∀ {τ : Type} → ΔVal τ → ΔVal τ → Args τ → Set
-close-enough {nats} du dv args = du ≡ dv -- extensionally
-close-enough {bags} du dv args = du ≡ dv -- literally
-close-enough {σ ⇒ τ} df dg (alter args) = ∀ {v dv R[v,dv]} →
-  close-enough (df v dv R[v,dv]) (dg v dv R[v,dv]) args
-close-enough {σ ⇒ τ} df dg (abide args) = ∀ {v dv R[v,dv]} →
-  v ⊕ dv ≡ v → close-enough (df v dv R[v,dv]) (dg v dv R[v,dv]) args
-
-syntax close-enough du dv args = du ≈ dv wrt args
+open import Relation.Binary.Core using (Decidable)
+open import Relation.Nullary.Core using (yes ; no)
 
 ext³ : ∀
   {A : Set}
@@ -95,159 +29,176 @@ ext³ : ∀
 ext³ fabc=gabc = ext (λ a → ext (λ b → ext (λ c → fabc=gabc a b c)))
   where ext = extensionality
 
-≡to≈ : ∀ {τ args} {df dg : ΔVal τ} →
-  df ≡ dg → df ≈ dg wrt args
+proj-H : ∀ {Γ : Context} {ρ : ΔEnv Γ} {us vs} →
+  Honest ρ (FV-union us vs) → Honest ρ us × Honest ρ vs
+proj-H {∅} {us = ∅} {vs = ∅} clearly = clearly , clearly
+proj-H {us = alter us} {alter vs} (alter H) =
+  let uss , vss = proj-H H in alter uss , alter vss
+proj-H {us = alter us} {abide vs} (abide eq H) =
+  let uss , vss = proj-H H in
+  alter uss , abide eq vss
+proj-H {us = abide us} {alter vs} (abide eq H) =
+  let uss , vss = proj-H H in
+  abide eq uss , alter vss
+proj-H {us = abide us} {abide vs} (abide eq H) =
+  let uss , vss = proj-H H in
+  abide eq uss , abide eq vss
 
-≡to≈ {nats} df≡dg = df≡dg
-≡to≈ {bags} df≡dg = df≡dg
-≡to≈ {σ ⇒ τ} {alter args} df≡dg = λ {v} {dv} {R[v,dv]} →
-  ≡to≈ (cong (λ hole → hole v dv R[v,dv]) df≡dg)
-≡to≈ {σ ⇒ τ} {abide args} df≡dg = λ {v} {dv} {R[v,dv]} v⊕dv=v →
-  ≡to≈ (cong (λ hole → hole v dv R[v,dv]) df≡dg)
-
-≈to≡ : ∀ {τ} {df dg : ΔVal τ} →
-  df ≈ dg wrt (expect-volatility {τ}) → df ≡ dg
-
-≈to≡ {nats} df≈dg = df≈dg
-≈to≡ {bags} df≈dg = df≈dg
-≈to≡ {σ ⇒ τ} {df} {dg} df≈dg =
-  ext³ (λ v dv R[v,dv] → ≈to≡ {τ} (df≈dg {v} {dv} {R[v,dv]}))
-
-------------------------
--- Stability of terms --
-------------------------
-
--- A variable does not change if its value is unchanging.
-
-stabilityVar : ∀ {τ Γ} {x : Var Γ τ} {vars} →
-  (S : stableVar x vars ≡ true) → ∀ {ρ : ΔEnv Γ}
-  (H : Honest ρ vars) →
+stabilityVar : ∀ {τ Γ} {x : Var Γ τ} →
+  ∀ {ρ : ΔEnv Γ} (H : Honest ρ (select-just x)) →
   ⟦ x ⟧ (ignore ρ) ⊕ ⟦ x ⟧ΔVar ρ ≡ ⟦ x ⟧ (ignore ρ)
 
-stabilityVar {x = this} {alter vars} () _
-stabilityVar {x = this} {abide vars} refl (abide proof _) = proof
-stabilityVar {x = that y} {alter vars} S (alter H) =
-  stabilityVar {x = y} {vars} S H
-stabilityVar {x = that y} {abide vars} S (abide _ H) =
-  stabilityVar {x = y} {vars} S H
+stabilityVar {x = this} (abide proof _) = proof
+stabilityVar {x = that y} (alter H) = stabilityVar {x = y} H
 
--- A term does not change if its free variables are unchanging.
-
-stability : ∀ {τ Γ} {t : Term Γ τ} {vars} →
-  (S : stable t vars ≡ true) → ∀ {ρ : ΔEnv Γ}
-  (H : Honest ρ vars) →
+stability : ∀ {τ Γ} {t : Term Γ τ} →
+  ∀ {ρ : ΔEnv Γ} (H : Honest ρ (FV t)) →
     ⟦ t ⟧ (ignore ρ) ⊕ ⟦ derive t ⟧Δ ρ (unrestricted t)
   ≡ ⟦ t ⟧ (ignore ρ)
 
-stability {t = nat n} _ _ = refl
-stability {t = bag b} _ _ = b++∅=b
-stability {t = var x} {vars} S H = stabilityVar {x = x} {vars} S H
+-- Boilerplate begins
+stabilityAbs : ∀ {σ τ Γ} {t : Term (σ • Γ) τ} →
+  ∀ {ρ : ΔEnv Γ} (H : Honest ρ (FV (abs t))) →
+  (v : ⟦ σ ⟧) →
+    ⟦ t ⟧ (v • ignore ρ) ⊕
+    ⟦ derive t ⟧Δ (cons v (v ⊝ v) R[v,u⊝v] ρ) (unrestricted t)
+  ≡ ⟦ t ⟧ (v • ignore ρ)
+stabilityAbs {t = t} {ρ} H v with FV t | inspect FV t
+... | abide vars | [ case0 ] = stability {t = t} Ht
+  where
+  Ht : Honest (cons v (v ⊝ v) R[v,u⊝v] ρ) (FV t)
+  Ht rewrite case0 = abide v⊕[u⊝v]=u H
+... | alter vars | [ case1 ] = stability {t = t} Ht
+  where
+  Ht : Honest (cons v (v ⊝ v) R[v,u⊝v] ρ) (FV t)
+  Ht rewrite case1 = alter H
+-- Boilerplate ends
 
-stability {t = abs t} {vars} S {ρ} H = extensionality
-  (λ w → stability {t = t} {abide vars} S (abide v⊕[u⊝v]=u H))
-
-stability {t = app s t} {vars} S {ρ} H =
+stability {t = nat n} H = refl
+stability {t = bag b} H = b++∅=b
+stability {t = var x} H = stabilityVar H
+stability {t = abs t} {ρ} H = extensionality (stabilityAbs {t = t} H)
+stability {t = app s t} {ρ} H =
   let
     f = ⟦ s ⟧ (ignore ρ)
     v = ⟦ t ⟧ (ignore ρ)
     df = ⟦ derive s ⟧Δ ρ (unrestricted s)
     dv = ⟦ derive t ⟧Δ ρ (unrestricted t)
-    Ss , St = proj-∧ S
+    Hs , Ht = proj-H H
   in
     begin
       f v ⊕ df v dv (validity {t = t})
     ≡⟨ sym (corollary s t) ⟩
       (f ⊕ df) (v ⊕ dv)
-    ≡⟨ stability {t = s} Ss H ⟨$⟩ stability {t = t} St H ⟩
+    ≡⟨ stability {t = s} Hs ⟨$⟩ stability {t = t} Ht ⟩
       f v
     ∎ where open ≡-Reasoning
-
-stability {t = add s t} {vars} S {ρ} H =
-  let
-    Ss , St = proj-∧ S
-  in cong₂ _+_ (stability {t = s} Ss H) (stability {t = t} St H)
-
-stability {t = map s t} {vars} S {ρ} H =
+stability {t = add s t} H =
+  let Hs , Ht = proj-H H
+  in cong₂ _+_ (stability {t = s} Hs) (stability {t = t} Ht)
+stability {t = map s t} {ρ} H =
   let
     f = ⟦ s ⟧ (ignore ρ)
     b = ⟦ t ⟧ (ignore ρ)
     df = ⟦ derive s ⟧Δ ρ (unrestricted s)
     db = ⟦ derive t ⟧Δ ρ (unrestricted t)
-    Ss , St = proj-∧ S
+    Hs , Ht = proj-H H
     map = mapBag
   in
   begin
     map f b ⊕ (map (f ⊕ df) (b ⊕ db) ⊝ map f b)
   ≡⟨ b++[d\\b]=d ⟩
     map (f ⊕ df) (b ⊕ db)
-  ≡⟨ cong₂ map (stability {t = s} Ss H) (stability {t = t} St H) ⟩
+  ≡⟨ cong₂ map (stability {t = s} Hs) (stability {t = t} Ht) ⟩
     map f b
   ∎ where open ≡-Reasoning
 
------------------------------------------
--- Correctness of optimized derivation --
------------------------------------------
+eq-map : ∀ {Γ}
+  (s    : Term Γ (nats ⇒ nats))
+  (t    : Term Γ bags)
+  (ρ    : ΔEnv Γ)
+  (H    : Honest ρ (FV s)) →
+    ⟦ Δmap₀ s (derive s) t (derive t) ⟧Δ ρ (unrestricted (map s t))
+  ≡ ⟦ Δmap₁ s (derive t) ⟧Δ ρ (cons (unrestricted t) H tt tt)
 
--- The result of optimized derivation is valid for every environment
--- that does not lie about nil changes.
+eq-map s t ρ H =
+  let
+    ds = derive s
+    dt = derive t
+    f  = ⟦ s ⟧ (ignore ρ)
+    v  = ⟦ t ⟧ (ignore ρ)
+    df = ⟦ ds ⟧Δ ρ (unrestricted s)
+    dv = ⟦ dt ⟧Δ ρ (unrestricted t)
 
-honesty⇒validity : ∀ {τ Γ} (t : Term Γ τ) {vars ρ} →
-  Honest ρ vars →
-  ∀ {args} → derive' t {args} {vars} is-valid-for ρ
+    eq1 : ⟦ Δmap₀ s ds t dt ⟧Δ ρ (unrestricted (map s t))
+        ≡ mapBag (f ⊕ df) (v ⊕ dv) ⊝ mapBag f v
+    eq1 = refl
 
--- If both the environment and the future arguments are honest
--- about nil changes, then the optimized derivation delivers
--- the same result as the original derivation.
+    eq2 : mapBag (f ⊕ df) (v ⊕ dv) ⊝ mapBag f v
+        ≡ mapBag f dv
+    eq2 = trans
+      (cong (λ hole → hole ⊝ mapBag f v) (trans
+        (cong (λ hole → mapBag hole (v ⊕ dv)) (stability {t = s} H))
+        map-over-++))
+      [b++d]\\b=d
 
-honesty :
-  ∀ {τ Γ} {t : Term Γ τ} {args vars} {ρ : ΔEnv Γ} {H : Honest ρ vars} →
-    ⟦ derive t ⟧Δ ρ (unrestricted t)
-  ≈ ⟦ derive' t {args} {vars} ⟧Δ ρ (honesty⇒validity t H) wrt args
+    eq3 : mapBag f dv
+        ≡ ⟦ Δmap₁ s (derive t) ⟧Δ ρ (cons (unrestricted t) H tt tt)
+    eq3 = refl
 
-honesty⇒validity (nat n) H = tt
-honesty⇒validity (bag b) H = tt
-honesty⇒validity (var x) H = tt
+  in trans eq1 (trans eq2 eq3)
 
-honesty⇒validity (abs t) {vars} H {alter args} = λ v dv R[v,dv] →
-  honesty⇒validity t (alter H)
-honesty⇒validity (abs t) {vars} H {abide args} = {!λ v dv R[v,dv] →
-     ??? Where to get proof that v⊕dv=v ???
-  !}
+-- Vars test
+none-selected? : ∀ {Γ} → (vs : Vars Γ) → (vs ≡ select-none) ⊎ ⊤
+none-selected? ∅ = inj₁ refl
+none-selected? (abide vs) = inj₂ tt
+none-selected? (alter vs) with none-selected? vs
+... | inj₁ vs=∅ rewrite vs=∅ = inj₁ refl
+... | inj₂ _ = inj₂ tt
 
-honesty⇒validity (app s t) H = {!!}
+closed? : ∀ {τ Γ} → (t : Term Γ τ) → (FV t ≡ select-none) ⊎ ⊤
+closed? t = none-selected? (FV t)
 
-honesty⇒validity (add s t) H {∅-nat} =
-  cons (honesty⇒validity s H) (honesty⇒validity t H) tt tt
+vacuous-honesty : ∀ {Γ} {ρ : ΔEnv Γ} → Honest ρ select-none
+vacuous-honesty {∅} {∅} = clearly
+vacuous-honesty {τ • Γ} {cons _ _ _ ρ} = alter (vacuous-honesty {ρ = ρ})
 
-honesty⇒validity (map s t) {vars} H {∅-bag}
-  with stable s vars
-... | true  = honesty⇒validity t H
-... | false = cons (honesty⇒validity s H) (honesty⇒validity t H) tt tt
+-- Immunity of closed terms to dishonest environments
+immune : ∀ {τ Γ} {t : Term Γ τ} →
+  (FV t ≡ select-none) → ∀ {ρ} → Honest ρ (FV t)
+immune {t = t} eq rewrite eq = vacuous-honesty
 
-honesty = {!!}
+-- Ineffectual first optimization step
+derive1 : ∀ {τ Γ} → Term Γ τ → ΔTerm Γ τ
+derive1 (map s t) with closed? s
+... | inj₁ is-closed = Δmap₁ s (derive t)
+... | inj₂ tt = derive (map s t)
+derive1 others = derive others
 
-{-
-honestMap-conclusion : ∀ {Γ}
-  (s : Term Γ (nats ⇒ nats)) (t : Term Γ bags) (vars : Vars Γ)
-  (ρ : ΔEnv Γ) (H : Honest ρ vars) → Set
+valid1 : ∀ {τ Γ} (t : Term Γ τ) {ρ : ΔEnv Γ} → derive1 t is-valid-for ρ
+valid1 (nat n) = tt
+valid1 (bag b) = tt
+valid1 (var x) = tt
+valid1 (abs t) = λ _ _ _ → unrestricted t
+valid1 (app s t) =
+  cons (unrestricted s) (unrestricted t) (validity {t = t}) tt
+valid1 (add s t) =
+  cons (unrestricted s) (unrestricted t) tt tt
+valid1 (map s t) {ρ} with closed? s
+... | inj₂ tt = cons (unrestricted s) (unrestricted t) tt tt
+... | inj₁ if-closed =
+  cons (unrestricted t) (immune {t = s} if-closed) tt tt
 
-honestMap : ∀ {Γ}
-  (s : Term Γ (nats ⇒ nats)) (t : Term Γ bags) {vars} →
-  ∀ {ρ} (H : Honest ρ vars)
-  honestMap-conclusion s t vars ρ H
+correct1 : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ} →
+  ⟦ derive t ⟧Δ ρ (unrestricted t) ≡ ⟦ derive1 t ⟧Δ ρ (valid1 t)
 
-honestMap-conclusion s t vars ρ H = 
-    ⟦ derive (map s t) ⟧Δ ρ (unrestricted (map s t))
-  ≡ ⟦ Δmap₁ s (derive' t {∅-bag} {vars}) ⟧Δ
-  --⟦ derive' (map s t) {∅-bag} {vars} ⟧Δ
-    ρ (honesty⇒validity (map s t) H {∅-bag})
---     ^^^^^^ THIS IS PROBLEMATIC
-
-honestMap s t {vars} with stable s vars | inspect (stable s) vars
-... | false | Unstable = λ {ρ} H → {!!}
-  where open ≡-Reasoning
-... | true | [ S ] rewrite S = λ {ρ} H →
-  {!!}
-  where open ≡-Reasoning
--}
+correct1 {t = nat n} = refl
+correct1 {t = bag b} = refl
+correct1 {t = var x} = refl
+correct1 {t = abs t} = refl
+correct1 {t = app s t} = refl
+correct1 {t = add s t} = refl
+correct1 {t = map s t} {ρ} with closed? s
+... | inj₂ tt = refl
+... | inj₁ if-closed = eq-map s t ρ (immune {t = s} if-closed)
 
