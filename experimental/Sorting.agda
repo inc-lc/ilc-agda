@@ -9,14 +9,17 @@ open import Function
 open import Relation.Binary
 open import Relation.Nullary
 
+-- Here I mostly follow the insertion sort developed in:
+-- http://mazzo.li/posts/AgdaSort.html
+--
+-- The main difference, apart from a few identifiers, is that I use the standard
+-- library.
+
 module Sort {c ℓ₁ ℓ₂}  {X : Set c}
                        {_≈_ : Rel X ℓ₁} {_≤_ : Rel X ℓ₂}
                        (ord : IsDecTotalOrder _≈_ _≤_)
                        where
   open IsDecTotalOrder ord
-
-  --open IsTotalOrder isTotalOrder using (total)
-  --open IsEquivalence isEquivalence using (refl)
 
   data ⊥X⊤ : Set c where
     ⟦⊥⟧ ⟦⊤⟧ : ⊥X⊤
@@ -44,12 +47,12 @@ module Sort {c ℓ₁ ℓ₂}  {X : Set c}
       x≲y : ⟦ x ⟧ ≲ ⟦ y ⟧
       -- Ambiguous
       --x≲y = [ ≤-lift , ⊥-elim ∘ y>x ] (total x y)
+      --x≲y = (λ r → [ ≤-lift , ⊥-elim ∘ y>x ] r) (total x y)
+
+      -- This is instead not ambiguous, somehow.
       x≲y with total x y 
       ... | r = [ ≤-lift , ⊥-elim ∘ y>x ] r
-{-
-      x≲y | inj₁ x≤y = ≤-lift x≤y
-      x≲y | inj₂ y≤x = ⊥-elim ∘ y>x $ y≤x
--}
+
   UList = OList ⟦⊥⟧ ⟦⊤⟧
   unil : UList
   unil = nil ⊥≲_
