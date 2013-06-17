@@ -356,6 +356,57 @@ update {τ • Γ} (cons v dv R[v,dv] ρ) = (v ⊕ dv) • update ρ
 ⟦ this   ⟧ΔVar (cons v dv R[v,dv] ρ) = dv
 ⟦ that x ⟧ΔVar (cons v dv R[v,dv] ρ) = ⟦ x ⟧ΔVar ρ
 
+-- Used to signal free variables of a term.
+-- Totally like subcontext relation _≼_ : (Γ₁ Γ₂ : Context) → Set
+data Vars : Context → Set where
+  ∅ : Vars ∅
+  alter : ∀ {τ Γ} → Vars Γ → Vars (τ • Γ)
+  abide : ∀ {τ Γ} → Vars Γ → Vars (τ • Γ)
+
+-- Declare everything in Γ to be volatile.
+select-none-in : (Γ : Context) → Vars Γ
+select-none-in ∅ = ∅
+select-none-in (τ • Γ) = alter (select-none-in Γ)
+
+select-just : ∀ {τ Γ} → Var Γ τ → Vars Γ
+select-just {Γ = τ • Γ₀} this = abide (select-none-in Γ₀)
+select-just (that x) = alter (select-just x)
+
+-- De-facto union of free variables
+FV-union : ∀ {Γ} → Vars Γ → Vars Γ → Vars Γ
+FV-union ∅ ∅ = ∅
+FV-union (alter us) (alter vs) = alter (FV-union us vs)
+FV-union (alter us) (abide vs) = abide (FV-union us vs)
+FV-union (abide us) (alter vs) = abide (FV-union us vs)
+FV-union (abide us) (abide vs) = abide (FV-union us vs)
+
+tail : ∀ {τ Γ} → Vars (τ • Γ) → Vars Γ
+tail (abide vars) = vars
+tail (alter vars) = vars
+
+-- Free variables of a term.
+-- Free variables are marked as abiding, bound variables altering.
+FV : ∀ {τ Γ} → Term Γ τ → Vars Γ
+FV {Γ = Γ} (nat n) = select-none-in Γ
+FV {Γ = Γ} (bag b) = select-none-in Γ
+FV (var x) = select-just x
+FV (abs t) = tail (FV t)
+FV (app s t) = FV-union (FV s) (FV t)
+FV (add s t) = FV-union (FV s) (FV t)
+FV (map s t) = FV-union (FV s) (FV t)
+
+-- A description of variables is honest w.r.t. a Δ-environment
+-- if every variable described as stable receives the nil change.
+data Honest : ∀ {Γ} → ΔEnv Γ → Vars Γ → Set where
+  clearly : Honest ∅ ∅
+  alter : ∀ {Γ τ} {v : ⟦ τ ⟧} {dv R[v,dv] vars ρ} →
+          Honest {Γ} ρ vars →
+          Honest {τ • Γ} (cons v dv R[v,dv] ρ) (alter vars)
+  abide : ∀ {Γ τ} {v : ⟦ τ ⟧} {dv R[v,dv] vars ρ} →
+          v ⊕ dv ≡ v →
+          Honest {Γ} ρ vars →
+          Honest {τ • Γ} (cons v dv R[v,dv] ρ) (abide vars)
+
 _is-valid-for_ : ∀ {τ Γ} → ΔTerm Γ τ → ΔEnv Γ → Set
 
 ⟦_⟧Δ : ∀ {τ Γ} →
@@ -384,7 +435,10 @@ _is-valid-for_ {σ ⇒ τ} (Δabs dt) ρ =
 Δmap₀ s ds t dt is-valid-for ρ = couple
   (ds is-valid-for ρ)
   (dt is-valid-for ρ)
-_is-valid-for_ (Δmap₁ s db) ρ = db is-valid-for ρ
+
+Δmap₁ s db is-valid-for ρ = couple
+  (db is-valid-for ρ)
+  (Honest ρ (FV s))
 
 ⟦ Δnat old new ⟧Δ ρ tt = old , new
 ⟦ Δbag db ⟧Δ ρ tt = db
@@ -412,7 +466,8 @@ _is-valid-for_ (Δmap₁ s db) ρ = db is-valid-for ρ
   in
     mapBag (f ⊕ df) (v ⊕ dv) ⊝ mapBag f v
 
-⟦ Δmap₁ s dt ⟧Δ ρ v-dt = mapBag (⟦ s ⟧ (ignore ρ)) (⟦ dt ⟧Δ ρ v-dt)
+⟦ Δmap₁ s dt ⟧Δ ρ (cons v-dt honesty _ _) =
+  mapBag (⟦ s ⟧ (ignore ρ)) (⟦ dt ⟧Δ ρ v-dt)
 
 -- Minor issue about concrete syntax
 --
