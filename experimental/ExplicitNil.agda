@@ -25,32 +25,6 @@ data Args : (τ : Type) → Set where
   alter : ∀ {τ₁ τ₂} → (args : Args τ₂) → Args (τ₁ ⇒ τ₂)
   abide : ∀ {τ₁ τ₂} → (args : Args τ₂) → Args (τ₁ ⇒ τ₂)
 
--- Totally like subcontext relation _≼_ : (Γ₁ Γ₂ : Context) → Set
-data Vars : Context → Set where
-  ∅ : Vars ∅
-  alter : ∀ {τ Γ} → Vars Γ → Vars (τ • Γ)
-  abide : ∀ {τ Γ} → Vars Γ → Vars (τ • Γ)
-
-stableVar : ∀ {τ Γ} → Var Γ τ → Vars Γ → Bool
-stableVar this (abide _) = true
-stableVar this (alter _) = false
-stableVar (that x) (abide vars) = stableVar x vars
-stableVar (that x) (alter vars) = stableVar x vars
-
--- A term is stable if all its free variables are unchanging
--- Alternative definition:
---
---     stable t vars = isNil t (derive t)
---
-stable : ∀ {τ Γ} → Term Γ τ → Vars Γ → Bool
-stable (nat n) vars = true
-stable (bag b) vars = true
-stable (var x) vars = stableVar x vars
-stable (abs t) vars = stable t (abide vars)
-stable (app f x) vars = stable f vars ∧ stable x vars
-stable (add m n) vars = stable m vars ∧ stable n vars
-stable (map f b) vars = stable f vars ∧ stable b vars
-
 expect-volatility : {τ : Type} → Args τ
 expect-volatility {τ₁ ⇒ τ₂} = alter expect-volatility
 expect-volatility {nats} = ∅-nat
@@ -85,27 +59,14 @@ derive' (app s t) {args} {vars} =
   else Δapp (derive' s {alter args} {vars})
           t (derive' t {expect-volatility} {vars})
 
-derive' (map s t) {∅-bag} {vars} =
-  if stable s vars
-  then Δmap₁ s (derive' t {∅-bag} {vars})
-  else Δmap₀ s (derive' s {abide ∅-nat} {vars})
-             t (derive' t {∅-bag} {vars})
+derive' (map s t) {∅-bag} {vars} with stable s vars
+... | true  = Δmap₁ s (derive' t {∅-bag} {vars})
+... | false = Δmap₀ s (derive' s {abide ∅-nat} {vars})
+                t (derive' t {∅-bag} {vars})
 
 -----------------------------------------------------
 -- A program equivalence preserved by optimization --
 -----------------------------------------------------
-
--- A description of variables is honest w.r.t. a Δ-environment
--- if every variable described as stable receives the nil change.
-data Honest : ∀ {Γ} → ΔEnv Γ → Vars Γ → Set where
-  clearly : Honest ∅ ∅
-  alter : ∀ {Γ τ} {v : ⟦ τ ⟧} {dv R[v,dv] vars ρ} →
-          Honest {Γ} ρ vars →
-          Honest {τ • Γ} (cons v dv R[v,dv] ρ) (alter vars)
-  abide : ∀ {Γ τ} {v : ⟦ τ ⟧} {dv R[v,dv] vars ρ} →
-          v ⊕ dv ≡ v →
-          Honest {Γ} ρ vars →
-          Honest {τ • Γ} (cons v dv R[v,dv] ρ) (abide vars)
 
 -- Two Δ-values are close enough w.r.t. a set of arguments if they
 -- behave the same when fully applied (cf. extensionality) given
@@ -223,4 +184,70 @@ stability {t = map s t} {vars} S {ρ} H =
     map f b
   ∎ where open ≡-Reasoning
 
+-----------------------------------------
+-- Correctness of optimized derivation --
+-----------------------------------------
+
+-- The result of optimized derivation is valid for every environment
+-- that does not lie about nil changes.
+
+honesty⇒validity : ∀ {τ Γ} (t : Term Γ τ) {vars ρ} →
+  Honest ρ vars →
+  ∀ {args} → derive' t {args} {vars} is-valid-for ρ
+
+-- If both the environment and the future arguments are honest
+-- about nil changes, then the optimized derivation delivers
+-- the same result as the original derivation.
+
+honesty :
+  ∀ {τ Γ} {t : Term Γ τ} {args vars} {ρ : ΔEnv Γ} {H : Honest ρ vars} →
+    ⟦ derive t ⟧Δ ρ (unrestricted t)
+  ≈ ⟦ derive' t {args} {vars} ⟧Δ ρ (honesty⇒validity t H) wrt args
+
+honesty⇒validity (nat n) H = tt
+honesty⇒validity (bag b) H = tt
+honesty⇒validity (var x) H = tt
+
+honesty⇒validity (abs t) {vars} H {alter args} = λ v dv R[v,dv] →
+  honesty⇒validity t (alter H)
+honesty⇒validity (abs t) {vars} H {abide args} = {!λ v dv R[v,dv] →
+     ??? Where to get proof that v⊕dv=v ???
+  !}
+
+honesty⇒validity (app s t) H = {!!}
+
+honesty⇒validity (add s t) H {∅-nat} =
+  cons (honesty⇒validity s H) (honesty⇒validity t H) tt tt
+
+honesty⇒validity (map s t) {vars} H {∅-bag}
+  with stable s vars
+... | true  = honesty⇒validity t H
+... | false = cons (honesty⇒validity s H) (honesty⇒validity t H) tt tt
+
+honesty = {!!}
+
+{-
+honestMap-conclusion : ∀ {Γ}
+  (s : Term Γ (nats ⇒ nats)) (t : Term Γ bags) (vars : Vars Γ)
+  (ρ : ΔEnv Γ) (H : Honest ρ vars) → Set
+
+honestMap : ∀ {Γ}
+  (s : Term Γ (nats ⇒ nats)) (t : Term Γ bags) {vars} →
+  ∀ {ρ} (H : Honest ρ vars)
+  honestMap-conclusion s t vars ρ H
+
+honestMap-conclusion s t vars ρ H = 
+    ⟦ derive (map s t) ⟧Δ ρ (unrestricted (map s t))
+  ≡ ⟦ Δmap₁ s (derive' t {∅-bag} {vars}) ⟧Δ
+  --⟦ derive' (map s t) {∅-bag} {vars} ⟧Δ
+    ρ (honesty⇒validity (map s t) H {∅-bag})
+--     ^^^^^^ THIS IS PROBLEMATIC
+
+honestMap s t {vars} with stable s vars | inspect (stable s) vars
+... | false | Unstable = λ {ρ} H → {!!}
+  where open ≡-Reasoning
+... | true | [ S ] rewrite S = λ {ρ} H →
+  {!!}
+  where open ≡-Reasoning
+-}
 
