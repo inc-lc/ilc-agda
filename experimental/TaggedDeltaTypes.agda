@@ -613,11 +613,20 @@ correctness {t = map s t} {ρ} =
 
 correctness {t = app s t} {ρ} =
   let
-    v = ⟦ t ⟧ (ignore ρ)
-    dv = ⟦ derive t ⟧Δ ρ (unrestricted t)
-  in trans
-     (sym (proj₂ (validity {t = s} {ρ} v dv (validity {t = t} {ρ}))))
-     (correctness {t = s} ⟨$⟩ correctness {t = t})
+    f = ⟦ s ⟧ (ignore ρ)
+    g = ⟦ s ⟧ (update ρ)
+    u = ⟦ t ⟧ (ignore ρ)
+    v = ⟦ t ⟧ (update ρ)
+    df = ⟦ derive s ⟧Δ ρ (unrestricted s)
+    du = ⟦ derive t ⟧Δ ρ (unrestricted t)
+  in
+    begin
+      f u ⊕ df u du (validity {t = t})
+    ≡⟨ sym (proj₂ (validity {t = s} u du (validity {t = t}))) ⟩
+      (f ⊕ df) (u ⊕ du)
+    ≡⟨ correctness {t = s} ⟨$⟩ correctness {t = t} ⟩
+      g v
+    ∎ where open ≡-Reasoning
 
 correctness {τ₁ ⇒ τ₂} {Γ} {abs t} {ρ} = extensionality (λ v →
   let
