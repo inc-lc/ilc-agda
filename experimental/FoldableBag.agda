@@ -44,6 +44,9 @@ homDeltaCorrect G f b db =
 map₁ : ∀ {A B} {oA : Ord A} {oB : Ord B} → (A → B) → Bag A → Bag B
 map₁ f = hom BagGroup (singleton ∘ f)
 
+flatMap : ∀ {A B} {oA : Ord A} {oB : Ord B} → (A → Bag B) → Bag A → Bag B
+flatMap f = hom BagGroup f
+
 -- Use instance arguments for Ord.
 
 filter : ∀ {A} {oA : Ord A} → (A → Bool) → Bag A → Bag A

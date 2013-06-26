@@ -255,7 +255,9 @@ module ParametricBag {T : Set} {{oT : Ord T}} where
   
   -- The monoid homomorphism, the base operation of the monoid comprehension calculus:
   hom : (G : AbelianGroup L.zero L.zero) → let U = AbelianGroup.Carrier G in (T → U) → Bag → U
-  hom G f = uncurry (AbelianGroup._-_ G) ∘ map2 (listFold (AbelianGroup._∙_ G) (AbelianGroup.ε G) ∘ List.map f) ∘ toList
+  hom G f = uncurry _-_ ∘ map2 (listFold _∙_ ε ∘ List.map f) ∘ toList
+    where
+      open AbelianGroup G using (_-_; _∙_; ε)
 
 open ParametricBag public renaming (Bag to Bag′)
 
