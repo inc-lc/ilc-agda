@@ -7,8 +7,11 @@ open import Data.Product using (_×_ ; _,_ ; proj₁ ; proj₂)
 open import Data.Unit using (⊤ ; tt)
 open import Data.Nat
 
+natPairVisitor : Type
+natPairVisitor = nats ⇒ nats ⇒ nats
+
 Δ-Type : Type → Type
-Δ-Type nats = (nats ⇒ nats ⇒ nats) ⇒ nats -- Church pairs
+Δ-Type nats = natPairVisitor ⇒ nats -- Church pairs
 Δ-Type bags = bags
 Δ-Type (σ ⇒ τ) = σ ⇒ Δ-Type σ ⇒ Δ-Type τ
 
@@ -35,6 +38,10 @@ fst = abs (abs (var (that this)))
 snd : ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ τ)
 snd = abs (abs (var this))
 
+oldFrom newFrom : ∀ {Γ} → Term Γ (Δ-Type nats) → Term Γ nats
+oldFrom d = app d fst
+newFrom d = app d snd
+
 difff : ∀ {τ Γ} → Term Γ τ → Term Γ τ → Term Γ (Δ-Type τ)
 apply : ∀ {τ Γ} → Term Γ (Δ-Type τ) → Term Γ τ → Term Γ τ
 
@@ -53,17 +60,24 @@ difff {σ ⇒ τ} s t = abs (abs (difff
     (apply (var this) (var (that this))))
   (app (weaken (drop _ • drop _ • Γ≼Γ) t) (var (that this)))))
 
+natPair : ∀ {Γ} → (old new : Term (natPairVisitor • Γ) nats) → Term Γ (Δ-Type nats)
+natPair old new = abs (app (app (var this) old) new)
+
 embed : ∀ {τ Γ} → ΔTerm Γ τ → Term (Δ-Context Γ) (Δ-Type τ)
-embed (Δnat old new) = abs (app (app (var this) (nat old)) (nat new))
+embed (Δnat old new) = natPair (nat old) (nat new)
 embed (Δbag db) = bag db
 embed (Δvar x) = var (deriveVar x)
 embed (Δabs dt) = abs (abs (embed dt))
 embed (Δapp ds t dt) = app (app (embed ds) (weak t)) (embed dt)
-embed (Δadd ds dt) = abs (app (app (var this)
-  (add (app (weaken (drop _ • Γ≼Γ) (embed ds)) fst)
-       (app (weaken (drop _ • Γ≼Γ) (embed dt)) fst)))
-  (add (app (weaken (drop _ • Γ≼Γ) (embed ds)) snd)
-       (app (weaken (drop _ • Γ≼Γ) (embed dt)) snd)))
+embed (Δadd ds dt) = natPair
+  (add (oldFrom (embedWeaken ds))
+       (oldFrom (embedWeaken dt)))
+  (add (newFrom (embedWeaken ds))
+       (newFrom (embedWeaken dt)))
+  where
+    embedWeaken : ∀ {Γ τ} → (d : ΔTerm Γ nats) →
+      Term (τ • Δ-Context Γ) (natPairVisitor ⇒ nats)
+    embedWeaken d = (weaken (drop _ • Γ≼Γ) (embed d))
 embed (Δmap₀ s ds t dt) = diff
   (map (apply (embed ds) (weak s)) (apply (embed dt) (weak t)))
   (weak (map s t))
