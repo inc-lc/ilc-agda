@@ -96,6 +96,36 @@ stabilityAbs {t = t} {ρ} H v with FV t | inspect FV t
 
 stability {t = nat n} H = refl
 stability {t = bag b} H = b++∅=b
+stability {t = union s t} {ρ} H =
+  let
+    a = ⟦ s ⟧ (ignore ρ)
+    b = ⟦ t ⟧ (ignore ρ)
+    da = ⟦ derive s ⟧Δ ρ (unrestricted s)
+    db = ⟦ derive t ⟧Δ ρ (unrestricted t)
+    Hs , Ht = proj-H H
+  in
+    begin
+      (a ++ b) ++ (da ++ db)
+    ≡⟨ [a++b]++[c++d]=[a++c]++[b++d] ⟩
+      (a ++ da) ++ (b ++ db)
+    ≡⟨ cong₂ _++_ (stability {t = s} Hs) (stability {t = t} Ht) ⟩
+      a ++ b
+    ∎ where open ≡-Reasoning
+stability {t = diff s t} {ρ} H =
+  let
+    a = ⟦ s ⟧ (ignore ρ)
+    b = ⟦ t ⟧ (ignore ρ)
+    da = ⟦ derive s ⟧Δ ρ (unrestricted s)
+    db = ⟦ derive t ⟧Δ ρ (unrestricted t)
+    Hs , Ht = proj-H H
+  in
+    begin
+      (a \\ b) ++ (da \\ db)
+    ≡⟨ [a\\b]++[c\\d]=[a++c]\\[b++d] ⟩
+      (a ++ da) \\ (b ++ db)
+    ≡⟨ cong₂ _\\_ (stability {t = s} Hs) (stability {t = t} Ht) ⟩
+      a \\ b
+    ∎ where open ≡-Reasoning
 stability {t = var x} H = stabilityVar H
 stability {t = abs t} {ρ} H = extensionality (stabilityAbs {t = t} H)
 stability {t = app s t} {ρ} H =
@@ -198,6 +228,8 @@ derive1 others = derive others
 valid1 : ∀ {τ Γ} (t : Term Γ τ) {ρ : ΔEnv Γ} → derive1 t is-valid-for ρ
 valid1 (nat n) = tt
 valid1 (bag b) = tt
+valid1 (union s t) = cons (unrestricted s) (unrestricted t) tt tt
+valid1 (diff s t) = cons (unrestricted s) (unrestricted t) tt tt
 valid1 (var x) = tt
 valid1 (abs t) = λ _ _ _ → unrestricted t
 valid1 (app s t) =
@@ -217,6 +249,8 @@ correct1 {t = bag b} = refl
 correct1 {t = var x} = refl
 correct1 {t = abs t} = refl
 correct1 {t = app s t} = refl
+correct1 {t = union s t} = refl
+correct1 {t = diff s t} = refl
 correct1 {t = add s t} = refl
 correct1 {t = map s t} {ρ} with closed? s
 ... | inj₂ tt = refl
@@ -227,6 +261,8 @@ derive2 : ∀ {τ Γ} → Term Γ τ → ΔTerm Γ τ
 derive2 (abs t) = Δabs (derive2 t)
 derive2 (app s t) = Δapp (derive2 s) t (derive2 t)
 derive2 (add s t) = Δadd (derive2 s) (derive2 t)
+derive2 (union s t) = Δunion (derive2 s) (derive2 t)
+derive2 (diff s t) = Δdiff (derive2 s) (derive2 t)
 derive2 (map s t) with closed? s
 ... | inj₁ is-closed = Δmap₁ s (derive2 t)
 ... | inj₂ tt = Δmap₀ s (derive2 s) t (derive2 t)
@@ -245,6 +281,8 @@ valid2 (app s t) {ρ} = cons (valid2 s) (valid2 t) V tt
   V : valid (⟦ t ⟧ (ignore ρ)) (⟦ derive2 t ⟧Δ ρ (valid2 t))
   V rewrite correct2 {t = t} {ρ} = validity {t = t} {ρ}
 valid2 (add s t) = cons (valid2 s) (valid2 t) tt tt
+valid2 (union s t) = cons (valid2 s) (valid2 t) tt tt
+valid2 (diff s t) = cons (valid2 s) (valid2 t) tt tt
 valid2 (map s t) {ρ} with closed? s
 ... | inj₂ tt = cons (valid2 s) (valid2 t) tt tt
 ... | inj₁ if-closed =
@@ -282,8 +320,12 @@ correct2 {t = add s t} {ρ} =
     ct = correct2 {t = t} {ρ}
   in cong₂ _,_ (cong₂ _+_ (cong proj₁ cs) (cong proj₁ ct))
                (cong₂ _+_ (cong proj₂ cs) (cong proj₂ ct))
+correct2 {t = union s t} {ρ} =
+  cong₂ _++_ (correct2 {t = s} {ρ}) (correct2 {t = t} {ρ})
+correct2 {t = diff s t} {ρ} =
+  cong₂ _\\_ (correct2 {t = s} {ρ}) (correct2 {t = t} {ρ})
 correct2 {t = map s t} {ρ} with closed? s
-... | inj₂ tt = 
+... | inj₂ tt =
   let
     f = ⟦ s ⟧ (ignore ρ)
     b = ⟦ t ⟧ (ignore ρ)
