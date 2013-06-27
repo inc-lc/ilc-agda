@@ -17,6 +17,30 @@ open import Data.List as List using (List)
 
 open import Data.Product
 
+-- Note that hom is what I call foldGroup elsewhere!
+
+-- This is the mathematical definition of group homomorphism. This is mostly
+-- annoying to prove because one can't write the blackboard definition directly
+-- (since bags are not freely generated).
+homIsAnHom : ∀ {T} {{oT : Ord T}} G f (b₁ b₂ : Bag T) → let open AbelianGroup G in
+  hom G f (union b₁ b₂) ≡ hom G f b₁ ∙ hom G f b₂
+homIsAnHom {{oT}} G f (b⁺₁ , b⁻₁) (b⁺₂ , b⁻₂) =
+  begin
+    hom G f (union (b⁺₁ , b⁻₁) (b⁺₂ , b⁻₂))
+  ≡⟨⟩
+    hom G f (uunion b⁺₁ b⁺₂ , uunion b⁻₁ b⁻₂)
+  -- TODO: Lots of straightforward group manipulation
+  ≡⟨ {!!} ⟩
+     hom G f (b⁺₁ , b⁻₁) ∙ hom G f (b⁺₂ , b⁻₂)
+  ∎
+   where
+     open AbelianGroup G
+     open ≡-Reasoning
+     open import Data.List.Properties
+     open import Sorting
+
+     open Sort ord hiding (insert; toList)
+
 -- Simplest possible definition of the derivative of hom (in the semantic domain).
 
 homDelta : ∀ {T} {{oT : Ord T}} → (G : AbelianGroup L.zero L.zero) → let U = AbelianGroup.Carrier G in (T → U) → Bag T → ΔBag T → U
@@ -29,7 +53,7 @@ homDeltaCorrect : ∀ G f b db → let open AbelianGroup G in
 homDeltaCorrect G f b db =
   begin
     hom G f (union b db)
-  ≡⟨ {!!} ⟩
+  ≡⟨  homIsAnHom G f b db  ⟩
     hom G f b ∙ hom G f db
   ≡⟨⟩
     hom G f b ∙ homDelta G f b db
@@ -43,6 +67,9 @@ homDeltaCorrect G f b db =
 
 map₁ : ∀ {A B} {oA : Ord A} {oB : Ord B} → (A → B) → Bag A → Bag B
 map₁ f = hom BagGroup (singleton ∘ f)
+
+flatMap : ∀ {A B} {oA : Ord A} {oB : Ord B} → (A → Bag B) → Bag A → Bag B
+flatMap f = hom BagGroup f
 
 -- Use instance arguments for Ord.
 
