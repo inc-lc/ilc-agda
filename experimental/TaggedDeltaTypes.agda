@@ -36,6 +36,12 @@ postulate b++∅=b : ∀ {b : Bag} → b ++ emptyBag ≡ b
 postulate b++[d\\b]=d : ∀ {b d} → b ++ (d \\ b) ≡ d
 postulate [b++d]\\b=d : ∀ {b d} → (b ++ d) \\ b ≡ d
 postulate
+  [a++b]++[c++d]=[a++c]++[b++d] : ∀ {a b c d} →
+    (a ++ b) ++ (c ++ d) ≡ (a ++ c) ++ (b ++ d)
+postulate
+  [a\\b]++[c\\d]=[a++c]\\[b++d] : ∀ {a b c d} →
+    (a \\ b) ++ (c \\ d) ≡ (a ++ c) \\ (b ++ d)
+postulate
   map-over-++ : ∀ {f b d} →
     mapBag f (b ++ d) ≡ mapBag f b ++ mapBag f d
 
@@ -82,18 +88,21 @@ data Var : Context → Type → Set where
   this : ∀ {τ Γ} → Var (τ • Γ) τ
   that : ∀ {σ τ Γ} → (x : Var Γ σ) → Var (τ • Γ) σ
 
-data Term : Context -> Type -> Set where
+data Term (Γ : Context) : Type -> Set where
 
-  nat : ∀ {Γ} → (n : ℕ) → Term Γ nats
-  bag : ∀ {Γ} → (b : Bag) → Term Γ bags
+  nat : (n : ℕ) → Term Γ nats
+  bag : (b : Bag) → Term Γ bags
 
-  var : ∀ {τ Γ} → (x : Var Γ τ) → Term Γ τ
-  abs : ∀ {σ τ Γ} → (t : Term (σ • Γ) τ) → Term Γ (σ ⇒ τ)
-  app : ∀ {σ τ Γ} → (s : Term Γ (σ ⇒ τ)) (t : Term Γ σ) → Term Γ τ
+  var : ∀ {τ} → (x : Var Γ τ) → Term Γ τ
+  abs : ∀ {σ τ} → (t : Term (σ • Γ) τ) → Term Γ (σ ⇒ τ)
+  app : ∀ {σ τ} → (s : Term Γ (σ ⇒ τ)) (t : Term Γ σ) → Term Γ τ
 
-  add : ∀ {Γ} → (s : Term Γ nats) → (t : Term Γ nats) → Term Γ nats
-  map : ∀ {Γ} → (f : Term Γ (nats ⇒ nats)) → (b : Term Γ bags) →
+  add : (s : Term Γ nats) → (t : Term Γ nats) → Term Γ nats
+  map : (f : Term Γ (nats ⇒ nats)) → (b : Term Γ bags) →
     Term Γ bags
+
+  union : (s : Term Γ bags) → (t : Term Γ bags) → Term Γ bags
+  diff : (s : Term Γ bags) → (t : Term Γ bags) → Term Γ bags
 
 infix 8 _≼_
 
@@ -120,6 +129,8 @@ weaken subctx (nat x) = nat x
 weaken subctx (bag b) = bag b
 weaken subctx (add t₁ t₂) = add (weaken subctx t₁) (weaken subctx t₂)
 weaken subctx (map f b) = map (weaken subctx f) (weaken subctx b)
+weaken subctx (union s t) = union (weaken subctx s) (weaken subctx t)
+weaken subctx (diff s t) = diff (weaken subctx s) (weaken subctx t)
 
 ---------------------------
 -- Semantics of programs --
@@ -195,6 +206,8 @@ weakenVar-sound (drop τ • subctx) (that x) (v • ρ) =
 ⟦ bag b ⟧Term ρ = b
 ⟦ add m n ⟧Term ρ = ⟦ m ⟧Term ρ + ⟦ n ⟧Term ρ
 ⟦ map f b ⟧Term ρ = mapBag (⟦ f ⟧Term ρ) (⟦ b ⟧Term ρ)
+⟦ union s t ⟧Term ρ = ⟦ s ⟧Term ρ ++ ⟦ t ⟧Term ρ
+⟦ diff s t ⟧Term ρ = ⟦ s ⟧Term ρ \\ ⟦ t ⟧Term ρ
 
 meaningOfTerm : ∀ {Γ τ} → Meaning (Term Γ τ)
 meaningOfTerm = meaning ⟦_⟧Term
@@ -217,6 +230,10 @@ weaken-sound (bag b) ρ = refl
 weaken-sound (add m n) ρ = cong₂ _+_ (weaken-sound m ρ) (weaken-sound n ρ)
 weaken-sound (map f b) ρ =
   cong₂ mapBag (weaken-sound f ρ) (weaken-sound b ρ)
+weaken-sound (union s t) ρ =
+  cong₂ _++_ (weaken-sound s ρ) (weaken-sound t ρ)
+weaken-sound (diff s t) ρ =
+  cong₂ _\\_ (weaken-sound s ρ) (weaken-sound t ρ)
 
 -----------------------
 -- Syntax of changes --
@@ -232,24 +249,24 @@ weaken-sound (map f b) ρ =
 -- program transformation and its correctness, which drives
 -- the type checker to thrashing.
 
-data ΔTerm : Context → Type → Set where
+data ΔTerm (Γ : Context) : Type → Set where
   -- changes to numbers are replacement pairs
-  Δnat : ∀ {Γ} → (old : ℕ) → (new : ℕ) → ΔTerm Γ nats
+  Δnat : (old : ℕ) → (new : ℕ) → ΔTerm Γ nats
   -- changes to bags are bags
-  Δbag : ∀ {Γ} → (db : Bag) → ΔTerm Γ bags
+  Δbag : (db : Bag) → ΔTerm Γ bags
   -- changes to variables are variables
-  Δvar : ∀ {τ Γ} → (x : Var Γ τ) → ΔTerm Γ τ
+  Δvar : ∀ {τ} → (x : Var Γ τ) → ΔTerm Γ τ
   -- changes to abstractions are binders of x and dx
-  Δabs : ∀ {τ₁ τ₂ Γ} → (dt : ΔTerm (τ₁ • Γ) τ₂) →
+  Δabs : ∀ {τ₁ τ₂} → (dt : ΔTerm (τ₁ • Γ) τ₂) →
          ΔTerm Γ (τ₁ ⇒ τ₂)
   -- changes to applications are applications of a value and a change
-  Δapp : ∀ {σ τ Γ}
+  Δapp : ∀ {σ τ}
     (ds : ΔTerm Γ (σ ⇒ τ))
     ( t :  Term Γ σ)
     (dt : ΔTerm Γ σ) →
     ΔTerm Γ τ
   -- changes to addition are changes to their components
-  Δadd : ∀ {Γ}
+  Δadd :
     (ds : ΔTerm Γ nats)
     (dt : ΔTerm Γ nats) →
     ΔTerm Γ nats
@@ -257,16 +274,18 @@ data ΔTerm : Context → Type → Set where
   -- 0. recomputation,
   -- 1. mapping over changes,
   -- the latter used only with some form of isNil available.
-  Δmap₀ : ∀ {Γ}
+  Δmap₀ :
     ( s :   Term Γ (nats ⇒ nats))
     (ds : ΔTerm Γ (nats ⇒ nats))
     ( t :   Term Γ bags)
     (dt : ΔTerm Γ bags) →
     ΔTerm Γ bags
-  Δmap₁ : ∀ {Γ}
+  Δmap₁ :
     ( s :   Term Γ (nats ⇒ nats))
     (dt : ΔTerm Γ bags) →
     ΔTerm Γ bags
+  Δunion : (ds : ΔTerm Γ bags) → (dt : ΔTerm Γ bags) → ΔTerm Γ bags
+  Δdiff : (ds : ΔTerm Γ bags) → (dt : ΔTerm Γ bags) → ΔTerm Γ bags
 
 ---------------------------------
 -- Semantic domains of changes --
@@ -402,6 +421,8 @@ FV (abs t) = tail (FV t)
 FV (app s t) = FV-union (FV s) (FV t)
 FV (add s t) = FV-union (FV s) (FV t)
 FV (map s t) = FV-union (FV s) (FV t)
+FV (union s t) = FV-union (FV s) (FV t)
+FV (diff s t) = FV-union (FV s) (FV t)
 
 -- A description of variables is honest w.r.t. a Δ-environment
 -- if every variable described as stable receives the nil change.
@@ -448,6 +469,15 @@ _is-valid-for_ {σ ⇒ τ} (Δabs dt) ρ =
   (db is-valid-for ρ)
   (Honest ρ (FV s))
 
+Δdiff ds dt is-valid-for ρ = couple
+  (ds is-valid-for ρ)
+  (dt is-valid-for ρ)
+
+Δunion ds dt is-valid-for ρ = couple
+  (ds is-valid-for ρ)
+  (dt is-valid-for ρ)
+
+
 ⟦ Δnat old new ⟧Δ ρ tt = old , new
 ⟦ Δbag db ⟧Δ ρ tt = db
 ⟦ Δvar x ⟧Δ ρ tt = ⟦ x ⟧ΔVar ρ
@@ -464,6 +494,11 @@ _is-valid-for_ {σ ⇒ τ} (Δabs dt) ρ =
     (old-t , new-t) = ⟦ dt ⟧Δ ρ v-dt
   in
     (old-s + old-t , new-s + new-t)
+
+⟦ Δunion ds dt ⟧Δ ρ (cons v-ds v-dt _ _) =
+  ⟦ ds ⟧Δ ρ v-ds ++ ⟦ dt ⟧Δ ρ v-dt
+⟦ Δdiff ds dt ⟧Δ ρ (cons v-ds v-dt _ _) =
+  ⟦ ds ⟧Δ ρ v-ds \\ ⟦ dt ⟧Δ ρ v-dt
 
 ⟦ Δmap₀ s ds t dt ⟧Δ ρ (cons v-ds v-dt _ _) =
   let
@@ -507,6 +542,8 @@ derive (abs t) = Δabs (derive t)
 derive (app s t) = Δapp (derive s) t (derive t)
 derive (add s t) = Δadd (derive s) (derive t)
 derive (map f b) = Δmap₀ f (derive f) b (derive b)
+derive (union s t) = Δunion (derive s) (derive t)
+derive (diff s t) = Δdiff (derive s) (derive t)
 
 -----------------
 -- Correctness --
@@ -547,6 +584,12 @@ unrestricted (app s t) {ρ} = cons
 unrestricted (add s t) {ρ} = cons
   (unrestricted (s))
   (unrestricted (t)) tt tt
+unrestricted (union s t) {ρ} = cons
+  (unrestricted (s))
+  (unrestricted (t)) tt tt
+unrestricted (diff s t) {ρ} = cons
+  (unrestricted (s))
+  (unrestricted (t)) tt tt
 unrestricted (map s t) {ρ} = cons
   (unrestricted (s))
   (unrestricted (t)) tt tt
@@ -561,6 +604,8 @@ validity {t = nat n} = refl
 validity {t = bag b} = tt
 validity {t = var x} = validity-var x
 validity {t = map f b} = tt
+validity {t = union s t} = tt
+validity {t = diff s t} = tt
 validity {t = add s t} = cong₂ _+_ (validity {t = s}) (validity {t = t})
 
 validity {t = app s t} {ρ} =
@@ -601,6 +646,40 @@ correctness {t = var x} = correctVar {x = x}
 
 correctness {t = add s t} =
   cong₂ _+_ (correctness {t = s}) (correctness {t = t})
+
+correctness {t = union s t} {ρ} = 
+  let
+    a = ⟦ s ⟧ (ignore ρ)
+    b = ⟦ t ⟧ (ignore ρ)
+    a′ = ⟦ s ⟧ (update ρ)
+    b′ = ⟦ t ⟧ (update ρ)
+    da = ⟦ derive s ⟧Δ ρ (unrestricted s)
+    db = ⟦ derive t ⟧Δ ρ (unrestricted t)
+  in
+    begin
+      (a ++ b) ++ (da ++ db)
+    ≡⟨ [a++b]++[c++d]=[a++c]++[b++d] ⟩
+      (a ++ da) ++ (b ++ db)
+    ≡⟨ cong₂ _++_ (correctness {t = s}) (correctness {t = t}) ⟩
+      a′ ++ b′
+    ∎ where open ≡-Reasoning
+
+correctness {t = diff s t} {ρ} =
+  let
+    a = ⟦ s ⟧ (ignore ρ)
+    b = ⟦ t ⟧ (ignore ρ)
+    a′ = ⟦ s ⟧ (update ρ)
+    b′ = ⟦ t ⟧ (update ρ)
+    da = ⟦ derive s ⟧Δ ρ (unrestricted s)
+    db = ⟦ derive t ⟧Δ ρ (unrestricted t)
+  in
+    begin
+      (a \\ b) ++ (da \\ db)
+    ≡⟨ [a\\b]++[c\\d]=[a++c]\\[b++d] ⟩
+      (a ++ da) \\ (b ++ db)
+    ≡⟨ cong₂ _\\_ (correctness {t = s}) (correctness {t = t}) ⟩
+      a′ \\ b′
+    ∎ where open ≡-Reasoning
 
 correctness {t = map s t} {ρ} =
   trans (b++[d\\b]=d {mapBag f b} {mapBag (f ⊕ df) (b ⊕ db)})
