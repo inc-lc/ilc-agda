@@ -75,7 +75,7 @@ module ParametricBag {T : Set} {{oT : Ord T}} where
     count v (b⁺ , b⁻) = ucount v b⁺ - ucount v b⁻
       where
         ucount : T → UList → ℤ
-        ucount v b = + (length (filter (λ x → ⌊ _≟_ x v ⌋) (uToList b)))
+        ucount v b = + (length (filter (λ x → ⌊ x ≟ v ⌋) (uToList b)))
 
     fromList : List T → Bag
     fromList = < isort′ , const unil >
