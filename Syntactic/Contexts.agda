@@ -122,6 +122,10 @@ module Subcontexts where
 
   -- Properties
 
+  ∅≼Γ : ∀ {Γ} → ∅ ≼ Γ
+  ∅≼Γ {∅} = ∅
+  ∅≼Γ {τ • Γ} = drop τ • ∅≼Γ
+
   ≼-refl : Reflexive _≼_
   ≼-refl {∅} = ∅
   ≼-refl {τ • Γ} = keep τ • ≼-refl
