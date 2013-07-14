@@ -46,8 +46,9 @@ weaken Δ′ (let-box_in-_ {τ₁} t t₁) =
   let-box weaken Δ′ t in-
           weaken (keep τ₁ • Δ′) t₁
 
-
 open import Relation.Binary.PropositionalEquality
+
+-- These two lemmas could be merged.
 
 weaken-≼ : ∀ {Γ₁ Γ₂ Γ₃ Δ τ} → Term (Γ₁ ⋎ Γ₃) Δ τ → Term (Γ₁ ⋎ Γ₂ ⋎ Γ₃) Δ τ
 weaken-≼ {Γ₁} {Γ₂} {Γ₃} (abs {τ₁} t) =  abs (weaken-≼ {τ₁ • Γ₁} {Γ₂} t)
@@ -57,16 +58,14 @@ weaken-≼ (mvar u) = mvar u
 weaken-≼ (box t) = box t
 weaken-≼ {Γ₁} {Γ₂} (let-box t in- t₁) = let-box weaken-≼ {Γ₁} {Γ₂} t in- weaken-≼ {Γ₁} {Γ₂} t₁
 
-{-
-weaken-Δ-1 : ∀ {Γ Δ τ τ′} → Term Γ Δ τ → Term Γ (τ′ • Δ) τ
-weaken-Δ-1 (abs t) = abs (weaken-Δ-1 t)
-weaken-Δ-1 (app t t₁) = app (weaken-Δ-1 t) (weaken-Δ-1 t₁)
-weaken-Δ-1 (ovar x) = ovar x
-weaken-Δ-1 (mvar u) = mvar (that u)
-weaken-Δ-1 (box t) = box (weaken-Δ-1 t)
--- This is not enough...
-weaken-Δ-1 (let-box t in- t₁) = let-box weaken-Δ-1 t in- {!weaken-Δ-1 t₁!}
--}
+
+weaken-≼-Δ : ∀ {Δ₁ Δ₂ Δ₃ Γ τ} → Term Γ (Δ₁ ⋎ Δ₃) τ → Term Γ (Δ₁ ⋎ Δ₂ ⋎ Δ₃) τ
+weaken-≼-Δ {Δ₁} {Δ₂} (abs t) = abs (weaken-≼-Δ {Δ₁} {Δ₂} t)
+weaken-≼-Δ {Δ₁} {Δ₂} (app t t₁) = app (weaken-≼-Δ {Δ₁} {Δ₂} t) (weaken-≼-Δ {Δ₁} {Δ₂} t₁)
+weaken-≼-Δ (ovar x) = ovar x
+weaken-≼-Δ {Δ₁} {Δ₂} (mvar u) = mvar (Prefixes.lift {Δ₁} {Δ₂} u)
+weaken-≼-Δ {Δ₁} {Δ₂} (box t) = box (weaken-≼-Δ {Δ₁} {Δ₂} t)
+weaken-≼-Δ {Δ₁} {Δ₂} (let-box t in- t₁) = let-box weaken-≼-Δ {Δ₁} {Δ₂} t in- weaken-≼-Δ {_ • Δ₁} {Δ₂} t₁ 
 
 substVar : ∀ {Γ Γ′ Δ τ₁ τ₂} → (t : Term Γ′ Δ τ₁) → (v : Var (Γ ⋎ (τ₁ • Γ′)) τ₂) → Term (Γ ⋎ Γ′) Δ τ₂
 substVar {∅} t  this = t
@@ -83,6 +82,5 @@ substTerm t₁ (box t₂) = box t₂
 substTerm {Γ} {Γ′} t₁ (let-box_in-_ {τ₃} t₂ t₃) =
   let-box substTerm {Γ} {Γ′} t₁ t₂ in-
     substTerm {Γ} {Γ′}
-      --(weaken-Δ-1 t₁)
-      (weaken (drop τ₃ • ≼-refl) t₁)
+      (weaken-≼-Δ {∅} {τ₃ • ∅} t₁)
       t₃
