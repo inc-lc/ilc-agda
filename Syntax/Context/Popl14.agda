@@ -8,7 +8,7 @@ module Syntax.Context.Popl14 where
 -- This ΔContext may not make sense for other systems.
 
 open import Syntax.Type.Popl14 public
-import Syntax.Context Type as Ctx
+open import Syntax.Context Type as Ctx
 open Ctx public hiding (lift)
 
 ΔContext : Context → Context
@@ -28,4 +28,3 @@ open Ctx public hiding (lift)
 
 weakenVar : ∀ {Γ₁ Γ₂ τ} → Γ₁ ≼ Γ₂ → Var Γ₁ τ → Var Γ₂ τ
 weakenVar = Ctx.lift
-

@@ -1,19 +1,24 @@
 module Denotation.FreeVars.Popl14 where
 
-open import Denotation.Specification.Popl14 public
-
-open import Relation.Binary.PropositionalEquality
-open import Data.Product
-open import Data.Integer
-open import Syntax.FreeVars.Popl14
-open import Theorem.Groups-Popl14
-open import Theorem.CongApp
-open import Postulate.Extensionality
-
 -- Semantic significance of free variables in Calculus Popl14:
 -- If all free variables of a term is irrelevant in a ΔEnv,
 -- then the denotation of that term does not change.
 -- In particular, closed terms cannot change.
+
+open import Denotation.Specification.Canon-Popl14 public
+
+open import Relation.Binary.PropositionalEquality
+open import Data.Product
+open import Data.Integer
+open import Syntax.FreeVars.Popl14 using (FV)
+open import Theorem.Groups-Popl14
+open import Theorem.CongApp
+open import Postulate.Extensionality
+
+-- Closed terms are unaffected by environments
+unaffected : ∀ {τ Γ} {t : Term Γ τ} →
+  FV t ≡ none → ∀ {ρ} → irrelevant (FV t) ρ
+unaffected {t = t} eq {ρ} rewrite eq = irrelevance {ρ = ρ}
 
 -- A variable's designated value does not change if it
 -- is irrelevant in an environment.
@@ -122,4 +127,3 @@ stability {t = app s t} {ρ} I =
       f v
     ∎ where open ≡-Reasoning
 stability {t = abs t} I = ext (stabilityAbs {t = t} I)
-

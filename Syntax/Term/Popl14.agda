@@ -5,6 +5,8 @@ module Syntax.Term.Popl14 where
 -- Contents
 -- - Term constructors
 -- - Weakening on terms
+-- - `fit`: weaken a term to its ΔContext
+-- - diff-term, apply-term and their syntactic sugars
 
 open import Syntax.Context.Popl14 public
 open import Data.Integer
@@ -42,3 +44,57 @@ weaken Γ₁≼Γ₂ (sum t) = sum (weaken Γ₁≼Γ₂ t)
 weaken Γ₁≼Γ₂ (var x) = var (weakenVar Γ₁≼Γ₂ x)
 weaken Γ₁≼Γ₂ (app s t) = app (weaken Γ₁≼Γ₂ s) (weaken Γ₁≼Γ₂ t)
 weaken Γ₁≼Γ₂ (abs {τ} t) = abs (weaken (keep τ • Γ₁≼Γ₂) t)
+
+fit : ∀ {τ Γ} → Term Γ τ → Term (ΔContext Γ) τ
+fit = weaken Γ≼ΔΓ
+
+diff-term  : ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ ΔType τ)
+apply-term : ∀ {τ Γ} → Term Γ (ΔType τ ⇒ τ ⇒ τ)
+
+apply-term {int} =
+  let Δx = var (that this)
+      x  = var this
+  in abs (abs (add x Δx))
+apply-term {bag} =
+  let Δx = var (that this)
+      x  = var this
+  in abs (abs (union x Δx))
+apply-term {σ ⇒ τ} =
+  let
+    Δf = var (that (that this))
+    f  = var (that this)
+    x  = var this
+  in
+  -- Δf   f    x
+    abs (abs (abs
+      (app (app apply-term
+        (app (app Δf x) (app (app diff-term x) x)))
+        (app f x))))
+
+diff-term {int} =
+  let x = var (that this)
+      y = var this
+  in abs (abs (add x (minus y)))
+diff-term {bag} =
+  let x = var (that this)
+      y = var this
+  in abs (abs (union x (negate y)))
+diff-term {σ ⇒ τ} =
+  let
+    g  = var (that (that (that this)))
+    f  = var (that (that this))
+    x  = var (that this)
+    Δx = var this
+  in
+  -- g    f    x    Δx
+    abs (abs (abs (abs
+      (app (app diff-term
+        (app g (app (app apply-term Δx) x)))
+        (app f x)))))
+
+-- Sugars for diff-term and apply-term
+infixl 6 _⊕_ _⊝_
+_⊕_ : ∀ {τ Γ} → Term Γ τ → Term Γ (ΔType τ) → Term Γ τ
+_⊝_ : ∀ {τ Γ} → Term Γ τ → Term Γ τ → Term Γ (ΔType τ)
+t ⊕ Δt = app (app apply-term Δt) t
+s ⊝ t  = app (app  diff-term  s) t
