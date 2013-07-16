@@ -1,4 +1,4 @@
-module Syntactic.Contexts
+module Syntactic.Context
     (Type : Set)
   where
 

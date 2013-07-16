@@ -21,7 +21,7 @@ module Parametric (Base : Set) where
     _⇒_ : (τ₁ τ₂ : Type) → Type
     base : (b : Base) → Type
 
-  open import Syntactic.Contexts Type public
+  open import Syntactic.Context Type public
 
   -- DOMAIN CONSTRUCTION
   --
@@ -50,7 +50,7 @@ module Parametric (Base : Set) where
     liftType {base b} w₁≤w₂ w₁⊩b = liftBase w₁≤w₂ w₁⊩b
 
     module _ (w : World) where
-      open import Denotational.Environments Type (λ τ → w ⊩⟦ τ ⟧Type) public
+      open import Denotational.Environment Type (λ τ → w ⊩⟦ τ ⟧Type) public
         renaming (⟦_⟧Context to _⊩⟦_⟧Context; ⟦_⟧Var to _⊩⟦_⟧Var)
 
     liftContext : Lift {Context} _⊩⟦_⟧Context

@@ -15,7 +15,7 @@ data Type : Set where
   □_ : Type → Type
 
 -- Reuse contexts, variables and weakening from Tillmann's library.
-open import Syntactic.Contexts Type
+open import Syntactic.Context Type
 
 -- No semantics for these types.
 
