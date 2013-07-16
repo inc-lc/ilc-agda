@@ -3,7 +3,7 @@ module ModalLogic where
 -- Implement Frank Pfenning's lambda calculus based on modal logic S4, as
 -- described in "A Modal Analysis of Staged Computation".
 
-open import Denotational.Notation
+open import Denotation.Notation
 
 data BaseType : Set where
   Base : BaseType
@@ -15,7 +15,7 @@ data Type : Set where
   □_ : Type → Type
 
 -- Reuse contexts, variables and weakening from Tillmann's library.
-open import Syntactic.Context Type
+open import Syntax.Context Type
 
 -- No semantics for these types.
 

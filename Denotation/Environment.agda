@@ -1,4 +1,4 @@
-module Denotational.Environment
+module Denotation.Environment
     (Type : Set)
     {ℓ}
     (⟦_⟧Type : Type → Set ℓ)
@@ -16,8 +16,8 @@ module Denotational.Environment
 
 open import Relation.Binary.PropositionalEquality
 
-open import Syntactic.Context Type
-open import Denotational.Notation
+open import Syntax.Context Type
+open import Denotation.Notation
 
 private
   meaningOfType : Meaning Type

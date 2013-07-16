@@ -1,4 +1,4 @@
-module Denotational.ExtensionalityPostulate where
+module Denotation.ExtensionalityPostulate where
 
 -- POSTULATE EXTENSIONALITY
 
