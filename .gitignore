@@ -1,3 +1,4 @@
 *.agdai
 *.agda#
 *.agda~
+agdaCheck.sh.conf
