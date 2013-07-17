@@ -10,20 +10,26 @@ module Syntax.Language.Calculus where
 
 open import Syntax.Type.Plotkin public
 open import Syntax.Term.Plotkin public
-open import Syntax.Language.Base public
-open import Syntax.Language.Typing public
-
-Δprimitive : ∀ {L} → Typing L → Set
-Δprimitive {L} T = ∀ {Γ} → (c : Base.const L) →
-  Term {T = T} Γ (Δtype T (type-of T c))
+open import Syntax.Context.Plotkin public
 
 record Calculus : Set₁ where
   constructor
     calculus-with
   field
-    L : Base
-    T : Typing L
-    Δ : Δprimitive T
+    basetype : Set
+    constant : Set
+    type-of : constant → Type basetype
+    Δtype : Type basetype → Type basetype
+    Δconst : ∀ {Γ} → (c : constant) →
+      Term {basetype} {constant} {type-of} Γ (Δtype (type-of c))
 
--- assemble-calculus : lorem ipsum → Calculus
+open Calculus public
 
+type : Calculus → Set
+type L = Type (basetype L)
+
+context : Calculus → Set
+context L = Context {type L}
+
+term : (L : Calculus) → context L → type L → Set
+term L = Term {basetype L} {constant L} {type-of L}

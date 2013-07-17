@@ -20,12 +20,6 @@ data Atlas-type : Set where
 data Atlas-const : Set where
   xor : Atlas-const
 
-Atlas-Base : Base
-Atlas-Base = record
-  { type  = Atlas-type
-  ; const = Atlas-const
-  }
-
 Atlas-lookup : Atlas-const → Type Atlas-type
 Atlas-lookup xor = base Bool ⇒ base Bool ⇒ base Bool
 
@@ -35,10 +29,21 @@ Atlas-Δtype Bool = Bool
 -- change to a map is change to all
 Atlas-Δtype (Map key val) = (Map key (Atlas-Δtype val))
 
-Atlas-Typing : Typing Atlas-Base
-Atlas-Typing = record
-  { lookup = Atlas-lookup
-  ; Δtype  = lift-Δbase Atlas-Δtype
-  }
+-- Type signature of Atlas-Δconst is boilerplate.
+Atlas-Δconst : ∀ {Γ} → (c : Atlas-const) →
+      Term {Atlas-type} {Atlas-const} {Atlas-lookup}
+      Γ (lift₀ Atlas-Δtype (Atlas-lookup c))
 
--- Atlas-Δprim : Δprimitive
+-- Δxor = λ x Δx y Δy → Δx xor Δy
+Atlas-Δconst xor =
+  let
+    Δx = var (that (that this))
+    Δy = var this
+  in abs (abs (abs (abs (app (app (const xor) Δx) Δy))))
+
+Atlas = calculus-with
+  Atlas-type
+  Atlas-const
+  Atlas-lookup
+  (lift₀ Atlas-Δtype)
+  Atlas-Δconst
