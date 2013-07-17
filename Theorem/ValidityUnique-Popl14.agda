@@ -8,8 +8,8 @@ open import Property.Uniqueness public
 open import Relation.Binary.PropositionalEquality
 open import Denotation.Evaluation.Popl14
 open import Denotation.Change.Popl14
-open import Theorem.EqualityReflection
 open import Theorem.ProductUnique
+open import Theorem.EqualityUnique
 open import Postulate.Extensionality
 
 -- Validity proofs are (extensionally) unique (as functions)
