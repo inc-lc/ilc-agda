@@ -1,6 +1,6 @@
 module Syntax.Context.Plotkin where
 
--- Context for Plotkin-stype language descriptions
+-- Context for Plotkin-style language descriptions
 --
 -- This module will tend to duplicate Syntax.Context to a large
 -- extent. Consider having Syntax.Context specialize future

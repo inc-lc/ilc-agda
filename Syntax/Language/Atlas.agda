@@ -26,7 +26,7 @@ Atlas-lookup xor = base Bool ⇒ base Bool ⇒ base Bool
 Atlas-Δtype : Atlas-type → Atlas-type
 -- change to a boolean is a xor-rand
 Atlas-Δtype Bool = Bool
--- change to a map is change to all
+-- change to a map is change to its values
 Atlas-Δtype (Map key val) = (Map key (Atlas-Δtype val))
 
 -- Type signature of Atlas-Δconst is boilerplate.
