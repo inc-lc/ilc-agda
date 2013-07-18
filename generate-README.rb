@@ -43,6 +43,14 @@ Denotation.Implementation.Popl14:
   The idea of implementing a denotational specification for Calc. Popl14
 Syntax.Language.Atlas:
   Language definition of Calc. Atlas
+Syntax.Term.Plotkin: |
+  Terms of a calculus described in Plotkin style
+  - types are parametric in base types
+  - terms are parametric in constants
+  This style of language description is employed in:
+  G. D. Plotkin. "LCF considered as a programming language."
+  Theoretical Computer Science 5(3) pp. 223--255, 1997.
+  http://dx.doi.org/10.1016/0304-3975(77)90044-5
 }).to_ruby
 
 agda_base_dir = File.dirname(File.expand_path(__FILE__))
@@ -58,7 +66,7 @@ agda_modules = agda_files.lines.map{ |line|
 }
 
 def comment(readme, doc)
-  readme.puts("-- #{doc}")
+  readme.puts("{- #{doc} -}")
 end
 
 def import(readme, mod)
