@@ -2,8 +2,9 @@ module Syntax.Context.Plotkin where
 
 -- Context for Plotkin-stype language descriptions
 --
--- Duplicates Syntax.Context to a large extent.
--- Consider having Syntax.Context import this module.
+-- This module will tend to duplicate Syntax.Context to a large
+-- extent. Consider having Syntax.Context specialize future
+-- content of this module to maintain its interface.
 
 infixr 9 _•_
 
