@@ -155,12 +155,13 @@ delete : ∀ {κ ι Γ} →
 insert k v acc = update! k (diff v neutral-term) acc
 delete k v acc = update! k (diff neutral-term v) acc
 
--- The binary operator such that
--- union t t ≡ t
-
--- To implement union, we need for each non-map base-type
--- an operator such that `op v v = v` on all values `v`.
--- for Booleans, conjunction is good enough.
+-- union s t should be:
+-- 1. equal to t if s is neutral
+-- 2. equal to s if t is neutral
+-- 3. equal to s if s == t
+-- 4. whatever it wants to be otherwise
+--
+-- On Booleans, only conjunction can be union.
 --
 -- TODO (later): support conjunction, probably by Boolean
 -- elimination form if-then-else
