@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# CAUTION: This file should only be invoked in the directory it resides in!
+#
+#   ./agdaCheck.sh  # good
+#
+#   ../agdaCheck.sh # bad
+
 # Load local configuration, which should not be committed to the repository.
 # This is supposed to set AGDA_LIB.
 . agdaCheck.sh.conf
