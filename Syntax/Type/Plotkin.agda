@@ -4,6 +4,8 @@ module Syntax.Type.Plotkin where
 --
 -- Given base types, we build function types.
 
+open import Function
+
 infixr 5 _⇒_
 
 data Type (B : Set {- of base types -}) : Set where
@@ -35,8 +37,6 @@ lift-Δtype f (σ ⇒ τ) = let Δ = lift-Δtype f in σ ⇒ Δ σ ⇒ Δ τ
 --                  = base κ ⇒ base κ ⇒ base ι
 --
 -- violating the second monadic law, m >>= return ≡ m. ∎
-
-open import Function
 
 -- Variant of lift-Δtype for (Δ : B → B).
 lift-Δtype₀ : ∀ {B} → (B → B) → (Type B → Type B)
