@@ -51,6 +51,13 @@ fit = weaken Γ≼ΔΓ
 diff-term  : ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ ΔType τ)
 apply-term : ∀ {τ Γ} → Term Γ (ΔType τ ⇒ τ ⇒ τ)
 
+-- Sugars for diff-term and apply-term
+infixl 6 _⊕_ _⊝_
+_⊕_ : ∀ {τ Γ} → Term Γ τ → Term Γ (ΔType τ) → Term Γ τ
+_⊝_ : ∀ {τ Γ} → Term Γ τ → Term Γ τ → Term Γ (ΔType τ)
+t ⊕ Δt = app (app apply-term Δt) t
+s ⊝ t  = app (app  diff-term  s) t
+
 apply-term {int} =
   let Δx = var (that this)
       x  = var this
@@ -67,9 +74,7 @@ apply-term {σ ⇒ τ} =
   in
   -- Δf   f    x
     abs (abs (abs
-      (app (app apply-term
-        (app (app Δf x) (app (app diff-term x) x)))
-        (app f x))))
+      (app f x ⊕ app (app Δf x) (x ⊝ x))))
 
 diff-term {int} =
   let x = var (that this)
@@ -88,13 +93,4 @@ diff-term {σ ⇒ τ} =
   in
   -- g    f    x    Δx
     abs (abs (abs (abs
-      (app (app diff-term
-        (app g (app (app apply-term Δx) x)))
-        (app f x)))))
-
--- Sugars for diff-term and apply-term
-infixl 6 _⊕_ _⊝_
-_⊕_ : ∀ {τ Γ} → Term Γ τ → Term Γ (ΔType τ) → Term Γ τ
-_⊝_ : ∀ {τ Γ} → Term Γ τ → Term Γ τ → Term Γ (ΔType τ)
-t ⊕ Δt = app (app apply-term Δt) t
-s ⊝ t  = app (app  diff-term  s) t
+      (app g (x ⊕ Δx) ⊝ app f x))))
