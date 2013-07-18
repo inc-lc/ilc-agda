@@ -155,13 +155,25 @@ delete : ∀ {κ ι Γ} →
 insert k v acc = update! k (diff v neutral-term) acc
 delete k v acc = update! k (diff neutral-term v) acc
 
--- The binary operator with which all base-type values
--- form a group
+-- The binary operator such that
+-- union t t ≡ t
+
+-- To implement union, we need for each non-map base-type
+-- an operator such that `op v v = v` on all values `v`.
+-- for Booleans, conjunction is good enough.
+--
+-- TODO (later): support conjunction, probably by Boolean
+-- elimination form if-then-else
+
+postulate
+  and! : ∀ {Γ} →
+    Atlas-term Γ (base Bool) → Atlas-term Γ (base Bool) →
+    Atlas-term Γ (base Bool)
 
 union : ∀ {ι Γ} →
   Atlas-term Γ (base ι) → Atlas-term Γ (base ι) →
   Atlas-term Γ (base ι)
-union {Bool} s t = app (app (const xor) s) t
+union {Bool} s t = and! s t
 union {Map κ ι} s t =
   let
     union-term = abs (abs (union (var (that this)) (var this)))
