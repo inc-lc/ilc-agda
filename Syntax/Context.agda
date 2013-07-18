@@ -10,8 +10,7 @@ module Syntax.Context
 -- This module is parametric in the syntax of types, so it
 -- can be reused for different calculi.
 
-import Syntax.Context.Plotkin as Plotkin
-open Plotkin {Type} public using (∅ ; _•_ ; this ; that; Context; Var)
+open import Syntax.Context.Plotkin {Type} public
 
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality
