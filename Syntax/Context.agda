@@ -10,19 +10,14 @@ module Syntax.Context
 -- This module is parametric in the syntax of types, so it
 -- can be reused for different calculi.
 
-import Syntax.Context.Plotkin as Plotkin
-open Plotkin public using (∅ ; _•_ ; this ; that)
+open import Syntax.Context.Plotkin {Type} public
 
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality
 
-
 -- TYPING CONTEXTS
 
 -- Syntax
-
-Context : Set
-Context = Plotkin.Context {Type}
 
 empty-context : Context
 empty-context = ∅
@@ -34,13 +29,6 @@ empty-context = ∅
 
 _⟨•⟩_ : ∀ {τ₁ τ₂ : Type} {Γ₁ Γ₂} → τ₁ ≡ τ₂ → Γ₁ ≡ Γ₂ → τ₁ • Γ₁ ≡ τ₂ • Γ₂
 _⟨•⟩_ = cong₂ _•_
-
--- VARIABLES
-
--- Syntax
-
-Var : Context → Type → Set
-Var = Plotkin.Var
 
 -- WEAKENING
 
