@@ -37,7 +37,7 @@ _⟨•⟩_ = cong₂ _•_
 
 data Var : Context → Type → Set where
   this : ∀ {Γ τ} → Var (τ • Γ) τ
-  that : ∀ {Γ τ τ′} → (x : Var Γ τ) → Var (τ′ • Γ) τ
+  that : ∀ {Γ σ τ} → (x : Var Γ τ) → Var (σ • Γ) τ
 
 -- WEAKENING
 
