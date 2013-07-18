@@ -1,4 +1,4 @@
-module Syntax.Context.Plotkin where
+module Syntax.Context.Plotkin {Type : Set} where
 
 -- Context for Plotkin-style language descriptions
 --
@@ -8,10 +8,10 @@ module Syntax.Context.Plotkin where
 
 infixr 9 _•_
 
-data Context {Type : Set} : Set where
-  ∅ : Context {Type}
-  _•_ : (τ : Type) (Γ : Context {Type}) → Context {Type}
+data Context : Set where
+  ∅ : Context
+  _•_ : (τ : Type) (Γ : Context) → Context
 
-data Var {Type : Set} : Context → Type → Set where
+data Var : Context → Type → Set where
   this : ∀ {Γ τ} → Var (τ • Γ) τ
   that : ∀ {Γ τ τ′} → (x : Var Γ τ) → Var (τ′ • Γ) τ
