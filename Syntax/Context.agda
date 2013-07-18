@@ -10,8 +10,6 @@ module Syntax.Context
 -- This module is parametric in the syntax of types, so it
 -- can be reused for different calculi.
 
-open import Syntax.Context.Plotkin {Type} public
-
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality
 
@@ -19,16 +17,27 @@ open import Relation.Binary.PropositionalEquality
 
 -- Syntax
 
-empty-context : Context
-empty-context = ∅
+data Context : Set where
+  ∅ : Context
+  _•_ : (τ : Type) (Γ : Context) → Context
+
+infixr 9 _•_
 
 -- Specialized congruence rules
 
-⟨∅⟩ : empty-context ≡ empty-context
+⟨∅⟩ : ∅ ≡ ∅
 ⟨∅⟩ = refl
 
-_⟨•⟩_ : ∀ {τ₁ τ₂ : Type} {Γ₁ Γ₂} → τ₁ ≡ τ₂ → Γ₁ ≡ Γ₂ → τ₁ • Γ₁ ≡ τ₂ • Γ₂
+_⟨•⟩_ : ∀ {τ₁ τ₂ Γ₁ Γ₂} → τ₁ ≡ τ₂ → Γ₁ ≡ Γ₂ → τ₁ • Γ₁ ≡ τ₂ • Γ₂
 _⟨•⟩_ = cong₂ _•_
+
+-- VARIABLES
+
+-- Syntax
+
+data Var : Context → Type → Set where
+  this : ∀ {Γ τ} → Var (τ • Γ) τ
+  that : ∀ {Γ τ τ′} → (x : Var Γ τ) → Var (τ′ • Γ) τ
 
 -- WEAKENING
 

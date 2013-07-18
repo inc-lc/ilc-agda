@@ -7,7 +7,7 @@ open import Property.Uniqueness public
 
 open import Relation.Binary.PropositionalEquality
 open import Denotation.Environment.Popl14
-open import Theorem.EqualityReflection
+open import Theorem.EqualityUnique
 open import Theorem.ProductUnique
 
 -- Irrelevance proofs are uniq
