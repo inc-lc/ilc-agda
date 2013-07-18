@@ -3,7 +3,7 @@ module Syntax.Term.Plotkin where
 -- Terms of languages described in Plotkin style
 
 open import Syntax.Type.Plotkin
-open import Syntax.Context.Plotkin
+open import Syntax.Context
 
 data Term
   {B : Set {- of base types -}}

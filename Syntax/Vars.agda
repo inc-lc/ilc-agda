@@ -1,12 +1,12 @@
 module Syntax.Vars
-     (Type : Set)
+     {Type : Set}
   where
 
 -- The notion of sets of variables
 --
 -- This module is calculus-independent.
 
-open import Syntax.Context Type
+open import Syntax.Context {Type}
 
 open import Relation.Binary.PropositionalEquality
 open import Data.Unit

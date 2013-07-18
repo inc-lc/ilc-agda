@@ -1,5 +1,5 @@
 module Syntax.Context
-    (Type : Set)
+    {Type : Set}
   where
 
 -- CONTEXTS

@@ -10,7 +10,7 @@ module Syntax.Language.Calculus where
 
 open import Syntax.Type.Plotkin public
 open import Syntax.Term.Plotkin public
-open import Syntax.Context.Plotkin public
+open import Syntax.Context public
 
 record Calculus : Set₁ where
   constructor

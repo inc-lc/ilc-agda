@@ -8,7 +8,7 @@ module Syntax.Context.Popl14 where
 -- This ΔContext may not make sense for other systems.
 
 open import Syntax.Type.Popl14 public
-import Syntax.Context Type as Ctx
+import Syntax.Context {Type} as Ctx
 open Ctx public hiding (lift)
 
 ΔContext : Context → Context

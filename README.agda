@@ -28,7 +28,6 @@ import Postulate.Extensionality
 import Property.Uniqueness
 import Structure.Bag.Popl14
 import Structure.Tuples
-import Syntax.Context.Plotkin
 import Syntax.Context.Popl14
 import Syntax.Context
 import Syntax.Derive.Canon-Popl14
