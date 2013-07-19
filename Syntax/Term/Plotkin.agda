@@ -108,3 +108,32 @@ weaken₂ t = weaken (drop _ • drop _ • ≼-refl) t
 weaken₃ : ∀ {B C ⊢ Γ α β γ τ} →
   Term {B} {C} {⊢} Γ τ → Term {B} {C} {⊢} (α • β • γ • Γ) τ
 weaken₃ t = weaken (drop _ • drop _ • drop _ • ≼-refl) t
+
+-- Shorthands for nested applications
+app₂ : ∀ {B C ⊢ Γ α β γ} →
+    Term {B} {C} {⊢} Γ (α ⇒ β ⇒ γ) →
+    Term Γ α → Term Γ β → Term Γ γ
+app₂ f x = app (app f x)
+
+app₃ : ∀ {B C ⊢ Γ α β γ δ} →
+    Term {B} {C} {⊢} Γ (α ⇒ β ⇒ γ ⇒ δ) →
+    Term Γ α → Term Γ β → Term Γ γ → Term Γ δ
+app₃ f x = app₂ (app f x)
+
+app₄ : ∀ {B C ⊢ Γ α β γ δ ε} →
+    Term {B} {C} {⊢} Γ (α ⇒ β ⇒ γ ⇒ δ ⇒ ε) →
+    Term Γ α → Term Γ β → Term Γ γ → Term Γ δ →
+    Term Γ ε
+app₄ f x = app₃ (app f x)
+
+app₅ : ∀ {B C ⊢ Γ α β γ δ ε ζ} →
+    Term {B} {C} {⊢} Γ (α ⇒ β ⇒ γ ⇒ δ ⇒ ε ⇒ ζ) →
+    Term Γ α → Term Γ β → Term Γ γ → Term Γ δ →
+    Term Γ ε → Term Γ ζ
+app₅ f x = app₄ (app f x)
+
+app₆ : ∀ {B C ⊢ Γ α β γ δ ε ζ η} →
+    Term {B} {C} {⊢} Γ (α ⇒ β ⇒ γ ⇒ δ ⇒ ε ⇒ ζ ⇒ η) →
+    Term Γ α → Term Γ β → Term Γ γ → Term Γ δ →
+    Term Γ ε → Term Γ ζ → Term Γ η
+app₆ f x = app₅ (app f x)
