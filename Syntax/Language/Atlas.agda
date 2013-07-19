@@ -25,7 +25,9 @@ data Atlas-const : Set where
 
   empty  : ∀ {κ ι : Atlas-type} → Atlas-const
   update : ∀ {κ ι : Atlas-type} → Atlas-const
+  lookup : ∀ {κ ι : Atlas-type} → Atlas-const
   zip    : ∀ {κ a b c : Atlas-type} → Atlas-const
+  fold   : ∀ {κ a b : Atlas-type} → Atlas-const
 
 Atlas-lookup : Atlas-const → Type Atlas-type
 
@@ -42,11 +44,29 @@ Atlas-lookup (empty {κ} {ι}) = base (Map κ ι)
 Atlas-lookup (update {κ} {ι}) =
   base κ ⇒ base ι ⇒ base (Map κ ι) ⇒ base (Map κ ι)
 
+Atlas-lookup (lookup {κ} {ι}) =
+  base κ ⇒ base (Map κ ι) ⇒ base ι
+
 -- Model of zip = Haskell Data.List.zipWith
+--
 -- zipWith :: (a → b → c) → [a] → [b] → [c]
+--
+-- Behavioral difference: all key-value pairs present
+-- in *either* (m₁ : Map κ a) *or* (m₂ : Map κ b) will
+-- be iterated over. Neutral element of type `a` or `b`
+-- will be supplied if the key is missing in the
+-- corresponding map.
 Atlas-lookup (zip {κ} {a} {b} {c}) =
   (base κ ⇒ base a ⇒ base b ⇒ base c) ⇒
   base (Map κ a) ⇒ base (Map κ b) ⇒ base (Map κ c)
+
+-- Model of fold = Haskell Data.Map.foldWithKey
+--
+-- foldWithKey :: (k → a → b → b) → b → Map k a → b
+--
+Atlas-lookup (fold {κ} {a} {b}) =
+  (base κ ⇒ base a ⇒ base b ⇒ base b) ⇒
+  base b ⇒ base (Map κ a) ⇒ base b
 
 Atlas-Δbase : Atlas-type → Atlas-type
 -- change to a boolean is a xor-rand
@@ -62,6 +82,34 @@ Atlas-context = Context {Type Atlas-type}
 
 Atlas-term : Atlas-context → Type Atlas-type → Set
 Atlas-term = Term {Atlas-type} {Atlas-const} {Atlas-lookup}
+
+-- Shorthands of constants
+--
+-- There's probably a uniform way to lift constants
+-- into term constructors.
+
+update! : ∀ {κ ι Γ} →
+  Atlas-term Γ (base κ) → Atlas-term Γ (base ι) →
+  Atlas-term Γ (base (Map κ ι)) →
+  Atlas-term Γ (base (Map κ ι))
+update! = app₃ (const update)
+
+lookup! : ∀ {κ ι Γ} →
+  Atlas-term Γ (base κ) → Atlas-term Γ (base (Map κ ι)) →
+  Atlas-term Γ (base ι)
+lookup! = app₂ (const lookup)
+
+zip! : ∀ {κ a b c Γ} →
+  Atlas-term Γ (base κ ⇒ base a ⇒ base b ⇒ base c) →
+  Atlas-term Γ (base (Map κ a)) → Atlas-term Γ (base (Map κ b)) →
+  Atlas-term Γ (base (Map κ c))
+zip! = app₃ (const zip)
+
+fold! : ∀ {κ a b Γ} →
+  Atlas-term Γ (base κ ⇒ base a ⇒ base b ⇒ base b) →
+  Atlas-term Γ (base b) → Atlas-term Γ (base (Map κ a)) →
+  Atlas-term Γ (base b)
+fold! = app₃ (const fold)
 
 -- Every base type has a known nil-change.
 -- The nil-change of ι is also the neutral element of Map κ Δι.
@@ -81,25 +129,37 @@ nil-term : ∀ {ι Γ} → Atlas-term Γ (base (Atlas-Δbase ι))
 nil-term {Bool}   = const (nil-const {Bool})
 nil-term {Map κ ι} = const (nil-const {Map κ ι})
 
--- Shorthands of constants
---
--- There's probably a uniform way to lift constants
--- into term constructors.
---
--- TODO: write this and call it Syntax.Term.Plotkin.lift-term
+-- Nonfunctional products can be encoded.
+-- The incremental behavior of products thus encoded is weird:
+-- Δ(α × β) = α × Δβ
+Pair : Atlas-type → Atlas-type → Atlas-type
+Pair α β = Map α β
 
-zip! : ∀ {κ a b c Γ} →
-  Atlas-term Γ (base κ ⇒ base a ⇒ base b ⇒ base c) →
+pair : ∀ {α β Γ} →
+  Atlas-term Γ (base α) → Atlas-term Γ (base β) →
+  Atlas-term Γ (base (Pair α β))
+pair s t = update! s t (const empty)
+
+pair-term : ∀ {α β Γ} →
+  Atlas-term Γ (base α ⇒ base β ⇒ base (Pair α β))
+pair-term = abs (abs (pair (var (that this)) (var this)))
+
+uncurry : ∀ {α β γ Γ} →
+  Atlas-term Γ (base α ⇒ base β ⇒ base γ) →
+  Atlas-term Γ (base (Pair α β)) →
+  Atlas-term Γ (base γ)
+uncurry f p =
+  let
+    a = var (that (that this))
+    b = var (that this)
+    g = abs (abs (abs (app₂ (weaken₃ f) a b)))
+  in
+    fold! g neutral-term p
+
+zip-pair : ∀ {κ a b Γ} →
   Atlas-term Γ (base (Map κ a)) → Atlas-term Γ (base (Map κ b)) →
-  Atlas-term Γ (base (Map κ c))
-
-zip! f m₁ m₂ = app (app (app (const zip) f) m₁) m₂
-
-lookup! : ∀ {κ ι Γ} →
-  Atlas-term Γ (base κ) → Atlas-term Γ (base (Map κ ι)) →
-  Atlas-term Γ (base ι)
-
-lookup! = {!!} -- TODO: add constant `lookup`
+  Atlas-term Γ (base (Map κ (Pair a b)))
+zip-pair = zip! (abs pair-term)
 
 -- diff-term and apply-term
 
@@ -124,22 +184,15 @@ Atlas-apply {Map κ ι} = app (const zip) (abs Atlas-apply)
 diff : ∀ {τ Γ} →
   Atlas-term Γ τ → Atlas-term Γ τ →
   Atlas-term Γ (Atlas-Δtype τ)
-diff s t = app (app (lift-diff Atlas-diff Atlas-apply) s) t
+diff = app₂ (lift-diff Atlas-diff Atlas-apply)
 
 apply : ∀ {τ Γ} →
   Atlas-term Γ (Atlas-Δtype τ) → Atlas-term Γ τ →
   Atlas-term Γ τ
-apply s t = app (app (lift-apply Atlas-diff Atlas-apply) s) t
+apply = app₂ (lift-apply Atlas-diff Atlas-apply)
 
 -- Shorthands for creating changes corresponding to
 -- insertion/deletion.
-
-update! : ∀ {κ ι Γ} →
-  Atlas-term Γ (base κ) → Atlas-term Γ (base ι) →
-  Atlas-term Γ (base (Map κ ι)) →
-  Atlas-term Γ (base (Map κ ι))
-
-update! k v m = app (app (app (const update) k) v) m
 
 insert : ∀ {κ ι Γ} →
   Atlas-term Γ (base κ) → Atlas-term Γ (base ι) →
@@ -155,32 +208,6 @@ delete : ∀ {κ ι Γ} →
 insert k v acc = update! k (diff v neutral-term) acc
 delete k v acc = update! k (diff neutral-term v) acc
 
--- union s t should be:
--- 1. equal to t if s is neutral
--- 2. equal to s if t is neutral
--- 3. equal to s if s == t
--- 4. whatever it wants to be otherwise
---
--- On Booleans, only conjunction can be union.
---
--- TODO (later): support conjunction, probably by Boolean
--- elimination form if-then-else
-
-postulate
-  and! : ∀ {Γ} →
-    Atlas-term Γ (base Bool) → Atlas-term Γ (base Bool) →
-    Atlas-term Γ (base Bool)
-
-union : ∀ {ι Γ} →
-  Atlas-term Γ (base ι) → Atlas-term Γ (base ι) →
-  Atlas-term Γ (base ι)
-union {Bool} s t = and! s t
-union {Map κ ι} s t =
-  let
-    union-term = abs (abs (union (var (that this)) (var this)))
-  in
-    zip! (abs union-term) s t
-
 -- Shorthand for 4-way zip
 zip4! : ∀ {κ a b c d e Γ} →
   let
@@ -190,25 +217,27 @@ zip4! : ∀ {κ a b c d e Γ} →
       (base κ ⇒ base a ⇒ base b ⇒ base c ⇒ base d ⇒ base e) →
     t: Map κ a → t: Map κ b → t: Map κ c → t: Map κ d → t: Map κ e
 
+-- zip₄ f m₁ m₂ m₃ m₄ =
+-- zip (λ k p₁₂ p₃₄ → uncurry (λ v₁ v₂ → uncurry (λ v₃ v₄ →
+--       f k v₁ v₂ v₃ v₄)
+--       p₃₄) p₁₂)
+--     (zip-pair m₁ m₂) (zip-pair m₃ m₄)
+
 zip4! f m₁ m₂ m₃ m₄ =
   let
-    v₁ = var (that this)
-    v₂ = var this
+    f′ = weaken₃ (weaken₃ (weaken₁ f))
+    k = var (that (that (that (that (that (that this))))))
+    p₁₂ = var (that this)
+    p₃₄ = var (that (that this))
+    v₁ = var (that (that (that this)))
+    v₂ = var (that (that this))
     v₃ = var (that this)
     v₄ = var this
-    k₁₂ = var (that (that this))
-    k₃₄ = var (that (that this))
-    f₁₂ = abs (abs (abs (app (app (app (app (app
-      (weaken₃ f) k₁₂) v₁) v₂)
-      (lookup! k₁₂ (weaken₃ m₃))) (lookup! k₁₂ (weaken₃ m₄)))))
-    f₃₄ = abs (abs (abs (app (app (app (app (app
-      (weaken₃ f) k₃₄)
-      (lookup! k₃₄ (weaken₃ m₁)))
-      (lookup! k₃₄ (weaken₃ m₂))) v₃) v₄)))
+    g = abs (abs (abs (uncurry (abs (abs (uncurry (abs (abs
+        (app₅ f′ k v₁ v₂ v₃ v₄)))
+        p₃₄))) p₁₂)))
   in
-    -- A correct but inefficient implementation.
-    -- May want to speed it up after constants are finalized.
-    union (zip! f₁₂ m₁ m₂) (zip! f₃₄ m₃ m₄)
+    zip! g (zip-pair m₁ m₂) (zip-pair m₃ m₄)
 
 -- Type signature of Atlas-Δconst is boilerplate.
 Atlas-Δconst : ∀ {Γ} → (c : Atlas-const) →
@@ -222,7 +251,7 @@ Atlas-Δconst xor =
   let
     Δx = var (that (that this))
     Δy = var this
-  in abs (abs (abs (abs (app (app (const xor) Δx) Δy))))
+  in abs (abs (abs (abs (app₂ (const xor) Δx Δy))))
 
 Atlas-Δconst empty = const empty
 
@@ -246,6 +275,25 @@ Atlas-Δconst update =
       (insert (apply Δk k) (apply Δv v)
         (delete k v Δm)))))))
 
+-- Δlookup k Δk m Δm | true? (k ⊕ Δk ≡ k)
+-- ... | true  = lookup k Δm
+-- ... | false =
+--   (lookup (k ⊕ Δk) m ⊕ lookup (k ⊕ Δk) Δm)
+--     ⊝ lookup k m
+--
+-- Only the false-branch is implemented.
+Atlas-Δconst lookup =
+  let
+    k  = var (that (that (that this)))
+    Δk = var (that (that this))
+    m  = var (that this)
+    Δm = var this
+    k′ = apply Δk k
+  in
+    abs (abs (abs (abs
+      (diff (apply (lookup! k′ Δm) (lookup! k′ m))
+            (lookup! k m)))))
+
 -- Δzip f Δf m₁ Δm₁ m₂ Δm₂ | true? (f ⊕ Δf ≡ f)
 --
 -- ... | true =
@@ -262,9 +310,46 @@ Atlas-Δconst zip =
     Δm₁ = var (that (that this))
     m₂  = var (that this)
     Δm₂ = var this
-    g = abs (app (app (weaken₁ Δf) (var this)) nil-term)
+    g = abs (app₂ (weaken₁ Δf) (var this) nil-term)
   in
     abs (abs (abs (abs (abs (abs (zip4! g m₁ Δm₁ m₂ Δm₂))))))
+
+-- Δfold f Δf z Δz m Δm = proj₂
+--   (fold (λ k [a,Δa] [b,Δb] →
+--           uncurry (λ a Δa → uncurry (λ b Δb →
+--             pair (f k a b) (Δf k nil a Δa b Δb))
+--             [b,Δb]) [a,Δa])
+--        (pair z Δz)
+--        (zip-pair m Δm))
+--
+-- Δfold is efficient only if evaluation is lazy and Δf is
+-- self-maintainable: it doesn't look at the argument
+-- (b = fold f k a b₀) at all.
+Atlas-Δconst (fold {κ} {α} {β}) =
+    let -- TODO (tedius): write weaken₇
+      f  = weaken₃ (weaken₃ (weaken₁
+        (var (that (that (that (that (that this))))))))
+      Δf = weaken₃ (weaken₃ (weaken₁
+        (var (that (that (that (that this)))))))
+      z  = var (that (that (that this)))
+      Δz = var (that (that this))
+      m  = var (that this)
+      Δm = var this
+      k = weaken₃ (weaken₁ (var (that (that this))))
+      [a,Δa] = var (that this)
+      [b,Δb] = var this
+      a  = var (that (that (that this)))
+      Δa = var (that (that this))
+      b  = var (that this)
+      Δb = var this
+      g = abs (abs (abs (uncurry (abs (abs (uncurry (abs (abs
+            (pair (app₃ f k a b)
+                  (app₆ Δf k nil-term a Δa b Δb))))
+            (weaken₂ [b,Δb])))) [a,Δa])))
+      proj₂ = uncurry (abs (abs (var this)))
+    in
+      abs (abs (abs (abs (abs (abs
+        (proj₂ (fold! g (pair z Δz) (zip-pair m Δm))))))))
 
 Atlas = calculus-with
   Atlas-type
