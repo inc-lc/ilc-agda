@@ -1,6 +1,6 @@
-module FoldableBag where
+module experimental.FoldableBag where
 
-open import FoldableBagParametric
+open import experimental.FoldableBagParametric
 import Level as L
 
 open import Algebra
@@ -37,7 +37,7 @@ homIsAnHom {{oT}} G f (b⁺₁ , b⁻₁) (b⁺₂ , b⁻₂) =
      open AbelianGroup G
      open ≡-Reasoning
      open import Data.List.Properties
-     open import Sorting
+     open import experimental.Sorting
 
      open Sort ord hiding (insert; toList)
 

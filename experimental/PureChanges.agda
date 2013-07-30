@@ -1,4 +1,4 @@
-module PureChanges where
+module experimental.PureChanges where
 
 open import Data.Empty
 open import Data.Nat

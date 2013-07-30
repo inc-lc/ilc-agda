@@ -3,7 +3,7 @@
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality
 
-module DecidableEq (T : Set) (_≟_ : Decidable {A = T} _≡_) where
+module experimental.DecidableEq (T : Set) (_≟_ : Decidable {A = T} _≡_) where
 
 open import Data.Empty
 open import Data.Bool using (true; false)

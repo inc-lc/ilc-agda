@@ -1,4 +1,4 @@
-module NormalizationByEvaluation where
+module experimental.NormalizationByEvaluation where
 
 -- NORMALIZATION BY EVALUATION
 --

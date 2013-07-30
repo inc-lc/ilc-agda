@@ -1,4 +1,4 @@
-module Sorting where
+module experimental.Sorting where
 
 import Level as L
 

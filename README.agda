@@ -55,3 +55,10 @@ import Theorem.Groups-Popl14
 import Theorem.IrrelevanceUnique-Popl14
 import Theorem.ProductUnique
 import Theorem.ValidityUnique-Popl14
+import experimental.DecidableEq
+import experimental.FoldableBag
+import experimental.FoldableBagParametric
+import experimental.NormalizationByEvaluation
+import experimental.OrdBag
+import experimental.PureChanges
+import experimental.Sorting

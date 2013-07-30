@@ -1,4 +1,4 @@
-module FoldableBagParametric where
+module experimental.FoldableBagParametric where
 
 
 import Level as L
@@ -44,7 +44,7 @@ module ParametricBag {T : Set} {{oT : Ord T}} where
   --open BagAVL using (sort)
   module BagList2 where
     open List
-    open import Sorting
+    open import experimental.Sorting
     ord = Ord.isDecTotalOrder oT
     open Sort ord hiding (insert; toList)
     open IsDecTotalOrder ord

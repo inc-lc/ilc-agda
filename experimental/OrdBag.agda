@@ -1,4 +1,4 @@
-module OrdBag where
+module experimental.OrdBag where
 
 import Level as L
 open import Algebra

@@ -26,9 +26,8 @@ module #{readme_name} where
 --   * multiple calculi
 }
 
-# Top-level directories beginning with a lower-case letter
-# are unchecked
-ignore = /^[a-z]/
+# `bugs` are unchecked
+ignore = /^bugs\./
 
 # Documentation highlights
 # CAUTION: Do not assume any order of module listing!
