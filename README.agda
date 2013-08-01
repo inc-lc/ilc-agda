@@ -60,5 +60,4 @@ import experimental.FoldableBag
 import experimental.FoldableBagParametric
 import experimental.NormalizationByEvaluation
 import experimental.OrdBag
-import experimental.PureChanges
 import experimental.Sorting
