@@ -37,13 +37,12 @@ import Syntax.FreeVars.Popl14
 import Syntax.Language.Atlas
 import Syntax.Language.Calculus
 {- Terms of a calculus described in Plotkin style
-- types are parametric in base types
-- terms are parametric in constants
-This style of language description is employed in:
-G. D. Plotkin. "LCF considered as a programming language."
-Theoretical Computer Science 5(3) pp. 223--255, 1997.
-http://dx.doi.org/10.1016/0304-3975(77)90044-5
- -}
+  - types are parametric in base types
+  - terms are parametric in constants
+  This style of language description is employed in:
+  G. D. Plotkin. "LCF considered as a programming language."
+  Theoretical Computer Science 5(3) pp. 223--255, 1997.
+  http://dx.doi.org/10.1016/0304-3975(77)90044-5 -}
 import Syntax.Term.Plotkin
 import Syntax.Term.Popl14
 import Syntax.Type.Plotkin
@@ -55,6 +54,7 @@ import Theorem.Groups-Popl14
 import Theorem.IrrelevanceUnique-Popl14
 import Theorem.ProductUnique
 import Theorem.ValidityUnique-Popl14
+import UNDEFINED
 import experimental.DecidableEq
 import experimental.FoldableBag
 import experimental.FoldableBagParametric
