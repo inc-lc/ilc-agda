@@ -14,7 +14,7 @@ open import Relation.Nullary
 open import Relation.Nullary.Decidable
 --import Relation.Binary.HeterogeneousEquality as H
 
-open import DecidableEq ℕ _≟_
+open import experimental.DecidableEq ℕ _≟_
 
 Base : Set
 Base = ℕ
