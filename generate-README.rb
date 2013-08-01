@@ -5,10 +5,9 @@
 #
 # Usage:
 # 1. install ruby
-# 2. install yaml gem
-# 3. `ruby generate-README.rb`
+# 2. `ruby generate-README.rb`
 # -. [optional] have a look at README.agda.
-# 4. `./agdaCheck.sh`
+# 3. `./agdaCheck.sh`
 
 readme_name = "README"
 
