@@ -17,6 +17,8 @@ open import Data.List as List using (List)
 
 open import Data.Product
 
+open import UNDEFINED
+
 -- Note that hom is what I call foldGroup elsewhere!
 
 -- This is the mathematical definition of group homomorphism. This is mostly
@@ -30,7 +32,7 @@ homIsAnHom {{oT}} G f (b⁺₁ , b⁻₁) (b⁺₂ , b⁻₂) =
   ≡⟨⟩
     hom G f (uunion b⁺₁ b⁺₂ , uunion b⁻₁ b⁻₂)
   -- TODO: Lots of straightforward group manipulation
-  ≡⟨ {!!} ⟩
+  ≡⟨ reveal UNDEFINED ⟩
      hom G f (b⁺₁ , b⁻₁) ∙ hom G f (b⁺₂ , b⁻₂)
   ∎
    where
