@@ -26,5 +26,5 @@ EOF
 fi
 
 for i in $SRC; do
-  time agda -i . -i ${AGDA_LIB} $i
+  /usr/bin/time -l agda -i . -i ${AGDA_LIB} $i
 done
