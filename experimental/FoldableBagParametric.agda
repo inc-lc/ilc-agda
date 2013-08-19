@@ -267,8 +267,11 @@ Bag T = Bag′ {T}
 ΔBag : ∀ T {{oT : Ord T}} → Set
 ΔBag = Bag
 
-ordN : Ord N.ℕ
-ordN = record { isDecTotalOrder = DecTotalOrder.isDecTotalOrder N.decTotalOrder }
 
-aBag : Bag N.ℕ
-aBag = insert 1 empty
+-- This steers type inference (of instance arguments) if left in scope.
+module OrdN where
+  ordN : Ord N.ℕ
+  ordN = record { isDecTotalOrder = DecTotalOrder.isDecTotalOrder N.decTotalOrder }
+
+  aBag : Bag N.ℕ
+  aBag = insert 1 empty

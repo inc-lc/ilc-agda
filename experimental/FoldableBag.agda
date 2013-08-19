@@ -50,7 +50,7 @@ homDelta G f b db = hom G f db
 
 -- This states that the derivative
 
-homDeltaCorrect : ∀ G f b db → let open AbelianGroup G in
+homDeltaCorrect : ∀ {T} {{ordT : Ord T}} G f (b : Bag T) db → let open AbelianGroup G in
   hom G f (union b db) ≡ hom G f b ∙ homDelta G f b db
 homDeltaCorrect G f b db =
   begin
@@ -68,15 +68,15 @@ homDeltaCorrect G f b db =
 --postulate BagGroup :  ∀ {T} (oT : Ord T) → AbelianGroup L.zero L.zero
 
 map₁ : ∀ {A B} {oA : Ord A} {oB : Ord B} → (A → B) → Bag A → Bag B
-map₁ f = hom BagGroup (singleton ∘ f)
+map₁ {oA = oA} {oB = oB} f = hom {{oA}} BagGroup (singleton {{oB}} ∘ f)
 
 flatMap : ∀ {A B} {oA : Ord A} {oB : Ord B} → (A → Bag B) → Bag A → Bag B
-flatMap f = hom BagGroup f
+flatMap {oA = oA} {oB = oB} f = hom {{oA}} BagGroup f
 
 -- Use instance arguments for Ord.
 
 filter : ∀ {A} {oA : Ord A} → (A → Bool) → Bag A → Bag A
-filter p b = hom BagGroup (λ el → if (p el) then (singleton el) else empty) b
+filter {A} {oA} p b = hom {{oA}} BagGroup (λ el → if (p el) then (singleton el) else empty) b
 
 {-
 TODOs:
