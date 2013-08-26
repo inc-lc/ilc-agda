@@ -27,11 +27,30 @@ data Atlas-const : Set where
 
   empty  : ∀ {κ ι : Atlas-type} → Atlas-const
 
+  -- `update key val my-map` would
+  -- - insert if `key` is not present in `my-map`
+  -- - delete if `val` is the neutral element
+  -- - make an update otherwise
+
   update : ∀ {κ ι : Atlas-type} → Atlas-const
 
   lookup : ∀ {κ ι : Atlas-type} → Atlas-const
 
+  -- Model of zip = Haskell Data.List.zipWith
+  --
+  -- zipWith :: (a → b → c) → [a] → [b] → [c]
+  --
+  -- Behavioral difference: all key-value pairs present
+  -- in *either* (m₁ : Map κ a) *or* (m₂ : Map κ b) will
+  -- be iterated over. Neutral element of type `a` or `b`
+  -- will be supplied if the key is missing in the
+  -- corresponding map.
+
   zip    : ∀ {κ a b c : Atlas-type} → Atlas-const
+
+  -- Model of fold = Haskell Data.Map.foldWithKey
+  --
+  -- foldWithKey :: (k → a → b → b) → b → Map k a → b
 
   fold   : ∀ {κ a b : Atlas-type} → Atlas-const
 
@@ -43,33 +62,16 @@ Atlas-lookup xor   = base Bool ⇒ base Bool ⇒ base Bool
 
 Atlas-lookup (empty {κ} {ι}) = base (Map κ ι)
 
--- `update key val my-map` would
--- - insert if `key` is not present in `my-map`
--- - delete if `val` is the neutral element
--- - make an update otherwise
 Atlas-lookup (update {κ} {ι}) =
   base κ ⇒ base ι ⇒ base (Map κ ι) ⇒ base (Map κ ι)
 
 Atlas-lookup (lookup {κ} {ι}) =
   base κ ⇒ base (Map κ ι) ⇒ base ι
 
--- Model of zip = Haskell Data.List.zipWith
---
--- zipWith :: (a → b → c) → [a] → [b] → [c]
---
--- Behavioral difference: all key-value pairs present
--- in *either* (m₁ : Map κ a) *or* (m₂ : Map κ b) will
--- be iterated over. Neutral element of type `a` or `b`
--- will be supplied if the key is missing in the
--- corresponding map.
 Atlas-lookup (zip {κ} {a} {b} {c}) =
   (base κ ⇒ base a ⇒ base b ⇒ base c) ⇒
   base (Map κ a) ⇒ base (Map κ b) ⇒ base (Map κ c)
 
--- Model of fold = Haskell Data.Map.foldWithKey
---
--- foldWithKey :: (k → a → b → b) → b → Map k a → b
---
 Atlas-lookup (fold {κ} {a} {b}) =
   (base κ ⇒ base a ⇒ base b ⇒ base b) ⇒
   base b ⇒ base (Map κ a) ⇒ base b
