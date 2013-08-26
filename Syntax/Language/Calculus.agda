@@ -17,11 +17,10 @@ record Calculus : Set₁ where
     calculus-with
   field
     basetype : Set
-    constant : Set
-    type-of : constant → Type basetype
+    constant : Type basetype → Set
     Δtype : Type basetype → Type basetype
-    Δconst : ∀ {Γ} → (c : constant) →
-      Term {basetype} {constant} {type-of} Γ (Δtype (type-of c))
+    Δconst : ∀ {Γ τ} → (c : constant τ) →
+      Term {basetype} {constant} Γ (Δtype τ)
 
 open Calculus public
 
@@ -32,4 +31,4 @@ context : Calculus → Set
 context L = Context {type L}
 
 term : (L : Calculus) → context L → type L → Set
-term L = Term {basetype L} {constant L} {type-of L}
+term L = Term {basetype L} {constant L}
