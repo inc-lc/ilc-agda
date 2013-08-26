@@ -10,10 +10,10 @@ module Syntax.Term.Plotkin
 open import Function using (_∘_)
 open import Data.Product
 open Type B
-open import Syntax.Context
+open import Syntax.Context {Type}
 
 data Term
-  (Γ : Context {Type}) :
+  (Γ : Context) :
   (τ : Type) → Set
   where
   const : ∀ {τ} → (c : C τ) → Term Γ τ
