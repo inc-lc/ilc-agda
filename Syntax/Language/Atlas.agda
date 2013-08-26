@@ -20,13 +20,19 @@ data Atlas-type : Set where
 data Atlas-const : Set where
 
   true  : Atlas-const
+
   false : Atlas-const
+
   xor   : Atlas-const
 
   empty  : ∀ {κ ι : Atlas-type} → Atlas-const
+
   update : ∀ {κ ι : Atlas-type} → Atlas-const
+
   lookup : ∀ {κ ι : Atlas-type} → Atlas-const
+
   zip    : ∀ {κ a b c : Atlas-type} → Atlas-const
+
   fold   : ∀ {κ a b : Atlas-type} → Atlas-const
 
 Atlas-lookup : Atlas-const → Type Atlas-type
