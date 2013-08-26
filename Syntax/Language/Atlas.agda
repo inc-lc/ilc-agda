@@ -75,7 +75,7 @@ Atlas-Δbase Bool = Bool
 Atlas-Δbase (Map key val) = (Map key (Atlas-Δbase val))
 
 Atlas-Δtype : Type Atlas-type → Type Atlas-type
-Atlas-Δtype = lift-Δtype₀ Atlas-Δbase
+Atlas-Δtype = lift-Δtype₀ _ Atlas-Δbase
 
 Atlas-context : Set
 Atlas-context = Context {Type Atlas-type}

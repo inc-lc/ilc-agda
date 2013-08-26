@@ -7,13 +7,13 @@ module Syntax.Term.Plotkin
 
 open import Function using (_∘_)
 open import Data.Product
-open import Syntax.Type.Plotkin
+open import Syntax.Type.Plotkin B
 open import Syntax.Context
 
 data Term
-  {type-of : C → Type B}
-  (Γ : Context {Type B}) :
-  (τ : Type B) → Set
+  {type-of : C → Type}
+  (Γ : Context {Type}) :
+  (τ : Type) → Set
   where
   const : (c : C) → Term Γ (type-of c)
   var : ∀ {τ} → (x : Var Γ τ) → Term Γ τ
@@ -26,7 +26,7 @@ data Term
 -- g ⊝ f  = λ x . λ Δx . g (x ⊕ Δx) ⊝ f x
 -- f ⊕ Δf = λ x . f x ⊕ Δf x (x ⊝ x)
 
-lift-diff-apply : ∀ {type-of} {Δbase : B → Type B} →
+lift-diff-apply : ∀ {type-of} {Δbase : B → Type} →
   let
     Δtype = lift-Δtype Δbase
     term = Term {type-of}
@@ -62,7 +62,7 @@ lift-diff-apply diff apply {σ ⇒ τ} =
     ,
     abs (abs (abs (app h y ⊕τ app (app Δh y) (y ⊝σ y))))
 
-lift-diff : ∀ {type-of} {Δbase : B → Type B} →
+lift-diff : ∀ {type-of} {Δbase : B → Type} →
   let
     Δtype = lift-Δtype Δbase
     term = Term {type-of}
@@ -74,7 +74,7 @@ lift-diff : ∀ {type-of} {Δbase : B → Type B} →
 lift-diff diff apply = λ {τ Γ} →
   proj₁ (lift-diff-apply diff apply {τ} {Γ})
 
-lift-apply : ∀ {type-of} {Δbase : B → Type B} →
+lift-apply : ∀ {type-of} {Δbase : B → Type} →
   let
     Δtype = lift-Δtype Δbase
     term = Term {type-of}
