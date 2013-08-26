@@ -1,35 +1,36 @@
+import Syntax.Type.Plotkin as Type
+
 module Syntax.Term.Plotkin
     {B : Set {- of base types -}}
-    {C : Set {- of constants -}}
+    {C : Type.Type B → Set {- of constants -}}
   where
 
 -- Terms of languages described in Plotkin style
 
 open import Function using (_∘_)
 open import Data.Product
-open import Syntax.Type.Plotkin B
+open Type B
 open import Syntax.Context
 
 data Term
-  {type-of : C → Type}
   (Γ : Context {Type}) :
   (τ : Type) → Set
   where
-  const : (c : C) → Term Γ (type-of c)
+  const : ∀ {τ} → (c : C τ) → Term Γ τ
   var : ∀ {τ} → (x : Var Γ τ) → Term Γ τ
   app : ∀ {σ τ}
-    (s : Term {type-of} Γ (σ ⇒ τ))
-    (t : Term {type-of} Γ σ) → Term Γ τ
+    (s : Term Γ (σ ⇒ τ))
+    (t : Term Γ σ) → Term Γ τ
   abs : ∀ {σ τ}
-    (t : Term {type-of} (σ • Γ) τ) → Term Γ (σ ⇒ τ)
+    (t : Term (σ • Γ) τ) → Term Γ (σ ⇒ τ)
 
 -- g ⊝ f  = λ x . λ Δx . g (x ⊕ Δx) ⊝ f x
 -- f ⊕ Δf = λ x . f x ⊕ Δf x (x ⊝ x)
 
-lift-diff-apply : ∀ {type-of} {Δbase : B → Type} →
+lift-diff-apply : ∀ {Δbase : B → Type} →
   let
     Δtype = lift-Δtype Δbase
-    term = Term {type-of}
+    term = Term
   in
   (∀ {ι Γ} → term Γ (base ι ⇒ base ι ⇒ Δtype (base ι))) →
   (∀ {ι Γ} → term Γ (Δtype (base ι) ⇒ base ι ⇒ base ι)) →
@@ -62,10 +63,10 @@ lift-diff-apply diff apply {σ ⇒ τ} =
     ,
     abs (abs (abs (app h y ⊕τ app (app Δh y) (y ⊝σ y))))
 
-lift-diff : ∀ {type-of} {Δbase : B → Type} →
+lift-diff : ∀ {Δbase : B → Type} →
   let
     Δtype = lift-Δtype Δbase
-    term = Term {type-of}
+    term = Term
   in
   (∀ {ι Γ} → term Γ (base ι ⇒ base ι ⇒ Δtype (base ι))) →
   (∀ {ι Γ} → term Γ (Δtype (base ι) ⇒ base ι ⇒ base ι)) →
@@ -74,10 +75,10 @@ lift-diff : ∀ {type-of} {Δbase : B → Type} →
 lift-diff diff apply = λ {τ Γ} →
   proj₁ (lift-diff-apply diff apply {τ} {Γ})
 
-lift-apply : ∀ {type-of} {Δbase : B → Type} →
+lift-apply : ∀ {Δbase : B → Type} →
   let
     Δtype = lift-Δtype Δbase
-    term = Term {type-of}
+    term = Term
   in
   (∀ {ι Γ} → term Γ (base ι ⇒ base ι ⇒ Δtype (base ι))) →
   (∀ {ι Γ} → term Γ (Δtype (base ι) ⇒ base ι ⇒ base ι)) →
@@ -88,53 +89,53 @@ lift-apply diff apply = λ {τ Γ} →
 
 -- Weakening
 
-weaken : ∀ {⊢ Γ₁ Γ₂ τ} →
+weaken : ∀ {Γ₁ Γ₂ τ} →
   (Γ₁≼Γ₂ : Γ₁ ≼ Γ₂) →
-  Term {⊢} Γ₁ τ →
-  Term {⊢} Γ₂ τ
+  Term Γ₁ τ →
+  Term Γ₂ τ
 weaken Γ₁≼Γ₂ (const c) = const c
 weaken Γ₁≼Γ₂ (var x) = var (lift Γ₁≼Γ₂ x)
 weaken Γ₁≼Γ₂ (app s t) = app (weaken Γ₁≼Γ₂ s) (weaken Γ₁≼Γ₂ t)
 weaken Γ₁≼Γ₂ (abs {σ} t) = abs (weaken (keep σ • Γ₁≼Γ₂) t)
 
 -- Specialized weakening
-weaken₁ : ∀ {⊢ Γ σ τ} →
-  Term {⊢} Γ τ → Term {⊢} (σ • Γ) τ
+weaken₁ : ∀ {Γ σ τ} →
+  Term Γ τ → Term (σ • Γ) τ
 weaken₁ t = weaken (drop _ • ≼-refl) t
 
-weaken₂ : ∀ {⊢ Γ α β τ} →
-  Term {⊢} Γ τ → Term {⊢} (α • β • Γ) τ
+weaken₂ : ∀ {Γ α β τ} →
+  Term Γ τ → Term (α • β • Γ) τ
 weaken₂ t = weaken (drop _ • drop _ • ≼-refl) t
 
-weaken₃ : ∀ {⊢ Γ α β γ τ} →
-  Term {⊢} Γ τ → Term {⊢} (α • β • γ • Γ) τ
+weaken₃ : ∀ {Γ α β γ τ} →
+  Term Γ τ → Term (α • β • γ • Γ) τ
 weaken₃ t = weaken (drop _ • drop _ • drop _ • ≼-refl) t
 
 -- Shorthands for nested applications
-app₂ : ∀ {⊢ Γ α β γ} →
-    Term {⊢} Γ (α ⇒ β ⇒ γ) →
+app₂ : ∀ {Γ α β γ} →
+    Term Γ (α ⇒ β ⇒ γ) →
     Term Γ α → Term Γ β → Term Γ γ
 app₂ f x = app (app f x)
 
-app₃ : ∀ {⊢ Γ α β γ δ} →
-    Term {⊢} Γ (α ⇒ β ⇒ γ ⇒ δ) →
+app₃ : ∀ {Γ α β γ δ} →
+    Term Γ (α ⇒ β ⇒ γ ⇒ δ) →
     Term Γ α → Term Γ β → Term Γ γ → Term Γ δ
 app₃ f x = app₂ (app f x)
 
-app₄ : ∀ {⊢ Γ α β γ δ ε} →
-    Term {⊢} Γ (α ⇒ β ⇒ γ ⇒ δ ⇒ ε) →
+app₄ : ∀ {Γ α β γ δ ε} →
+    Term Γ (α ⇒ β ⇒ γ ⇒ δ ⇒ ε) →
     Term Γ α → Term Γ β → Term Γ γ → Term Γ δ →
     Term Γ ε
 app₄ f x = app₃ (app f x)
 
-app₅ : ∀ {⊢ Γ α β γ δ ε ζ} →
-    Term {⊢} Γ (α ⇒ β ⇒ γ ⇒ δ ⇒ ε ⇒ ζ) →
+app₅ : ∀ {Γ α β γ δ ε ζ} →
+    Term Γ (α ⇒ β ⇒ γ ⇒ δ ⇒ ε ⇒ ζ) →
     Term Γ α → Term Γ β → Term Γ γ → Term Γ δ →
     Term Γ ε → Term Γ ζ
 app₅ f x = app₄ (app f x)
 
-app₆ : ∀ {⊢ Γ α β γ δ ε ζ η} →
-    Term {⊢} Γ (α ⇒ β ⇒ γ ⇒ δ ⇒ ε ⇒ ζ ⇒ η) →
+app₆ : ∀ {Γ α β γ δ ε ζ η} →
+    Term Γ (α ⇒ β ⇒ γ ⇒ δ ⇒ ε ⇒ ζ ⇒ η) →
     Term Γ α → Term Γ β → Term Γ γ → Term Γ δ →
     Term Γ ε → Term Γ ζ → Term Γ η
 app₆ f x = app₅ (app f x)

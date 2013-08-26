@@ -17,15 +17,18 @@ data Atlas-type : Set where
   Bool : Atlas-type
   Map : (κ : Atlas-type) (ι : Atlas-type) → Atlas-type
 
-data Atlas-const : Set where
-
+data Atlas-const : Type Atlas-type → Set where
   true  : Atlas-const
+    (base Bool)
 
   false : Atlas-const
+    (base Bool)
 
   xor   : Atlas-const
+    (base Bool ⇒ base Bool ⇒ base Bool)
 
   empty  : ∀ {κ ι : Atlas-type} → Atlas-const
+    (base (Map κ ι))
 
   -- `update key val my-map` would
   -- - insert if `key` is not present in `my-map`
@@ -33,8 +36,10 @@ data Atlas-const : Set where
   -- - make an update otherwise
 
   update : ∀ {κ ι : Atlas-type} → Atlas-const
+    (base κ ⇒ base ι ⇒ base (Map κ ι) ⇒ base (Map κ ι))
 
   lookup : ∀ {κ ι : Atlas-type} → Atlas-const
+    (base κ ⇒ base (Map κ ι) ⇒ base ι)
 
   -- Model of zip = Haskell Data.List.zipWith
   --
@@ -47,34 +52,16 @@ data Atlas-const : Set where
   -- corresponding map.
 
   zip    : ∀ {κ a b c : Atlas-type} → Atlas-const
+    ((base κ ⇒ base a ⇒ base b ⇒ base c) ⇒
+     base (Map κ a) ⇒ base (Map κ b) ⇒ base (Map κ c))
 
   -- Model of fold = Haskell Data.Map.foldWithKey
   --
   -- foldWithKey :: (k → a → b → b) → b → Map k a → b
 
   fold   : ∀ {κ a b : Atlas-type} → Atlas-const
-
-Atlas-lookup : Atlas-const → Type Atlas-type
-
-Atlas-lookup true  = base Bool
-Atlas-lookup false = base Bool
-Atlas-lookup xor   = base Bool ⇒ base Bool ⇒ base Bool
-
-Atlas-lookup (empty {κ} {ι}) = base (Map κ ι)
-
-Atlas-lookup (update {κ} {ι}) =
-  base κ ⇒ base ι ⇒ base (Map κ ι) ⇒ base (Map κ ι)
-
-Atlas-lookup (lookup {κ} {ι}) =
-  base κ ⇒ base (Map κ ι) ⇒ base ι
-
-Atlas-lookup (zip {κ} {a} {b} {c}) =
-  (base κ ⇒ base a ⇒ base b ⇒ base c) ⇒
-  base (Map κ a) ⇒ base (Map κ b) ⇒ base (Map κ c)
-
-Atlas-lookup (fold {κ} {a} {b}) =
-  (base κ ⇒ base a ⇒ base b ⇒ base b) ⇒
-  base b ⇒ base (Map κ a) ⇒ base b
+   ((base κ ⇒ base a ⇒ base b ⇒ base b) ⇒
+    base b ⇒ base (Map κ a) ⇒ base b)
 
 Atlas-Δbase : Atlas-type → Atlas-type
 -- change to a boolean is a xor-rand
@@ -89,7 +76,7 @@ Atlas-context : Set
 Atlas-context = Context {Type Atlas-type}
 
 Atlas-term : Atlas-context → Type Atlas-type → Set
-Atlas-term = Term {Atlas-type} {Atlas-const} {Atlas-lookup}
+Atlas-term = Term {Atlas-type} {Atlas-const}
 
 -- Shorthands of constants
 --
@@ -122,7 +109,7 @@ fold! = app₃ (const fold)
 -- Every base type has a known nil-change.
 -- The nil-change of ι is also the neutral element of Map κ Δι.
 
-neutral : ∀ {ι : Atlas-type} → Atlas-const
+neutral : ∀ {ι : Atlas-type} → Atlas-const (base ι)
 neutral {Bool} = false
 neutral {Map κ ι} = empty {κ} {ι}
 
@@ -130,7 +117,7 @@ neutral-term : ∀ {ι Γ} → Atlas-term Γ (base ι)
 neutral-term {Bool}   = const (neutral {Bool})
 neutral-term {Map κ ι} = const (neutral {Map κ ι})
 
-nil-const : ∀ {ι : Atlas-type} → Atlas-const
+nil-const : ∀ {ι : Atlas-type} → Atlas-const (base (Atlas-Δbase ι))
 nil-const {ι} = neutral {Atlas-Δbase ι}
 
 nil-term : ∀ {ι Γ} → Atlas-term Γ (base (Atlas-Δbase ι))
@@ -248,8 +235,8 @@ zip4! f m₁ m₂ m₃ m₄ =
     zip! g (zip-pair m₁ m₂) (zip-pair m₃ m₄)
 
 -- Type signature of Atlas-Δconst is boilerplate.
-Atlas-Δconst : ∀ {Γ} → (c : Atlas-const) →
-  Atlas-term Γ (Atlas-Δtype (Atlas-lookup c))
+Atlas-Δconst : ∀ {Γ τ} → (c : Atlas-const τ) →
+  Atlas-term Γ (Atlas-Δtype τ)
 
 Atlas-Δconst true  = const false
 Atlas-Δconst false = const false
@@ -362,6 +349,5 @@ Atlas-Δconst (fold {κ} {α} {β}) =
 Atlas = calculus-with
   Atlas-type
   Atlas-const
-  Atlas-lookup
   Atlas-Δtype
   Atlas-Δconst
