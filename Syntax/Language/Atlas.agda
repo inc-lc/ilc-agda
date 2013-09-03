@@ -83,6 +83,23 @@ Atlas-term = Term {Atlas-type} {Atlas-const}
 -- There's probably a uniform way to lift constants
 -- into term constructors.
 
+true! : ∀ {Γ} →
+  Atlas-term Γ (base Bool)
+true! = const true
+
+false! : ∀ {Γ} →
+  Atlas-term Γ (base Bool)
+false! = const false
+
+xor! : ∀ {Γ} →
+  Atlas-term Γ (base Bool) → Atlas-term Γ (base Bool) →
+  Atlas-term Γ (base Bool)
+xor! = app₂ (const xor)
+
+empty! : ∀ {κ ι Γ} →
+  Atlas-term Γ (base (Map κ ι))
+empty! = const empty
+
 update! : ∀ {κ ι Γ} →
   Atlas-term Γ (base κ) → Atlas-term Γ (base ι) →
   Atlas-term Γ (base (Map κ ι)) →
@@ -133,7 +150,7 @@ Pair α β = Map α β
 pair : ∀ {α β Γ} →
   Atlas-term Γ (base α) → Atlas-term Γ (base β) →
   Atlas-term Γ (base (Pair α β))
-pair s t = update! s t (const empty)
+pair s t = update! s t empty!
 
 pair-term : ∀ {α β Γ} →
   Atlas-term Γ (base α ⇒ base β ⇒ base (Pair α β))
@@ -238,17 +255,17 @@ zip4! f m₁ m₂ m₃ m₄ =
 Atlas-Δconst : ∀ {Γ τ} → (c : Atlas-const τ) →
   Atlas-term Γ (Atlas-Δtype τ)
 
-Atlas-Δconst true  = const false
-Atlas-Δconst false = const false
+Atlas-Δconst true  = false!
+Atlas-Δconst false = false!
 
 -- Δxor = λ x Δx y Δy → Δx xor Δy
 Atlas-Δconst xor =
   let
     Δx = var (that (that this))
     Δy = var this
-  in abs (abs (abs (abs (app₂ (const xor) Δx Δy))))
+  in abs (abs (abs (abs (xor! Δx Δy))))
 
-Atlas-Δconst empty = const empty
+Atlas-Δconst empty = empty!
 
 -- If k ⊕ Δk ≡ k, then
 --   Δupdate k Δk v Δv m Δm = update k Δv Δm
