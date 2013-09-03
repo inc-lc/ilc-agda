@@ -16,18 +16,24 @@ data Atlas-type : Set where
   Map : (κ : Atlas-type) (ι : Atlas-type) → Atlas-type
 
 open import Syntax.Type.Plotkin Atlas-type
+open import Syntax.Context {Type}
+open import Syntax.Context.Plotkin Atlas-type
 
-data Atlas-const : Type → Set where
+data Atlas-const : Context → Type → Set where
   true  : Atlas-const
+    ∅
     (base Bool)
 
   false : Atlas-const
+    ∅
     (base Bool)
 
   xor   : Atlas-const
-    (base Bool ⇒ base Bool ⇒ base Bool)
+    (base Bool • base Bool • ∅)
+    (base Bool)
 
   empty  : ∀ {κ ι : Atlas-type} → Atlas-const
+    ∅
     (base (Map κ ι))
 
   -- `update key val my-map` would
@@ -36,10 +42,12 @@ data Atlas-const : Type → Set where
   -- - make an update otherwise
 
   update : ∀ {κ ι : Atlas-type} → Atlas-const
-    (base κ ⇒ base ι ⇒ base (Map κ ι) ⇒ base (Map κ ι))
+    (base κ • base ι • base (Map κ ι) • ∅)
+    (base (Map κ ι))
 
   lookup : ∀ {κ ι : Atlas-type} → Atlas-const
-    (base κ ⇒ base (Map κ ι) ⇒ base ι)
+    (base κ • base (Map κ ι) • ∅)
+    (base ι)
 
   -- Model of zip = Haskell Data.List.zipWith
   --
@@ -52,16 +60,18 @@ data Atlas-const : Type → Set where
   -- corresponding map.
 
   zip    : ∀ {κ a b c : Atlas-type} → Atlas-const
-    ((base κ ⇒ base a ⇒ base b ⇒ base c) ⇒
-     base (Map κ a) ⇒ base (Map κ b) ⇒ base (Map κ c))
+    ((base κ ⇒ base a ⇒ base b ⇒ base c) •
+     base (Map κ a) • base (Map κ b) • ∅)
+    (base (Map κ c))
 
   -- Model of fold = Haskell Data.Map.foldWithKey
   --
   -- foldWithKey :: (k → a → b → b) → b → Map k a → b
 
   fold   : ∀ {κ a b : Atlas-type} → Atlas-const
-   ((base κ ⇒ base a ⇒ base b ⇒ base b) ⇒
-    base b ⇒ base (Map κ a) ⇒ base b)
+   ((base κ ⇒ base a ⇒ base b ⇒ base b) •
+    base b • base (Map κ a) • ∅)
+   (base b)
 
 Atlas-Δbase : Atlas-type → Atlas-type
 -- change to a boolean is a xor-rand
@@ -72,8 +82,8 @@ Atlas-Δbase (Map key val) = (Map key (Atlas-Δbase val))
 Atlas-Δtype : Type → Type
 Atlas-Δtype = lift-Δtype₀ Atlas-Δbase
 
-open import Syntax.Context {Type}
 open import Syntax.Term.Plotkin {Atlas-type} {Atlas-const}
+open import Syntax.DeltaContext Type Atlas-Δtype
 
 -- Shorthands of constants
 true! : ∀ {Γ} →
@@ -119,7 +129,7 @@ fold! = lift-η-const fold
 -- Every base type has a known nil-change.
 -- The nil-change of ι is also the neutral element of Map κ Δι.
 
-neutral : ∀ {ι : Atlas-type} → Atlas-const (base ι)
+neutral : ∀ {ι : Atlas-type} → Atlas-const ∅ (base ι)
 neutral {Bool} = false
 neutral {Map κ ι} = empty {κ} {ι}
 
@@ -127,7 +137,7 @@ neutral-term : ∀ {ι Γ} → Term Γ (base ι)
 neutral-term {Bool}   = lift-η-const (neutral {Bool})
 neutral-term {Map κ ι} = lift-η-const (neutral {Map κ ι})
 
-nil-const : ∀ {ι : Atlas-type} → Atlas-const (base (Atlas-Δbase ι))
+nil-const : ∀ {ι : Atlas-type} → Atlas-const  ∅ (base (Atlas-Δbase ι))
 nil-const {ι} = neutral {Atlas-Δbase ι}
 
 nil-term : ∀ {ι Γ} → Term Γ (base (Atlas-Δbase ι))
@@ -244,9 +254,8 @@ zip4! f m₁ m₂ m₃ m₄ =
   in
     zip! g (zip-pair m₁ m₂) (zip-pair m₃ m₄)
 
--- Type signature of Atlas-Δconst is boilerplate.
-Atlas-Δconst : ∀ {Γ τ} → (c : Atlas-const τ) →
-  Term Γ (Atlas-Δtype τ)
+Atlas-Δconst : ∀ {Γ Σ τ} → (c : Atlas-const Σ τ) →
+  Term Γ (internalizeContext (ΔContext′ Σ) (Atlas-Δtype τ))
 
 Atlas-Δconst true  = false!
 Atlas-Δconst false = false!

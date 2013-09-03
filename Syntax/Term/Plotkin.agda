@@ -1,23 +1,43 @@
 import Syntax.Type.Plotkin as Type
+import Syntax.Context as Context
 
 module Syntax.Term.Plotkin
     {B : Set {- of base types -}}
-    {C : Type.Type B → Set {- of constants -}}
+    {C : Context.Context {Type.Type B} → Type.Type B → Set {- of constants -}}
   where
 
 -- Terms of languages described in Plotkin style
 
 open import Function using (_∘_)
 open import Data.Product
+
 open Type B
-open import Syntax.Context {Type}
+open Context {Type}
+
+open import Denotation.Environment Type
+open import Syntax.Context.Plotkin B
 
 data Term
   (Γ : Context) :
   (τ : Type) → Set
-  where
-  const : ∀ {τ} →
-    (c : C τ) →
+
+data Terms
+  (Γ : Context) :
+  (Σ : Context) → Set
+
+data Terms Γ where
+  ∅ : Terms Γ ∅
+  _•_ : ∀ {τ Σ} →
+    Term Γ τ →
+    Terms Γ Σ →
+    Terms Γ (τ • Σ)
+
+infixr 9 _•_
+
+data Term Γ where
+  const : ∀ {Σ τ} →
+    (c : C Σ τ) →
+    Terms Γ Σ →
     Term Γ τ
   var : ∀ {τ} →
     (x : Var Γ τ) →
@@ -99,10 +119,19 @@ weaken : ∀ {Γ₁ Γ₂ τ} →
   (Γ₁≼Γ₂ : Γ₁ ≼ Γ₂) →
   Term Γ₁ τ →
   Term Γ₂ τ
-weaken Γ₁≼Γ₂ (const c) = const c
+
+weakenAll : ∀ {Γ₁ Γ₂ Σ} →
+  (Γ₁≼Γ₂ : Γ₁ ≼ Γ₂) →
+  Terms Γ₁ Σ →
+  Terms Γ₂ Σ
+
+weaken Γ₁≼Γ₂ (const c ts) = const c (weakenAll Γ₁≼Γ₂ ts)
 weaken Γ₁≼Γ₂ (var x) = var (lift Γ₁≼Γ₂ x)
 weaken Γ₁≼Γ₂ (app s t) = app (weaken Γ₁≼Γ₂ s) (weaken Γ₁≼Γ₂ t)
 weaken Γ₁≼Γ₂ (abs {σ} t) = abs (weaken (keep σ • Γ₁≼Γ₂) t)
+
+weakenAll Γ₁≼Γ₂ ∅ = ∅
+weakenAll Γ₁≼Γ₂ (t • ts) = weaken Γ₁≼Γ₂ t • weakenAll Γ₁≼Γ₂ ts
 
 -- Specialized weakening
 weaken₁ : ∀ {Γ σ τ} →
@@ -146,15 +175,14 @@ app₆ : ∀ {Γ α β γ δ ε ζ η} →
     Term Γ ε → Term Γ ζ → Term Γ η
 app₆ f x = app₅ (app f x)
 
-TermConstructor : (Γ : Context) → Type → Set
-TermConstructor Γ (base ι) = Term Γ (base ι)
-TermConstructor Γ (τ₁ ⇒ τ₂) = Term Γ τ₁ → TermConstructor Γ τ₂
+TermConstructor : (Γ Σ : Context) (τ : Type) → Set
+TermConstructor Γ ∅ τ′ = Term Γ τ′
+TermConstructor Γ (τ • Σ) τ′ = Term Γ τ → TermConstructor Γ Σ τ′
 
--- this two-level η-expansion lifts
--- terms of function type to functions on terms
-lift-η : ∀ {τ Γ} → Term Γ τ → TermConstructor Γ τ
-lift-η {base ι} t = t
-lift-η {τ₁ ⇒ τ₂} t = λ t₁ → lift-η (app t t₁)
+-- helper for lift-η-const, don't try to understand at home
+lift-η-const-rec : ∀ {Σ Γ τ} → (Terms Γ Σ → Term Γ τ) → TermConstructor Γ Σ τ
+lift-η-const-rec {∅} k = k ∅
+lift-η-const-rec {τ • Σ} k = λ t → lift-η-const-rec (λ ts → k (t • ts))
 
-lift-η-const : ∀ {τ} → C τ → ∀ {Γ} → TermConstructor Γ τ
-lift-η-const constant = lift-η (const constant)
+lift-η-const : ∀ {Σ τ} → C Σ τ → ∀ {Γ} → TermConstructor Γ Σ τ
+lift-η-const constant = lift-η-const-rec (const constant)

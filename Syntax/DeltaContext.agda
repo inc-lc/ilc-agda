@@ -10,3 +10,8 @@ open import Syntax.Context {Type}
 ΔContext : Context → Context
 ΔContext ∅ = ∅
 ΔContext (τ • Γ) = ΔType τ • τ • ΔContext Γ
+
+-- like ΔContext, but ΔType τ and τ are swapped
+ΔContext′ : Context → Context
+ΔContext′ ∅ = ∅
+ΔContext′ (τ • Γ) = τ • ΔType τ • ΔContext′ Γ
