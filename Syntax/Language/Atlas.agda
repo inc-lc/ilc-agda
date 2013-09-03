@@ -124,15 +124,15 @@ neutral {Bool} = false
 neutral {Map κ ι} = empty {κ} {ι}
 
 neutral-term : ∀ {ι Γ} → Term Γ (base ι)
-neutral-term {Bool}   = const (neutral {Bool})
-neutral-term {Map κ ι} = const (neutral {Map κ ι})
+neutral-term {Bool}   = lift-η-const (neutral {Bool})
+neutral-term {Map κ ι} = lift-η-const (neutral {Map κ ι})
 
 nil-const : ∀ {ι : Atlas-type} → Atlas-const (base (Atlas-Δbase ι))
 nil-const {ι} = neutral {Atlas-Δbase ι}
 
 nil-term : ∀ {ι Γ} → Term Γ (base (Atlas-Δbase ι))
-nil-term {Bool}   = const (nil-const {Bool})
-nil-term {Map κ ι} = const (nil-const {Map κ ι})
+nil-term {Bool}   = lift-η-const (nil-const {Bool})
+nil-term {Map κ ι} = lift-η-const (nil-const {Map κ ι})
 
 -- Nonfunctional products can be encoded.
 -- The incremental behavior of products thus encoded is weird:
@@ -173,16 +173,16 @@ zip-pair = zip! (abs pair-term)
 
 Atlas-diff : ∀ {ι Γ} →
   Term Γ (base ι ⇒ base ι ⇒ Atlas-Δtype (base ι))
-Atlas-diff {Bool} = const xor
-Atlas-diff {Map κ ι} = app (const zip) (abs Atlas-diff)
+Atlas-diff {Bool} = abs (abs (lift-η-const xor (var (that this)) (var this)))
+Atlas-diff {Map κ ι} = abs (abs (lift-η-const zip (abs Atlas-diff) (var (that this)) (var this)))
 
 -- b ⊕ Δb = b xor Δb
 -- m ⊕ Δm = zip _⊕_ m Δm
 
 Atlas-apply : ∀ {ι Γ} →
   Term Γ (Atlas-Δtype (base ι) ⇒ base ι ⇒ base ι)
-Atlas-apply {Bool} = const xor
-Atlas-apply {Map κ ι} = app (const zip) (abs Atlas-apply)
+Atlas-apply {Bool} = abs (abs (lift-η-const xor (var (that this)) (var this)))
+Atlas-apply {Map κ ι} = abs (abs (lift-η-const zip (abs Atlas-apply) (var (that this)) (var this)))
 
 -- Shorthands for working with diff-term and apply-term
 
