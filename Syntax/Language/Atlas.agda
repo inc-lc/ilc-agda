@@ -15,9 +15,9 @@ data Atlas-type : Set where
   Bool : Atlas-type
   Map : (κ : Atlas-type) (ι : Atlas-type) → Atlas-type
 
-open import Syntax.Type.Plotkin
+open import Syntax.Type.Plotkin Atlas-type
 
-data Atlas-const : Type Atlas-type → Set where
+data Atlas-const : Type → Set where
   true  : Atlas-const
     (base Bool)
 
@@ -69,17 +69,17 @@ Atlas-Δbase Bool = Bool
 -- change to a map is change to its values
 Atlas-Δbase (Map key val) = (Map key (Atlas-Δbase val))
 
-Atlas-Δtype : Type Atlas-type → Type Atlas-type
-Atlas-Δtype = lift-Δtype₀ _ Atlas-Δbase
+Atlas-Δtype : Type → Type
+Atlas-Δtype = lift-Δtype₀ Atlas-Δbase
 
 open import Syntax.Context
 
 Atlas-context : Set
-Atlas-context = Context {Type Atlas-type}
+Atlas-context = Context {Type}
 
 open import Syntax.Term.Plotkin
 
-Atlas-term : Atlas-context → Type Atlas-type → Set
+Atlas-term : Atlas-context → Type → Set
 Atlas-term = Term {Atlas-type} {Atlas-const}
 
 -- Shorthands of constants
