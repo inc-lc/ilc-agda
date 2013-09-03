@@ -145,3 +145,16 @@ app₆ : ∀ {Γ α β γ δ ε ζ η} →
     Term Γ α → Term Γ β → Term Γ γ → Term Γ δ →
     Term Γ ε → Term Γ ζ → Term Γ η
 app₆ f x = app₅ (app f x)
+
+TermConstructor : (Γ : Context) → Type → Set
+TermConstructor Γ (base ι) = Term Γ (base ι)
+TermConstructor Γ (τ₁ ⇒ τ₂) = Term Γ τ₁ → TermConstructor Γ τ₂
+
+-- this two-level η-expansion lifts
+-- terms of function type to functions on terms
+lift-η : ∀ {τ Γ} → Term Γ τ → TermConstructor Γ τ
+lift-η {base ι} t = t
+lift-η {τ₁ ⇒ τ₂} t = λ t₁ → lift-η (app t t₁)
+
+lift-η-const : ∀ {τ} → C τ → ∀ {Γ} → TermConstructor Γ τ
+lift-η-const constant = lift-η (const constant)

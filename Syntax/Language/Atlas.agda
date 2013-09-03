@@ -76,49 +76,45 @@ open import Syntax.Context {Type}
 open import Syntax.Term.Plotkin {Atlas-type} {Atlas-const}
 
 -- Shorthands of constants
---
--- There's probably a uniform way to lift constants
--- into term constructors.
-
 true! : ∀ {Γ} →
   Term Γ (base Bool)
-true! = const true
+true! = lift-η-const true
 
 false! : ∀ {Γ} →
   Term Γ (base Bool)
-false! = const false
+false! = lift-η-const false
 
 xor! : ∀ {Γ} →
   Term Γ (base Bool) → Term Γ (base Bool) →
   Term Γ (base Bool)
-xor! = app₂ (const xor)
+xor! = lift-η-const xor
 
 empty! : ∀ {κ ι Γ} →
   Term Γ (base (Map κ ι))
-empty! = const empty
+empty! = lift-η-const empty
 
 update! : ∀ {κ ι Γ} →
   Term Γ (base κ) → Term Γ (base ι) →
   Term Γ (base (Map κ ι)) →
   Term Γ (base (Map κ ι))
-update! = app₃ (const update)
+update! = lift-η-const update
 
 lookup! : ∀ {κ ι Γ} →
   Term Γ (base κ) → Term Γ (base (Map κ ι)) →
   Term Γ (base ι)
-lookup! = app₂ (const lookup)
+lookup! = lift-η-const lookup
 
 zip! : ∀ {κ a b c Γ} →
   Term Γ (base κ ⇒ base a ⇒ base b ⇒ base c) →
   Term Γ (base (Map κ a)) → Term Γ (base (Map κ b)) →
   Term Γ (base (Map κ c))
-zip! = app₃ (const zip)
+zip! = lift-η-const zip
 
 fold! : ∀ {κ a b Γ} →
   Term Γ (base κ ⇒ base a ⇒ base b ⇒ base b) →
   Term Γ (base b) → Term Γ (base (Map κ a)) →
   Term Γ (base b)
-fold! = app₃ (const fold)
+fold! = lift-η-const fold
 
 -- Every base type has a known nil-change.
 -- The nil-change of ι is also the neutral element of Map κ Δι.
