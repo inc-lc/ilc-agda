@@ -16,13 +16,19 @@ data Term
   (Γ : Context) :
   (τ : Type) → Set
   where
-  const : ∀ {τ} → (c : C τ) → Term Γ τ
-  var : ∀ {τ} → (x : Var Γ τ) → Term Γ τ
+  const : ∀ {τ} →
+    (c : C τ) →
+    Term Γ τ
+  var : ∀ {τ} →
+    (x : Var Γ τ) →
+    Term Γ τ
   app : ∀ {σ τ}
-    (s : Term Γ (σ ⇒ τ))
-    (t : Term Γ σ) → Term Γ τ
+    (s : Term Γ (σ ⇒ τ)) →
+    (t : Term Γ σ) →
+    Term Γ τ
   abs : ∀ {σ τ}
-    (t : Term (σ • Γ) τ) → Term Γ (σ ⇒ τ)
+    (t : Term (σ • Γ) τ) →
+    Term Γ (σ ⇒ τ)
 
 -- g ⊝ f  = λ x . λ Δx . g (x ⊕ Δx) ⊝ f x
 -- f ⊕ Δf = λ x . f x ⊕ Δf x (x ⊝ x)
