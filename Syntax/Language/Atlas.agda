@@ -73,11 +73,7 @@ Atlas-Δtype : Type → Type
 Atlas-Δtype = lift-Δtype₀ Atlas-Δbase
 
 open import Syntax.Context {Type}
-
-open import Syntax.Term.Plotkin
-
-Atlas-term : Context → Type → Set
-Atlas-term = Term {Atlas-type} {Atlas-const}
+open import Syntax.Term.Plotkin {Atlas-type} {Atlas-const}
 
 -- Shorthands of constants
 --
@@ -85,43 +81,43 @@ Atlas-term = Term {Atlas-type} {Atlas-const}
 -- into term constructors.
 
 true! : ∀ {Γ} →
-  Atlas-term Γ (base Bool)
+  Term Γ (base Bool)
 true! = const true
 
 false! : ∀ {Γ} →
-  Atlas-term Γ (base Bool)
+  Term Γ (base Bool)
 false! = const false
 
 xor! : ∀ {Γ} →
-  Atlas-term Γ (base Bool) → Atlas-term Γ (base Bool) →
-  Atlas-term Γ (base Bool)
+  Term Γ (base Bool) → Term Γ (base Bool) →
+  Term Γ (base Bool)
 xor! = app₂ (const xor)
 
 empty! : ∀ {κ ι Γ} →
-  Atlas-term Γ (base (Map κ ι))
+  Term Γ (base (Map κ ι))
 empty! = const empty
 
 update! : ∀ {κ ι Γ} →
-  Atlas-term Γ (base κ) → Atlas-term Γ (base ι) →
-  Atlas-term Γ (base (Map κ ι)) →
-  Atlas-term Γ (base (Map κ ι))
+  Term Γ (base κ) → Term Γ (base ι) →
+  Term Γ (base (Map κ ι)) →
+  Term Γ (base (Map κ ι))
 update! = app₃ (const update)
 
 lookup! : ∀ {κ ι Γ} →
-  Atlas-term Γ (base κ) → Atlas-term Γ (base (Map κ ι)) →
-  Atlas-term Γ (base ι)
+  Term Γ (base κ) → Term Γ (base (Map κ ι)) →
+  Term Γ (base ι)
 lookup! = app₂ (const lookup)
 
 zip! : ∀ {κ a b c Γ} →
-  Atlas-term Γ (base κ ⇒ base a ⇒ base b ⇒ base c) →
-  Atlas-term Γ (base (Map κ a)) → Atlas-term Γ (base (Map κ b)) →
-  Atlas-term Γ (base (Map κ c))
+  Term Γ (base κ ⇒ base a ⇒ base b ⇒ base c) →
+  Term Γ (base (Map κ a)) → Term Γ (base (Map κ b)) →
+  Term Γ (base (Map κ c))
 zip! = app₃ (const zip)
 
 fold! : ∀ {κ a b Γ} →
-  Atlas-term Γ (base κ ⇒ base a ⇒ base b ⇒ base b) →
-  Atlas-term Γ (base b) → Atlas-term Γ (base (Map κ a)) →
-  Atlas-term Γ (base b)
+  Term Γ (base κ ⇒ base a ⇒ base b ⇒ base b) →
+  Term Γ (base b) → Term Γ (base (Map κ a)) →
+  Term Γ (base b)
 fold! = app₃ (const fold)
 
 -- Every base type has a known nil-change.
@@ -131,14 +127,14 @@ neutral : ∀ {ι : Atlas-type} → Atlas-const (base ι)
 neutral {Bool} = false
 neutral {Map κ ι} = empty {κ} {ι}
 
-neutral-term : ∀ {ι Γ} → Atlas-term Γ (base ι)
+neutral-term : ∀ {ι Γ} → Term Γ (base ι)
 neutral-term {Bool}   = const (neutral {Bool})
 neutral-term {Map κ ι} = const (neutral {Map κ ι})
 
 nil-const : ∀ {ι : Atlas-type} → Atlas-const (base (Atlas-Δbase ι))
 nil-const {ι} = neutral {Atlas-Δbase ι}
 
-nil-term : ∀ {ι Γ} → Atlas-term Γ (base (Atlas-Δbase ι))
+nil-term : ∀ {ι Γ} → Term Γ (base (Atlas-Δbase ι))
 nil-term {Bool}   = const (nil-const {Bool})
 nil-term {Map κ ι} = const (nil-const {Map κ ι})
 
@@ -149,18 +145,18 @@ Pair : Atlas-type → Atlas-type → Atlas-type
 Pair α β = Map α β
 
 pair : ∀ {α β Γ} →
-  Atlas-term Γ (base α) → Atlas-term Γ (base β) →
-  Atlas-term Γ (base (Pair α β))
+  Term Γ (base α) → Term Γ (base β) →
+  Term Γ (base (Pair α β))
 pair s t = update! s t empty!
 
 pair-term : ∀ {α β Γ} →
-  Atlas-term Γ (base α ⇒ base β ⇒ base (Pair α β))
+  Term Γ (base α ⇒ base β ⇒ base (Pair α β))
 pair-term = abs (abs (pair (var (that this)) (var this)))
 
 uncurry : ∀ {α β γ Γ} →
-  Atlas-term Γ (base α ⇒ base β ⇒ base γ) →
-  Atlas-term Γ (base (Pair α β)) →
-  Atlas-term Γ (base γ)
+  Term Γ (base α ⇒ base β ⇒ base γ) →
+  Term Γ (base (Pair α β)) →
+  Term Γ (base γ)
 uncurry f p =
   let
     a = var (that (that this))
@@ -170,8 +166,8 @@ uncurry f p =
     fold! g neutral-term p
 
 zip-pair : ∀ {κ a b Γ} →
-  Atlas-term Γ (base (Map κ a)) → Atlas-term Γ (base (Map κ b)) →
-  Atlas-term Γ (base (Map κ (Pair a b)))
+  Term Γ (base (Map κ a)) → Term Γ (base (Map κ b)) →
+  Term Γ (base (Map κ (Pair a b)))
 zip-pair = zip! (abs pair-term)
 
 -- diff-term and apply-term
@@ -180,7 +176,7 @@ zip-pair = zip! (abs pair-term)
 -- m₀ ⊝ m₁ = zip _⊝_ m₀ m₁
 
 Atlas-diff : ∀ {ι Γ} →
-  Atlas-term Γ (base ι ⇒ base ι ⇒ Atlas-Δtype (base ι))
+  Term Γ (base ι ⇒ base ι ⇒ Atlas-Δtype (base ι))
 Atlas-diff {Bool} = const xor
 Atlas-diff {Map κ ι} = app (const zip) (abs Atlas-diff)
 
@@ -188,35 +184,35 @@ Atlas-diff {Map κ ι} = app (const zip) (abs Atlas-diff)
 -- m ⊕ Δm = zip _⊕_ m Δm
 
 Atlas-apply : ∀ {ι Γ} →
-  Atlas-term Γ (Atlas-Δtype (base ι) ⇒ base ι ⇒ base ι)
+  Term Γ (Atlas-Δtype (base ι) ⇒ base ι ⇒ base ι)
 Atlas-apply {Bool} = const xor
 Atlas-apply {Map κ ι} = app (const zip) (abs Atlas-apply)
 
 -- Shorthands for working with diff-term and apply-term
 
 diff : ∀ {τ Γ} →
-  Atlas-term Γ τ → Atlas-term Γ τ →
-  Atlas-term Γ (Atlas-Δtype τ)
+  Term Γ τ → Term Γ τ →
+  Term Γ (Atlas-Δtype τ)
 diff = app₂ (lift-diff Atlas-diff Atlas-apply)
 
 apply : ∀ {τ Γ} →
-  Atlas-term Γ (Atlas-Δtype τ) → Atlas-term Γ τ →
-  Atlas-term Γ τ
+  Term Γ (Atlas-Δtype τ) → Term Γ τ →
+  Term Γ τ
 apply = app₂ (lift-apply Atlas-diff Atlas-apply)
 
 -- Shorthands for creating changes corresponding to
 -- insertion/deletion.
 
 insert : ∀ {κ ι Γ} →
-  Atlas-term Γ (base κ) → Atlas-term Γ (base ι) →
+  Term Γ (base κ) → Term Γ (base ι) →
   -- last argument is the change accumulator
-  Atlas-term Γ (Atlas-Δtype (base (Map κ ι))) →
-  Atlas-term Γ (Atlas-Δtype (base (Map κ ι)))
+  Term Γ (Atlas-Δtype (base (Map κ ι))) →
+  Term Γ (Atlas-Δtype (base (Map κ ι)))
 
 delete : ∀ {κ ι Γ} →
-  Atlas-term Γ (base κ) → Atlas-term Γ (base ι) →
-  Atlas-term Γ (Atlas-Δtype (base (Map κ ι))) →
-  Atlas-term Γ (Atlas-Δtype (base (Map κ ι)))
+  Term Γ (base κ) → Term Γ (base ι) →
+  Term Γ (Atlas-Δtype (base (Map κ ι))) →
+  Term Γ (Atlas-Δtype (base (Map κ ι)))
 
 insert k v acc = update! k (diff v neutral-term) acc
 delete k v acc = update! k (diff neutral-term v) acc
@@ -224,9 +220,9 @@ delete k v acc = update! k (diff neutral-term v) acc
 -- Shorthand for 4-way zip
 zip4! : ∀ {κ a b c d e Γ} →
   let
-    t:_ = λ ι → Atlas-term Γ (base ι)
+    t:_ = λ ι → Term Γ (base ι)
   in
-    Atlas-term Γ
+    Term Γ
       (base κ ⇒ base a ⇒ base b ⇒ base c ⇒ base d ⇒ base e) →
     t: Map κ a → t: Map κ b → t: Map κ c → t: Map κ d → t: Map κ e
 
@@ -254,7 +250,7 @@ zip4! f m₁ m₂ m₃ m₄ =
 
 -- Type signature of Atlas-Δconst is boilerplate.
 Atlas-Δconst : ∀ {Γ τ} → (c : Atlas-const τ) →
-  Atlas-term Γ (Atlas-Δtype τ)
+  Term Γ (Atlas-Δtype τ)
 
 Atlas-Δconst true  = false!
 Atlas-Δconst false = false!
