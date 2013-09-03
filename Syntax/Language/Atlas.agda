@@ -11,11 +11,11 @@ module Syntax.Language.Atlas where
 -- `k -> v` means mapping `k` to the change from `v` to the
 -- neutral element.
 
-open import Syntax.Language.Calculus
-
 data Atlas-type : Set where
   Bool : Atlas-type
   Map : (κ : Atlas-type) (ι : Atlas-type) → Atlas-type
+
+open import Syntax.Type.Plotkin
 
 data Atlas-const : Type Atlas-type → Set where
   true  : Atlas-const
@@ -72,8 +72,12 @@ Atlas-Δbase (Map key val) = (Map key (Atlas-Δbase val))
 Atlas-Δtype : Type Atlas-type → Type Atlas-type
 Atlas-Δtype = lift-Δtype₀ _ Atlas-Δbase
 
+open import Syntax.Context
+
 Atlas-context : Set
 Atlas-context = Context {Type Atlas-type}
+
+open import Syntax.Term.Plotkin
 
 Atlas-term : Atlas-context → Type Atlas-type → Set
 Atlas-term = Term {Atlas-type} {Atlas-const}
@@ -362,6 +366,8 @@ Atlas-Δconst (fold {κ} {α} {β}) =
     in
       abs (abs (abs (abs (abs (abs
         (proj₂ (fold! g (pair z Δz) (zip-pair m Δm))))))))
+
+open import Syntax.Language.Calculus
 
 Atlas = calculus-with
   Atlas-type
