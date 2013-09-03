@@ -72,14 +72,11 @@ Atlas-Δbase (Map key val) = (Map key (Atlas-Δbase val))
 Atlas-Δtype : Type → Type
 Atlas-Δtype = lift-Δtype₀ Atlas-Δbase
 
-open import Syntax.Context
-
-Atlas-context : Set
-Atlas-context = Context {Type}
+open import Syntax.Context {Type}
 
 open import Syntax.Term.Plotkin
 
-Atlas-term : Atlas-context → Type → Set
+Atlas-term : Context → Type → Set
 Atlas-term = Term {Atlas-type} {Atlas-const}
 
 -- Shorthands of constants
