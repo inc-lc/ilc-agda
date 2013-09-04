@@ -11,11 +11,7 @@ module Syntax.Language.Atlas where
 -- `k -> v` means mapping `k` to the change from `v` to the
 -- neutral element.
 
-data Atlas-type : Set where
-  Bool : Atlas-type
-  Map : (κ : Atlas-type) (ι : Atlas-type) → Atlas-type
-
-open import Syntax.Type.Plotkin Atlas-type
+open import Syntax.Type.Atlas
 open import Syntax.Context {Type}
 open import Syntax.Context.Plotkin Atlas-type
 
@@ -40,6 +36,8 @@ data Atlas-const : Context → Type → Set where
   -- - insert if `key` is not present in `my-map`
   -- - delete if `val` is the neutral element
   -- - make an update otherwise
+
+-- Why do we only allow for base types here? We shouldn't.
 
   update : ∀ {κ ι : Atlas-type} → Atlas-const
     (base κ • base ι • base (Map κ ι) • ∅)
@@ -72,15 +70,6 @@ data Atlas-const : Context → Type → Set where
    ((base κ ⇒ base a ⇒ base b ⇒ base b) •
     base b • base (Map κ a) • ∅)
    (base b)
-
-Atlas-Δbase : Atlas-type → Atlas-type
--- change to a boolean is a xor-rand
-Atlas-Δbase Bool = Bool
--- change to a map is change to its values
-Atlas-Δbase (Map key val) = (Map key (Atlas-Δbase val))
-
-Atlas-Δtype : Type → Type
-Atlas-Δtype = lift-Δtype₀ Atlas-Δbase
 
 open import Syntax.Term.Plotkin {Atlas-type} {Atlas-const}
 open import Syntax.DeltaContext Type Atlas-Δtype
