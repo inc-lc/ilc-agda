@@ -11,7 +11,7 @@ module Syntax.Term.Popl14 where
 open import Syntax.Context.Popl14 public
 open import Data.Integer
 
-open import Syntax.Language.Popl14 public
+open import Syntax.Constant.Popl14 public
 
 fit : ∀ {τ Γ} → Term Γ τ → Term (ΔContext Γ) τ
 fit = weaken Γ≼ΔΓ
