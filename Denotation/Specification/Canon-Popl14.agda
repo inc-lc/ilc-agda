@@ -34,7 +34,7 @@ correctness : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ}
 ⟦ this   ⟧ΔVar (cons v dv R[v,dv] ρ) = dv
 ⟦ that x ⟧ΔVar (cons v dv R[v,dv] ρ) = ⟦ x ⟧ΔVar ρ
 
-⟦_⟧Δ (int n) ρ = + 0
+⟦_⟧Δ (intlit n) ρ = + 0
 ⟦_⟧Δ (add s t) ρ = ⟦ s ⟧Δ ρ + ⟦ t ⟧Δ ρ
 ⟦_⟧Δ (minus t) ρ = - ⟦ t ⟧Δ ρ
 ⟦_⟧Δ empty ρ = emptyBag
@@ -68,7 +68,7 @@ validVar : ∀ {τ Γ} (x : Var Γ τ) →
 validVar this {cons v Δv R[v,Δv] _} = R[v,Δv]
 validVar (that x) {cons _ _ _ ρ} = validVar x
 
-validity {t = int n}       = tt
+validity {t = intlit n}       = tt
 validity {t = add s t}     = tt
 validity {t = minus t}     = tt
 validity {t = empty}       = tt
@@ -110,7 +110,7 @@ correctVar : ∀ {τ Γ} {x : Var Γ τ} {ρ : ΔEnv Γ} →
 correctVar {x = this  } {cons v dv R[v,dv] ρ} = refl
 correctVar {x = that y} {cons v dv R[v,dv] ρ} = correctVar {x = y} {ρ}
 
-correctness {t = int n} = right-id-int n
+correctness {t = intlit n} = right-id-int n
 correctness {t = add s t} {ρ} = trans
   (mn·pq=mp·nq
     {⟦ s ⟧ (ignore ρ)} {⟦ t ⟧ (ignore ρ)} {⟦ s ⟧Δ ρ} {⟦ t ⟧Δ ρ})

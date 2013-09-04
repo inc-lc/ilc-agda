@@ -8,7 +8,7 @@ open import Data.Integer
 open import Syntax.FreeVars.Popl14
 
 derive+ : ∀ {τ Γ} → Term Γ τ → Term (ΔContext Γ) (ΔType τ)
-derive+ (int n) = int (+ 0)
+derive+ (intlit n) = intlit (+ 0)
 derive+ (add s t) = add (derive+ s) (derive+ t)
 derive+ (minus t) = minus (derive+ t)
 derive+ empty = empty

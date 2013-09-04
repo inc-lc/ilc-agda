@@ -17,7 +17,7 @@ open import Theorem.CongApp
 
 ⟦_⟧Term : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧ → ⟦ τ ⟧
 
-⟦ int n ⟧Term ρ = n
+⟦ intlit n ⟧Term ρ = n
 ⟦ add s t ⟧Term ρ = ⟦ s ⟧Term ρ + ⟦ t ⟧Term ρ
 ⟦ minus t ⟧Term ρ = - ⟦ t ⟧Term ρ
 
@@ -39,7 +39,7 @@ meaningOfTerm = meaning ⟦_⟧Term
 weaken-sound : ∀ {Γ₁ Γ₂ τ} {Γ₁≼Γ₂ : Γ₁ ≼ Γ₂} (t : Term Γ₁ τ) →
   ∀ (ρ : ⟦ Γ₂ ⟧) → ⟦ weaken Γ₁≼Γ₂ t ⟧ ρ ≡ ⟦ t ⟧ (⟦ Γ₁≼Γ₂ ⟧ ρ)
 
-weaken-sound (int n) ρ = refl
+weaken-sound (intlit n) ρ = refl
 weaken-sound (add s t) ρ =
   cong₂ _+_ (weaken-sound s ρ) (weaken-sound t ρ)
 weaken-sound (minus t) ρ = cong -_ (weaken-sound t ρ)

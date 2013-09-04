@@ -12,7 +12,7 @@ open import Syntax.Context.Popl14 public
 open import Data.Integer
 
 data Term (Γ : Context) : Type -> Set where
-  int : (n : ℤ) → Term Γ int
+  intlit : (n : ℤ) → Term Γ int
   add : (s : Term Γ int) (t : Term Γ int) → Term Γ int
   minus : (t : Term Γ int) → Term Γ int
 
@@ -29,7 +29,7 @@ data Term (Γ : Context) : Type -> Set where
   abs : ∀ {σ τ} → (t : Term (σ • Γ) τ) → Term Γ (σ ⇒ τ)
 
 weaken : ∀ {Γ₁ Γ₂ τ} → (Γ₁≼Γ₂ : Γ₁ ≼ Γ₂) → Term Γ₁ τ → Term Γ₂ τ
-weaken Γ₁≼Γ₂ (int x) = int x
+weaken Γ₁≼Γ₂ (intlit x) = intlit x
 weaken Γ₁≼Γ₂ (add s t) = add (weaken Γ₁≼Γ₂ s) (weaken Γ₁≼Γ₂ t)
 weaken Γ₁≼Γ₂ (minus t) = minus (weaken Γ₁≼Γ₂ t)
 
