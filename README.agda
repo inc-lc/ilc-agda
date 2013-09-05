@@ -23,19 +23,29 @@ import Denotation.Notation
 import Denotation.Specification.Canon-Popl14
 import Denotation.Specification.Optimized-Popl14
 import Denotation.Value.Popl14
+import experimental.DecidableEq
+import experimental.FoldableBag
+import experimental.FoldableBagParametric
+import experimental.NormalizationByEvaluation
+import experimental.OrdBag
+import experimental.Sorting
 import Postulate.Bag-Popl14
 import Postulate.Extensionality
 import Property.Uniqueness
 import Structure.Bag.Popl14
 import Structure.Tuples
+import Syntax.Constant.Popl14
+import Syntax.Context.Plotkin
 import Syntax.Context.Popl14
 import Syntax.Context
+import Syntax.DeltaContext
 import Syntax.Derive.Canon-Popl14
 import Syntax.Derive.Optimized-Popl14
 import Syntax.FreeVars.Popl14
 {- Language definition of Calc. Atlas -}
 import Syntax.Language.Atlas
 import Syntax.Language.Calculus
+import Syntax.Language.Popl14
 {- Terms of a calculus described in Plotkin style
   - types are parametric in base types
   - terms are parametric in constants
@@ -45,6 +55,7 @@ import Syntax.Language.Calculus
   http://dx.doi.org/10.1016/0304-3975(77)90044-5 -}
 import Syntax.Term.Plotkin
 import Syntax.Term.Popl14
+import Syntax.Type.Atlas
 import Syntax.Type.Plotkin
 import Syntax.Type.Popl14
 import Syntax.Vars
@@ -55,9 +66,3 @@ import Theorem.IrrelevanceUnique-Popl14
 import Theorem.ProductUnique
 import Theorem.ValidityUnique-Popl14
 import UNDEFINED
-import experimental.DecidableEq
-import experimental.FoldableBag
-import experimental.FoldableBagParametric
-import experimental.NormalizationByEvaluation
-import experimental.OrdBag
-import experimental.Sorting
