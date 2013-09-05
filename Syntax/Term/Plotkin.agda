@@ -25,15 +25,6 @@ data Terms
   (Γ : Context) :
   (Σ : Context) → Set
 
-data Terms Γ where
-  ∅ : Terms Γ ∅
-  _•_ : ∀ {τ Σ} →
-    Term Γ τ →
-    Terms Γ Σ →
-    Terms Γ (τ • Σ)
-
-infixr 9 _•_
-
 data Term Γ where
   const : ∀ {Σ τ} →
     (c : C Σ τ) →
@@ -49,6 +40,15 @@ data Term Γ where
   abs : ∀ {σ τ}
     (t : Term (σ • Γ) τ) →
     Term Γ (σ ⇒ τ)
+
+data Terms Γ where
+  ∅ : Terms Γ ∅
+  _•_ : ∀ {τ Σ} →
+    Term Γ τ →
+    Terms Γ Σ →
+    Terms Γ (τ • Σ)
+
+infixr 9 _•_
 
 -- g ⊝ f  = λ x . λ Δx . g (x ⊕ Δx) ⊝ f x
 -- f ⊕ Δf = λ x . f x ⊕ Δf x (x ⊝ x)
