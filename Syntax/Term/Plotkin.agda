@@ -180,14 +180,14 @@ app₆ : ∀ {Γ α β γ δ ε ζ η} →
     Term Γ ε → Term Γ ζ → Term Γ η
 app₆ f x = app₅ (app f x)
 
-TermConstructor : (Γ Σ : Context) (τ : Type) → Set
-TermConstructor Γ ∅ τ′ = Term Γ τ′
-TermConstructor Γ (τ • Σ) τ′ = Term Γ τ → TermConstructor Γ Σ τ′
+CurriedTermConstructor : (Γ Σ : Context) (τ : Type) → Set
+CurriedTermConstructor Γ ∅ τ′ = Term Γ τ′
+CurriedTermConstructor Γ (τ • Σ) τ′ = Term Γ τ → CurriedTermConstructor Γ Σ τ′
 
 -- helper for lift-η-const, don't try to understand at home
-lift-η-const-rec : ∀ {Σ Γ τ} → (Terms Γ Σ → Term Γ τ) → TermConstructor Γ Σ τ
+lift-η-const-rec : ∀ {Σ Γ τ} → (Terms Γ Σ → Term Γ τ) → CurriedTermConstructor Γ Σ τ
 lift-η-const-rec {∅} k = k ∅
 lift-η-const-rec {τ • Σ} k = λ t → lift-η-const-rec (λ ts → k (t • ts))
 
-lift-η-const : ∀ {Σ τ} → C Σ τ → ∀ {Γ} → TermConstructor Γ Σ τ
+lift-η-const : ∀ {Σ τ} → C Σ τ → ∀ {Γ} → CurriedTermConstructor Γ Σ τ
 lift-η-const constant = lift-η-const-rec (const constant)
