@@ -14,7 +14,6 @@ open import Data.Product
 open Type B
 open Context {Type}
 
-open import Denotation.Environment Type
 open import Syntax.Context.Plotkin B
 
 -- Declarations of Term and Terms to enable mutual recursion
