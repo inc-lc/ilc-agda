@@ -17,6 +17,7 @@ open Context {Type}
 open import Denotation.Environment Type
 open import Syntax.Context.Plotkin B
 
+-- Declarations of Term and Terms to enable mutual recursion
 data Term
   (Γ : Context) :
   (τ : Type) → Set
@@ -25,6 +26,8 @@ data Terms
   (Γ : Context) :
   (Σ : Context) → Set
 
+-- (Term Γ τ) represents a term of type τ
+-- with free variables bound in Γ.
 data Term Γ where
   const : ∀ {Σ τ} →
     (c : C Σ τ) →
@@ -41,6 +44,8 @@ data Term Γ where
     (t : Term (σ • Γ) τ) →
     Term Γ (σ ⇒ τ)
 
+-- (Terms Γ Σ) represents a list of terms with types from Σ
+-- with free variables bound in Γ.
 data Terms Γ where
   ∅ : Terms Γ ∅
   _•_ : ∀ {τ Σ} →
