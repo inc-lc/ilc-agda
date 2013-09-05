@@ -15,3 +15,7 @@ open import Syntax.Context {Type}
 ΔContext′ : Context → Context
 ΔContext′ ∅ = ∅
 ΔContext′ (τ • Γ) = τ • ΔType τ • ΔContext′ Γ
+
+Γ≼ΔΓ : ∀ {Γ} → Γ ≼ ΔContext Γ
+Γ≼ΔΓ {∅} = ∅
+Γ≼ΔΓ {τ • Γ} = drop ΔType τ • keep τ • Γ≼ΔΓ

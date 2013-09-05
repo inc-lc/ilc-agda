@@ -18,10 +18,6 @@ open import Syntax.DeltaContext Type ΔType public
 Γ≼Γ : ∀ {Γ} → Γ ≼ Γ
 Γ≼Γ = ≼-refl
 
-Γ≼ΔΓ : ∀ {Γ} → Γ ≼ ΔContext Γ
-Γ≼ΔΓ {∅} = ∅
-Γ≼ΔΓ {τ • Γ} = drop ΔType τ • keep τ • Γ≼ΔΓ
-
 -- Aliasing of weakening of variables
 
 weakenVar : ∀ {Γ₁ Γ₂ τ} → Γ₁ ≼ Γ₂ → Var Γ₁ τ → Var Γ₂ τ
