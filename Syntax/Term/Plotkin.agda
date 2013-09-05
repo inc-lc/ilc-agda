@@ -187,10 +187,9 @@ CurriedTermConstructor : (Γ Σ : Context) (τ : Type) → Set
 CurriedTermConstructor Γ ∅ τ′ = Term Γ τ′
 CurriedTermConstructor Γ (τ • Σ) τ′ = Term Γ τ → CurriedTermConstructor Γ Σ τ′
 
--- helper for lift-η-const, don't try to understand at home
-lift-η-const-rec : ∀ {Σ Γ τ} → UncurriedTermConstructor Γ Σ τ → CurriedTermConstructor Γ Σ τ
-lift-η-const-rec {∅} k = k ∅
-lift-η-const-rec {τ • Σ} k = λ t → lift-η-const-rec (λ ts → k (t • ts))
+curryTermConstructor : ∀ {Σ Γ τ} → UncurriedTermConstructor Γ Σ τ → CurriedTermConstructor Γ Σ τ
+curryTermConstructor {∅} k = k ∅
+curryTermConstructor {τ • Σ} k = λ t → curryTermConstructor (λ ts → k (t • ts))
 
 lift-η-const : ∀ {Σ τ} → C Σ τ → ∀ {Γ} → CurriedTermConstructor Γ Σ τ
-lift-η-const constant = lift-η-const-rec (const constant)
+lift-η-const constant = curryTermConstructor (const constant)
