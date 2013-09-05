@@ -195,3 +195,57 @@ curryTermConstructor {τ • Σ} k = λ t → curryTermConstructor (λ ts → k 
 
 curriedConst : ∀ {Σ τ} → C Σ τ → ∀ {Γ} → CurriedTermConstructor Γ Σ τ
 curriedConst constant = curryTermConstructor (uncurriedConst constant)
+
+
+-- HOAS-like smart constructors for lambdas, for different arities.
+
+abs₁ :
+  ∀ {Γ τ₁ τ} →
+    (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → (x : Term Γ′ τ₁) → Term Γ′ τ) →
+    (Term Γ (τ₁ ⇒ τ))
+abs₁ {Γ} {τ₁} =  λ f → abs (f {Γ≼Γ′ = drop τ₁ • ≼-refl} (var this))
+
+abs₂ :
+  ∀ {Γ τ₁ τ₂ τ} →
+    (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τ) →
+    (Term Γ (τ₁ ⇒ τ₂ ⇒ τ))
+abs₂ f =
+  abs₁ (λ {_} {Γ≼Γ′} x₁ →
+    abs₁ (λ {_} {Γ′≼Γ′₁} →
+      f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
+
+abs₃ :
+  ∀ {Γ τ₁ τ₂ τ₃ τ} →
+    (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τ₃ → Term Γ′ τ) →
+    (Term Γ (τ₁ ⇒ τ₂ ⇒ τ₃ ⇒ τ))
+abs₃ f =
+  abs₁ (λ {_} {Γ≼Γ′} x₁ →
+    abs₂ (λ {_} {Γ′≼Γ′₁} →
+      f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
+
+abs₄ :
+  ∀ {Γ τ₁ τ₂ τ₃ τ₄ τ} →
+    (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τ₃ → Term Γ′ τ₄ → Term Γ′ τ) →
+    (Term Γ (τ₁ ⇒ τ₂ ⇒ τ₃ ⇒ τ₄ ⇒ τ))
+abs₄ f =
+  abs₁ (λ {_} {Γ≼Γ′} x₁ →
+    abs₃ (λ {_} {Γ′≼Γ′₁} →
+      f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
+
+abs₅ :
+  ∀ {Γ τ₁ τ₂ τ₃ τ₄ τ₅ τ} →
+    (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τ₃ → Term Γ′ τ₄ → Term Γ′ τ₅ → Term Γ′ τ) →
+    (Term Γ (τ₁ ⇒ τ₂ ⇒ τ₃ ⇒ τ₄ ⇒ τ₅ ⇒ τ))
+abs₅ f =
+  abs₁ (λ {_} {Γ≼Γ′} x₁ →
+    abs₄ (λ {_} {Γ′≼Γ′₁} →
+      f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
+
+abs₆ :
+  ∀ {Γ τ₁ τ₂ τ₃ τ₄ τ₅ τ₆ τ} →
+    (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τ₃ → Term Γ′ τ₄ → Term Γ′ τ₅ → Term Γ′ τ₆ → Term Γ′ τ) →
+    (Term Γ (τ₁ ⇒ τ₂ ⇒ τ₃ ⇒ τ₄ ⇒ τ₅ ⇒ τ₆ ⇒ τ))
+abs₆ f =
+  abs₁ (λ {_} {Γ≼Γ′} x₁ →
+    abs₅ (λ {_} {Γ′≼Γ′₁} →
+      f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
