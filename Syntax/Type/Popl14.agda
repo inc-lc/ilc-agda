@@ -15,5 +15,4 @@ Popl14-Δbase : Popl14-type → Popl14-type
 Popl14-Δbase base-int = base-int
 Popl14-Δbase base-bag = base-bag
 
-ΔType : Type → Type
-ΔType = lift-Δtype₀ Popl14-Δbase
+open import Syntax.DeltaType Popl14-Δbase public
