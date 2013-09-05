@@ -88,43 +88,43 @@ open import Syntax.DeltaContext Type Atlas-Δtype
 -- Shorthands of constants
 true! : ∀ {Γ} →
   Term Γ (base Bool)
-true! = lift-η-const true
+true! = curriedConst true
 
 false! : ∀ {Γ} →
   Term Γ (base Bool)
-false! = lift-η-const false
+false! = curriedConst false
 
 xor! : ∀ {Γ} →
   Term Γ (base Bool) → Term Γ (base Bool) →
   Term Γ (base Bool)
-xor! = lift-η-const xor
+xor! = curriedConst xor
 
 empty! : ∀ {κ ι Γ} →
   Term Γ (base (Map κ ι))
-empty! = lift-η-const empty
+empty! = curriedConst empty
 
 update! : ∀ {κ ι Γ} →
   Term Γ (base κ) → Term Γ (base ι) →
   Term Γ (base (Map κ ι)) →
   Term Γ (base (Map κ ι))
-update! = lift-η-const update
+update! = curriedConst update
 
 lookup! : ∀ {κ ι Γ} →
   Term Γ (base κ) → Term Γ (base (Map κ ι)) →
   Term Γ (base ι)
-lookup! = lift-η-const lookup
+lookup! = curriedConst lookup
 
 zip! : ∀ {κ a b c Γ} →
   Term Γ (base κ ⇒ base a ⇒ base b ⇒ base c) →
   Term Γ (base (Map κ a)) → Term Γ (base (Map κ b)) →
   Term Γ (base (Map κ c))
-zip! = lift-η-const zip
+zip! = curriedConst zip
 
 fold! : ∀ {κ a b Γ} →
   Term Γ (base κ ⇒ base a ⇒ base b ⇒ base b) →
   Term Γ (base b) → Term Γ (base (Map κ a)) →
   Term Γ (base b)
-fold! = lift-η-const fold
+fold! = curriedConst fold
 
 -- Every base type has a known nil-change.
 -- The nil-change of ι is also the neutral element of Map κ Δι.
@@ -134,15 +134,15 @@ neutral {Bool} = false
 neutral {Map κ ι} = empty {κ} {ι}
 
 neutral-term : ∀ {ι Γ} → Term Γ (base ι)
-neutral-term {Bool}   = lift-η-const (neutral {Bool})
-neutral-term {Map κ ι} = lift-η-const (neutral {Map κ ι})
+neutral-term {Bool}   = curriedConst (neutral {Bool})
+neutral-term {Map κ ι} = curriedConst (neutral {Map κ ι})
 
 nil-const : ∀ {ι : Atlas-type} → Atlas-const  ∅ (base (Atlas-Δbase ι))
 nil-const {ι} = neutral {Atlas-Δbase ι}
 
 nil-term : ∀ {ι Γ} → Term Γ (base (Atlas-Δbase ι))
-nil-term {Bool}   = lift-η-const (nil-const {Bool})
-nil-term {Map κ ι} = lift-η-const (nil-const {Map κ ι})
+nil-term {Bool}   = curriedConst (nil-const {Bool})
+nil-term {Map κ ι} = curriedConst (nil-const {Map κ ι})
 
 -- Nonfunctional products can be encoded.
 -- The incremental behavior of products thus encoded is weird:
@@ -183,16 +183,16 @@ zip-pair = zip! (abs pair-term)
 
 Atlas-diff : ∀ {ι Γ} →
   Term Γ (base ι ⇒ base ι ⇒ Atlas-Δtype (base ι))
-Atlas-diff {Bool} = abs (abs (lift-η-const xor (var (that this)) (var this)))
-Atlas-diff {Map κ ι} = abs (abs (lift-η-const zip (abs Atlas-diff) (var (that this)) (var this)))
+Atlas-diff {Bool} = abs (abs (curriedConst xor (var (that this)) (var this)))
+Atlas-diff {Map κ ι} = abs (abs (curriedConst zip (abs Atlas-diff) (var (that this)) (var this)))
 
 -- b ⊕ Δb = b xor Δb
 -- m ⊕ Δm = zip _⊕_ m Δm
 
 Atlas-apply : ∀ {ι Γ} →
   Term Γ (Atlas-Δtype (base ι) ⇒ base ι ⇒ base ι)
-Atlas-apply {Bool} = abs (abs (lift-η-const xor (var (that this)) (var this)))
-Atlas-apply {Map κ ι} = abs (abs (lift-η-const zip (abs Atlas-apply) (var (that this)) (var this)))
+Atlas-apply {Bool} = abs (abs (curriedConst xor (var (that this)) (var this)))
+Atlas-apply {Map κ ι} = abs (abs (curriedConst zip (abs Atlas-apply) (var (that this)) (var this)))
 
 -- Shorthands for working with diff-term and apply-term
 

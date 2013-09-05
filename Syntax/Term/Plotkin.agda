@@ -194,5 +194,5 @@ curryTermConstructor : ∀ {Σ Γ τ} → UncurriedTermConstructor Γ Σ τ → 
 curryTermConstructor {∅} k = k ∅
 curryTermConstructor {τ • Σ} k = λ t → curryTermConstructor (λ ts → k (t • ts))
 
-lift-η-const : ∀ {Σ τ} → C Σ τ → ∀ {Γ} → CurriedTermConstructor Γ Σ τ
-lift-η-const constant = curryTermConstructor (uncurriedConst constant)
+curriedConst : ∀ {Σ τ} → C Σ τ → ∀ {Γ} → CurriedTermConstructor Γ Σ τ
+curriedConst constant = curryTermConstructor (uncurriedConst constant)
