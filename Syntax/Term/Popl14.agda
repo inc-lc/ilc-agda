@@ -13,9 +13,6 @@ open import Data.Integer
 
 open import Syntax.Constant.Popl14 public
 
-fit : ∀ {τ Γ} → Term Γ τ → Term (ΔContext Γ) τ
-fit = weaken Γ≼ΔΓ
-
 diff-term  : ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ ΔType τ)
 apply-term : ∀ {τ Γ} → Term Γ (ΔType τ ⇒ τ ⇒ τ)
 

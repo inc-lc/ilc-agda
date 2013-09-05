@@ -4,6 +4,7 @@ module Denotation.Implementation.Popl14 where
 -- for Calculus Popl14
 
 open import Denotation.Specification.Canon-Popl14 public
+open import Syntax.Derive.Canon-Popl14
 
 open import Relation.Binary.PropositionalEquality
 open import Data.Unit
