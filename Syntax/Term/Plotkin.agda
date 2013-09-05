@@ -183,6 +183,9 @@ app₆ f x = app₅ (app f x)
 UncurriedTermConstructor : (Γ Σ : Context) (τ : Type) → Set
 UncurriedTermConstructor Γ Σ τ = Terms Γ Σ → Term Γ τ
 
+uncurriedConst : ∀ {Σ τ} → C Σ τ → ∀ {Γ} → UncurriedTermConstructor Γ Σ τ
+uncurriedConst constant = const constant
+
 CurriedTermConstructor : (Γ Σ : Context) (τ : Type) → Set
 CurriedTermConstructor Γ ∅ τ′ = Term Γ τ′
 CurriedTermConstructor Γ (τ • Σ) τ′ = Term Γ τ → CurriedTermConstructor Γ Σ τ′
@@ -192,4 +195,4 @@ curryTermConstructor {∅} k = k ∅
 curryTermConstructor {τ • Σ} k = λ t → curryTermConstructor (λ ts → k (t • ts))
 
 lift-η-const : ∀ {Σ τ} → C Σ τ → ∀ {Γ} → CurriedTermConstructor Γ Σ τ
-lift-η-const constant = curryTermConstructor (const constant)
+lift-η-const constant = curryTermConstructor (uncurriedConst constant)
