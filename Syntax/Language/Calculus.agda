@@ -25,13 +25,13 @@ record Calculus : Set₁ where
       Term {basetype} {constant} Γ
         (internalizeContext basetype (ΔContext′ (Type basetype) Δtype Σ) (Δtype τ))
 
+  type : Set
+  type = Type basetype
+
+  context : Set
+  context = Context {type}
+
+  term : context → type → Set
+  term = Term {basetype} {constant}
+
 open Calculus public
-
-type : Calculus → Set
-type L = Type (basetype L)
-
-context : Calculus → Set
-context L = Context {type L}
-
-term : (L : Calculus) → context L → type L → Set
-term L = Term {basetype L} {constant L}
