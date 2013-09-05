@@ -12,9 +12,9 @@ module Syntax.Derive.Plotkin
       ∀ {Γ Σ τ} → Constant Σ τ →
       Term.Terms
         {Base} {Constant}
-        (DeltaContext.ΔContext (Type.Type Base) (DeltaType.ΔType ΔBase) Γ)
-        (DeltaContext.ΔContext (Type.Type Base) (DeltaType.ΔType ΔBase) Σ) →
-      Term.Term {Base} {Constant} (DeltaContext.ΔContext (Type.Type Base) (DeltaType.ΔType ΔBase) Γ) (DeltaType.ΔType ΔBase τ))
+        (DeltaContext.ΔContext (DeltaType.ΔType ΔBase) Γ)
+        (DeltaContext.ΔContext (DeltaType.ΔType ΔBase) Σ) →
+      Term.Term {Base} {Constant} (DeltaContext.ΔContext (DeltaType.ΔType ΔBase) Γ) (DeltaType.ΔType ΔBase τ))
   where
 
 -- Terms of languages described in Plotkin style
@@ -26,7 +26,7 @@ open import Syntax.Context.Plotkin Base
 
 open Term {Base} {Constant}
 open DeltaType ΔBase
-open DeltaContext Type ΔType
+open DeltaContext ΔType
 
 fit : ∀ {τ Γ} → Term Γ τ → Term (ΔContext Γ) τ
 fit = weaken Γ≼ΔΓ

@@ -72,7 +72,7 @@ data Atlas-const : Context → Type → Set where
    (base b)
 
 open import Syntax.Term.Plotkin {Atlas-type} {Atlas-const}
-open import Syntax.DeltaContext Type Atlas-Δtype
+open import Syntax.DeltaContext Atlas-Δtype
 
 -- Shorthands of constants
 true! : ∀ {Γ} →

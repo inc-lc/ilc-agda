@@ -11,7 +11,7 @@ import Syntax.Language.Calculus as Calc
   Const Σ τ →
   Term Γ
     (internalizeContext
-      (Calc.ΔContext′ (Calc.Type Popl14-type) ΔType Σ) (ΔType τ))
+      (Calc.ΔContext′ ΔType Σ) (ΔType τ))
 
 -- These helpers hide deBrujin indexes, providing an interface which is as
 -- comfortable as HOAS. This should be generalized and moved to Syntax.Term.Plotkin

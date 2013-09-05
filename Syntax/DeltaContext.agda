@@ -1,5 +1,5 @@
 module Syntax.DeltaContext
-    (Type : Set)
+    {Type : Set}
     (ΔType : Type → Type) where
 
 -- Transform a context of values into a context of values and

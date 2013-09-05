@@ -23,7 +23,7 @@ record Calculus : Set₁ where
     Δtype : Type basetype → Type basetype
     Δconst : ∀ {Γ Σ τ} → (c : constant Σ τ) →
       Term {basetype} {constant} Γ
-        (internalizeContext basetype (ΔContext′ (Type basetype) Δtype Σ) (Δtype τ))
+        (internalizeContext basetype (ΔContext′ Δtype Σ) (Δtype τ))
 
   type : Set
   type = Type basetype
