@@ -11,10 +11,10 @@ module Syntax.Derive.Plotkin
     (deriveConst :
       ∀ {Γ Σ τ} → Constant Σ τ →
       Term.Terms
-        {Base} {Constant}
+        Constant
         (DeltaContext.ΔContext (DeltaType.ΔType ΔBase) Γ)
         (DeltaContext.ΔContext (DeltaType.ΔType ΔBase) Σ) →
-      Term.Term {Base} {Constant} (DeltaContext.ΔContext (DeltaType.ΔType ΔBase) Γ) (DeltaType.ΔType ΔBase τ))
+      Term.Term Constant (DeltaContext.ΔContext (DeltaType.ΔType ΔBase) Γ) (DeltaType.ΔType ΔBase τ))
   where
 
 -- Terms of languages described in Plotkin style
@@ -24,7 +24,7 @@ open Context {Type}
 
 open import Syntax.Context.Plotkin Base
 
-open Term {Base} {Constant}
+open Term Constant
 open DeltaType ΔBase
 open DeltaContext ΔType
 

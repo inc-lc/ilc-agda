@@ -22,7 +22,7 @@ record Calculus : Set₁ where
     constant : Context {Type basetype} → Type basetype → Set
     Δtype : Type basetype → Type basetype
     Δconst : ∀ {Γ Σ τ} → (c : constant Σ τ) →
-      Term {basetype} {constant} Γ
+      Term constant Γ
         (internalizeContext basetype (ΔContext′ Δtype Σ) (Δtype τ))
 
   type : Set
@@ -32,6 +32,6 @@ record Calculus : Set₁ where
   context = Context {type}
 
   term : context → type → Set
-  term = Term {basetype} {constant}
+  term = Term constant
 
 open Calculus public

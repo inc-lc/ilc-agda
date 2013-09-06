@@ -3,7 +3,7 @@ import Syntax.Context as Context
 
 module Syntax.Term.Plotkin
     {B : Set {- of base types -}}
-    {C : Context.Context {Type.Type B} → Type.Type B → Set {- of constants -}}
+    (C : Context.Context {Type.Type B} → Type.Type B → Set {- of constants -})
   where
 
 -- Terms of languages described in Plotkin style

@@ -71,7 +71,7 @@ data Atlas-const : Context → Type → Set where
     base b • base (Map κ a) • ∅)
    (base b)
 
-open import Syntax.Term.Plotkin {Atlas-type} {Atlas-const}
+open import Syntax.Term.Plotkin Atlas-const
 open import Syntax.DeltaContext Atlas-Δtype
 
 -- Shorthands of constants

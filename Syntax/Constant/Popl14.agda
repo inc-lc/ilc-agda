@@ -20,7 +20,7 @@ data Const : (Σ : Context) → Type -> Set where
   flatmap-c : Const ((int ⇒ bag) • bag • ∅) (bag)
   sum-c : Const (bag • ∅) (int)
 
-open import Syntax.Term.Plotkin {Popl14-type} {Const} public
+open import Syntax.Term.Plotkin Const public
 
 -- Shorthands of constants
 
