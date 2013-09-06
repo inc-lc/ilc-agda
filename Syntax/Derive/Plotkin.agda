@@ -6,7 +6,7 @@ import Syntax.DeltaType as DeltaType
 
 module Syntax.Derive.Plotkin
     {Base : Set {- of base types -}}
-    {Constant : Context.Context {Type.Type Base} → Type.Type Base → Set {- of constants -}}
+    {Constant : Context.Context (Type.Type Base) → Type.Type Base → Set {- of constants -}}
     (ΔBase : Base → Base)
     (deriveConst :
       ∀ {Γ Σ τ} → Constant Σ τ →
@@ -20,7 +20,7 @@ module Syntax.Derive.Plotkin
 -- Terms of languages described in Plotkin style
 
 open Type Base
-open Context {Type}
+open Context Type
 
 open import Syntax.Context.Plotkin Base
 

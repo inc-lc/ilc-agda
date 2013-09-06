@@ -19,7 +19,7 @@ record Calculus : Set₁ where
     calculus-with
   field
     basetype : Set
-    constant : Context {Type basetype} → Type basetype → Set
+    constant : Context (Type basetype) → Type basetype → Set
     Δtype : Type basetype → Type basetype
     Δconst : ∀ {Γ Σ τ} → (c : constant Σ τ) →
       Term constant Γ
@@ -29,7 +29,7 @@ record Calculus : Set₁ where
   type = Type basetype
 
   context : Set
-  context = Context {type}
+  context = Context type
 
   term : context → type → Set
   term = Term constant
