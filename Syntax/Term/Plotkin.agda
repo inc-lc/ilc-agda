@@ -2,8 +2,8 @@ import Syntax.Type.Plotkin as Type
 import Syntax.Context as Context
 
 module Syntax.Term.Plotkin
-    {B : Set {- of base types -}}
-    (C : Context.Context (Type.Type B) → Type.Type B → Set {- of constants -})
+    {Base : Set}
+    (C : Context.Context (Type.Type Base) → Type.Type Base → Set {- of constants -})
   where
 
 -- Terms of languages described in Plotkin style
@@ -11,10 +11,10 @@ module Syntax.Term.Plotkin
 open import Function using (_∘_)
 open import Data.Product
 
-open Type B
+open Type Base
 open Context Type
 
-open import Syntax.Context.Plotkin B
+open import Syntax.Context.Plotkin Base
 
 -- Declarations of Term and Terms to enable mutual recursion
 data Term
@@ -57,7 +57,7 @@ infixr 9 _•_
 -- g ⊝ f  = λ x . λ Δx . g (x ⊕ Δx) ⊝ f x
 -- f ⊕ Δf = λ x . f x ⊕ Δf x (x ⊝ x)
 
-lift-diff-apply : ∀ {Δbase : B → Type} →
+lift-diff-apply : ∀ {Δbase : Base → Type} →
   let
     Δtype = lift-Δtype Δbase
     term = Term
@@ -93,7 +93,7 @@ lift-diff-apply diff apply {σ ⇒ τ} =
     ,
     abs (abs (abs (app h y ⊕τ app (app Δh y) (y ⊝σ y))))
 
-lift-diff : ∀ {Δbase : B → Type} →
+lift-diff : ∀ {Δbase : Base → Type} →
   let
     Δtype = lift-Δtype Δbase
     term = Term
@@ -105,7 +105,7 @@ lift-diff : ∀ {Δbase : B → Type} →
 lift-diff diff apply = λ {τ Γ} →
   proj₁ (lift-diff-apply diff apply {τ} {Γ})
 
-lift-apply : ∀ {Δbase : B → Type} →
+lift-apply : ∀ {Δbase : Base → Type} →
   let
     Δtype = lift-Δtype Δbase
     term = Term

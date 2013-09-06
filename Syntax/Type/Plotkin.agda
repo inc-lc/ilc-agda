@@ -1,5 +1,5 @@
 module Syntax.Type.Plotkin
-  (B : Set {- of base types -})
+  (Base : Set)
   where
 
 -- Types for language description à la Plotkin (LCF as PL)
@@ -9,12 +9,12 @@ module Syntax.Type.Plotkin
 infixr 5 _⇒_
 
 data Type : Set where
-  base : (ι : B) → Type
+  base : (ι : Base) → Type
   _⇒_ : (σ : Type) → (τ : Type) → Type
 
 
 -- Lift (Δ : Base → Type Base) to (Δtype : Type Base → Type Base)
 -- according to Δ (σ ⇒ τ) = σ ⇒ Δ σ ⇒ Δ τ
-lift-Δtype : (B → Type) → (Type → Type)
+lift-Δtype : (Base → Type) → (Type → Type)
 lift-Δtype f (base ι) = f ι
 lift-Δtype f (σ ⇒ τ) = let Δ = lift-Δtype f in σ ⇒ Δ σ ⇒ Δ τ
