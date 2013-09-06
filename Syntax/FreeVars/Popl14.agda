@@ -8,7 +8,7 @@ module Syntax.FreeVars.Popl14 where
 
 open import Syntax.Type.Popl14
 open import Syntax.Term.Popl14
-open import Base.Syntax.Vars {Type} public
+open import Base.Syntax.Vars Type public
 
 open import Relation.Binary.PropositionalEquality
 open import Data.Unit

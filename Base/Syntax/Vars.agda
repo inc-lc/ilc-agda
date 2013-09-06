@@ -1,5 +1,5 @@
 module Base.Syntax.Vars
-     {Type : Set}
+     (Type : Set)
   where
 
 -- The notion of sets of variables

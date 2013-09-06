@@ -16,7 +16,7 @@ open import Denotation.Notation public
 open import Denotation.Value.Popl14 public
 open import Denotation.Change.Popl14 public
 open import Syntax.Context.Popl14 public
-open import Base.Syntax.Vars {Type} public
+open import Base.Syntax.Vars Type public
 import Denotation.Environment Type ⟦_⟧Type as Env
 open Env public hiding (lift-sound ; Empty)
 
