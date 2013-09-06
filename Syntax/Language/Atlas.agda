@@ -11,23 +11,29 @@ module Syntax.Language.Atlas where
 -- `k -> v` means mapping `k` to the change from `v` to the
 -- neutral element.
 
-open import Syntax.Language.Calculus
-
 data Atlas-type : Set where
   Bool : Atlas-type
   Map : (κ : Atlas-type) (ι : Atlas-type) → Atlas-type
 
-data Atlas-const : Type Atlas-type → Set where
+open import Syntax.Type.Plotkin Atlas-type
+open import Syntax.Context {Type}
+open import Syntax.Context.Plotkin Atlas-type
+
+data Atlas-const : Context → Type → Set where
   true  : Atlas-const
+    ∅
     (base Bool)
 
   false : Atlas-const
+    ∅
     (base Bool)
 
   xor   : Atlas-const
-    (base Bool ⇒ base Bool ⇒ base Bool)
+    (base Bool • base Bool • ∅)
+    (base Bool)
 
   empty  : ∀ {κ ι : Atlas-type} → Atlas-const
+    ∅
     (base (Map κ ι))
 
   -- `update key val my-map` would
@@ -36,10 +42,12 @@ data Atlas-const : Type Atlas-type → Set where
   -- - make an update otherwise
 
   update : ∀ {κ ι : Atlas-type} → Atlas-const
-    (base κ ⇒ base ι ⇒ base (Map κ ι) ⇒ base (Map κ ι))
+    (base κ • base ι • base (Map κ ι) • ∅)
+    (base (Map κ ι))
 
   lookup : ∀ {κ ι : Atlas-type} → Atlas-const
-    (base κ ⇒ base (Map κ ι) ⇒ base ι)
+    (base κ • base (Map κ ι) • ∅)
+    (base ι)
 
   -- Model of zip = Haskell Data.List.zipWith
   --
@@ -52,16 +60,18 @@ data Atlas-const : Type Atlas-type → Set where
   -- corresponding map.
 
   zip    : ∀ {κ a b c : Atlas-type} → Atlas-const
-    ((base κ ⇒ base a ⇒ base b ⇒ base c) ⇒
-     base (Map κ a) ⇒ base (Map κ b) ⇒ base (Map κ c))
+    ((base κ ⇒ base a ⇒ base b ⇒ base c) •
+     base (Map κ a) • base (Map κ b) • ∅)
+    (base (Map κ c))
 
   -- Model of fold = Haskell Data.Map.foldWithKey
   --
   -- foldWithKey :: (k → a → b → b) → b → Map k a → b
 
   fold   : ∀ {κ a b : Atlas-type} → Atlas-const
-   ((base κ ⇒ base a ⇒ base b ⇒ base b) ⇒
-    base b ⇒ base (Map κ a) ⇒ base b)
+   ((base κ ⇒ base a ⇒ base b ⇒ base b) •
+    base b • base (Map κ a) • ∅)
+   (base b)
 
 Atlas-Δbase : Atlas-type → Atlas-type
 -- change to a boolean is a xor-rand
@@ -69,60 +79,70 @@ Atlas-Δbase Bool = Bool
 -- change to a map is change to its values
 Atlas-Δbase (Map key val) = (Map key (Atlas-Δbase val))
 
-Atlas-Δtype : Type Atlas-type → Type Atlas-type
-Atlas-Δtype = lift-Δtype₀ _ Atlas-Δbase
+Atlas-Δtype : Type → Type
+Atlas-Δtype = lift-Δtype₀ Atlas-Δbase
 
-Atlas-context : Set
-Atlas-context = Context {Type Atlas-type}
-
-Atlas-term : Atlas-context → Type Atlas-type → Set
-Atlas-term = Term {Atlas-type} {Atlas-const}
+open import Syntax.Term.Plotkin {Atlas-type} {Atlas-const}
+open import Syntax.DeltaContext Type Atlas-Δtype
 
 -- Shorthands of constants
---
--- There's probably a uniform way to lift constants
--- into term constructors.
+true! : ∀ {Γ} →
+  Term Γ (base Bool)
+true! = curriedConst true
+
+false! : ∀ {Γ} →
+  Term Γ (base Bool)
+false! = curriedConst false
+
+xor! : ∀ {Γ} →
+  Term Γ (base Bool) → Term Γ (base Bool) →
+  Term Γ (base Bool)
+xor! = curriedConst xor
+
+empty! : ∀ {κ ι Γ} →
+  Term Γ (base (Map κ ι))
+empty! = curriedConst empty
 
 update! : ∀ {κ ι Γ} →
-  Atlas-term Γ (base κ) → Atlas-term Γ (base ι) →
-  Atlas-term Γ (base (Map κ ι)) →
-  Atlas-term Γ (base (Map κ ι))
-update! = app₃ (const update)
+  Term Γ (base κ) → Term Γ (base ι) →
+  Term Γ (base (Map κ ι)) →
+  Term Γ (base (Map κ ι))
+update! = curriedConst update
 
 lookup! : ∀ {κ ι Γ} →
-  Atlas-term Γ (base κ) → Atlas-term Γ (base (Map κ ι)) →
-  Atlas-term Γ (base ι)
-lookup! = app₂ (const lookup)
+  Term Γ (base κ) → Term Γ (base (Map κ ι)) →
+  Term Γ (base ι)
+lookup! = curriedConst lookup
 
 zip! : ∀ {κ a b c Γ} →
-  Atlas-term Γ (base κ ⇒ base a ⇒ base b ⇒ base c) →
-  Atlas-term Γ (base (Map κ a)) → Atlas-term Γ (base (Map κ b)) →
-  Atlas-term Γ (base (Map κ c))
-zip! = app₃ (const zip)
+  Term Γ (base κ ⇒ base a ⇒ base b ⇒ base c) →
+  Term Γ (base (Map κ a)) → Term Γ (base (Map κ b)) →
+  Term Γ (base (Map κ c))
+zip! = curriedConst zip
 
 fold! : ∀ {κ a b Γ} →
-  Atlas-term Γ (base κ ⇒ base a ⇒ base b ⇒ base b) →
-  Atlas-term Γ (base b) → Atlas-term Γ (base (Map κ a)) →
-  Atlas-term Γ (base b)
-fold! = app₃ (const fold)
+  Term Γ (base κ ⇒ base a ⇒ base b ⇒ base b) →
+  Term Γ (base b) → Term Γ (base (Map κ a)) →
+  Term Γ (base b)
+fold! = curriedConst fold
 
 -- Every base type has a known nil-change.
 -- The nil-change of ι is also the neutral element of Map κ Δι.
 
-neutral : ∀ {ι : Atlas-type} → Atlas-const (base ι)
+neutral : ∀ {ι : Atlas-type} → Atlas-const ∅ (base ι)
 neutral {Bool} = false
 neutral {Map κ ι} = empty {κ} {ι}
 
-neutral-term : ∀ {ι Γ} → Atlas-term Γ (base ι)
-neutral-term {Bool}   = const (neutral {Bool})
-neutral-term {Map κ ι} = const (neutral {Map κ ι})
+neutral-term : ∀ {ι Γ} → Term Γ (base ι)
+neutral-term {Bool}   = curriedConst (neutral {Bool})
+neutral-term {Map κ ι} = curriedConst (neutral {Map κ ι})
 
-nil-const : ∀ {ι : Atlas-type} → Atlas-const (base (Atlas-Δbase ι))
+nil-const : ∀ {ι : Atlas-type} → Atlas-const  ∅ (base (Atlas-Δbase ι))
 nil-const {ι} = neutral {Atlas-Δbase ι}
 
-nil-term : ∀ {ι Γ} → Atlas-term Γ (base (Atlas-Δbase ι))
-nil-term {Bool}   = const (nil-const {Bool})
-nil-term {Map κ ι} = const (nil-const {Map κ ι})
+nil-term : ∀ {ι Γ} → Term Γ (base (Atlas-Δbase ι))
+nil-term {Bool}   = curriedConst (nil-const {Bool})
+nil-term {Map κ ι} = curriedConst (nil-const {Map κ ι})
 
 -- Nonfunctional products can be encoded.
 -- The incremental behavior of products thus encoded is weird:
@@ -131,18 +151,18 @@ Pair : Atlas-type → Atlas-type → Atlas-type
 Pair α β = Map α β
 
 pair : ∀ {α β Γ} →
-  Atlas-term Γ (base α) → Atlas-term Γ (base β) →
-  Atlas-term Γ (base (Pair α β))
-pair s t = update! s t (const empty)
+  Term Γ (base α) → Term Γ (base β) →
+  Term Γ (base (Pair α β))
+pair s t = update! s t empty!
 
 pair-term : ∀ {α β Γ} →
-  Atlas-term Γ (base α ⇒ base β ⇒ base (Pair α β))
+  Term Γ (base α ⇒ base β ⇒ base (Pair α β))
 pair-term = abs (abs (pair (var (that this)) (var this)))
 
 uncurry : ∀ {α β γ Γ} →
-  Atlas-term Γ (base α ⇒ base β ⇒ base γ) →
-  Atlas-term Γ (base (Pair α β)) →
-  Atlas-term Γ (base γ)
+  Term Γ (base α ⇒ base β ⇒ base γ) →
+  Term Γ (base (Pair α β)) →
+  Term Γ (base γ)
 uncurry f p =
   let
     a = var (that (that this))
@@ -152,8 +172,8 @@ uncurry f p =
     fold! g neutral-term p
 
 zip-pair : ∀ {κ a b Γ} →
-  Atlas-term Γ (base (Map κ a)) → Atlas-term Γ (base (Map κ b)) →
-  Atlas-term Γ (base (Map κ (Pair a b)))
+  Term Γ (base (Map κ a)) → Term Γ (base (Map κ b)) →
+  Term Γ (base (Map κ (Pair a b)))
 zip-pair = zip! (abs pair-term)
 
 -- diff-term and apply-term
@@ -162,43 +182,43 @@ zip-pair = zip! (abs pair-term)
 -- m₀ ⊝ m₁ = zip _⊝_ m₀ m₁
 
 Atlas-diff : ∀ {ι Γ} →
-  Atlas-term Γ (base ι ⇒ base ι ⇒ Atlas-Δtype (base ι))
-Atlas-diff {Bool} = const xor
-Atlas-diff {Map κ ι} = app (const zip) (abs Atlas-diff)
+  Term Γ (base ι ⇒ base ι ⇒ Atlas-Δtype (base ι))
+Atlas-diff {Bool} = abs (abs (curriedConst xor (var (that this)) (var this)))
+Atlas-diff {Map κ ι} = abs (abs (curriedConst zip (abs Atlas-diff) (var (that this)) (var this)))
 
 -- b ⊕ Δb = b xor Δb
 -- m ⊕ Δm = zip _⊕_ m Δm
 
 Atlas-apply : ∀ {ι Γ} →
-  Atlas-term Γ (Atlas-Δtype (base ι) ⇒ base ι ⇒ base ι)
-Atlas-apply {Bool} = const xor
-Atlas-apply {Map κ ι} = app (const zip) (abs Atlas-apply)
+  Term Γ (Atlas-Δtype (base ι) ⇒ base ι ⇒ base ι)
+Atlas-apply {Bool} = abs (abs (curriedConst xor (var (that this)) (var this)))
+Atlas-apply {Map κ ι} = abs (abs (curriedConst zip (abs Atlas-apply) (var (that this)) (var this)))
 
 -- Shorthands for working with diff-term and apply-term
 
 diff : ∀ {τ Γ} →
-  Atlas-term Γ τ → Atlas-term Γ τ →
-  Atlas-term Γ (Atlas-Δtype τ)
+  Term Γ τ → Term Γ τ →
+  Term Γ (Atlas-Δtype τ)
 diff = app₂ (lift-diff Atlas-diff Atlas-apply)
 
 apply : ∀ {τ Γ} →
-  Atlas-term Γ (Atlas-Δtype τ) → Atlas-term Γ τ →
-  Atlas-term Γ τ
+  Term Γ (Atlas-Δtype τ) → Term Γ τ →
+  Term Γ τ
 apply = app₂ (lift-apply Atlas-diff Atlas-apply)
 
 -- Shorthands for creating changes corresponding to
 -- insertion/deletion.
 
 insert : ∀ {κ ι Γ} →
-  Atlas-term Γ (base κ) → Atlas-term Γ (base ι) →
+  Term Γ (base κ) → Term Γ (base ι) →
   -- last argument is the change accumulator
-  Atlas-term Γ (Atlas-Δtype (base (Map κ ι))) →
-  Atlas-term Γ (Atlas-Δtype (base (Map κ ι)))
+  Term Γ (Atlas-Δtype (base (Map κ ι))) →
+  Term Γ (Atlas-Δtype (base (Map κ ι)))
 
 delete : ∀ {κ ι Γ} →
-  Atlas-term Γ (base κ) → Atlas-term Γ (base ι) →
-  Atlas-term Γ (Atlas-Δtype (base (Map κ ι))) →
-  Atlas-term Γ (Atlas-Δtype (base (Map κ ι)))
+  Term Γ (base κ) → Term Γ (base ι) →
+  Term Γ (Atlas-Δtype (base (Map κ ι))) →
+  Term Γ (Atlas-Δtype (base (Map κ ι)))
 
 insert k v acc = update! k (diff v neutral-term) acc
 delete k v acc = update! k (diff neutral-term v) acc
@@ -206,9 +226,9 @@ delete k v acc = update! k (diff neutral-term v) acc
 -- Shorthand for 4-way zip
 zip4! : ∀ {κ a b c d e Γ} →
   let
-    t:_ = λ ι → Atlas-term Γ (base ι)
+    t:_ = λ ι → Term Γ (base ι)
   in
-    Atlas-term Γ
+    Term Γ
       (base κ ⇒ base a ⇒ base b ⇒ base c ⇒ base d ⇒ base e) →
     t: Map κ a → t: Map κ b → t: Map κ c → t: Map κ d → t: Map κ e
 
@@ -234,21 +254,20 @@ zip4! f m₁ m₂ m₃ m₄ =
   in
     zip! g (zip-pair m₁ m₂) (zip-pair m₃ m₄)
 
--- Type signature of Atlas-Δconst is boilerplate.
-Atlas-Δconst : ∀ {Γ τ} → (c : Atlas-const τ) →
-  Atlas-term Γ (Atlas-Δtype τ)
+Atlas-Δconst : ∀ {Γ Σ τ} → (c : Atlas-const Σ τ) →
+  Term Γ (internalizeContext (ΔContext′ Σ) (Atlas-Δtype τ))
 
-Atlas-Δconst true  = const false
-Atlas-Δconst false = const false
+Atlas-Δconst true  = false!
+Atlas-Δconst false = false!
 
 -- Δxor = λ x Δx y Δy → Δx xor Δy
 Atlas-Δconst xor =
   let
     Δx = var (that (that this))
     Δy = var this
-  in abs (abs (abs (abs (app₂ (const xor) Δx Δy))))
+  in abs (abs (abs (abs (xor! Δx Δy))))
 
-Atlas-Δconst empty = const empty
+Atlas-Δconst empty = empty!
 
 -- If k ⊕ Δk ≡ k, then
 --   Δupdate k Δk v Δv m Δm = update k Δv Δm
@@ -345,6 +364,8 @@ Atlas-Δconst (fold {κ} {α} {β}) =
     in
       abs (abs (abs (abs (abs (abs
         (proj₂ (fold! g (pair z Δz) (zip-pair m Δm))))))))
+
+open import Syntax.Language.Calculus
 
 Atlas = calculus-with
   Atlas-type

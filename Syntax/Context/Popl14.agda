@@ -11,9 +11,7 @@ open import Syntax.Type.Popl14 public
 import Syntax.Context {Type} as Ctx
 open Ctx public hiding (lift)
 
-ΔContext : Context → Context
-ΔContext ∅ = ∅
-ΔContext (τ • Γ) = ΔType τ • τ • ΔContext Γ
+open import Syntax.DeltaContext Type ΔType public
 
 -- Aliasing of lemmas in Calculus Popl14
 

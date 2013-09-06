@@ -1,28 +1,59 @@
 import Syntax.Type.Plotkin as Type
+import Syntax.Context as Context
 
 module Syntax.Term.Plotkin
     {B : Set {- of base types -}}
-    {C : Type.Type B → Set {- of constants -}}
+    {C : Context.Context {Type.Type B} → Type.Type B → Set {- of constants -}}
   where
 
 -- Terms of languages described in Plotkin style
 
 open import Function using (_∘_)
 open import Data.Product
-open Type B
-open import Syntax.Context {Type}
 
+open Type B
+open Context {Type}
+
+open import Denotation.Environment Type
+open import Syntax.Context.Plotkin B
+
+-- Declarations of Term and Terms to enable mutual recursion
 data Term
   (Γ : Context) :
   (τ : Type) → Set
-  where
-  const : ∀ {τ} → (c : C τ) → Term Γ τ
-  var : ∀ {τ} → (x : Var Γ τ) → Term Γ τ
+
+data Terms
+  (Γ : Context) :
+  (Σ : Context) → Set
+
+-- (Term Γ τ) represents a term of type τ
+-- with free variables bound in Γ.
+data Term Γ where
+  const : ∀ {Σ τ} →
+    (c : C Σ τ) →
+    Terms Γ Σ →
+    Term Γ τ
+  var : ∀ {τ} →
+    (x : Var Γ τ) →
+    Term Γ τ
   app : ∀ {σ τ}
-    (s : Term Γ (σ ⇒ τ))
-    (t : Term Γ σ) → Term Γ τ
+    (s : Term Γ (σ ⇒ τ)) →
+    (t : Term Γ σ) →
+    Term Γ τ
   abs : ∀ {σ τ}
-    (t : Term (σ • Γ) τ) → Term Γ (σ ⇒ τ)
+    (t : Term (σ • Γ) τ) →
+    Term Γ (σ ⇒ τ)
+
+-- (Terms Γ Σ) represents a list of terms with types from Σ
+-- with free variables bound in Γ.
+data Terms Γ where
+  ∅ : Terms Γ ∅
+  _•_ : ∀ {τ Σ} →
+    Term Γ τ →
+    Terms Γ Σ →
+    Terms Γ (τ • Σ)
+
+infixr 9 _•_
 
 -- g ⊝ f  = λ x . λ Δx . g (x ⊕ Δx) ⊝ f x
 -- f ⊕ Δf = λ x . f x ⊕ Δf x (x ⊝ x)
@@ -93,10 +124,19 @@ weaken : ∀ {Γ₁ Γ₂ τ} →
   (Γ₁≼Γ₂ : Γ₁ ≼ Γ₂) →
   Term Γ₁ τ →
   Term Γ₂ τ
-weaken Γ₁≼Γ₂ (const c) = const c
+
+weakenAll : ∀ {Γ₁ Γ₂ Σ} →
+  (Γ₁≼Γ₂ : Γ₁ ≼ Γ₂) →
+  Terms Γ₁ Σ →
+  Terms Γ₂ Σ
+
+weaken Γ₁≼Γ₂ (const c ts) = const c (weakenAll Γ₁≼Γ₂ ts)
 weaken Γ₁≼Γ₂ (var x) = var (lift Γ₁≼Γ₂ x)
 weaken Γ₁≼Γ₂ (app s t) = app (weaken Γ₁≼Γ₂ s) (weaken Γ₁≼Γ₂ t)
 weaken Γ₁≼Γ₂ (abs {σ} t) = abs (weaken (keep σ • Γ₁≼Γ₂) t)
+
+weakenAll Γ₁≼Γ₂ ∅ = ∅
+weakenAll Γ₁≼Γ₂ (t • ts) = weaken Γ₁≼Γ₂ t • weakenAll Γ₁≼Γ₂ ts
 
 -- Specialized weakening
 weaken₁ : ∀ {Γ σ τ} →
@@ -139,3 +179,20 @@ app₆ : ∀ {Γ α β γ δ ε ζ η} →
     Term Γ α → Term Γ β → Term Γ γ → Term Γ δ →
     Term Γ ε → Term Γ ζ → Term Γ η
 app₆ f x = app₅ (app f x)
+
+UncurriedTermConstructor : (Γ Σ : Context) (τ : Type) → Set
+UncurriedTermConstructor Γ Σ τ = Terms Γ Σ → Term Γ τ
+
+uncurriedConst : ∀ {Σ τ} → C Σ τ → ∀ {Γ} → UncurriedTermConstructor Γ Σ τ
+uncurriedConst constant = const constant
+
+CurriedTermConstructor : (Γ Σ : Context) (τ : Type) → Set
+CurriedTermConstructor Γ ∅ τ′ = Term Γ τ′
+CurriedTermConstructor Γ (τ • Σ) τ′ = Term Γ τ → CurriedTermConstructor Γ Σ τ′
+
+curryTermConstructor : ∀ {Σ Γ τ} → UncurriedTermConstructor Γ Σ τ → CurriedTermConstructor Γ Σ τ
+curryTermConstructor {∅} k = k ∅
+curryTermConstructor {τ • Σ} k = λ t → curryTermConstructor (λ ts → k (t • ts))
+
+curriedConst : ∀ {Σ τ} → C Σ τ → ∀ {Γ} → CurriedTermConstructor Γ Σ τ
+curriedConst constant = curryTermConstructor (uncurriedConst constant)
