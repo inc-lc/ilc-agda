@@ -1,4 +1,4 @@
-module Syntax.Vars
+module Base.Syntax.Vars
      {Type : Set}
   where
 

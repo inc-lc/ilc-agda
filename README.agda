@@ -32,7 +32,7 @@ import Syntax.Term.Popl14
 import Syntax.Type.Atlas
 import Syntax.Type.Plotkin
 import Syntax.Type.Popl14
-import Syntax.Vars
+import Base.Syntax.Vars
 
 import Denotation.Change.Popl14
 {- Correctness theorem for canonical derivation of Calc. Popl14 -}
