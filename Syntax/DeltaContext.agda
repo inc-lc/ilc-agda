@@ -5,7 +5,7 @@ module Syntax.DeltaContext
 -- Transform a context of values into a context of values and
 -- changes.
 
-open import Syntax.Context Type
+open import Base.Syntax.Context Type
 
 ΔContext : Context → Context
 ΔContext ∅ = ∅

@@ -1,4 +1,4 @@
-module Syntax.Context
+module Base.Syntax.Context
     (Type : Set)
   where
 

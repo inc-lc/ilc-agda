@@ -3,7 +3,7 @@ module Syntax.Context.Plotkin
   where
 
 open import Syntax.Type.Plotkin Base
-open import Syntax.Context Type
+open import Base.Syntax.Context Type
 
 -- Internalize a context to a type.
 --

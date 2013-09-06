@@ -12,7 +12,7 @@ module Syntax.Language.Atlas where
 -- neutral element.
 
 open import Syntax.Type.Atlas
-open import Syntax.Context Type
+open import Base.Syntax.Context Type
 open import Syntax.Context.Plotkin Atlas-type
 
 data Atlas-const : Context → Type → Set where

@@ -1,5 +1,5 @@
 import Syntax.Type.Plotkin as Type
-import Syntax.Context as Context
+import Base.Syntax.Context as Context
 
 module Syntax.Term.Plotkin
     {Base : Set}

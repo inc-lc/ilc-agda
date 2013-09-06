@@ -11,7 +11,7 @@ module README where
 import Syntax.Constant.Popl14
 import Syntax.Context.Plotkin
 import Syntax.Context.Popl14
-import Syntax.Context
+import Base.Syntax.Context
 import Syntax.DeltaContext
 import Syntax.Derive.Canon-Popl14
 import Syntax.Derive.Optimized-Popl14
