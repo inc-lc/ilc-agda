@@ -6,7 +6,7 @@ module Syntax.Vars
 --
 -- This module is calculus-independent.
 
-open import Syntax.Context {Type}
+open import Syntax.Context Type
 
 open import Relation.Binary.PropositionalEquality
 open import Data.Unit

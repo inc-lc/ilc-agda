@@ -21,7 +21,7 @@ module Parametric (Base : Set) where
     _⇒_ : (τ₁ τ₂ : Type) → Type
     base : (b : Base) → Type
 
-  open import Syntax.Context {Type} public
+  open import Syntax.Context Type public
 
   -- DOMAIN CONSTRUCTION
   --

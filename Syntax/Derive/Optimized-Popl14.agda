@@ -1,14 +1,14 @@
 module Syntax.Derive.Optimized-Popl14 where
 
 open import Syntax.Term.Popl14 public
-open import Syntax.Derive.Canon-Popl14 public using (deriveVar)
+open import Syntax.Derive.Canon-Popl14 public using (deriveVar; fit)
 
 open import Data.Sum
 open import Data.Integer
 open import Syntax.FreeVars.Popl14
 
 derive+ : ∀ {τ Γ} → Term Γ τ → Term (ΔContext Γ) (ΔType τ)
-derive+ (int n) = int (+ 0)
+derive+ (intlit n) = intlit (+ 0)
 derive+ (add s t) = add (derive+ s) (derive+ t)
 derive+ (minus t) = minus (derive+ t)
 derive+ empty = empty

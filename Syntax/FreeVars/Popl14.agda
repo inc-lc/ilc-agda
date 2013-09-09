@@ -15,7 +15,7 @@ open import Data.Unit
 open import Data.Sum
 
 FV : ∀ {τ Γ} → Term Γ τ → Vars Γ
-FV {Γ = Γ} (int n) = none
+FV {Γ = Γ} (intlit n) = none
 FV (add s t) = FV s ∪ FV t
 FV (minus t) = FV t
 

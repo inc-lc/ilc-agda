@@ -8,19 +8,15 @@ module Syntax.Context.Popl14 where
 -- This ΔContext may not make sense for other systems.
 
 open import Syntax.Type.Popl14 public
-import Syntax.Context {Type} as Ctx
+import Syntax.Context Type as Ctx
 open Ctx public hiding (lift)
 
-open import Syntax.DeltaContext Type ΔType public
+open import Syntax.DeltaContext ΔType public
 
 -- Aliasing of lemmas in Calculus Popl14
 
 Γ≼Γ : ∀ {Γ} → Γ ≼ Γ
 Γ≼Γ = ≼-refl
-
-Γ≼ΔΓ : ∀ {Γ} → Γ ≼ ΔContext Γ
-Γ≼ΔΓ {∅} = ∅
-Γ≼ΔΓ {τ • Γ} = drop ΔType τ • keep τ • Γ≼ΔΓ
 
 -- Aliasing of weakening of variables
 

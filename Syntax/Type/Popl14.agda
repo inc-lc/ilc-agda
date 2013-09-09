@@ -2,14 +2,17 @@ module Syntax.Type.Popl14 where
 
 -- Types of Calculus Popl14
 
-infixr 5 _⇒_
+data Popl14-type : Set where
+  base-int : Popl14-type
+  base-bag : Popl14-type
 
-data Type : Set where
-  int : Type
-  bag : Type
-  _⇒_ : (σ : Type) → (τ : Type) → Type
+open import Syntax.Type.Plotkin Popl14-type public
 
-ΔType : Type → Type
-ΔType int = int
-ΔType bag = bag
-ΔType (σ ⇒ τ) = σ ⇒ ΔType σ ⇒ ΔType τ
+pattern int = base base-int
+pattern bag = base base-bag
+
+Popl14-Δbase : Popl14-type → Popl14-type
+Popl14-Δbase base-int = base-int
+Popl14-Δbase base-bag = base-bag
+
+open import Syntax.DeltaType Popl14-Δbase public

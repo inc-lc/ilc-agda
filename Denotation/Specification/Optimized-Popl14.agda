@@ -28,7 +28,7 @@ valid+ : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ} →
 correct+ : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ} →
   ⟦ t ⟧Δ+ ρ ≡ ⟦ t ⟧Δ ρ
 
-⟦ int n ⟧Δ+ ρ = + 0
+⟦ intlit n ⟧Δ+ ρ = + 0
 ⟦ add s t ⟧Δ+ ρ = ⟦ s ⟧Δ+ ρ + ⟦ t ⟧Δ+ ρ
 ⟦ minus t ⟧Δ+ ρ = - ⟦ t ⟧Δ+ ρ
 
@@ -66,7 +66,7 @@ correct+ : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ} →
 -- A useless copy of `validity`.
 -- All interesting things happen where tt suffices for `validity`.
 -- Proofs for t-abs and t-app duplicate those of `validity`.
-valid+ {t = int n}       = tt
+valid+ {t = intlit n}       = tt
 valid+ {t = add s t}     = tt
 valid+ {t = minus t}     = tt
 valid+ {t = empty}       = tt
@@ -108,7 +108,7 @@ valid+ {t = abs t} {ρ} = λ v Δv R[v,Δv] →
       ⟦ t ⟧ (ignore ρ₁) ⊞ ⟦ t ⟧Δ+ ρ₁
     ∎) where open ≡-Reasoning
 
-correct+ {t = int n} = refl
+correct+ {t = intlit n} = refl
 correct+ {t = add s t} {ρ} =
   cong₂ _+_ (correct+ {t = s} {ρ}) (correct+ {t = t} {ρ})
 correct+ {t = minus t} {ρ} = cong -_ (correct+ {t = t} {ρ})

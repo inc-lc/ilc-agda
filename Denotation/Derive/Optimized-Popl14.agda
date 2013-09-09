@@ -24,7 +24,7 @@ derive+correct : ∀ {τ Γ} {t : Term Γ τ}
   {ρ : ΔEnv Γ} {ρ′ : ⟦ ΔContext Γ ⟧} {C : compatible ρ ρ′} →
   ⟦ t ⟧Δ+ ρ ≈ ⟦ derive+ t ⟧ ρ′
 
-derive+correct {t = int n} = refl
+derive+correct {t = intlit n} = refl
 derive+correct {t = add s t} {ρ} {ρ′} {C} = cong₂ _+_
   (derive+correct {t = s} {ρ} {ρ′} {C})
   (derive+correct {t = t} {ρ} {ρ′} {C})

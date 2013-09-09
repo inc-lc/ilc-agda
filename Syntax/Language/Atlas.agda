@@ -11,12 +11,8 @@ module Syntax.Language.Atlas where
 -- `k -> v` means mapping `k` to the change from `v` to the
 -- neutral element.
 
-data Atlas-type : Set where
-  Bool : Atlas-type
-  Map : (κ : Atlas-type) (ι : Atlas-type) → Atlas-type
-
-open import Syntax.Type.Plotkin Atlas-type
-open import Syntax.Context {Type}
+open import Syntax.Type.Atlas
+open import Syntax.Context Type
 open import Syntax.Context.Plotkin Atlas-type
 
 data Atlas-const : Context → Type → Set where
@@ -40,6 +36,8 @@ data Atlas-const : Context → Type → Set where
   -- - insert if `key` is not present in `my-map`
   -- - delete if `val` is the neutral element
   -- - make an update otherwise
+
+-- Why do we only allow for base types here? We shouldn't.
 
   update : ∀ {κ ι : Atlas-type} → Atlas-const
     (base κ • base ι • base (Map κ ι) • ∅)
@@ -73,17 +71,8 @@ data Atlas-const : Context → Type → Set where
     base b • base (Map κ a) • ∅)
    (base b)
 
-Atlas-Δbase : Atlas-type → Atlas-type
--- change to a boolean is a xor-rand
-Atlas-Δbase Bool = Bool
--- change to a map is change to its values
-Atlas-Δbase (Map key val) = (Map key (Atlas-Δbase val))
-
-Atlas-Δtype : Type → Type
-Atlas-Δtype = lift-Δtype₀ Atlas-Δbase
-
-open import Syntax.Term.Plotkin {Atlas-type} {Atlas-const}
-open import Syntax.DeltaContext Type Atlas-Δtype
+open import Syntax.Term.Plotkin Atlas-const
+open import Syntax.DeltaContext Atlas-Δtype
 
 -- Shorthands of constants
 true! : ∀ {Γ} →
@@ -260,12 +249,7 @@ Atlas-Δconst : ∀ {Γ Σ τ} → (c : Atlas-const Σ τ) →
 Atlas-Δconst true  = false!
 Atlas-Δconst false = false!
 
--- Δxor = λ x Δx y Δy → Δx xor Δy
-Atlas-Δconst xor =
-  let
-    Δx = var (that (that this))
-    Δy = var this
-  in abs (abs (abs (abs (xor! Δx Δy))))
+Atlas-Δconst xor = abs₄ (λ x Δx y Δy → xor! Δx Δy)
 
 Atlas-Δconst empty = empty!
 
@@ -276,18 +260,8 @@ Atlas-Δconst empty = empty!
 --     insert (k ⊕ Δk) (v ⊕ Δv) (delete k v Δm)
 --
 -- We implement the else-branch only for the moment.
-Atlas-Δconst update =
-  let
-    k  = var (that (that (that (that (that this)))))
-    Δk = var (that (that (that (that this))))
-    v  = var (that (that (that this)))
-    Δv = var (that (that this))
-    -- m = var (that this) -- unused parameter
-    Δm = var this
-  in
-    abs (abs (abs (abs (abs (abs
-      (insert (apply Δk k) (apply Δv v)
-        (delete k v Δm)))))))
+Atlas-Δconst update = abs₆ (λ k Δk v Δv m Δm →
+  insert (apply Δk k) (apply Δv v) (delete k v Δm))
 
 -- Δlookup k Δk m Δm | true? (k ⊕ Δk ≡ k)
 -- ... | true  = lookup k Δm
@@ -296,17 +270,12 @@ Atlas-Δconst update =
 --     ⊝ lookup k m
 --
 -- Only the false-branch is implemented.
-Atlas-Δconst lookup =
+Atlas-Δconst lookup = abs₄ (λ k Δk m Δm →
   let
-    k  = var (that (that (that this)))
-    Δk = var (that (that this))
-    m  = var (that this)
-    Δm = var this
     k′ = apply Δk k
   in
-    abs (abs (abs (abs
-      (diff (apply (lookup! k′ Δm) (lookup! k′ m))
-            (lookup! k m)))))
+    (diff (apply (lookup! k′ Δm) (lookup! k′ m))
+          (lookup! k m)))
 
 -- Δzip f Δf m₁ Δm₁ m₂ Δm₂ | true? (f ⊕ Δf ≡ f)
 --
@@ -317,16 +286,11 @@ Atlas-Δconst lookup =
 -- ... | false = zip₄ Δf m₁ Δm₁ m₂ Δm₂
 --
 -- we implement the false-branch for the moment.
-Atlas-Δconst zip =
+Atlas-Δconst zip = abs₆ (λ f Δf m₁ Δm₁ m₂ Δm₂ →
   let
-    Δf = var (that (that (that (that this))))
-    m₁  = var (that (that (that this)))
-    Δm₁ = var (that (that this))
-    m₂  = var (that this)
-    Δm₂ = var this
     g = abs (app₂ (weaken₁ Δf) (var this) nil-term)
   in
-    abs (abs (abs (abs (abs (abs (zip4! g m₁ Δm₁ m₂ Δm₂))))))
+    zip4! g m₁ Δm₁ m₂ Δm₂)
 
 -- Δfold f Δf z Δz m Δm = proj₂
 --   (fold (λ k [a,Δa] [b,Δb] →

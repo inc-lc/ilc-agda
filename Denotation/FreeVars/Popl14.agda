@@ -48,7 +48,7 @@ stabilityAbs {t = t} {ρ} I v with FV t | inspect FV t
   It rewrite case1 = v+[u-v]=u , I
 -- End: Boilerplate
 
-stability {t = int n} I = right-id-int n
+stability {t = intlit n} I = right-id-int n
 stability {t = add s t} {ρ} I =
   let
     Is , It = project-irrelevance {ρ = ρ} I
