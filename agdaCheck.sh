@@ -1,10 +1,6 @@
 #!/bin/bash
 
-# CAUTION: This file should only be invoked in the directory it resides in!
-#
-#   ./agdaCheck.sh  # good
-#
-#   ../agdaCheck.sh # bad
+cd "$(dirname "$0")"
 
 . agdaConfParse.sh.inc
 

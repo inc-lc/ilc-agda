@@ -1,10 +1,6 @@
 #!/bin/bash
 
-# CAUTION: This file should only be invoked in the directory it resides in!
-#
-#   ./agdaGraph.sh  # good
-#
-#   ../agdaGraph.sh # bad
+cd "$(dirname "$0")"
 
 . agdaConfParse.sh.inc
 
