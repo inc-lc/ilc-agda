@@ -2,9 +2,9 @@
 
 # CAUTION: This file should only be invoked in the directory it resides in!
 #
-#   ./agdaCheck.sh  # good
+#   ./agdaGraph.sh  # good
 #
-#   ../agdaCheck.sh # bad
+#   ../agdaGraph.sh # bad
 
 . agdaConfParse.sh.inc
 
