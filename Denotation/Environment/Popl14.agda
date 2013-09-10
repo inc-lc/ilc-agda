@@ -17,7 +17,7 @@ open import Denotation.Value.Popl14 public
 open import Denotation.Change.Popl14 public
 open import Syntax.Context.Popl14 public
 open import Base.Syntax.Vars Type public
-import Denotation.Environment Type ⟦_⟧Type as Env
+import Base.Denotation.Environment Type ⟦_⟧Type as Env
 open Env public hiding (lift-sound ; Empty)
 
 open import Relation.Binary.PropositionalEquality

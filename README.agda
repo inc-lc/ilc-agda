@@ -40,7 +40,7 @@ import Denotation.Derive.Canon-Popl14
 {- Correctness theorem for optimized derivation of Calc. Popl14 -}
 import Denotation.Derive.Optimized-Popl14
 import Denotation.Environment.Popl14
-import Denotation.Environment
+import Base.Denotation.Environment
 import Denotation.Evaluation.Popl14
 import Denotation.FreeVars.Popl14
 {- The idea of implementing a denotational specification for Calc. Popl14 -}

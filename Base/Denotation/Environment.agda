@@ -1,4 +1,4 @@
-module Denotation.Environment
+module Base.Denotation.Environment
     (Type : Set)
     {ℓ}
     (⟦_⟧Type : Type → Set ℓ)

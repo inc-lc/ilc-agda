@@ -50,7 +50,7 @@ module Parametric (Base : Set) where
     liftType {base b} w₁≤w₂ w₁⊩b = liftBase w₁≤w₂ w₁⊩b
 
     module _ (w : World) where
-      open import Denotation.Environment Type (λ τ → w ⊩⟦ τ ⟧Type) public
+      open import Base.Denotation.Environment Type (λ τ → w ⊩⟦ τ ⟧Type) public
         renaming (⟦_⟧Context to _⊩⟦_⟧Context; ⟦_⟧Var to _⊩⟦_⟧Var)
 
     liftContext : Lift {Context} _⊩⟦_⟧Context
