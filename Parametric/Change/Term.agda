@@ -21,14 +21,10 @@ open import Data.Product
 -- f ⊕ Δf = λ x . f x ⊕ Δf x (x ⊝ x)
 
 lift-diff-apply :
-  let
-    Δtype = ΔType
-    term = Term
-  in
-  (∀ {ι Γ} → term Γ (base ι ⇒ base ι ⇒ Δtype (base ι))) →
-  (∀ {ι Γ} → term Γ (Δtype (base ι) ⇒ base ι ⇒ base ι)) →
+  (∀ {ι Γ} → Term Γ (base ι ⇒ base ι ⇒ ΔType (base ι))) →
+  (∀ {ι Γ} → Term Γ (ΔType (base ι) ⇒ base ι ⇒ base ι)) →
   ∀ {τ Γ} →
-    term Γ (τ ⇒ τ ⇒ Δtype τ) × term Γ (Δtype τ ⇒ τ ⇒ τ)
+    Term Γ (τ ⇒ τ ⇒ ΔType τ) × Term Γ (ΔType τ ⇒ τ ⇒ τ)
 
 lift-diff-apply diff apply {base ι} = diff , apply
 lift-diff-apply diff apply {σ ⇒ τ} =
@@ -57,25 +53,17 @@ lift-diff-apply diff apply {σ ⇒ τ} =
     abs (abs (abs (app h y ⊕τ app (app Δh y) (y ⊝σ y))))
 
 lift-diff :
-  let
-    Δtype = ΔType
-    term = Term
-  in
-  (∀ {ι Γ} → term Γ (base ι ⇒ base ι ⇒ Δtype (base ι))) →
-  (∀ {ι Γ} → term Γ (Δtype (base ι) ⇒ base ι ⇒ base ι)) →
-  ∀ {τ Γ} → term Γ (τ ⇒ τ ⇒ Δtype τ)
+  (∀ {ι Γ} → Term Γ (base ι ⇒ base ι ⇒ ΔType (base ι))) →
+  (∀ {ι Γ} → Term Γ (ΔType (base ι) ⇒ base ι ⇒ base ι)) →
+  ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ ΔType τ)
 
 lift-diff diff apply = λ {τ Γ} →
   proj₁ (lift-diff-apply diff apply {τ} {Γ})
 
 lift-apply :
-  let
-    Δtype = ΔType
-    term = Term
-  in
-  (∀ {ι Γ} → term Γ (base ι ⇒ base ι ⇒ Δtype (base ι))) →
-  (∀ {ι Γ} → term Γ (Δtype (base ι) ⇒ base ι ⇒ base ι)) →
-  ∀ {τ Γ} → term Γ (Δtype τ ⇒ τ ⇒ τ)
+  (∀ {ι Γ} → Term Γ (base ι ⇒ base ι ⇒ ΔType (base ι))) →
+  (∀ {ι Γ} → Term Γ (ΔType (base ι) ⇒ base ι ⇒ base ι)) →
+  ∀ {τ Γ} → Term Γ (ΔType τ ⇒ τ ⇒ τ)
 
 lift-apply diff apply = λ {τ Γ} →
   proj₂ (lift-diff-apply diff apply {τ} {Γ})
