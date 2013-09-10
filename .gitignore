@@ -2,3 +2,5 @@
 *.agda#
 *.agda~
 agdaCheck.sh.conf
+dist/
+Everything.agda
