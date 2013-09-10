@@ -63,7 +63,7 @@ extractHeader mod = fmap (extract . lines) $ readFileUTF8 mod
     , (info, d2 : rest) <- span ("-- " `List.isPrefixOf`) ss
     , delimiter d2
     = info
-  extract _ = error $ mod ++ " is malformed."
+  extract _ = []
 
 -- | Formats the extracted module information.
 
