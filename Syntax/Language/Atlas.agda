@@ -71,6 +71,7 @@ data Const : Context → Type → Set where
    (base b)
 
 open import Parametric.Syntax.Term Const
+open import Atlas.Change.Type
 open import Base.Change.Context ΔType
 
 -- Shorthands of constants
