@@ -13,8 +13,6 @@ open import Function using (_∘_)
 open Type Base
 open Context Type
 
-open import Syntax.Context.Plotkin Base
-
 -- Declarations of Term and Terms to enable mutual recursion
 data Term
   (Γ : Context) :

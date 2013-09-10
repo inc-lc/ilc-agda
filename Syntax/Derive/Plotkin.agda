@@ -21,9 +21,6 @@ module Syntax.Derive.Plotkin
 
 open Type Base
 open Context Type
-
-open import Syntax.Context.Plotkin Base
-
 open Term Constant
 open ChangeType ΔBase
 open DeltaContext ΔType

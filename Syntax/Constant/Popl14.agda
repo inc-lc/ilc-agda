@@ -2,7 +2,6 @@ module Syntax.Constant.Popl14 where
 
 open import Syntax.Type.Popl14
 open import Base.Syntax.Context Type
-open import Syntax.Context.Plotkin Popl14-type
 
 open import Data.Integer
 

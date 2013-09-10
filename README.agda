@@ -9,7 +9,6 @@ module README where
 
 
 import Syntax.Constant.Popl14
-import Syntax.Context.Plotkin
 import Syntax.Context.Popl14
 import Base.Syntax.Context
 import Syntax.DeltaContext

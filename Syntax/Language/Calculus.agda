@@ -11,7 +11,6 @@ module Syntax.Language.Calculus where
 open import Parametric.Syntax.Type public
 open import Parametric.Syntax.Term public
 open import Base.Syntax.Context public
-open import Syntax.Context.Plotkin public
 open import Syntax.DeltaContext public
 
 record Calculus : Set₁ where

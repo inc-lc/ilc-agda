@@ -13,7 +13,6 @@ module Syntax.Language.Atlas where
 
 open import Syntax.Type.Atlas
 open import Base.Syntax.Context Type
-open import Syntax.Context.Plotkin Atlas-type
 
 data Atlas-const : Context → Type → Set where
   true  : Atlas-const
