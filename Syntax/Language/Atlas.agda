@@ -27,7 +27,7 @@ data Atlas-const : Context → Type → Set where
     (base Bool • base Bool • ∅)
     (base Bool)
 
-  empty  : ∀ {κ ι : Atlas-type} → Atlas-const
+  empty  : ∀ {κ ι : Base} → Atlas-const
     ∅
     (base (Map κ ι))
 
@@ -38,11 +38,11 @@ data Atlas-const : Context → Type → Set where
 
 -- Why do we only allow for base types here? We shouldn't.
 
-  update : ∀ {κ ι : Atlas-type} → Atlas-const
+  update : ∀ {κ ι : Base} → Atlas-const
     (base κ • base ι • base (Map κ ι) • ∅)
     (base (Map κ ι))
 
-  lookup : ∀ {κ ι : Atlas-type} → Atlas-const
+  lookup : ∀ {κ ι : Base} → Atlas-const
     (base κ • base (Map κ ι) • ∅)
     (base ι)
 
@@ -56,7 +56,7 @@ data Atlas-const : Context → Type → Set where
   -- will be supplied if the key is missing in the
   -- corresponding map.
 
-  zip    : ∀ {κ a b c : Atlas-type} → Atlas-const
+  zip    : ∀ {κ a b c : Base} → Atlas-const
     ((base κ ⇒ base a ⇒ base b ⇒ base c) •
      base (Map κ a) • base (Map κ b) • ∅)
     (base (Map κ c))
@@ -65,7 +65,7 @@ data Atlas-const : Context → Type → Set where
   --
   -- foldWithKey :: (k → a → b → b) → b → Map k a → b
 
-  fold   : ∀ {κ a b : Atlas-type} → Atlas-const
+  fold   : ∀ {κ a b : Base} → Atlas-const
    ((base κ ⇒ base a ⇒ base b ⇒ base b) •
     base b • base (Map κ a) • ∅)
    (base b)
@@ -117,7 +117,7 @@ fold! = curriedConst fold
 -- Every base type has a known nil-change.
 -- The nil-change of ι is also the neutral element of Map κ Δι.
 
-neutral : ∀ {ι : Atlas-type} → Atlas-const ∅ (base ι)
+neutral : ∀ {ι : Base} → Atlas-const ∅ (base ι)
 neutral {Bool} = false
 neutral {Map κ ι} = empty {κ} {ι}
 
@@ -125,7 +125,7 @@ neutral-term : ∀ {ι Γ} → Term Γ (base ι)
 neutral-term {Bool}   = curriedConst (neutral {Bool})
 neutral-term {Map κ ι} = curriedConst (neutral {Map κ ι})
 
-nil-const : ∀ {ι : Atlas-type} → Atlas-const  ∅ (base (Atlas-Δbase ι))
+nil-const : ∀ {ι : Base} → Atlas-const  ∅ (base (Atlas-Δbase ι))
 nil-const {ι} = neutral {Atlas-Δbase ι}
 
 nil-term : ∀ {ι Γ} → Term Γ (base (Atlas-Δbase ι))
@@ -135,7 +135,7 @@ nil-term {Map κ ι} = curriedConst (nil-const {Map κ ι})
 -- Nonfunctional products can be encoded.
 -- The incremental behavior of products thus encoded is weird:
 -- Δ(α × β) = α × Δβ
-Pair : Atlas-type → Atlas-type → Atlas-type
+Pair : Base → Base → Base
 Pair α β = Map α β
 
 pair : ∀ {α β Γ} →
@@ -333,7 +333,7 @@ Atlas-Δconst (fold {κ} {α} {β}) =
 open import Syntax.Language.Calculus
 
 Atlas = calculus-with
-  Atlas-type
+  Base
   Atlas-const
   Atlas-Δtype
   Atlas-Δconst

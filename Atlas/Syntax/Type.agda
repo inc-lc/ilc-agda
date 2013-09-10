@@ -1,12 +1,12 @@
 module Atlas.Syntax.Type where
 
-data Atlas-type : Set where
-  Bool : Atlas-type
-  Map : (κ : Atlas-type) (ι : Atlas-type) → Atlas-type
+data Base : Set where
+  Bool : Base
+  Map : (κ : Base) (ι : Base) → Base
 
-open import Parametric.Syntax.Type Atlas-type public
+open import Parametric.Syntax.Type Base public
 
-Atlas-Δbase : Atlas-type → Atlas-type
+Atlas-Δbase : Base → Base
 -- change to a boolean is a xor-rand
 Atlas-Δbase Bool = Bool
 -- change to a map is change to its values
