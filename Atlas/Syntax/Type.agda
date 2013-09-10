@@ -12,8 +12,5 @@ open import Parametric.Syntax.Type Base public
 -- change to a map is change to its values
 ΔBase (Map key val) = Map key (ΔBase val)
 
-open import Parametric.Change.Type ΔBase
-
-Atlas-Δtype : Type → Type
-Atlas-Δtype = ΔType
-
+open import Parametric.Change.Type ΔBase public
+  using (ΔType)

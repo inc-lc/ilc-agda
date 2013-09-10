@@ -71,7 +71,7 @@ data Const : Context → Type → Set where
    (base b)
 
 open import Parametric.Syntax.Term Const
-open import Base.Change.Context Atlas-Δtype
+open import Base.Change.Context ΔType
 
 -- Shorthands of constants
 true! : ∀ {Γ} →
@@ -172,7 +172,7 @@ open import Parametric.Change.Term Const ΔBase
 -- m₀ ⊝ m₁ = zip _⊝_ m₀ m₁
 
 Atlas-diff : ∀ {ι Γ} →
-  Term Γ (base ι ⇒ base ι ⇒ Atlas-Δtype (base ι))
+  Term Γ (base ι ⇒ base ι ⇒ ΔType (base ι))
 Atlas-diff {Bool} = abs (abs (curriedConst xor (var (that this)) (var this)))
 Atlas-diff {Map κ ι} = abs (abs (curriedConst zip (abs Atlas-diff) (var (that this)) (var this)))
 
@@ -180,7 +180,7 @@ Atlas-diff {Map κ ι} = abs (abs (curriedConst zip (abs Atlas-diff) (var (that 
 -- m ⊕ Δm = zip _⊕_ m Δm
 
 Atlas-apply : ∀ {ι Γ} →
-  Term Γ (Atlas-Δtype (base ι) ⇒ base ι ⇒ base ι)
+  Term Γ (ΔType (base ι) ⇒ base ι ⇒ base ι)
 Atlas-apply {Bool} = abs (abs (curriedConst xor (var (that this)) (var this)))
 Atlas-apply {Map κ ι} = abs (abs (curriedConst zip (abs Atlas-apply) (var (that this)) (var this)))
 
@@ -188,11 +188,11 @@ Atlas-apply {Map κ ι} = abs (abs (curriedConst zip (abs Atlas-apply) (var (tha
 
 diff : ∀ {τ Γ} →
   Term Γ τ → Term Γ τ →
-  Term Γ (Atlas-Δtype τ)
+  Term Γ (ΔType τ)
 diff = app₂ (lift-diff Atlas-diff Atlas-apply)
 
 apply : ∀ {τ Γ} →
-  Term Γ (Atlas-Δtype τ) → Term Γ τ →
+  Term Γ (ΔType τ) → Term Γ τ →
   Term Γ τ
 apply = app₂ (lift-apply Atlas-diff Atlas-apply)
 
@@ -202,13 +202,13 @@ apply = app₂ (lift-apply Atlas-diff Atlas-apply)
 insert : ∀ {κ ι Γ} →
   Term Γ (base κ) → Term Γ (base ι) →
   -- last argument is the change accumulator
-  Term Γ (Atlas-Δtype (base (Map κ ι))) →
-  Term Γ (Atlas-Δtype (base (Map κ ι)))
+  Term Γ (ΔType (base (Map κ ι))) →
+  Term Γ (ΔType (base (Map κ ι)))
 
 delete : ∀ {κ ι Γ} →
   Term Γ (base κ) → Term Γ (base ι) →
-  Term Γ (Atlas-Δtype (base (Map κ ι))) →
-  Term Γ (Atlas-Δtype (base (Map κ ι)))
+  Term Γ (ΔType (base (Map κ ι))) →
+  Term Γ (ΔType (base (Map κ ι)))
 
 insert k v acc = update! k (diff v neutral-term) acc
 delete k v acc = update! k (diff neutral-term v) acc
@@ -245,7 +245,7 @@ zip4! f m₁ m₂ m₃ m₄ =
     zip! g (zip-pair m₁ m₂) (zip-pair m₃ m₄)
 
 Atlas-Δconst : ∀ {Γ Σ τ} → (c : Const Σ τ) →
-  Term Γ (internalizeContext (ΔContext′ Σ) (Atlas-Δtype τ))
+  Term Γ (internalizeContext (ΔContext′ Σ) (ΔType τ))
 
 Atlas-Δconst true  = false!
 Atlas-Δconst false = false!
@@ -335,5 +335,5 @@ open import Syntax.Language.Calculus
 Atlas = calculus-with
   Base
   Const
-  Atlas-Δtype
+  ΔType
   Atlas-Δconst
