@@ -1,9 +1,13 @@
 ------------------------------------------------------------------------
--- The Agda standard library
+-- INCREMENTAL λ-CALCULUS
 --
--- All library modules, along with short descriptions
+-- Features:
+--   * total derivatives
+--   * changes and derivatives are unified (following Cai)
+--   * multiple calculi
+--
+-- All library modules, along with (optional) short descriptions
 ------------------------------------------------------------------------
 
--- Note that core modules are not included.
-
 module Everything where
+
