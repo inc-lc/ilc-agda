@@ -71,7 +71,7 @@ data Atlas-const : Context → Type → Set where
    (base b)
 
 open import Parametric.Syntax.Term Atlas-const
-open import Syntax.DeltaContext Atlas-Δtype
+open import Base.Change.Context Atlas-Δtype
 
 -- Shorthands of constants
 true! : ∀ {Γ} →

@@ -1,4 +1,4 @@
-module Syntax.DeltaContext
+module Base.Change.Context
     {Type : Set}
     (ΔType : Type → Type) where
 

@@ -1,7 +1,7 @@
 import Parametric.Syntax.Type as Type
 import Base.Syntax.Context as Context
 import Parametric.Syntax.Term as Term
-import Syntax.DeltaContext as DeltaContext
+import Base.Change.Context as DeltaContext
 import Parametric.Change.Type as ChangeType
 
 module Syntax.Derive.Plotkin
