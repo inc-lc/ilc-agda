@@ -4,7 +4,7 @@ import Base.Syntax.Context as Context
 module Parametric.Change.Term
     {Base : Set}
     (Constant : Context.Context (Type.Type Base) → Type.Type Base → Set {- of constants -})
-    {Δbase : Base → Type.Type Base}
+    (Δbase : Base → Base)
   where
 
 -- Terms that operate on changes
@@ -22,7 +22,7 @@ open import Data.Product
 
 lift-diff-apply :
   let
-    Δtype = lift-Δtype Δbase
+    Δtype = ΔType
     term = Term
   in
   (∀ {ι Γ} → term Γ (base ι ⇒ base ι ⇒ Δtype (base ι))) →
@@ -58,7 +58,7 @@ lift-diff-apply diff apply {σ ⇒ τ} =
 
 lift-diff :
   let
-    Δtype = lift-Δtype Δbase
+    Δtype = ΔType
     term = Term
   in
   (∀ {ι Γ} → term Γ (base ι ⇒ base ι ⇒ Δtype (base ι))) →
@@ -70,7 +70,7 @@ lift-diff diff apply = λ {τ Γ} →
 
 lift-apply :
   let
-    Δtype = lift-Δtype Δbase
+    Δtype = ΔType
     term = Term
   in
   (∀ {ι Γ} → term Γ (base ι ⇒ base ι ⇒ Δtype (base ι))) →

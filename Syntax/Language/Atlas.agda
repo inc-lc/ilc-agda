@@ -167,7 +167,7 @@ zip-pair = zip! (abs pair-term)
 
 -- diff-term and apply-term
 
-open import Parametric.Change.Term Atlas-const
+open import Parametric.Change.Term Atlas-const Atlas-Δbase
 
 -- b₀ ⊝ b₁ = b₀ xor b₁
 -- m₀ ⊝ m₁ = zip _⊝_ m₀ m₁
@@ -276,7 +276,7 @@ Atlas-Δconst lookup = abs₄ (λ k Δk m Δm →
   let
     k′ = apply Δk k
   in
-    (diff (apply (lookup! k′ Δm) (lookup! k′ m))
+    (diff (apply {base _} (lookup! k′ Δm) (lookup! k′ m))
           (lookup! k m)))
 
 -- Δzip f Δf m₁ Δm₁ m₂ Δm₂ | true? (f ⊕ Δf ≡ f)
