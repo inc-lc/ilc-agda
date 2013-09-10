@@ -1,7 +1,7 @@
 import Parametric.Syntax.Type as Type
 import Base.Syntax.Context as Context
 import Parametric.Syntax.Term as Term
-import Base.Change.Context as DeltaContext
+import Base.Change.Context as ChangeContext
 import Parametric.Change.Type as ChangeType
 
 module Syntax.Derive.Plotkin
@@ -12,9 +12,9 @@ module Syntax.Derive.Plotkin
       ∀ {Γ Σ τ} → Constant Σ τ →
       Term.Terms
         Constant
-        (DeltaContext.ΔContext (ChangeType.ΔType ΔBase) Γ)
-        (DeltaContext.ΔContext (ChangeType.ΔType ΔBase) Σ) →
-      Term.Term Constant (DeltaContext.ΔContext (ChangeType.ΔType ΔBase) Γ) (ChangeType.ΔType ΔBase τ))
+        (ChangeContext.ΔContext (ChangeType.ΔType ΔBase) Γ)
+        (ChangeContext.ΔContext (ChangeType.ΔType ΔBase) Σ) →
+      Term.Term Constant (ChangeContext.ΔContext (ChangeType.ΔType ΔBase) Γ) (ChangeType.ΔType ΔBase τ))
   where
 
 -- Terms of languages described in Plotkin style
@@ -23,7 +23,7 @@ open Type Base
 open Context Type
 open Term Constant
 open ChangeType ΔBase
-open DeltaContext ΔType
+open ChangeContext ΔType
 
 fit : ∀ {τ Γ} → Term Γ τ → Term (ΔContext Γ) τ
 fit = weaken Γ≼ΔΓ
