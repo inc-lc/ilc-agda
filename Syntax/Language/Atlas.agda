@@ -167,6 +167,8 @@ zip-pair = zip! (abs pair-term)
 
 -- diff-term and apply-term
 
+open import Parametric.Change.Term Atlas-const
+
 -- b₀ ⊝ b₁ = b₀ xor b₁
 -- m₀ ⊝ m₁ = zip _⊝_ m₀ m₁
 
