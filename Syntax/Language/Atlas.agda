@@ -125,10 +125,10 @@ neutral-term : ∀ {ι Γ} → Term Γ (base ι)
 neutral-term {Bool}   = curriedConst (neutral {Bool})
 neutral-term {Map κ ι} = curriedConst (neutral {Map κ ι})
 
-nil-const : ∀ {ι : Base} → Const  ∅ (base (Atlas-Δbase ι))
-nil-const {ι} = neutral {Atlas-Δbase ι}
+nil-const : ∀ {ι : Base} → Const  ∅ (base (ΔBase ι))
+nil-const {ι} = neutral {ΔBase ι}
 
-nil-term : ∀ {ι Γ} → Term Γ (base (Atlas-Δbase ι))
+nil-term : ∀ {ι Γ} → Term Γ (base (ΔBase ι))
 nil-term {Bool}   = curriedConst (nil-const {Bool})
 nil-term {Map κ ι} = curriedConst (nil-const {Map κ ι})
 
@@ -166,7 +166,7 @@ zip-pair = zip! (abs pair-term)
 
 -- diff-term and apply-term
 
-open import Parametric.Change.Term Const Atlas-Δbase
+open import Parametric.Change.Term Const ΔBase
 
 -- b₀ ⊝ b₁ = b₀ xor b₁
 -- m₀ ⊝ m₁ = zip _⊝_ m₀ m₁

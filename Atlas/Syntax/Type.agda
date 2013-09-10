@@ -6,13 +6,13 @@ data Base : Set where
 
 open import Parametric.Syntax.Type Base public
 
-Atlas-Δbase : Base → Base
+ΔBase : Base → Base
 -- change to a boolean is a xor-rand
-Atlas-Δbase Bool = Bool
+ΔBase Bool = Bool
 -- change to a map is change to its values
-Atlas-Δbase (Map key val) = Map key (Atlas-Δbase val)
+ΔBase (Map key val) = Map key (ΔBase val)
 
-open import Parametric.Change.Type Atlas-Δbase
+open import Parametric.Change.Type ΔBase
 
 Atlas-Δtype : Type → Type
 Atlas-Δtype = ΔType
