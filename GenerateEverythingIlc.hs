@@ -21,7 +21,8 @@ main = do
   header  <- readFileUTF8 headerFile
   modules <- filter isLibraryModule . List.sort <$>
                find always
-                    (extension ==? ".agda" ||? extension ==? ".lagda")
+                    (fileName /=? outputFile &&?
+                                (extension ==? ".agda" ||? extension ==? ".lagda"))
                     srcDir
   headers <- mapM extractHeader modules
 
