@@ -14,20 +14,20 @@ module Syntax.Language.Atlas where
 open import Atlas.Syntax.Type
 open import Base.Syntax.Context Type
 
-data Atlas-const : Context → Type → Set where
-  true  : Atlas-const
+data Const : Context → Type → Set where
+  true  : Const
     ∅
     (base Bool)
 
-  false : Atlas-const
+  false : Const
     ∅
     (base Bool)
 
-  xor   : Atlas-const
+  xor   : Const
     (base Bool • base Bool • ∅)
     (base Bool)
 
-  empty  : ∀ {κ ι : Base} → Atlas-const
+  empty  : ∀ {κ ι : Base} → Const
     ∅
     (base (Map κ ι))
 
@@ -38,11 +38,11 @@ data Atlas-const : Context → Type → Set where
 
 -- Why do we only allow for base types here? We shouldn't.
 
-  update : ∀ {κ ι : Base} → Atlas-const
+  update : ∀ {κ ι : Base} → Const
     (base κ • base ι • base (Map κ ι) • ∅)
     (base (Map κ ι))
 
-  lookup : ∀ {κ ι : Base} → Atlas-const
+  lookup : ∀ {κ ι : Base} → Const
     (base κ • base (Map κ ι) • ∅)
     (base ι)
 
@@ -56,7 +56,7 @@ data Atlas-const : Context → Type → Set where
   -- will be supplied if the key is missing in the
   -- corresponding map.
 
-  zip    : ∀ {κ a b c : Base} → Atlas-const
+  zip    : ∀ {κ a b c : Base} → Const
     ((base κ ⇒ base a ⇒ base b ⇒ base c) •
      base (Map κ a) • base (Map κ b) • ∅)
     (base (Map κ c))
@@ -65,12 +65,12 @@ data Atlas-const : Context → Type → Set where
   --
   -- foldWithKey :: (k → a → b → b) → b → Map k a → b
 
-  fold   : ∀ {κ a b : Base} → Atlas-const
+  fold   : ∀ {κ a b : Base} → Const
    ((base κ ⇒ base a ⇒ base b ⇒ base b) •
     base b • base (Map κ a) • ∅)
    (base b)
 
-open import Parametric.Syntax.Term Atlas-const
+open import Parametric.Syntax.Term Const
 open import Base.Change.Context Atlas-Δtype
 
 -- Shorthands of constants
@@ -117,7 +117,7 @@ fold! = curriedConst fold
 -- Every base type has a known nil-change.
 -- The nil-change of ι is also the neutral element of Map κ Δι.
 
-neutral : ∀ {ι : Base} → Atlas-const ∅ (base ι)
+neutral : ∀ {ι : Base} → Const ∅ (base ι)
 neutral {Bool} = false
 neutral {Map κ ι} = empty {κ} {ι}
 
@@ -125,7 +125,7 @@ neutral-term : ∀ {ι Γ} → Term Γ (base ι)
 neutral-term {Bool}   = curriedConst (neutral {Bool})
 neutral-term {Map κ ι} = curriedConst (neutral {Map κ ι})
 
-nil-const : ∀ {ι : Base} → Atlas-const  ∅ (base (Atlas-Δbase ι))
+nil-const : ∀ {ι : Base} → Const  ∅ (base (Atlas-Δbase ι))
 nil-const {ι} = neutral {Atlas-Δbase ι}
 
 nil-term : ∀ {ι Γ} → Term Γ (base (Atlas-Δbase ι))
@@ -166,7 +166,7 @@ zip-pair = zip! (abs pair-term)
 
 -- diff-term and apply-term
 
-open import Parametric.Change.Term Atlas-const Atlas-Δbase
+open import Parametric.Change.Term Const Atlas-Δbase
 
 -- b₀ ⊝ b₁ = b₀ xor b₁
 -- m₀ ⊝ m₁ = zip _⊝_ m₀ m₁
@@ -244,7 +244,7 @@ zip4! f m₁ m₂ m₃ m₄ =
   in
     zip! g (zip-pair m₁ m₂) (zip-pair m₃ m₄)
 
-Atlas-Δconst : ∀ {Γ Σ τ} → (c : Atlas-const Σ τ) →
+Atlas-Δconst : ∀ {Γ Σ τ} → (c : Const Σ τ) →
   Term Γ (internalizeContext (ΔContext′ Σ) (Atlas-Δtype τ))
 
 Atlas-Δconst true  = false!
@@ -334,6 +334,6 @@ open import Syntax.Language.Calculus
 
 Atlas = calculus-with
   Base
-  Atlas-const
+  Const
   Atlas-Δtype
   Atlas-Δconst
