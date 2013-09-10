@@ -3,7 +3,7 @@ import Base.Syntax.Context as Context
 
 module Parametric.Syntax.Term
     {Base : Set}
-    (C : Context.Context (Type.Type Base) → Type.Type Base → Set {- of constants -})
+    (Constant : Context.Context (Type.Type Base) → Type.Type Base → Set {- of constants -})
   where
 
 -- Terms of languages described in Plotkin style
@@ -29,7 +29,7 @@ data Terms
 -- with free variables bound in Γ.
 data Term Γ where
   const : ∀ {Σ τ} →
-    (c : C Σ τ) →
+    (c : Constant Σ τ) →
     Terms Γ Σ →
     Term Γ τ
   var : ∀ {τ} →
@@ -182,7 +182,7 @@ app₆ f x = app₅ (app f x)
 UncurriedTermConstructor : (Γ Σ : Context) (τ : Type) → Set
 UncurriedTermConstructor Γ Σ τ = Terms Γ Σ → Term Γ τ
 
-uncurriedConst : ∀ {Σ τ} → C Σ τ → ∀ {Γ} → UncurriedTermConstructor Γ Σ τ
+uncurriedConst : ∀ {Σ τ} → Constant Σ τ → ∀ {Γ} → UncurriedTermConstructor Γ Σ τ
 uncurriedConst constant = const constant
 
 CurriedTermConstructor : (Γ Σ : Context) (τ : Type) → Set
@@ -193,7 +193,7 @@ curryTermConstructor : ∀ {Σ Γ τ} → UncurriedTermConstructor Γ Σ τ → 
 curryTermConstructor {∅} k = k ∅
 curryTermConstructor {τ • Σ} k = λ t → curryTermConstructor (λ ts → k (t • ts))
 
-curriedConst : ∀ {Σ τ} → C Σ τ → ∀ {Γ} → CurriedTermConstructor Γ Σ τ
+curriedConst : ∀ {Σ τ} → Constant Σ τ → ∀ {Γ} → CurriedTermConstructor Γ Σ τ
 curriedConst constant = curryTermConstructor (uncurriedConst constant)
 
 
