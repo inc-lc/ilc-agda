@@ -1,3 +1,4 @@
+# Emacs, this is -*- sh -*-
 # Load local configuration, which should not be committed to the repository.
 # This is supposed to set AGDA_LIB.
 . agdaCheck.sh.conf
