@@ -4,6 +4,7 @@ import Base.Syntax.Context as Context
 module Parametric.Change.Term
     {Base : Set}
     (Constant : Context.Context (Type.Type Base) → Type.Type Base → Set {- of constants -})
+    {Δbase : Base → Type.Type Base}
   where
 
 -- Terms that operate on changes
@@ -19,7 +20,7 @@ open import Data.Product
 -- g ⊝ f  = λ x . λ Δx . g (x ⊕ Δx) ⊝ f x
 -- f ⊕ Δf = λ x . f x ⊕ Δf x (x ⊝ x)
 
-lift-diff-apply : ∀ {Δbase : Base → Type} →
+lift-diff-apply :
   let
     Δtype = lift-Δtype Δbase
     term = Term
@@ -55,7 +56,7 @@ lift-diff-apply diff apply {σ ⇒ τ} =
     ,
     abs (abs (abs (app h y ⊕τ app (app Δh y) (y ⊝σ y))))
 
-lift-diff : ∀ {Δbase : Base → Type} →
+lift-diff :
   let
     Δtype = lift-Δtype Δbase
     term = Term
@@ -67,7 +68,7 @@ lift-diff : ∀ {Δbase : Base → Type} →
 lift-diff diff apply = λ {τ Γ} →
   proj₁ (lift-diff-apply diff apply {τ} {Γ})
 
-lift-apply : ∀ {Δbase : Base → Type} →
+lift-apply :
   let
     Δtype = lift-Δtype Δbase
     term = Term
