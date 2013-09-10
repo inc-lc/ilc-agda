@@ -14,7 +14,7 @@ import Syntax.Language.Calculus as Calc
       (Calc.ΔContext′ ΔType Σ) (ΔType τ))
 
 -- These helpers hide deBrujin indexes, providing an interface which is as
--- comfortable as HOAS. This should be generalized and moved to Syntax.Term.Plotkin
+-- comfortable as HOAS. This should be generalized and moved to Parametric.Syntax.Term
 
 ΔConst (intlit-c n) = intlit (+ 0)
 ΔConst add-c = abs₄ (λ x Δx y Δy → add Δx Δy)

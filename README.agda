@@ -27,7 +27,7 @@ import Syntax.Language.Popl14
   G. D. Plotkin. "LCF considered as a programming language."
   Theoretical Computer Science 5(3) pp. 223--255, 1997.
   http://dx.doi.org/10.1016/0304-3975(77)90044-5 -}
-import Syntax.Term.Plotkin
+import Parametric.Syntax.Term
 import Syntax.Term.Popl14
 import Syntax.Type.Atlas
 import Parametric.Syntax.Type

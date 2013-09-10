@@ -9,7 +9,7 @@ module Syntax.Language.Calculus where
 -- - derivatives of constants
 
 open import Parametric.Syntax.Type public
-open import Syntax.Term.Plotkin public
+open import Parametric.Syntax.Term public
 open import Base.Syntax.Context public
 open import Syntax.Context.Plotkin public
 open import Syntax.DeltaContext public

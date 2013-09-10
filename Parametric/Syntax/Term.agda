@@ -1,7 +1,7 @@
 import Parametric.Syntax.Type as Type
 import Base.Syntax.Context as Context
 
-module Syntax.Term.Plotkin
+module Parametric.Syntax.Term
     {Base : Set}
     (C : Context.Context (Type.Type Base) → Type.Type Base → Set {- of constants -})
   where
