@@ -8,7 +8,7 @@ module Syntax.Language.Calculus where
 -- - Δtype of base types
 -- - derivatives of constants
 
-open import Syntax.Type.Plotkin public
+open import Parametric.Syntax.Type public
 open import Syntax.Term.Plotkin public
 open import Base.Syntax.Context public
 open import Syntax.Context.Plotkin public

@@ -1,4 +1,4 @@
-module Syntax.Type.Plotkin
+module Parametric.Syntax.Type
   (Base : Set)
   where
 

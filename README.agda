@@ -30,7 +30,7 @@ import Syntax.Language.Popl14
 import Syntax.Term.Plotkin
 import Syntax.Term.Popl14
 import Syntax.Type.Atlas
-import Syntax.Type.Plotkin
+import Parametric.Syntax.Type
 import Syntax.Type.Popl14
 import Base.Syntax.Vars
 

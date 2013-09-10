@@ -3,7 +3,7 @@ module Syntax.DeltaType
   (ΔBase : Base → Base)
   where
 
-open import Syntax.Type.Plotkin Base
+open import Parametric.Syntax.Type Base
 
 open import Function
 

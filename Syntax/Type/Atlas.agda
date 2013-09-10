@@ -4,7 +4,7 @@ data Atlas-type : Set where
   Bool : Atlas-type
   Map : (κ : Atlas-type) (ι : Atlas-type) → Atlas-type
 
-open import Syntax.Type.Plotkin Atlas-type public
+open import Parametric.Syntax.Type Atlas-type public
 
 Atlas-Δbase : Atlas-type → Atlas-type
 -- change to a boolean is a xor-rand

@@ -1,4 +1,4 @@
-import Syntax.Type.Plotkin as Type
+import Parametric.Syntax.Type as Type
 import Base.Syntax.Context as Context
 
 module Syntax.Term.Plotkin
