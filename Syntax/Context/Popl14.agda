@@ -7,7 +7,7 @@ module Syntax.Context.Popl14 where
 -- to Popl14 version of the incrementalization system.
 -- This ΔContext may not make sense for other systems.
 
-open import Syntax.Type.Popl14 public
+open import Popl14.Syntax.Type public
 import Base.Syntax.Context Type as Ctx
 open Ctx public hiding (lift)
 

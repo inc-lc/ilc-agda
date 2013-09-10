@@ -1,4 +1,4 @@
-module Syntax.Type.Popl14 where
+module Popl14.Syntax.Type where
 
 -- Types of Calculus Popl14
 

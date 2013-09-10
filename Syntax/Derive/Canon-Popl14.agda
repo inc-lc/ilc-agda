@@ -1,7 +1,7 @@
 module Syntax.Derive.Canon-Popl14 where
 
 open import Syntax.Term.Popl14 public
-open import Syntax.Type.Popl14
+open import Popl14.Syntax.Type
 open import Syntax.Language.Popl14
 
 open import Data.Integer

@@ -1,6 +1,6 @@
 module Denotation.Value.Popl14 where
 
-open import Syntax.Type.Popl14 public
+open import Popl14.Syntax.Type public
 open import Base.Denotation.Notation public
 
 open import Structure.Bag.Popl14

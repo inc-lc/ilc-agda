@@ -6,7 +6,7 @@ module Syntax.FreeVars.Popl14 where
 -- FV: get the free variables of a term
 -- closed?: test if a term is closed, producing a witness if yes.
 
-open import Syntax.Type.Popl14
+open import Popl14.Syntax.Type
 open import Syntax.Term.Popl14
 open import Base.Syntax.Vars Type public
 

@@ -30,7 +30,7 @@ import Parametric.Syntax.Term
 import Syntax.Term.Popl14
 import Atlas.Syntax.Type
 import Parametric.Syntax.Type
-import Syntax.Type.Popl14
+import Popl14.Syntax.Type
 import Base.Syntax.Vars
 
 import Denotation.Change.Popl14
