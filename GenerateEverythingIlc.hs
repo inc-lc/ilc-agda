@@ -17,7 +17,7 @@ projectName      = "Incremental λ-calculus"
 binaryNameSuffix = "Ilc"
 binaryName       = "GenerateEverything" ++ binaryNameSuffix
 
-headerFile       = "Header"
+headerFile       = "EverythingHeader.agda.inc"
 outputFile       = "Everything.agda"
 
 -- This could be "src", as it was in the Agda standard library. But that change
