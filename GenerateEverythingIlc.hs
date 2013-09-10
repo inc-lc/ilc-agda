@@ -8,9 +8,47 @@ import System.Exit
 import System.FilePath
 import System.FilePath.Find
 
-headerFile = "Header"
-outputFile = "Everything.agda"
-srcDir     = "src"
+--------------------------------------------------------------------------------
+-- Configuration parameters
+--------------------------------------------------------------------------------
+
+marker           = "INCREMENTAL λ-CALCULUS"
+projectName      = "Incremental λ-calculus"
+binaryNameSuffix = "Ilc"
+binaryName       = "GenerateEverything" ++ binaryNameSuffix
+
+headerFile       = "Header"
+outputFile       = "Everything.agda"
+
+-- This could be "src", as it was in the Agda standard library. But that change
+-- might cause conflicts with other Agda work.
+srcDir           = "."
+
+--------------------------------------------------------------------------------
+-- Logic to choose files to list - project-dependent
+--------------------------------------------------------------------------------
+
+-- Should we descend into this dir?
+descendIntoDir = fileName /=? "bugs"
+
+-- Do we want to exclude this source file
+wantedSourceFile =
+  fileName /=? "README.agda"
+
+--------------------------------------------------------------------------------
+-- Logic to choose files to list - should be project-independent
+--------------------------------------------------------------------------------
+
+isSource =
+  fileName /=? outputFile &&?
+  (extension ==? ".agda" ||? extension ==? ".lagda") &&?
+  wantedSourceFile
+
+sources = find descendIntoDir isSource srcDir
+
+----------------------------------------
+-- Reusable implementation
+----------------------------------------
 
 main = do
   args <- getArgs
@@ -19,11 +57,7 @@ main = do
     _  -> hPutStr stderr usage >> exitFailure
 
   header  <- readFileUTF8 headerFile
-  modules <- filter isLibraryModule . List.sort <$>
-               find always
-                    (fileName /=? outputFile &&?
-                                (extension ==? ".agda" ||? extension ==? ".lagda"))
-                    srcDir
+  modules <- filter isLibraryModule . List.sort <$> sources
   headers <- mapM extractHeader modules
 
   writeFileUTF8 outputFile $
@@ -33,9 +67,10 @@ main = do
 
 usage :: String
 usage = unlines
-  [ "GenerateEverything: A utility program for Agda's standard library."
+  [ binaryName ++ ": A utility program for Agda libraries (specialized for "
+    ++ projectName ++ ")."
   , ""
-  , "Usage: GenerateEverything"
+  , "Usage: " ++ binaryName
   , ""
   , "This program should be run in the base directory of a clean checkout of"
   , "the library."
@@ -59,8 +94,9 @@ extractHeader mod = fmap (extract . lines) $ readFileUTF8 mod
   where
   delimiter = all (== '-')
 
-  extract (d1 : "-- The Agda standard library" : "--" : ss)
+  extract (d1 : expectedMarker : "--" : ss)
     | delimiter d1
+    , expectedMarker == "-- " ++ marker
     , (info, d2 : rest) <- span ("-- " `List.isPrefixOf`) ss
     , delimiter d2
     = info
