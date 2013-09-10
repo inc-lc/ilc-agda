@@ -4,7 +4,7 @@ import Parametric.Syntax.Term as Term
 import Base.Change.Context as ChangeContext
 import Parametric.Change.Type as ChangeType
 
-module Syntax.Derive.Plotkin
+module Parametric.Change.Derive
     {Base : Set {- of base types -}}
     {Constant : Context.Context (Type.Type Base) → Type.Type Base → Set {- of constants -}}
     (ΔBase : Base → Base)

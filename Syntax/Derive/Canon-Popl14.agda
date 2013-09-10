@@ -20,4 +20,4 @@ deriveConst negate-c     (dt • t • ∅) = negate dt
 deriveConst flatmap-c    (ds • s • dt • t • ∅) = flatmap (s ⊕ ds) (t ⊕ dt) ⊝ flatmap s t
 deriveConst sum-c        (dt • t • ∅) = sum dt
 
-open import Syntax.Derive.Plotkin Popl14-Δbase deriveConst public
+open import Parametric.Change.Derive Popl14-Δbase deriveConst public
