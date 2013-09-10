@@ -2,7 +2,7 @@ import Parametric.Syntax.Type as Type
 import Base.Syntax.Context as Context
 import Syntax.Term.Plotkin as Term
 import Syntax.DeltaContext as DeltaContext
-import Parametric.Change.Type as DeltaType
+import Parametric.Change.Type as ChangeType
 
 module Syntax.Derive.Plotkin
     {Base : Set {- of base types -}}
@@ -12,9 +12,9 @@ module Syntax.Derive.Plotkin
       ∀ {Γ Σ τ} → Constant Σ τ →
       Term.Terms
         Constant
-        (DeltaContext.ΔContext (DeltaType.ΔType ΔBase) Γ)
-        (DeltaContext.ΔContext (DeltaType.ΔType ΔBase) Σ) →
-      Term.Term Constant (DeltaContext.ΔContext (DeltaType.ΔType ΔBase) Γ) (DeltaType.ΔType ΔBase τ))
+        (DeltaContext.ΔContext (ChangeType.ΔType ΔBase) Γ)
+        (DeltaContext.ΔContext (ChangeType.ΔType ΔBase) Σ) →
+      Term.Term Constant (DeltaContext.ΔContext (ChangeType.ΔType ΔBase) Γ) (ChangeType.ΔType ΔBase τ))
   where
 
 -- Terms of languages described in Plotkin style
@@ -25,7 +25,7 @@ open Context Type
 open import Syntax.Context.Plotkin Base
 
 open Term Constant
-open DeltaType ΔBase
+open ChangeType ΔBase
 open DeltaContext ΔType
 
 fit : ∀ {τ Γ} → Term Γ τ → Term (ΔContext Γ) τ
