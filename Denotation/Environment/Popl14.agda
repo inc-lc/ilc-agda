@@ -12,7 +12,7 @@ module Denotation.Environment.Popl14 where
 -- - Semantic properties of special subcontext relations
 
 open import Structure.Tuples public -- re-export `cons` constructor
-open import Denotation.Notation public
+open import Base.Denotation.Notation public
 open import Denotation.Value.Popl14 public
 open import Denotation.Change.Popl14 public
 open import Syntax.Context.Popl14 public

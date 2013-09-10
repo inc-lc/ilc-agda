@@ -15,7 +15,7 @@ module Denotation.Change.Popl14 where
 -- - The lemma apply-diff: it is mutually recursive with `apply`
 --     and `diff`
 
-open import Denotation.Notation public
+open import Base.Denotation.Notation public
 
 open import Relation.Binary.PropositionalEquality
 open import Syntax.Context.Popl14

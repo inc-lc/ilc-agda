@@ -1,4 +1,4 @@
-module Denotation.Notation where
+module Base.Denotation.Notation where
 
 -- OVERLOADING ⟦_⟧ NOTATION
 --

@@ -17,7 +17,7 @@ module Denotation.Environment
 open import Relation.Binary.PropositionalEquality
 
 open import Base.Syntax.Context Type
-open import Denotation.Notation
+open import Base.Denotation.Notation
 
 private
   meaningOfType : Meaning Type
