@@ -1,5 +1,11 @@
 {-# LANGUAGE PatternGuards #-}
 
+-- TODO: this should actually be reusable by being a package.
+-- And the parser should be an actual parser (ReadP? Whatever).
+--
+-- Could be combined with Toxaris/filter-agda-dependency-graph, since it needs
+-- the output of this tool.
+
 import qualified Data.List as List
 import Control.Applicative
 import System.Environment
