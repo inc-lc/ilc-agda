@@ -8,15 +8,15 @@ open import Atlas.Change.Term
 open import Base.Syntax.Context Type
 open import Base.Change.Context ΔType
 
-Atlas-Δconst : ∀ {Γ Σ τ} → (c : Const Σ τ) →
+ΔConst : ∀ {Γ Σ τ} → (c : Const Σ τ) →
   Term Γ (internalizeContext (ΔContext′ Σ) (ΔType τ))
 
-Atlas-Δconst true  = false!
-Atlas-Δconst false = false!
+ΔConst true  = false!
+ΔConst false = false!
 
-Atlas-Δconst xor = abs₄ (λ x Δx y Δy → xor! Δx Δy)
+ΔConst xor = abs₄ (λ x Δx y Δy → xor! Δx Δy)
 
-Atlas-Δconst empty = empty!
+ΔConst empty = empty!
 
 -- If k ⊕ Δk ≡ k, then
 --   Δupdate k Δk v Δv m Δm = update k Δv Δm
@@ -25,7 +25,7 @@ Atlas-Δconst empty = empty!
 --     insert (k ⊕ Δk) (v ⊕ Δv) (delete k v Δm)
 --
 -- We implement the else-branch only for the moment.
-Atlas-Δconst update = abs₆ (λ k Δk v Δv m Δm →
+ΔConst update = abs₆ (λ k Δk v Δv m Δm →
   insert (apply Δk k) (apply Δv v) (delete k v Δm))
 
 -- Δlookup k Δk m Δm | true? (k ⊕ Δk ≡ k)
@@ -35,7 +35,7 @@ Atlas-Δconst update = abs₆ (λ k Δk v Δv m Δm →
 --     ⊝ lookup k m
 --
 -- Only the false-branch is implemented.
-Atlas-Δconst lookup = abs₄ (λ k Δk m Δm →
+ΔConst lookup = abs₄ (λ k Δk m Δm →
   let
     k′ = apply Δk k
   in
@@ -51,7 +51,7 @@ Atlas-Δconst lookup = abs₄ (λ k Δk m Δm →
 -- ... | false = zip₄ Δf m₁ Δm₁ m₂ Δm₂
 --
 -- we implement the false-branch for the moment.
-Atlas-Δconst zip = abs₆ (λ f Δf m₁ Δm₁ m₂ Δm₂ →
+ΔConst zip = abs₆ (λ f Δf m₁ Δm₁ m₂ Δm₂ →
   let
     g = abs (app₂ (weaken₁ Δf) (var this) nil-term)
   in
@@ -68,7 +68,7 @@ Atlas-Δconst zip = abs₆ (λ f Δf m₁ Δm₁ m₂ Δm₂ →
 -- Δfold is efficient only if evaluation is lazy and Δf is
 -- self-maintainable: it doesn't look at the argument
 -- (b = fold f k a b₀) at all.
-Atlas-Δconst (fold {κ} {α} {β}) =
+ΔConst (fold {κ} {α} {β}) =
     let -- TODO (tedius): write weaken₇
       f  = weaken₃ (weaken₃ (weaken₁
         (var (that (that (that (that (that this))))))))
