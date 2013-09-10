@@ -1,4 +1,4 @@
-module Syntax.Type.Atlas where
+module Atlas.Syntax.Type where
 
 data Atlas-type : Set where
   Bool : Atlas-type

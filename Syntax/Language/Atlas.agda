@@ -11,7 +11,7 @@ module Syntax.Language.Atlas where
 -- `k -> v` means mapping `k` to the change from `v` to the
 -- neutral element.
 
-open import Syntax.Type.Atlas
+open import Atlas.Syntax.Type
 open import Base.Syntax.Context Type
 
 data Atlas-const : Context → Type → Set where

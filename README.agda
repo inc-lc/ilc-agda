@@ -28,7 +28,7 @@ import Syntax.Language.Popl14
   http://dx.doi.org/10.1016/0304-3975(77)90044-5 -}
 import Parametric.Syntax.Term
 import Syntax.Term.Popl14
-import Syntax.Type.Atlas
+import Atlas.Syntax.Type
 import Parametric.Syntax.Type
 import Syntax.Type.Popl14
 import Base.Syntax.Vars
