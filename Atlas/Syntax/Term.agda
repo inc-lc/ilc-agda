@@ -1,4 +1,4 @@
-module Syntax.Language.Atlas where
+module Atlas.Syntax.Term where
 
 -- Base types of the calculus Atlas
 -- to be used with Plotkin-style language description
