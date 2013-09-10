@@ -1,4 +1,4 @@
-module Syntax.DeltaType
+module Parametric.Change.Type
   {Base : Set}
   (ΔBase : Base → Base)
   where

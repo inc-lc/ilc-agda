@@ -2,7 +2,7 @@ import Parametric.Syntax.Type as Type
 import Base.Syntax.Context as Context
 import Syntax.Term.Plotkin as Term
 import Syntax.DeltaContext as DeltaContext
-import Syntax.DeltaType as DeltaType
+import Parametric.Change.Type as DeltaType
 
 module Syntax.Derive.Plotkin
     {Base : Set {- of base types -}}

@@ -12,7 +12,7 @@ Atlas-Δbase Bool = Bool
 -- change to a map is change to its values
 Atlas-Δbase (Map key val) = Map key (Atlas-Δbase val)
 
-open import Syntax.DeltaType Atlas-Δbase
+open import Parametric.Change.Type Atlas-Δbase
 
 Atlas-Δtype : Type → Type
 Atlas-Δtype = ΔType
