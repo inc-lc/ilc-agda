@@ -2,12 +2,9 @@
 # This is supposed to set AGDA_LIB.
 . agdaCheck.sh.conf
 
-# Load the list of files to check. This list should be committed to the
-# repository; I chose the format hoping that it is parseable on Windows as well,
-# but that's for Windows users (e.g. @Toxaris) to decide.
+# Name of *the* file to check
 
-SRC="$(grep -E -v '^#|^$' agdaCheck.conf)"
-
+mainFile=README.agda
 
 if [ -z "${AGDA_LIB}" ]; then
   cat <<EOF

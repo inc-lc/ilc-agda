@@ -21,8 +21,6 @@ EOF
   exit 1
 fi
 
-for i in $SRC; do
-  agda -i . -i ${AGDA_LIB} $i --dependency-graph big.dot
-  filter-agda-dependency-graph < big.dot > small.dot
-  dot -Tpdf small.dot > small.pdf
-done
+agda -i . -i ${AGDA_LIB} ${mainFile} --dependency-graph big.dot
+filter-agda-dependency-graph < big.dot > small.dot
+dot -Tpdf small.dot > small.pdf
