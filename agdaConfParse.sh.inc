@@ -13,6 +13,7 @@ To setup this script, copy agdaCheck.sh.conf.example to agdaCheck.sh.conf and
 edit it following the contained instructions. Please do not commit
 agdaCheck.sh.conf to the repository, since its content is intrinsically local.
 EOF
+  exit 1
 fi
 
 # Note for changers: using Markdown-style ` in output is convenient for readers,
