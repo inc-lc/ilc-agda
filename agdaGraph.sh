@@ -21,6 +21,15 @@ EOF
   exit 1
 fi
 
+if ! which dot > /dev/null; then
+  cat <<-EOF
+	To run this script, install GraphViz with your favorite package manager.
+	Only the \`dot\` program is required.
+	Exiting.
+EOF
+  exit 1
+fi
+
 agda -i . -i ${AGDA_LIB} ${mainFile} --dependency-graph big.dot
 filter-agda-dependency-graph < big.dot > small.dot
 dot -Tpdf small.dot > small.pdf
