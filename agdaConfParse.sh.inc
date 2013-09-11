@@ -25,6 +25,7 @@ fi
 
 logDone() {
   echo "Everything.agda regenerated."
+  echo
 }
 logFailed() {
   echo "Error: Running \`$1\` failed!"
