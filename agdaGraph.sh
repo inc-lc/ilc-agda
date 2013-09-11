@@ -4,7 +4,7 @@ cd "$(dirname "$0")"
 
 . agdaConfParse.sh.inc
 
-if ! which filter-agda-dependency-graph; then
+if ! which filter-agda-dependency-graph > /dev/null; then
   cat <<-EOF
 	To run this script, install Tillmann's filter-agda-dependency-graph from
 	Github, with something like:
