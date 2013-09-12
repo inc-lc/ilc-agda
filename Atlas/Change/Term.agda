@@ -20,8 +20,7 @@ import Parametric.Change.Term Const ΔBase as ChangeTerm
 -- b₀ ⊝ b₁ = b₀ xor b₁
 -- m₀ ⊝ m₁ = zip _⊝_ m₀ m₁
 
-diff-base : ∀ {ι Γ} →
-  Term Γ (base ι ⇒ base ι ⇒ ΔType (base ι))
+diff-base : ChangeTerm.DiffStructure
 diff-base {Bool} = abs₂ (λ b₁ b₂ → xor! b₁ b₂)
 diff-base {Map κ ι} = abs₂ (λ m₁ m₂ → zip! (abs diff-base) m₁ m₂)
 

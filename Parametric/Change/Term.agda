@@ -16,13 +16,16 @@ open ChangeType.Structure Base ΔBase
 
 open import Data.Product
 
+DiffStructure : Set
+DiffStructure = ∀ {ι Γ} → Term Γ (base ι ⇒ base ι ⇒ base (ΔBase ι))
+
 module Structure where
 
   -- g ⊝ f  = λ x . λ Δx . g (x ⊕ Δx) ⊝ f x
   -- f ⊕ Δf = λ x . f x ⊕ Δf x (x ⊝ x)
 
   lift-diff-apply :
-    (∀ {ι Γ} → Term Γ (base ι ⇒ base ι ⇒ base (ΔBase ι))) →
+    DiffStructure →
     (∀ {ι Γ} → Term Γ (base (ΔBase ι) ⇒ base ι ⇒ base ι)) →
     ∀ {τ Γ} →
       Term Γ (τ ⇒ τ ⇒ ΔType τ) × Term Γ (ΔType τ ⇒ τ ⇒ τ)
@@ -54,7 +57,7 @@ module Structure where
       abs (abs (abs (app h y ⊕τ app (app Δh y) (y ⊝σ y))))
 
   lift-diff :
-    (∀ {ι Γ} → Term Γ (base ι ⇒ base ι ⇒ base (ΔBase ι))) →
+    DiffStructure →
     (∀ {ι Γ} → Term Γ (base (ΔBase ι) ⇒ base ι ⇒ base ι)) →
     ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ ΔType τ)
 
@@ -62,7 +65,7 @@ module Structure where
     proj₁ (lift-diff-apply diff apply {τ} {Γ})
 
   lift-apply :
-    (∀ {ι Γ} → Term Γ (base ι ⇒ base ι ⇒ base (ΔBase ι))) →
+    DiffStructure →
     (∀ {ι Γ} → Term Γ (base (ΔBase ι) ⇒ base ι ⇒ base ι)) →
     ∀ {τ Γ} → Term Γ (ΔType τ ⇒ τ ⇒ τ)
 
