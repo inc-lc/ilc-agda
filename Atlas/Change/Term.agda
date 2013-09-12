@@ -28,22 +28,22 @@ diff-base {Map κ ι} = abs₂ (λ m₁ m₂ → zip! (abs diff-base) m₁ m₂)
 -- b ⊕ Δb = b xor Δb
 -- m ⊕ Δm = zip _⊕_ m Δm
 
-Atlas-apply : ∀ {ι Γ} →
+apply-base : ∀ {ι Γ} →
   Term Γ (ΔType (base ι) ⇒ base ι ⇒ base ι)
-Atlas-apply {Bool} = abs₂ (λ b₁ b₂ → xor! b₁ b₂)
-Atlas-apply {Map κ ι} = abs₂ (λ m₁ m₂ → zip! (abs Atlas-apply) m₁ m₂)
+apply-base {Bool} = abs₂ (λ b₁ b₂ → xor! b₁ b₂)
+apply-base {Map κ ι} = abs₂ (λ m₁ m₂ → zip! (abs apply-base) m₁ m₂)
 
 -- Shorthands for working with diff-term and apply-term
 
 diff : ∀ {τ Γ} →
   Term Γ τ → Term Γ τ →
   Term Γ (ΔType τ)
-diff = app₂ (lift-diff diff-base Atlas-apply)
+diff = app₂ (lift-diff diff-base apply-base)
 
 apply : ∀ {τ Γ} →
   Term Γ (ΔType τ) → Term Γ τ →
   Term Γ τ
-apply = app₂ (lift-apply diff-base Atlas-apply)
+apply = app₂ (lift-apply diff-base apply-base)
 
 -- Shorthands for creating changes corresponding to
 -- insertion/deletion.
