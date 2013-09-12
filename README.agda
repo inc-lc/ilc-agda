@@ -17,7 +17,6 @@ import Syntax.Derive.Optimized-Popl14
 import Syntax.FreeVars.Popl14
 {- Language definition of Calc. Atlas -}
 import Atlas.Syntax.Term
-import Syntax.Language.Calculus
 import Syntax.Language.Popl14
 {- Terms of a calculus described in Plotkin style
   - types are parametric in base types

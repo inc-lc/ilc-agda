@@ -4,13 +4,11 @@ open import Syntax.Term.Popl14
 
 open import Data.Integer
 
-import Syntax.Language.Calculus as Calc
-
 ΔConst : ∀ {Γ Σ τ} →
   Const Σ τ →
   Term Γ
     (internalizeContext
-      (Calc.ΔContext′ ΔType Σ) (ΔType τ))
+      (ΔContext′ Σ) (ΔType τ))
 
 -- These helpers hide deBrujin indexes, providing an interface which is as
 -- comfortable as HOAS. This should be generalized and moved to Parametric.Syntax.Term
@@ -24,9 +22,3 @@ import Syntax.Language.Calculus as Calc
 ΔConst negate-c = abs₂ (λ x Δx → negate Δx)
 ΔConst flatmap-c = abs₄ (λ x Δx y Δy → flatmap (x ⊕ Δx) (y ⊕ Δy) ⊝ flatmap x y)
 ΔConst sum-c = abs₂ (λ x Δx → sum Δx)
-
-Popl14 = Calc.calculus-with
-  Popl14-type
-  Const
-  ΔType
-  ΔConst
