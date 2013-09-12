@@ -1,14 +1,14 @@
 import Parametric.Syntax.Type as Type
 
 module Parametric.Syntax.Term
-    (Base : Set)
+    (Base : Type.Structure)
   where
 
 -- Terms of languages described in Plotkin style
 
 open import Function using (_∘_)
 
-open Type Base
+open Type.Structure Base
 
 Structure : Set₁
 Structure = Context → Type → Set

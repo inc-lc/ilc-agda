@@ -2,7 +2,8 @@ module Parametric.Change.Type
   (Base : Set)
   where
 
-open import Parametric.Syntax.Type Base
+import Parametric.Syntax.Type as Type
+open Type.Structure Base
 
 Structure : Set
 Structure = Base → Base
