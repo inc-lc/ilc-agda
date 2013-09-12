@@ -1,17 +1,18 @@
 import Parametric.Syntax.Type as Type
+import Parametric.Syntax.Term as Term
+import Parametric.Change.Type as ChangeType
 
 module Parametric.Change.Term
     {Base : Set}
-    (Constant : Type.Context Base → Type.Type Base → Set {- of constants -})
-    (Δbase : Base → Base)
+    (Constant : Term.Structure Base)
+    (Δbase : ChangeType.Structure Base)
   where
 
 -- Terms that operate on changes
 
-open Type Base
-
-open import Parametric.Change.Type Δbase
-open import Parametric.Syntax.Term Constant
+open Type.Structure Base
+open Term.Structure Base Constant
+open ChangeType.Structure Base Δbase
 
 open import Data.Product
 
