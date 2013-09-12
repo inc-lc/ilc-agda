@@ -4,3 +4,6 @@
 agdaCheck.sh.conf
 dist/
 Everything.agda
+big.dot
+small.dot
+small.pdf
