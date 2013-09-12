@@ -4,4 +4,4 @@ cd "$(dirname "$0")"
 
 . agdaConfParse.sh.inc
 
-/usr/bin/time -l agda -i . -i ${AGDA_LIB} ${mainFile}
+agda +RTS -s -RTS -i . -i ${AGDA_LIB} ${mainFile}
