@@ -10,8 +10,6 @@ module Syntax.Context.Popl14 where
 open import Popl14.Syntax.Type as Ctx public hiding (lift)
 open import Popl14.Change.Type public
 
-open import Base.Change.Context ΔType public
-
 -- Aliasing of lemmas in Calculus Popl14
 
 Γ≼Γ : ∀ {Γ} → Γ ≼ Γ

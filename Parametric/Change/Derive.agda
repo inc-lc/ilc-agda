@@ -1,6 +1,5 @@
 import Parametric.Syntax.Type as Type
 import Parametric.Syntax.Term as Term
-import Base.Change.Context as ChangeContext
 import Parametric.Change.Type as ChangeType
 
 module Parametric.Change.Derive
@@ -11,9 +10,9 @@ module Parametric.Change.Derive
       ∀ {Γ Σ τ} → Constant Σ τ →
       Term.Terms
         Constant
-        (ChangeContext.ΔContext (ChangeType.ΔType ΔBase) Γ)
-        (ChangeContext.ΔContext (ChangeType.ΔType ΔBase) Σ) →
-      Term.Term Constant (ChangeContext.ΔContext (ChangeType.ΔType ΔBase) Γ) (ChangeType.ΔType ΔBase τ))
+        (ChangeType.ΔContext ΔBase Γ)
+        (ChangeType.ΔContext ΔBase Σ) →
+      Term.Term Constant (ChangeType.ΔContext ΔBase Γ) (ChangeType.ΔType ΔBase τ))
   where
 
 -- Terms of languages described in Plotkin style
@@ -21,7 +20,6 @@ module Parametric.Change.Derive
 open Type Base
 open Term Constant
 open ChangeType ΔBase
-open ChangeContext ΔType
 
 fit : ∀ {τ Γ} → Term Γ τ → Term (ΔContext Γ) τ
 fit = weaken Γ≼ΔΓ
