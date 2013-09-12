@@ -2,8 +2,10 @@ module Popl14.Change.Type where
 
 open import Popl14.Syntax.Type
 
-ΔBase : Base → Base
+import Parametric.Change.Type Base as ChangeType
+
+ΔBase : ChangeType.Structure
 ΔBase base-int = base-int
 ΔBase base-bag = base-bag
 
-open import Parametric.Change.Type ΔBase public
+open ChangeType.Structure ΔBase public
