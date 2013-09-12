@@ -15,7 +15,7 @@ nil-term {Map κ ι} = curriedConst (nil-const {Map κ ι})
 
 -- diff-term and apply-term
 
-open import Parametric.Change.Term Const ΔBase
+import Parametric.Change.Term Const ΔBase as ChangeTerm
 
 -- b₀ ⊝ b₁ = b₀ xor b₁
 -- m₀ ⊝ m₁ = zip _⊝_ m₀ m₁
@@ -34,6 +34,8 @@ apply-base {Bool} = abs₂ (λ b₁ b₂ → xor! b₁ b₂)
 apply-base {Map κ ι} = abs₂ (λ m₁ m₂ → zip! (abs apply-base) m₁ m₂)
 
 -- Shorthands for working with diff-term and apply-term
+
+open ChangeTerm.Structure
 
 diff : ∀ {τ Γ} →
   Term Γ τ → Term Γ τ →
