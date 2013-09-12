@@ -69,7 +69,8 @@ data Const : Context → Type → Set where
     base b • base (Map κ a) • ∅)
    (base b)
 
-open import Parametric.Syntax.Term Const public
+import Parametric.Syntax.Term Base as Term
+open Term.Structure Const public
 
 -- Shorthands of constants
 true! : ∀ {Γ} →

@@ -18,7 +18,8 @@ data Const : (Σ : Context) → Type -> Set where
   flatmap-c : Const ((int ⇒ bag) • bag • ∅) (bag)
   sum-c : Const (bag • ∅) (int)
 
-open import Parametric.Syntax.Term Const public
+import Parametric.Syntax.Term Base as Term
+open Term.Structure Const public
 
 -- Shorthands of constants
 
