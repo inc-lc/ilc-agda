@@ -22,16 +22,16 @@ open import Parametric.Change.Term Const ΔBase
 
 Atlas-diff : ∀ {ι Γ} →
   Term Γ (base ι ⇒ base ι ⇒ ΔType (base ι))
-Atlas-diff {Bool} = abs (abs (curriedConst xor (var (that this)) (var this)))
-Atlas-diff {Map κ ι} = abs (abs (curriedConst zip (abs Atlas-diff) (var (that this)) (var this)))
+Atlas-diff {Bool} = abs₂ (λ b₁ b₂ → xor! b₁ b₂)
+Atlas-diff {Map κ ι} = abs₂ (λ m₁ m₂ → zip! (abs Atlas-diff) m₁ m₂)
 
 -- b ⊕ Δb = b xor Δb
 -- m ⊕ Δm = zip _⊕_ m Δm
 
 Atlas-apply : ∀ {ι Γ} →
   Term Γ (ΔType (base ι) ⇒ base ι ⇒ base ι)
-Atlas-apply {Bool} = abs (abs (curriedConst xor (var (that this)) (var this)))
-Atlas-apply {Map κ ι} = abs (abs (curriedConst zip (abs Atlas-apply) (var (that this)) (var this)))
+Atlas-apply {Bool} = abs₂ (λ b₁ b₂ → xor! b₁ b₂)
+Atlas-apply {Map κ ι} = abs₂ (λ m₁ m₂ → zip! (abs Atlas-apply) m₁ m₂)
 
 -- Shorthands for working with diff-term and apply-term
 
