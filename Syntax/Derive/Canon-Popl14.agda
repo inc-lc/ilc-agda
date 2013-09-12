@@ -6,10 +6,9 @@ open import Syntax.Language.Popl14
 
 open import Data.Integer
 
-deriveConst : ∀ {Γ Σ τ} → Const Σ τ →
-      Terms (ΔContext Γ) (ΔContext Σ) →
-      Term (ΔContext Γ) (ΔType τ)
+import Parametric.Change.Derive Const ΔBase as Derive
 
+deriveConst : Derive.Structure
 deriveConst (intlit-c n) ∅ = intlit (+ 0)
 deriveConst add-c        (ds • s • dt • t • ∅) = add ds dt
 deriveConst minus-c      (dt • t • ∅) = minus dt
@@ -20,4 +19,4 @@ deriveConst negate-c     (dt • t • ∅) = negate dt
 deriveConst flatmap-c    (ds • s • dt • t • ∅) = flatmap (s ⊕ ds) (t ⊕ dt) ⊝ flatmap s t
 deriveConst sum-c        (dt • t • ∅) = sum dt
 
-open import Parametric.Change.Derive ΔBase deriveConst public
+open Derive.Structure deriveConst public
