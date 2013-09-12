@@ -5,7 +5,6 @@ open import Atlas.Syntax.Term
 open import Atlas.Change.Type
 open import Atlas.Change.Term
 
-open import Base.Syntax.Context Type
 open import Base.Change.Context ΔType
 
 ΔConst : ∀ {Γ Σ τ} → (c : Const Σ τ) →

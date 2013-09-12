@@ -12,7 +12,6 @@ module Atlas.Syntax.Term where
 -- neutral element.
 
 open import Atlas.Syntax.Type
-open import Base.Syntax.Context Type
 
 data Const : Context → Type → Set where
   true  : Const

@@ -1,16 +1,14 @@
 import Parametric.Syntax.Type as Type
-import Base.Syntax.Context as Context
 
 module Parametric.Change.Term
     {Base : Set}
-    (Constant : Context.Context (Type.Type Base) → Type.Type Base → Set {- of constants -})
+    (Constant : Type.Context Base → Type.Type Base → Set {- of constants -})
     (Δbase : Base → Base)
   where
 
 -- Terms that operate on changes
 
 open Type Base
-open Context Type
 
 open import Parametric.Change.Type Δbase
 open import Parametric.Syntax.Term Constant

@@ -1,12 +1,11 @@
 import Parametric.Syntax.Type as Type
-import Base.Syntax.Context as Context
 import Parametric.Syntax.Term as Term
 import Base.Change.Context as ChangeContext
 import Parametric.Change.Type as ChangeType
 
 module Parametric.Change.Derive
     {Base : Set {- of base types -}}
-    {Constant : Context.Context (Type.Type Base) → Type.Type Base → Set {- of constants -}}
+    {Constant : Type.Context Base → Type.Type Base → Set {- of constants -}}
     (ΔBase : Base → Base)
     (deriveConst :
       ∀ {Γ Σ τ} → Constant Σ τ →
@@ -20,7 +19,6 @@ module Parametric.Change.Derive
 -- Terms of languages described in Plotkin style
 
 open Type Base
-open Context Type
 open Term Constant
 open ChangeType ΔBase
 open ChangeContext ΔType

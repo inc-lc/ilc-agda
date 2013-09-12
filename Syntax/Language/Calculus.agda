@@ -10,7 +10,6 @@ module Syntax.Language.Calculus where
 
 open import Parametric.Syntax.Type public
 open import Parametric.Syntax.Term public
-open import Base.Syntax.Context public
 open import Base.Change.Context public
 
 record Calculus : Set₁ where
@@ -18,7 +17,7 @@ record Calculus : Set₁ where
     calculus-with
   field
     basetype : Set
-    constant : Context (Type basetype) → Type basetype → Set
+    constant : Context basetype → Type basetype → Set
     Δtype : Type basetype → Type basetype
     Δconst : ∀ {Γ Σ τ} → (c : constant Σ τ) →
       Term constant Γ
@@ -28,7 +27,7 @@ record Calculus : Set₁ where
   type = Type basetype
 
   context : Set
-  context = Context type
+  context = Context basetype
 
   term : context → type → Set
   term = Term constant

@@ -12,7 +12,7 @@ data Type : Set where
   base : (ι : Base) → Type
   _⇒_ : (σ : Type) → (τ : Type) → Type
 
-open import Base.Syntax.Context Type
+open import Base.Syntax.Context Type public
 
 -- Internalize a context to a type.
 --

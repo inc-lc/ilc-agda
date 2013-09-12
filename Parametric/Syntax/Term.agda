@@ -1,9 +1,8 @@
 import Parametric.Syntax.Type as Type
-import Base.Syntax.Context as Context
 
 module Parametric.Syntax.Term
     {Base : Set}
-    (Constant : Context.Context (Type.Type Base) → Type.Type Base → Set {- of constants -})
+    (Constant : Type.Context Base → Type.Type Base → Set {- of constants -})
   where
 
 -- Terms of languages described in Plotkin style
@@ -11,7 +10,6 @@ module Parametric.Syntax.Term
 open import Function using (_∘_)
 
 open Type Base
-open Context Type
 
 -- Declarations of Term and Terms to enable mutual recursion
 data Term
