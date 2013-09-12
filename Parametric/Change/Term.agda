@@ -22,8 +22,8 @@ module Structure where
   -- f ⊕ Δf = λ x . f x ⊕ Δf x (x ⊝ x)
 
   lift-diff-apply :
-    (∀ {ι Γ} → Term Γ (base ι ⇒ base ι ⇒ ΔType (base ι))) →
-    (∀ {ι Γ} → Term Γ (ΔType (base ι) ⇒ base ι ⇒ base ι)) →
+    (∀ {ι Γ} → Term Γ (base ι ⇒ base ι ⇒ base (ΔBase ι))) →
+    (∀ {ι Γ} → Term Γ (base (ΔBase ι) ⇒ base ι ⇒ base ι)) →
     ∀ {τ Γ} →
       Term Γ (τ ⇒ τ ⇒ ΔType τ) × Term Γ (ΔType τ ⇒ τ ⇒ τ)
 
@@ -54,16 +54,16 @@ module Structure where
       abs (abs (abs (app h y ⊕τ app (app Δh y) (y ⊝σ y))))
 
   lift-diff :
-    (∀ {ι Γ} → Term Γ (base ι ⇒ base ι ⇒ ΔType (base ι))) →
-    (∀ {ι Γ} → Term Γ (ΔType (base ι) ⇒ base ι ⇒ base ι)) →
+    (∀ {ι Γ} → Term Γ (base ι ⇒ base ι ⇒ base (ΔBase ι))) →
+    (∀ {ι Γ} → Term Γ (base (ΔBase ι) ⇒ base ι ⇒ base ι)) →
     ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ ΔType τ)
 
   lift-diff diff apply = λ {τ Γ} →
     proj₁ (lift-diff-apply diff apply {τ} {Γ})
 
   lift-apply :
-    (∀ {ι Γ} → Term Γ (base ι ⇒ base ι ⇒ ΔType (base ι))) →
-    (∀ {ι Γ} → Term Γ (ΔType (base ι) ⇒ base ι ⇒ base ι)) →
+    (∀ {ι Γ} → Term Γ (base ι ⇒ base ι ⇒ base (ΔBase ι))) →
+    (∀ {ι Γ} → Term Γ (base (ΔBase ι) ⇒ base ι ⇒ base ι)) →
     ∀ {τ Γ} → Term Γ (ΔType τ ⇒ τ ⇒ τ)
 
   lift-apply diff apply = λ {τ Γ} →
