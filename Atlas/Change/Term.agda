@@ -27,8 +27,7 @@ diff-base {Map κ ι} = abs₂ (λ m₁ m₂ → zip! (abs diff-base) m₁ m₂)
 -- b ⊕ Δb = b xor Δb
 -- m ⊕ Δm = zip _⊕_ m Δm
 
-apply-base : ∀ {ι Γ} →
-  Term Γ (ΔType (base ι) ⇒ base ι ⇒ base ι)
+apply-base : ChangeTerm.ApplyStructure
 apply-base {Bool} = abs₂ (λ b₁ b₂ → xor! b₁ b₂)
 apply-base {Map κ ι} = abs₂ (λ m₁ m₂ → zip! (abs apply-base) m₁ m₂)
 
