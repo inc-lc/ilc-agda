@@ -24,13 +24,9 @@ t ⊕ Δt = app (app apply-term Δt) t
 s ⊝ t  = app (app  diff-term  s) t
 
 apply-term {int} =
-  let Δx = var (that this)
-      x  = var this
-  in abs (abs (add x Δx))
+  abs₂ (λ Δx x → add x Δx)
 apply-term {bag} =
-  let Δx = var (that this)
-      x  = var this
-  in abs (abs (union x Δx))
+  abs₂ (λ Δx x → union x Δx)
 apply-term {σ ⇒ τ} =
   let
     Δf = var (that (that this))
@@ -42,13 +38,9 @@ apply-term {σ ⇒ τ} =
       (app f x ⊕ app (app Δf x) (x ⊝ x))))
 
 diff-term {int} =
-  let x = var (that this)
-      y = var this
-  in abs (abs (add x (minus y)))
+  abs₂ (λ x y → add x (minus y))
 diff-term {bag} =
-  let x = var (that this)
-      y = var this
-  in abs (abs (union x (negate y)))
+  abs₂ (λ x y → union x (negate y))
 diff-term {σ ⇒ τ} =
   let
     g  = var (that (that (that this)))
