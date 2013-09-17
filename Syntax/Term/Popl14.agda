@@ -11,7 +11,7 @@ module Syntax.Term.Popl14 where
 open import Syntax.Context.Popl14 public
 open import Data.Integer
 
-open import Syntax.Constant.Popl14 public
+open import Popl14.Syntax.Term public
 
 diff-term  : ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ ΔType τ)
 apply-term : ∀ {τ Γ} → Term Γ (ΔType τ ⇒ τ ⇒ τ)

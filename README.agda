@@ -8,7 +8,7 @@ module README where
 --   * multiple calculi
 
 
-import Syntax.Constant.Popl14
+import Popl14.Syntax.Term
 import Syntax.Context.Popl14
 import Base.Syntax.Context
 import Base.Change.Context

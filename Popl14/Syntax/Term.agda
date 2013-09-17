@@ -1,4 +1,4 @@
-module Syntax.Constant.Popl14 where
+module Popl14.Syntax.Term where
 
 open import Popl14.Syntax.Type
 
