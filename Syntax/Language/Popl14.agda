@@ -13,12 +13,12 @@ open import Data.Integer
 -- These helpers hide deBrujin indexes, providing an interface which is as
 -- comfortable as HOAS. This should be generalized and moved to Parametric.Syntax.Term
 
-ΔConst (intlit-c n) = intlit (+ 0)
-ΔConst add-c = abs₄ (λ x Δx y Δy → add Δx Δy)
-ΔConst minus-c = abs₂ (λ x Δx → minus Δx)
-ΔConst empty-c = empty
-ΔConst insert-c = abs₄ (λ x Δx y Δy → insert (x ⊕ Δx) (y ⊕ Δy) ⊝ insert x y)
-ΔConst union-c = abs₄ (λ x Δx y Δy → union Δx Δy)
-ΔConst negate-c = abs₂ (λ x Δx → negate Δx)
-ΔConst flatmap-c = abs₄ (λ x Δx y Δy → flatmap (x ⊕ Δx) (y ⊕ Δy) ⊝ flatmap x y)
-ΔConst sum-c = abs₂ (λ x Δx → sum Δx)
+ΔConst (intlit-const n) = intlit (+ 0)
+ΔConst add-const = abs₄ (λ x Δx y Δy → add Δx Δy)
+ΔConst minus-const = abs₂ (λ x Δx → minus Δx)
+ΔConst empty-const = empty
+ΔConst insert-const = abs₄ (λ x Δx y Δy → insert (x ⊕ Δx) (y ⊕ Δy) ⊝ insert x y)
+ΔConst union-const = abs₄ (λ x Δx y Δy → union Δx Δy)
+ΔConst negate-const = abs₂ (λ x Δx → negate Δx)
+ΔConst flatmap-const = abs₄ (λ x Δx y Δy → flatmap (x ⊕ Δx) (y ⊕ Δy) ⊝ flatmap x y)
+ΔConst sum-const = abs₂ (λ x Δx → sum Δx)

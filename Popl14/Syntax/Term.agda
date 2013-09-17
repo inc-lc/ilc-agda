@@ -8,28 +8,28 @@ import Parametric.Syntax.Term Base as Term
 
 -- Popl14-Const ? No.
 data Const : Term.Structure where
-  intlit-c : (n : ℤ) → Const ∅ int
-  add-c : Const (int • int • ∅) int
-  minus-c : Const (int • ∅) (int)
+  intlit-const : (n : ℤ) → Const ∅ int
+  add-const : Const (int • int • ∅) int
+  minus-const : Const (int • ∅) (int)
 
-  empty-c : Const ∅ (bag)
-  insert-c : Const (int • bag • ∅) (bag)
-  union-c : Const (bag • bag • ∅) (bag)
-  negate-c : Const (bag • ∅) (bag)
+  empty-const : Const ∅ (bag)
+  insert-const : Const (int • bag • ∅) (bag)
+  union-const : Const (bag • bag • ∅) (bag)
+  negate-const : Const (bag • ∅) (bag)
 
-  flatmap-c : Const ((int ⇒ bag) • bag • ∅) (bag)
-  sum-c : Const (bag • ∅) (int)
+  flatmap-const : Const ((int ⇒ bag) • bag • ∅) (bag)
+  sum-const : Const (bag • ∅) (int)
 
 open Term.Structure Const public
 
 -- Shorthands of constants
 
-pattern intlit n = const (intlit-c n) ∅
-pattern add s t = const add-c (s • t • ∅)
-pattern minus t = const minus-c (t • ∅)
-pattern empty = const empty-c ∅
-pattern insert s t = const insert-c (s • t • ∅)
-pattern union s t = const union-c (s • t • ∅)
-pattern negate t = const negate-c (t • ∅)
-pattern flatmap s t = const flatmap-c (s • t • ∅)
-pattern sum t = const sum-c (t • ∅)
+pattern intlit n = const (intlit-const n) ∅
+pattern add s t = const add-const (s • t • ∅)
+pattern minus t = const minus-const (t • ∅)
+pattern empty = const empty-const ∅
+pattern insert s t = const insert-const (s • t • ∅)
+pattern union s t = const union-const (s • t • ∅)
+pattern negate t = const negate-const (t • ∅)
+pattern flatmap s t = const flatmap-const (s • t • ∅)
+pattern sum t = const sum-const (t • ∅)
