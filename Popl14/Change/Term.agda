@@ -1,4 +1,4 @@
-module Syntax.Term.Popl14 where
+module Popl14.Change.Term where
 
 -- Terms Calculus Popl14
 --

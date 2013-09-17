@@ -7,7 +7,7 @@ module Denotation.Evaluation.Popl14 where
 -- - Soundness of weakening of terms
 -- - Relating `diff` with `diff-term`, `apply` with `apply-term`
 
-open import Syntax.Term.Popl14 public
+open import Popl14.Change.Term public
 open import Denotation.Environment.Popl14 public
 
 open import Data.Integer

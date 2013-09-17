@@ -1,6 +1,6 @@
 module Syntax.Derive.Canon-Popl14 where
 
-open import Syntax.Term.Popl14 public
+open import Popl14.Change.Term public
 open import Popl14.Syntax.Type
 open import Syntax.Language.Popl14
 

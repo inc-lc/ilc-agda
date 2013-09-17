@@ -1,6 +1,6 @@
 module Syntax.Language.Popl14 where
 
-open import Syntax.Term.Popl14
+open import Popl14.Change.Term
 
 open import Data.Integer
 

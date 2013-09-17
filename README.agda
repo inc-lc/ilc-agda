@@ -26,7 +26,7 @@ import Syntax.Language.Popl14
   Theoretical Computer Science 5(3) pp. 223--255, 1997.
   http://dx.doi.org/10.1016/0304-3975(77)90044-5 -}
 import Parametric.Syntax.Term
-import Syntax.Term.Popl14
+import Popl14.Change.Term
 import Atlas.Syntax.Type
 import Parametric.Syntax.Type
 import Popl14.Syntax.Type

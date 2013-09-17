@@ -1,6 +1,6 @@
 module Syntax.Derive.Optimized-Popl14 where
 
-open import Syntax.Term.Popl14 public
+open import Popl14.Change.Term public
 open import Syntax.Derive.Canon-Popl14 public using (deriveVar; fit)
 
 open import Data.Sum
