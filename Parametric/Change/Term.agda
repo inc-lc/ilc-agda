@@ -33,8 +33,8 @@ module Structure where
     ∀ {τ Γ} →
       Term Γ (τ ⇒ τ ⇒ ΔType τ) × Term Γ (ΔType τ ⇒ τ ⇒ τ)
 
-  lift-diff-apply diff apply {base ι} = diff , apply
-  lift-diff-apply diff apply {σ ⇒ τ} =
+  lift-diff-apply diff-base apply {base ι} = diff-base , apply
+  lift-diff-apply diff-base apply {σ ⇒ τ} =
     let
       -- for diff
       g  = var (that (that (that this)))
@@ -46,10 +46,10 @@ module Structure where
       h  = var (that this)
       y  = var this
       -- syntactic sugars
-      diffσ  = λ {Γ} → proj₁ (lift-diff-apply diff apply {σ} {Γ})
-      diffτ  = λ {Γ} → proj₁ (lift-diff-apply diff apply {τ} {Γ})
-      applyσ = λ {Γ} → proj₂ (lift-diff-apply diff apply {σ} {Γ})
-      applyτ = λ {Γ} → proj₂ (lift-diff-apply diff apply {τ} {Γ})
+      diffσ  = λ {Γ} → proj₁ (lift-diff-apply diff-base apply {σ} {Γ})
+      diffτ  = λ {Γ} → proj₁ (lift-diff-apply diff-base apply {τ} {Γ})
+      applyσ = λ {Γ} → proj₂ (lift-diff-apply diff-base apply {σ} {Γ})
+      applyτ = λ {Γ} → proj₂ (lift-diff-apply diff-base apply {τ} {Γ})
       _⊝σ_ = λ s t  → app (app diffσ s) t
       _⊝τ_ = λ s t  → app (app diffτ s) t
       _⊕σ_ = λ t Δt → app (app applyσ Δt) t
@@ -64,13 +64,13 @@ module Structure where
     ApplyStructure →
     ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ ΔType τ)
 
-  lift-diff diff apply = λ {τ Γ} →
-    proj₁ (lift-diff-apply diff apply {τ} {Γ})
+  lift-diff diff-base apply = λ {τ Γ} →
+    proj₁ (lift-diff-apply diff-base apply {τ} {Γ})
 
   lift-apply :
     DiffStructure →
     ApplyStructure →
     ∀ {τ Γ} → Term Γ (ΔType τ ⇒ τ ⇒ τ)
 
-  lift-apply diff apply = λ {τ Γ} →
-    proj₂ (lift-diff-apply diff apply {τ} {Γ})
+  lift-apply diff-base apply = λ {τ Γ} →
+    proj₂ (lift-diff-apply diff-base apply {τ} {Γ})
