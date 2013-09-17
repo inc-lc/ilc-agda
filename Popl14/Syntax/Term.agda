@@ -6,7 +6,6 @@ open import Data.Integer
 
 import Parametric.Syntax.Term Base as Term
 
--- Popl14-Const ? No.
 data Const : Term.Structure where
   intlit-const : (n : ℤ) → Const ∅ int
   add-const : Const (int • int • ∅) int
