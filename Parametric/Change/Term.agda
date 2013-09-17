@@ -51,10 +51,10 @@ module Structure
       ,
       abs₃ (λ Δh h y → app h y ⊕τ app (app Δh y) (y ⊝σ y))
 
-  lift-diff :
+  diff-term :
     ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ ΔType τ)
 
-  lift-diff = λ {τ Γ} →
+  diff-term = λ {τ Γ} →
     proj₁ (lift-diff-apply {τ} {Γ})
 
   lift-apply :
@@ -66,7 +66,7 @@ module Structure
   diff : ∀ {τ Γ} →
     Term Γ τ → Term Γ τ →
     Term Γ (ΔType τ)
-  diff = app₂ lift-diff
+  diff = app₂ diff-term
 
   apply : ∀ {τ Γ} →
     Term Γ (ΔType τ) → Term Γ τ →
