@@ -4,8 +4,10 @@ open import Popl14.Syntax.Type
 
 open import Data.Integer
 
+import Parametric.Syntax.Term Base as Term
+
 -- Popl14-Const ? No.
-data Const : (Σ : Context) → Type -> Set where
+data Const : Term.Structure where
   intlit-c : (n : ℤ) → Const ∅ int
   add-c : Const (int • int • ∅) int
   minus-c : Const (int • ∅) (int)
@@ -18,7 +20,6 @@ data Const : (Σ : Context) → Type -> Set where
   flatmap-c : Const ((int ⇒ bag) • bag • ∅) (bag)
   sum-c : Const (bag • ∅) (int)
 
-import Parametric.Syntax.Term Base as Term
 open Term.Structure Const public
 
 -- Shorthands of constants

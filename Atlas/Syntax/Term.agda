@@ -13,7 +13,9 @@ module Atlas.Syntax.Term where
 
 open import Atlas.Syntax.Type
 
-data Const : Context → Type → Set where
+import Parametric.Syntax.Term Base as Term
+
+data Const : Term.Structure where
   true  : Const
     ∅
     (base Bool)
@@ -69,7 +71,6 @@ data Const : Context → Type → Set where
     base b • base (Map κ a) • ∅)
    (base b)
 
-import Parametric.Syntax.Term Base as Term
 open Term.Structure Const public
 
 -- Shorthands of constants
