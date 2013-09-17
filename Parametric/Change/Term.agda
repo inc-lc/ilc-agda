@@ -37,15 +37,6 @@ module Structure
   lift-diff-apply {base ι} = diff-base , apply-base
   lift-diff-apply {σ ⇒ τ} =
     let
-      -- for diff
-      g  = var (that (that (that this)))
-      f  = var (that (that this))
-      x  = var (that this)
-      Δx = var this
-      -- for apply
-      Δh = var (that (that this))
-      h  = var (that this)
-      y  = var this
       -- syntactic sugars
       diffσ  = λ {Γ} → proj₁ (lift-diff-apply {σ} {Γ})
       diffτ  = λ {Γ} → proj₁ (lift-diff-apply {τ} {Γ})
@@ -56,9 +47,9 @@ module Structure
       _⊕σ_ = λ {Γ} t Δt → app₂ (applyσ {Γ}) Δt t
       _⊕τ_ = λ {Γ} t Δt → app₂ (applyτ {Γ}) Δt t
     in
-      abs (abs (abs (abs (app f (x ⊕σ Δx) ⊝τ app g x))))
+      abs₄ (λ g f x Δx → app f (x ⊕σ Δx) ⊝τ app g x)
       ,
-      abs (abs (abs (app h y ⊕τ app (app Δh y) (y ⊝σ y))))
+      abs₃ (λ Δh h y → app h y ⊕τ app (app Δh y) (y ⊝σ y))
 
   lift-diff :
     ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ ΔType τ)
