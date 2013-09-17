@@ -62,3 +62,13 @@ module Structure
 
   lift-apply = λ {τ Γ} →
     proj₂ (lift-diff-apply {τ} {Γ})
+
+  diff : ∀ {τ Γ} →
+    Term Γ τ → Term Γ τ →
+    Term Γ (ΔType τ)
+  diff = app₂ lift-diff
+
+  apply : ∀ {τ Γ} →
+    Term Γ (ΔType τ) → Term Γ τ →
+    Term Γ τ
+  apply = app₂ lift-apply

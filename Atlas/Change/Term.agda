@@ -33,17 +33,7 @@ apply-base {Map κ ι} = abs₂ (λ m₁ m₂ → zip! (abs apply-base) m₁ m�
 
 -- Shorthands for working with diff-term and apply-term
 
-open ChangeTerm.Structure diff-base apply-base
-
-diff : ∀ {τ Γ} →
-  Term Γ τ → Term Γ τ →
-  Term Γ (ΔType τ)
-diff = app₂ lift-diff
-
-apply : ∀ {τ Γ} →
-  Term Γ (ΔType τ) → Term Γ τ →
-  Term Γ τ
-apply = app₂ lift-apply
+open ChangeTerm.Structure diff-base apply-base public
 
 -- Shorthands for creating changes corresponding to
 -- insertion/deletion.
