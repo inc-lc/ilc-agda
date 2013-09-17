@@ -51,10 +51,10 @@ module Structure
       diffτ  = λ {Γ} → proj₁ (lift-diff-apply {τ} {Γ})
       applyσ = λ {Γ} → proj₂ (lift-diff-apply {σ} {Γ})
       applyτ = λ {Γ} → proj₂ (lift-diff-apply {τ} {Γ})
-      _⊝σ_ = λ s t  → app (app diffσ s) t
-      _⊝τ_ = λ s t  → app (app diffτ s) t
-      _⊕σ_ = λ t Δt → app (app applyσ Δt) t
-      _⊕τ_ = λ t Δt → app (app applyτ Δt) t
+      _⊝σ_ = λ s t  → app₂ diffσ s t
+      _⊝τ_ = λ s t  → app₂ diffτ s t
+      _⊕σ_ = λ t Δt → app₂ applyσ Δt t
+      _⊕τ_ = λ t Δt → app₂ applyτ Δt t
     in
       abs (abs (abs (abs (app f (x ⊕σ Δx) ⊝τ app g x))))
       ,
