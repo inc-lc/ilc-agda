@@ -22,19 +22,20 @@ DiffStructure = ∀ {ι Γ} → Term Γ (base ι ⇒ base ι ⇒ base (ΔBase ι
 ApplyStructure : Set
 ApplyStructure = ∀ {ι Γ} → Term Γ (ΔType (base ι) ⇒ base ι ⇒ base ι)
 
-module Structure where
+module Structure
+    (diff-base : DiffStructure)
+    (apply-base : ApplyStructure)
+  where
 
   -- g ⊝ f  = λ x . λ Δx . g (x ⊕ Δx) ⊝ f x
   -- f ⊕ Δf = λ x . f x ⊕ Δf x (x ⊝ x)
 
   lift-diff-apply :
-    DiffStructure →
-    ApplyStructure →
     ∀ {τ Γ} →
       Term Γ (τ ⇒ τ ⇒ ΔType τ) × Term Γ (ΔType τ ⇒ τ ⇒ τ)
 
-  lift-diff-apply diff-base apply-base {base ι} = diff-base , apply-base
-  lift-diff-apply diff-base apply-base {σ ⇒ τ} =
+  lift-diff-apply {base ι} = diff-base , apply-base
+  lift-diff-apply {σ ⇒ τ} =
     let
       -- for diff
       g  = var (that (that (that this)))
@@ -46,10 +47,10 @@ module Structure where
       h  = var (that this)
       y  = var this
       -- syntactic sugars
-      diffσ  = λ {Γ} → proj₁ (lift-diff-apply diff-base apply-base {σ} {Γ})
-      diffτ  = λ {Γ} → proj₁ (lift-diff-apply diff-base apply-base {τ} {Γ})
-      applyσ = λ {Γ} → proj₂ (lift-diff-apply diff-base apply-base {σ} {Γ})
-      applyτ = λ {Γ} → proj₂ (lift-diff-apply diff-base apply-base {τ} {Γ})
+      diffσ  = λ {Γ} → proj₁ (lift-diff-apply {σ} {Γ})
+      diffτ  = λ {Γ} → proj₁ (lift-diff-apply {τ} {Γ})
+      applyσ = λ {Γ} → proj₂ (lift-diff-apply {σ} {Γ})
+      applyτ = λ {Γ} → proj₂ (lift-diff-apply {τ} {Γ})
       _⊝σ_ = λ s t  → app (app diffσ s) t
       _⊝τ_ = λ s t  → app (app diffτ s) t
       _⊕σ_ = λ t Δt → app (app applyσ Δt) t
@@ -60,17 +61,13 @@ module Structure where
       abs (abs (abs (app h y ⊕τ app (app Δh y) (y ⊝σ y))))
 
   lift-diff :
-    DiffStructure →
-    ApplyStructure →
     ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ ΔType τ)
 
-  lift-diff diff-base apply-base = λ {τ Γ} →
-    proj₁ (lift-diff-apply diff-base apply-base {τ} {Γ})
+  lift-diff = λ {τ Γ} →
+    proj₁ (lift-diff-apply {τ} {Γ})
 
   lift-apply :
-    DiffStructure →
-    ApplyStructure →
     ∀ {τ Γ} → Term Γ (ΔType τ ⇒ τ ⇒ τ)
 
-  lift-apply diff-base apply-base = λ {τ Γ} →
-    proj₂ (lift-diff-apply diff-base apply-base {τ} {Γ})
+  lift-apply = λ {τ Γ} →
+    proj₂ (lift-diff-apply {τ} {Γ})
