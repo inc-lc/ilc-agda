@@ -25,7 +25,7 @@ open import Data.Unit
 open import Data.Product
 
 weakenVar-sound : ∀ {Γ₁ Γ₂ τ} (subctx : Γ₁ ≼ Γ₂) (x : Var Γ₁ τ) →
-  ∀ (ρ : ⟦ Γ₂ ⟧) → ⟦ weakenVar subctx x ⟧ ρ ≡ ⟦ x ⟧ (⟦ subctx ⟧ ρ)
+  ∀ (ρ : ⟦ Γ₂ ⟧) → ⟦ lift subctx x ⟧ ρ ≡ ⟦ x ⟧ (⟦ subctx ⟧ ρ)
 weakenVar-sound = Env.lift-sound
 
 EmptyEnv : Set
