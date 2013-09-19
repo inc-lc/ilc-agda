@@ -24,22 +24,4 @@ apply-base : ChangeTerm.ApplyStructure
 apply-base {base-int} = abs₂ (λ Δx x → add x Δx)
 apply-base {base-bag} = abs₂ (λ Δx x → union x Δx)
 
-diff-term  : ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ ΔType τ)
-apply-term : ∀ {τ Γ} → Term Γ (ΔType τ ⇒ τ ⇒ τ)
-
--- Sugars for diff-term and apply-term
-infixl 6 _⊕_ _⊝_
-_⊕_ : ∀ {τ Γ} → Term Γ τ → Term Γ (ΔType τ) → Term Γ τ
-_⊝_ : ∀ {τ Γ} → Term Γ τ → Term Γ τ → Term Γ (ΔType τ)
-t ⊕ Δt = app (app apply-term Δt) t
-s ⊝ t  = app (app  diff-term  s) t
-
-apply-term {base ι} = apply-base {ι}
-apply-term {σ ⇒ τ} =
-    abs₃ (λ Δf f x →
-      app f x ⊕ app (app Δf x) (x ⊝ x))
-
-diff-term {base ι} = diff-base {ι}
-diff-term {σ ⇒ τ} =
-  abs₄ (λ g f x Δx →
-    app g (x ⊕ Δx) ⊝ app f x)
+open ChangeTerm.Structure diff-base apply-base public

@@ -58,3 +58,7 @@ module Structure
     Term Γ (ΔType τ) → Term Γ τ →
     Term Γ τ
   apply = app₂ apply-term
+
+  infixl 6 apply diff
+  syntax apply x Δx = Δx ⊕ x
+  syntax diff x y = x ⊝ y

@@ -15,13 +15,13 @@ derive+ empty = empty
 derive+ (insert s t) with closed? s
 ... | inj₁ is-closed = derive+ t
 ... | inj₂ tt =
-  insert (fit s ⊕ derive+ s) (fit t ⊕ derive+ t) ⊝ insert (fit s) (fit t)
+  insert (apply {int} (derive+ s) (fit s)) (apply {bag} (derive+ t) (fit t)) ⊝ insert (fit s) (fit t)
 derive+ (union s t) = union (derive+ s) (derive+ t)
 derive+ (negate t) = negate (derive+ t)
 derive+ (flatmap s t) with closed? s
 ... | inj₁ is-closed = flatmap (fit s) (derive+ t)
 ... | inj₂ tt =
- flatmap (fit s ⊕ derive+ s) (fit t ⊕ derive+ t) ⊝ flatmap (fit s) (fit t)
+  flatmap (apply {int ⇒ bag} (derive+ s) (fit s)) (apply {bag} (derive+ t) (fit t)) ⊝ flatmap (fit s) (fit t)
 derive+ (sum t) = sum (derive+ t)
 derive+ (var x) = var (deriveVar x)
 derive+ (app s t) = app (app (derive+ s) (fit t)) (derive+ t)
