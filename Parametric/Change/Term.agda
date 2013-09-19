@@ -39,7 +39,7 @@ module Structure
        _⊝τ_ = λ {Γ} s t  → app₂ (diff-term {τ} {Γ}) s t
        _⊕σ_ = λ {Γ} t Δt → app₂ (apply-term {σ} {Γ}) Δt t
      in
-       abs₄ (λ g f x Δx → app f (x ⊕σ Δx) ⊝τ app g x))
+       abs₄ (λ g f x Δx → app g (x ⊕σ Δx) ⊝τ app f x))
 
   apply-term {base ι} = apply-base
   apply-term {σ ⇒ τ} =
