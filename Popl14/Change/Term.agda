@@ -16,6 +16,14 @@ open import Popl14.Change.Type public
 
 import Parametric.Change.Term Const ΔBase as ChangeTerm
 
+diff-base : ChangeTerm.DiffStructure
+diff-base {base-int} = abs₂ (λ x y → add x (minus y))
+diff-base {base-bag} = abs₂ (λ x y → union x (negate y))
+
+apply-base : ChangeTerm.ApplyStructure
+apply-base {base-int} = abs₂ (λ Δx x → add x Δx)
+apply-base {base-bag} = abs₂ (λ Δx x → union x Δx)
+
 diff-term  : ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ ΔType τ)
 apply-term : ∀ {τ Γ} → Term Γ (ΔType τ ⇒ τ ⇒ τ)
 
@@ -25,12 +33,6 @@ _⊕_ : ∀ {τ Γ} → Term Γ τ → Term Γ (ΔType τ) → Term Γ τ
 _⊝_ : ∀ {τ Γ} → Term Γ τ → Term Γ τ → Term Γ (ΔType τ)
 t ⊕ Δt = app (app apply-term Δt) t
 s ⊝ t  = app (app  diff-term  s) t
-
-apply-base : ChangeTerm.ApplyStructure
-apply-base {base-int} =
-  abs₂ (λ Δx x → add x Δx)
-apply-base {base-bag} =
-  abs₂ (λ Δx x → union x Δx)
 
 apply-term {base ι} = apply-base {ι}
 apply-term {σ ⇒ τ} =
@@ -42,12 +44,6 @@ apply-term {σ ⇒ τ} =
   -- Δf   f    x
     abs (abs (abs
       (app f x ⊕ app (app Δf x) (x ⊝ x))))
-
-diff-base : ChangeTerm.DiffStructure
-diff-base {base-int} =
-  abs₂ (λ x y → add x (minus y))
-diff-base {base-bag} =
-  abs₂ (λ x y → union x (negate y))
 
 diff-term {base ι} = diff-base {ι}
 diff-term {σ ⇒ τ} =
