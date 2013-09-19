@@ -9,7 +9,6 @@ module README where
 
 
 import Popl14.Syntax.Term
-import Syntax.Context.Popl14
 import Base.Syntax.Context
 import Base.Change.Context
 import Syntax.Derive.Canon-Popl14
