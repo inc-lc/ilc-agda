@@ -8,11 +8,11 @@ module Popl14.Change.Term where
 -- - `fit`: weaken a term to its ΔContext
 -- - diff-term, apply-term and their syntactic sugars
 
-open import Popl14.Syntax.Type public
-open import Popl14.Change.Type public
 open import Data.Integer
 
+open import Popl14.Syntax.Type public
 open import Popl14.Syntax.Term public
+open import Popl14.Change.Type public
 
 diff-term  : ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ ΔType τ)
 apply-term : ∀ {τ Γ} → Term Γ (ΔType τ ⇒ τ ⇒ τ)
