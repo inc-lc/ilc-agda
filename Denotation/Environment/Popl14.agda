@@ -79,6 +79,6 @@ irrelevance {∅} {∅} = tt
 irrelevance {τ • Γ} {cons _ _ _ ρ} = irrelevance {ρ = ρ}
 
 -- Semantic properties of special subcontext relations
-⟦Γ≼Γ⟧ : ∀ {Γ} {ρ : ⟦ Γ ⟧} → ⟦ Γ≼Γ {Γ} ⟧ ρ ≡ ρ
+⟦Γ≼Γ⟧ : ∀ {Γ} {ρ : ⟦ Γ ⟧} → ⟦ ≼-refl {Γ} ⟧ ρ ≡ ρ
 ⟦Γ≼Γ⟧ {∅} {∅} = refl
 ⟦Γ≼Γ⟧ {τ • Γ} {v • ρ} = cong₂ _•_ {x = v} refl (⟦Γ≼Γ⟧ {Γ} {ρ})
