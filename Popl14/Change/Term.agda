@@ -36,23 +36,10 @@ s ⊝ t  = app (app  diff-term  s) t
 
 apply-term {base ι} = apply-base {ι}
 apply-term {σ ⇒ τ} =
-  let
-    Δf = var (that (that this))
-    f  = var (that this)
-    x  = var this
-  in
-  -- Δf   f    x
-    abs (abs (abs
-      (app f x ⊕ app (app Δf x) (x ⊝ x))))
+    abs₃ (λ Δf f x →
+      app f x ⊕ app (app Δf x) (x ⊝ x))
 
 diff-term {base ι} = diff-base {ι}
 diff-term {σ ⇒ τ} =
-  let
-    g  = var (that (that (that this)))
-    f  = var (that (that this))
-    x  = var (that this)
-    Δx = var this
-  in
-  -- g    f    x    Δx
-    abs (abs (abs (abs
-      (app g (x ⊕ Δx) ⊝ app f x))))
+  abs₄ (λ g f x Δx →
+    app g (x ⊕ Δx) ⊝ app f x)
