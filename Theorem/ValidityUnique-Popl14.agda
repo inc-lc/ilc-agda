@@ -6,7 +6,7 @@ module Theorem.ValidityUnique-Popl14 where
 open import Property.Uniqueness public
 
 open import Relation.Binary.PropositionalEquality
-open import Denotation.Evaluation.Popl14
+open import Popl14.Denotation.Evaluation
 open import Denotation.Change.Popl14
 open import Theorem.ProductUnique
 open import Theorem.EqualityUnique

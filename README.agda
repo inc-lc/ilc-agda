@@ -37,7 +37,7 @@ import Denotation.Derive.Canon-Popl14
 import Denotation.Derive.Optimized-Popl14
 import Denotation.Environment.Popl14
 import Base.Denotation.Environment
-import Denotation.Evaluation.Popl14
+import Popl14.Denotation.Evaluation
 import Denotation.FreeVars.Popl14
 {- The idea of implementing a denotational specification for Calc. Popl14 -}
 import Denotation.Implementation.Popl14

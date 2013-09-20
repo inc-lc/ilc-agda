@@ -1,4 +1,4 @@
-module Denotation.Evaluation.Popl14 where
+module Popl14.Denotation.Evaluation where
 
 -- Evaluating terms of Calculus Popl14 into Agda values
 --
