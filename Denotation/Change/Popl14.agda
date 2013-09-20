@@ -18,7 +18,7 @@ module Denotation.Change.Popl14 where
 open import Base.Denotation.Notation public
 
 open import Relation.Binary.PropositionalEquality
-open import Denotation.Value.Popl14
+open import Popl14.Denotation.Value
 open import Theorem.Groups-Popl14
 open import Postulate.Extensionality
 open import Data.Unit

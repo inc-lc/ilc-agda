@@ -1,4 +1,4 @@
-module Denotation.Value.Popl14 where
+module Popl14.Denotation.Value where
 
 open import Popl14.Syntax.Type public
 open import Popl14.Change.Type public

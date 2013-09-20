@@ -13,7 +13,7 @@ module Denotation.Environment.Popl14 where
 
 open import Structure.Tuples public -- re-export `cons` constructor
 open import Base.Denotation.Notation public
-open import Denotation.Value.Popl14 public
+open import Popl14.Denotation.Value public
 open import Denotation.Change.Popl14 public
 open import Base.Syntax.Vars Type public
 import Base.Denotation.Environment Type ⟦_⟧Type as Env
