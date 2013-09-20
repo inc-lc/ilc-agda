@@ -13,13 +13,10 @@ open import Data.Integer
 -- - Domains associated with types
 -- - `diff` and `apply` in semantic domains
 
-⟦_⟧Base : Base → Set
+import Parametric.Denotation.Value Base as Value
+
+⟦_⟧Base : Value.Structure
 ⟦ base-int ⟧Base = ℤ
 ⟦ base-bag ⟧Base = Bag
 
-⟦_⟧Type : Type -> Set
-⟦ base ι ⟧Type = ⟦ ι ⟧Base
-⟦ σ ⇒ τ ⟧Type = ⟦ σ ⟧Type → ⟦ τ ⟧Type
-
-meaningOfType : Meaning Type
-meaningOfType = meaning ⟦_⟧Type
+open Value.Structure ⟦_⟧Base public
