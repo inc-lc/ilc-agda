@@ -109,3 +109,16 @@ R[v,u-v] {σ ⇒ τ} {u} {v} = λ w Δw R[w,Δw] →
     ≡⟨ sym (v+[u-v]=u {u = u w′} {v w}) ⟩
       v w ⊞ (u ⊟ v) w Δw R[w,Δw]
     ∎) where open ≡-Reasoning
+
+-- `diff` and `apply`, without validity proofs
+infixl 6 _⟦⊕⟧_ _⟦⊝⟧_
+_⟦⊕⟧_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ ΔType τ ⟧ → ⟦ τ ⟧
+_⟦⊝⟧_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ ΔType τ ⟧
+
+_⟦⊕⟧_ {int}  n Δn = n +  Δn
+_⟦⊕⟧_ {bag}  b Δb = b ++ Δb
+_⟦⊕⟧_ {σ ⇒ τ} f Δf = λ v → f v ⟦⊕⟧ Δf v (v ⟦⊝⟧ v)
+
+_⟦⊝⟧_ {int}  m n = m -  n
+_⟦⊝⟧_ {bag}  a b = a \\ b
+_⟦⊝⟧_ {σ ⇒ τ} g f = λ v Δv → g (v ⟦⊕⟧ Δv) ⟦⊝⟧ f v

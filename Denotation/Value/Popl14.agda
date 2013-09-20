@@ -20,16 +20,3 @@ open import Data.Integer
 
 meaningOfType : Meaning Type
 meaningOfType = meaning ⟦_⟧Type
-
--- `diff` and `apply`
-infixl 6 _⟦⊕⟧_ _⟦⊝⟧_
-_⟦⊕⟧_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ ΔType τ ⟧ → ⟦ τ ⟧
-_⟦⊝⟧_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ ΔType τ ⟧
-
-_⟦⊕⟧_ {int}  n Δn = n +  Δn
-_⟦⊕⟧_ {bag}  b Δb = b ++ Δb
-_⟦⊕⟧_ {σ ⇒ τ} f Δf = λ v → f v ⟦⊕⟧ Δf v (v ⟦⊝⟧ v)
-
-_⟦⊝⟧_ {int}  m n = m -  n
-_⟦⊝⟧_ {bag}  a b = a \\ b
-_⟦⊝⟧_ {σ ⇒ τ} g f = λ v Δv → g (v ⟦⊕⟧ Δv) ⟦⊝⟧ f v
