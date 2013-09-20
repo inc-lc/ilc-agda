@@ -13,9 +13,12 @@ open import Data.Integer
 -- - Domains associated with types
 -- - `diff` and `apply` in semantic domains
 
+⟦_⟧Base : Base → Set
+⟦ base-int ⟧Base = ℤ
+⟦ base-bag ⟧Base = Bag
+
 ⟦_⟧Type : Type -> Set
-⟦ int ⟧Type = ℤ
-⟦ bag ⟧Type = Bag
+⟦ base ι ⟧Type = ⟦ ι ⟧Base
 ⟦ σ ⇒ τ ⟧Type = ⟦ σ ⟧Type → ⟦ τ ⟧Type
 
 meaningOfType : Meaning Type
