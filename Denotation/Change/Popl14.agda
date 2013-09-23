@@ -43,7 +43,12 @@ _⊟_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → ΔVal τ
 R[v,u-v] : ∀ {τ : Type} {u v : ⟦ τ ⟧} → valid {τ} v (u ⊟ v)
 
 -- Lemma apply-diff
-v+[u-v]=u : ∀ {τ : Type} {u v : ⟦ τ ⟧} → v ⊞ (u ⊟ v) ≡ u
+v+[u-v]=u : ∀ {τ : Type} {u v : ⟦ τ ⟧} →
+  let
+    _+_ = _⊞_ {τ}
+    _-_ = _⊟_ {τ}
+  in
+  v + (u - v) ≡ u
 
 --------------------
 -- Implementation --
@@ -58,56 +63,71 @@ v+[u-v]=u : ∀ {τ : Type} {u v : ⟦ τ ⟧} → v ⊞ (u ⊟ v) ≡ u
 -- https://github.com/ps-mr/ilc/blob/184a6291ac6eef80871c32d2483e3e62578baf06/POPL14/paper/sec-formal.tex
 --
 -- ΔVal : Type → Set
-ΔVal int = ℤ
-ΔVal bag = Bag
+ΔVal (base base-int) = ℤ
+ΔVal (base base-bag) = Bag
 ΔVal (σ ⇒ τ) = (v : ⟦ σ ⟧) → (dv : ΔVal σ) → valid v dv → ΔVal τ
 
 -- _⊞_ : ∀ {τ} → ⟦ τ ⟧ → ΔVal τ → ⟦ τ ⟧
-_⊞_ {int} n Δn = n + Δn
-_⊞_ {bag} b Δb = b ++ Δb
+_⊞_ {base base-int} n Δn = n + Δn
+_⊞_ {base base-bag} b Δb = b ++ Δb
 _⊞_ {σ ⇒ τ} f Δf = λ v → f v ⊞ Δf v (v ⊟ v) (R[v,u-v] {σ})
 
 -- _⊟_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → ΔVal τ
-_⊟_ {int} m n = m - n
-_⊟_ {bag} d b = d \\ b
+_⊟_ {base base-int} m n = m - n
+_⊟_ {base base-bag} d b = d \\ b
 _⊟_ {σ ⇒ τ} g f = λ v Δv R[v,Δv] → g (v ⊞ Δv) ⊟ f v
 
 -- valid : ∀ {τ} → ⟦ τ ⟧ → ΔVal τ → Set
-valid {int} n Δn = ⊤
-valid {bag} b Δb = ⊤
+valid {base base-int} n Δn = ⊤
+valid {base base-bag} b Δb = ⊤
 valid {σ ⇒ τ} f Δf =
   ∀ (v : ⟦ σ ⟧) (Δv : ΔVal σ) (R[v,Δv] : valid v Δv)
   → valid (f v) (Δf v Δv R[v,Δv])
-  × (f ⊞ Δf) (v ⊞ Δv) ≡ f v ⊞ Δf v Δv R[v,Δv]
+  -- × (f ⊞ Δf) (v ⊞ Δv) ≡ f v ⊞ Δf v Δv R[v,Δv]
+  × (_⊞_ {σ ⇒ τ} f Δf) (v ⊞ Δv) ≡ f v ⊞ Δf v Δv R[v,Δv]
 
 -- v+[u-v]=u : ∀ {τ : Type} {u v : ⟦ τ ⟧} → v ⊞ (u ⊟ v) ≡ u
-v+[u-v]=u {int} {u} {v} = n+[m-n]=m {v} {u}
-v+[u-v]=u {bag} {u} {v} = a++[b\\a]=b {v} {u}
-v+[u-v]=u {σ ⇒ τ} {u} {v} = ext (λ w →
-  begin
-    (v ⊞ (u ⊟ v)) w
-  ≡⟨ refl ⟩
-    v w ⊞ (u (w ⊞ (w ⊟ w)) ⊟ v w)
-  ≡⟨ cong (λ hole → v w ⊞ (u hole ⊟ v w)) v+[u-v]=u ⟩
-    v w ⊞ (u w ⊟ v w)
-  ≡⟨ v+[u-v]=u ⟩
-    u w
-  ∎) where open ≡-Reasoning
+v+[u-v]=u {base base-int} {u} {v} = n+[m-n]=m {v} {u}
+v+[u-v]=u {base base-bag} {u} {v} = a++[b\\a]=b {v} {u}
+v+[u-v]=u {σ ⇒ τ} {u} {v} =
+  let
+    _+_ = _⊞_ {σ ⇒ τ}
+    _-_ = _⊟_ {σ ⇒ τ}
+    _+₀_ = _⊞_ {σ}
+    _-₀_ = _⊟_ {σ}
+    _+₁_ = _⊞_ {τ}
+    _-₁_ = _⊟_ {τ}
+  in
+    ext {-⟦ σ ⟧} {λ _ → ⟦ τ ⟧-} (λ w →
+      begin
+        (v + (u - v)) w
+      ≡⟨ refl ⟩
+        v w +₁ (u (w +₀ (w -₀ w)) -₁ v w)
+      ≡⟨ cong (λ hole → v w +₁ (u hole -₁ v w)) (v+[u-v]=u {σ}) ⟩
+        v w +₁ (u w -₁ v w)
+      ≡⟨ v+[u-v]=u {τ} ⟩
+        u w
+      ∎) where
+      open ≡-Reasoning
 
-R[v,u-v] {int} {u} {v} = tt
-R[v,u-v] {bag} {u} {v} = tt
+R[v,u-v] {base base-int} {u} {v} = tt
+R[v,u-v] {base base-bag} {u} {v} = tt
 R[v,u-v] {σ ⇒ τ} {u} {v} = λ w Δw R[w,Δw] →
   let
     w′ = w ⊞ Δw
+    _+_ = _⊞_ {σ ⇒ τ}
+    _-_ = _⊟_ {σ ⇒ τ}
+    _+₁_ = _⊞_ {τ}
+    _-₁_ = _⊟_ {τ}
   in
     R[v,u-v] {τ}
     ,
     (begin
-      (v ⊞ (u ⊟ v)) w′
-    ≡⟨ cong (λ hole → hole w′) (v+[u-v]=u {u = u} {v}) ⟩
+      (v + (u - v)) w′
+    ≡⟨ cong (λ hole → hole w′) (v+[u-v]=u {σ ⇒ τ} {u} {v}) ⟩
       u w′
-    ≡⟨ sym (v+[u-v]=u {u = u w′} {v w}) ⟩
-      v w ⊞ (u ⊟ v) w Δw R[w,Δw]
+    ≡⟨ sym (v+[u-v]=u {τ} {u w′} {v w}) ⟩
+      v w +₁ (u - v) w Δw R[w,Δw]
     ∎) where open ≡-Reasoning
 
 -- `diff` and `apply`, without validity proofs
@@ -115,10 +135,15 @@ infixl 6 _⟦⊕⟧_ _⟦⊝⟧_
 _⟦⊕⟧_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ ΔType τ ⟧ → ⟦ τ ⟧
 _⟦⊝⟧_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ ΔType τ ⟧
 
-_⟦⊕⟧_ {int}  n Δn = n +  Δn
-_⟦⊕⟧_ {bag}  b Δb = b ++ Δb
-_⟦⊕⟧_ {σ ⇒ τ} f Δf = λ v → f v ⟦⊕⟧ Δf v (v ⟦⊝⟧ v)
+_⟦⊕⟧_ {base base-int}  n Δn = n +  Δn
+_⟦⊕⟧_ {base base-bag}  b Δb = b ++ Δb
+_⟦⊕⟧_ {σ ⇒ τ} f Δf = λ v →
+  let
+    _-₀_ = _⟦⊝⟧_ {σ}
+    _+₁_ = _⟦⊕⟧_ {τ}
+  in
+    f v +₁ Δf v (v -₀ v)
 
-_⟦⊝⟧_ {int}  m n = m -  n
-_⟦⊝⟧_ {bag}  a b = a \\ b
-_⟦⊝⟧_ {σ ⇒ τ} g f = λ v Δv → g (v ⟦⊕⟧ Δv) ⟦⊝⟧ f v
+_⟦⊝⟧_ {base base-int}  m n = m -  n
+_⟦⊝⟧_ {base base-bag}  a b = a \\ b
+_⟦⊝⟧_ {σ ⇒ τ} g f = λ v Δv → _⟦⊝⟧_ {τ} (g (_⟦⊕⟧_ {σ} v Δv)) (f v)
