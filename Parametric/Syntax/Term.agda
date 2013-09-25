@@ -29,7 +29,7 @@ module Structure (Const : Structure) where
   data Term Γ where
     const : ∀ {Σ τ} →
       (c : Const Σ τ) →
-      Terms Γ Σ →
+      (args : Terms Γ Σ) →
       Term Γ τ
     var : ∀ {τ} →
       (x : Var Γ τ) →
