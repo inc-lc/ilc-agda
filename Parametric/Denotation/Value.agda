@@ -5,6 +5,7 @@ module Parametric.Denotation.Value
   where
 
 open import Base.Denotation.Notation
+open import Relation.Binary.PropositionalEquality
 
 open Type.Structure Base
 

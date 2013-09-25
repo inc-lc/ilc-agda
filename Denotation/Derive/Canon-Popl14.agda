@@ -85,7 +85,7 @@ main-theorem : ∀ {σ τ}
   → ⟦ app f y ⟧
   ≡ ⟦ app f x ⊕ app (app (derive f) x) (y ⊝ x) ⟧
 
-main-theorem {f = f} {x} {y} =
+main-theorem {σ} {τ} {f} {x} {y} =
   let
     h  = ⟦ f ⟧ ∅
     Δh = ⟦ f ⟧Δ ∅
@@ -93,21 +93,27 @@ main-theorem {f = f} {x} {y} =
     v  = ⟦ x ⟧ ∅
     u  = ⟦ y ⟧ ∅
     Δoutput-term = app (app (derive f) x) (y ⊝ x)
+    -- local disambiguators
+    -- TODO: Find location for modules:
+    -- Denotation.Implementation.Popl14.Disambiguation
+    -- Denotation.Implementation.Popl14.FunctionDisambiguation
+    open FunctionDisambiguation σ τ
+    _+₀_ = _⊞_ {σ}
   in
     ext {A = EmptyEnv} (λ { ∅ →
     begin
       h u
-    ≡⟨ cong h (sym v+[u-v]=u) ⟩
-      h (v ⊞ (u ⊟ v))
-    ≡⟨ corollary-closed {t = f} {v} {u ⊟ v} ⟩
-      h v ⊞ Δh v (u ⊟ v) (R[v,u-v] {u = u} {v})
-    ≡⟨ carry-over
+    ≡⟨ cong h (sym (v+[u-v]=u {σ})) ⟩
+      h (v +₀ (u ⊟ v))
+    ≡⟨ corollary-closed {σ} {τ} {f} {v} {u ⊟ v} {R[v,u-v] {σ}} ⟩
+      h v ⊞ Δh v (u ⊟ v) (R[v,u-v] {σ} {u} {v})
+    ≡⟨ carry-over {τ}
         (proj₁ (validity {Γ = ∅} {f} v (u ⊟ v) _))
         (derive-correct {Γ = ∅} {t = f}
-          {∅} {∅} v (u ⊟ v) (u ⟦⊝⟧ v) _ (u⊟v≈u⊝v {u = u} {v})) ⟩
-      h v ⟦⊕⟧ Δh′ v (u ⟦⊝⟧ v)
+          {∅} {∅} v (u ⊟ v) (u −₀ v) _ (u⊟v≈u⊝v {σ} {u} {v})) ⟩
+      h v ✚₁ Δh′ v (u −₀ v)
     ≡⟨ trans
-        (cong (λ hole → h v ⟦⊕⟧ Δh′ v hole) (meaning-⊝ {s = y} {x}))
+        (cong (λ hole → h v ✚₁ Δh′ v hole) (meaning-⊝ {σ} {s = y} {x}))
         (meaning-⊕ {t = app f x} {Δt = Δoutput-term}) ⟩
       ⟦ app f x ⊕ app (app (derive f) x) (y ⊝ x) ⟧ ∅
     ∎}) where open ≡-Reasoning

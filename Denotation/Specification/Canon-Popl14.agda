@@ -86,12 +86,12 @@ validity {t = app s t} {ρ} =
   in
     proj₁ (validity {t = s} {ρ} v Δv (validity {t = t} {ρ}))
 
-validity {t = abs t} {ρ} = λ v Δv R[v,Δv] →
+validity {σ ⇒ τ} {t = abs t} {ρ} = λ v Δv R[v,Δv] →
   let
     v′ = v ⊞ Δv
     Δv′ = v′ ⊟ v′
     ρ₁ = cons v Δv R[v,Δv] ρ
-    ρ₂ = cons v′ Δv′ (R[v,u-v] {u = v′} {v′}) ρ
+    ρ₂ = cons v′ Δv′ (R[v,u-v] {σ} {v′} {v′}) ρ
   in
     validity {t = t} {ρ₁}
     ,
@@ -99,7 +99,7 @@ validity {t = abs t} {ρ} = λ v Δv R[v,Δv] →
       ⟦ t ⟧ (ignore ρ₂) ⊞ ⟦ t ⟧Δ ρ₂
     ≡⟨ correctness {t = t} {ρ₂} ⟩
       ⟦ t ⟧ (update ρ₂)
-    ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • update ρ)) v+[u-v]=u ⟩
+    ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • update ρ)) (v+[u-v]=u {σ}) ⟩
       ⟦ t ⟧ (update ρ₁)
     ≡⟨ sym (correctness {t = t} {ρ₁}) ⟩
       ⟦ t ⟧ (ignore ρ₁) ⊞ ⟦ t ⟧Δ ρ₁
@@ -183,13 +183,13 @@ correctness {t = app s t} {ρ} =
 correctness {σ ⇒ τ} {Γ} {abs t} {ρ} = ext (λ v →
   let
     ρ′ : ΔEnv (σ • Γ)
-    ρ′ = cons v (v ⊟ v) (R[v,u-v] {u = v} {v}) ρ
+    ρ′ = cons v (v ⊟ v) (R[v,u-v] {σ} {v} {v}) ρ
   in
     begin
       ⟦ t ⟧ (ignore ρ′) ⊞ ⟦ t ⟧Δ ρ′
     ≡⟨ correctness {t = t} {ρ′} ⟩
       ⟦ t ⟧ (update ρ′)
-    ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • update ρ)) v+[u-v]=u ⟩
+    ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • update ρ)) (v+[u-v]=u {σ}) ⟩
       ⟦ t ⟧ (v • update ρ)
     ∎
   ) where open ≡-Reasoning
