@@ -8,33 +8,33 @@ module Popl14.Denotation.Evaluation where
 -- - Relating `diff` with `diff-term`, `apply` with `apply-term`
 
 open import Popl14.Change.Term public
-open import Denotation.Environment.Popl14 public
+
+-- TODO: MOVE!
+open import Denotation.Environment.Popl14 public -- MUST BE PUBLIC??
+
+-- TODO: REPLACE PREVIOUS IMPORT BY THE FOLLOWING TWO:
+--open import Popl14.Denotation.Value public
+-- open import Base.Denotation.Environment Type ⟦_⟧Type
 
 open import Data.Integer
 open import Structure.Bag.Popl14
 open import Postulate.Extensionality
 open import Theorem.CongApp
 
-⟦_⟧Term : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧ → ⟦ τ ⟧
+open import Parametric.Denotation.Evaluation Const ⟦_⟧Base
 
-⟦ intlit n ⟧Term ρ = n
-⟦ add s t ⟧Term ρ = ⟦ s ⟧Term ρ + ⟦ t ⟧Term ρ
-⟦ minus t ⟧Term ρ = - ⟦ t ⟧Term ρ
+⟦_⟧Const : Structure
+⟦ intlit-const n ⟧Const ∅ = n
+⟦ add-const ⟧Const (m • n • ∅) = m + n
+⟦ minus-const ⟧Const (n • ∅) = - n
+⟦ empty-const ⟧Const ∅ = emptyBag
+⟦ insert-const ⟧Const (n • b • ∅) = singletonBag n ++ b
+⟦ union-const ⟧Const (b₁ • b₂ • ∅) = b₁ ++ b₂
+⟦ negate-const ⟧Const (b • ∅) = negateBag b
+⟦ flatmap-const ⟧Const (f • b • ∅) = flatmapBag f b
+⟦ sum-const ⟧Const (b • ∅) = sumBag b
 
-⟦ empty ⟧Term ρ = emptyBag
-⟦ insert s t ⟧Term ρ = singletonBag (⟦ s ⟧Term ρ) ++ ⟦ t ⟧Term ρ
-⟦ union s t ⟧Term ρ = ⟦ s ⟧Term ρ ++ ⟦ t ⟧Term ρ
-⟦ negate t ⟧Term ρ = negateBag (⟦ t ⟧Term ρ)
-
-⟦ flatmap s t ⟧Term ρ = flatmapBag (⟦ s ⟧Term ρ) (⟦ t ⟧Term ρ)
-⟦ sum t ⟧Term ρ = sumBag (⟦ t ⟧Term ρ)
-
-⟦ var x ⟧Term ρ = ⟦ x ⟧ ρ
-⟦ app s t ⟧Term ρ = (⟦ s ⟧Term ρ) (⟦ t ⟧Term ρ)
-⟦ abs t ⟧Term ρ = λ v → ⟦ t ⟧Term (v • ρ)
-
-meaningOfTerm : ∀ {Γ τ} → Meaning (Term Γ τ)
-meaningOfTerm = meaning ⟦_⟧Term
+open Structure ⟦_⟧Const public
 
 -- unique names with unambiguous types
 -- to help type inference figure things out
