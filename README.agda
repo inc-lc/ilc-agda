@@ -12,7 +12,6 @@ import Popl14.Syntax.Term
 import Base.Syntax.Context
 import Base.Change.Context
 import Syntax.Derive.Canon-Popl14
-import Syntax.Derive.Optimized-Popl14
 import Syntax.FreeVars.Popl14
 {- Language definition of Calc. Atlas -}
 import Atlas.Syntax.Term
@@ -33,18 +32,14 @@ import Base.Syntax.Vars
 import Denotation.Change.Popl14
 {- Correctness theorem for canonical derivation of Calc. Popl14 -}
 import Denotation.Derive.Canon-Popl14
-{- Correctness theorem for optimized derivation of Calc. Popl14 -}
-import Denotation.Derive.Optimized-Popl14
 import Denotation.Environment.Popl14
 import Base.Denotation.Environment
 import Popl14.Denotation.Evaluation
-import Denotation.FreeVars.Popl14
 {- The idea of implementing a denotational specification for Calc. Popl14 -}
 import Denotation.Implementation.Popl14
 import Base.Denotation.Notation
 {- Denotation-as-specification for canonical derivation of Calc. Popl14 -}
 import Denotation.Specification.Canon-Popl14
-import Denotation.Specification.Optimized-Popl14
 import Popl14.Denotation.Value
 import experimental.DecidableEq
 import experimental.FoldableBag
