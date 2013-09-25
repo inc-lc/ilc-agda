@@ -4,14 +4,14 @@ import Parametric.Change.Type as ChangeType
 
 module Parametric.Change.Term
     {Base : Set}
-    (Constant : Term.Structure Base)
+    (Const : Term.Structure Base)
     (ΔBase : ChangeType.Structure Base)
   where
 
 -- Terms that operate on changes
 
 open Type.Structure Base
-open Term.Structure Base Constant
+open Term.Structure Base Const
 open ChangeType.Structure Base ΔBase
 
 open import Data.Product

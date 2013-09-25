@@ -13,7 +13,7 @@ open Type.Structure Base
 Structure : Set₁
 Structure = Context → Type → Set
 
-module Structure (Constant : Structure) where
+module Structure (Const : Structure) where
 
   -- Declarations of Term and Terms to enable mutual recursion
   data Term
@@ -28,7 +28,7 @@ module Structure (Constant : Structure) where
   -- with free variables bound in Γ.
   data Term Γ where
     const : ∀ {Σ τ} →
-      (c : Constant Σ τ) →
+      (c : Const Σ τ) →
       Terms Γ Σ →
       Term Γ τ
     var : ∀ {τ} →
@@ -118,7 +118,7 @@ module Structure (Constant : Structure) where
   UncurriedTermConstructor : (Γ Σ : Context) (τ : Type) → Set
   UncurriedTermConstructor Γ Σ τ = Terms Γ Σ → Term Γ τ
 
-  uncurriedConst : ∀ {Σ τ} → Constant Σ τ → ∀ {Γ} → UncurriedTermConstructor Γ Σ τ
+  uncurriedConst : ∀ {Σ τ} → Const Σ τ → ∀ {Γ} → UncurriedTermConstructor Γ Σ τ
   uncurriedConst constant = const constant
 
   CurriedTermConstructor : (Γ Σ : Context) (τ : Type) → Set
@@ -129,7 +129,7 @@ module Structure (Constant : Structure) where
   curryTermConstructor {∅} k = k ∅
   curryTermConstructor {τ • Σ} k = λ t → curryTermConstructor (λ ts → k (t • ts))
 
-  curriedConst : ∀ {Σ τ} → Constant Σ τ → ∀ {Γ} → CurriedTermConstructor Γ Σ τ
+  curriedConst : ∀ {Σ τ} → Const Σ τ → ∀ {Γ} → CurriedTermConstructor Γ Σ τ
   curriedConst constant = curryTermConstructor (uncurriedConst constant)
 
 

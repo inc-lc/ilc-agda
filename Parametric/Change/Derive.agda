@@ -4,17 +4,17 @@ import Parametric.Change.Type as ChangeType
 
 module Parametric.Change.Derive
     {Base : Type.Structure}
-    (Constant : Term.Structure Base)
+    (Const : Term.Structure Base)
     (ΔBase : ChangeType.Structure Base)
   where
 
 open Type.Structure Base
-open Term.Structure Base Constant
+open Term.Structure Base Const
 open ChangeType.Structure Base ΔBase
 
 Structure : Set
 Structure = ∀ {Γ Σ τ} →
-  Constant Σ τ →
+  Const Σ τ →
   Terms (ΔContext Γ) (ΔContext Σ) →
   Term (ΔContext Γ) (ΔType τ)
 
