@@ -19,7 +19,7 @@ open import Base.Denotation.Notation
 Structure : Set
 Structure = ∀ {Σ τ} → Const Σ τ → ⟦ Σ ⟧ → ⟦ τ ⟧
 
-module Structure(⟦_⟧Const : Structure) where
+module Structure (⟦_⟧Const : Structure) where
   ⟦_⟧Term : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧ → ⟦ τ ⟧
 
   ⟦_⟧Terms : ∀ {Γ Σ} → Terms Γ Σ → ⟦ Γ ⟧ → ⟦ Σ ⟧
