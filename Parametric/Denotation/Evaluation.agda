@@ -15,6 +15,7 @@ open Value.Structure Base ⟦_⟧Base
 open import Base.Syntax.Context Type
 open import Base.Denotation.Environment Type ⟦_⟧Type
 open import Base.Denotation.Notation
+open import Base.Data.DependentList
 
 Structure : Set
 Structure = ∀ {Σ τ} → Const Σ τ → ⟦ Σ ⟧ → ⟦ τ ⟧
@@ -29,6 +30,12 @@ module Structure (⟦_⟧Const : Structure) where
   ⟦ app s t ⟧Term ρ = (⟦ s ⟧Term ρ) (⟦ t ⟧Term ρ)
   ⟦ abs t ⟧Term ρ = λ v → ⟦ t ⟧Term (v • ρ)
 
+  -- this is what we'd like to write.
+  -- unfortunately termination checker complains.
+  --
+  --   ⟦ terms ⟧Terms ρ = map-IVT (λ t → ⟦ t ⟧Term ρ) terms
+  --
+  -- so we do explicit pattern matching instead.
   ⟦ ∅ ⟧Terms ρ = ∅
   ⟦ s • terms ⟧Terms ρ = ⟦ s ⟧Term ρ • ⟦ terms ⟧Terms ρ
   
