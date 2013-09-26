@@ -17,7 +17,7 @@ open import Popl14.Denotation.Value public
 open import Denotation.Change.Popl14 public
 open import Base.Syntax.Vars Type public
 import Base.Denotation.Environment Type ⟦_⟧Type as Env
-open Env public hiding (lift-sound ; Empty)
+open Env public hiding (lift-sound)
 
 open import Relation.Binary.PropositionalEquality
 open import Data.Unit
@@ -27,8 +27,8 @@ weakenVar-sound : ∀ {Γ₁ Γ₂ τ} (subctx : Γ₁ ≼ Γ₂) (x : Var Γ₁
   ∀ (ρ : ⟦ Γ₂ ⟧) → ⟦ lift subctx x ⟧ ρ ≡ ⟦ x ⟧ (⟦ subctx ⟧ ρ)
 weakenVar-sound = Env.lift-sound
 
-EmptyEnv : Set
-EmptyEnv = Env.Empty
+data EmptyEnv : Set where
+  ∅ : EmptyEnv
 
 ΔEnv : Context → Set
 

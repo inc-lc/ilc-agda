@@ -18,24 +18,17 @@ open import Relation.Binary.PropositionalEquality
 
 open import Base.Syntax.Context Type
 open import Base.Denotation.Notation
+import Base.Data.DependentList as DependentList
+
+open DependentList public using (∅ ; _•_)
+open DependentList
 
 private
   meaningOfType : Meaning Type
   meaningOfType = meaning ⟦_⟧Type
 
--- TYPING CONTEXTS
-
--- Denotational Semantics : Contexts Represent Environments
-
-data Empty : Set ℓ where
-  ∅ : Empty
-
-data Bind A B : Set ℓ where
-  _•_ : (v : A) (ρ : B) → Bind A B
-
 ⟦_⟧Context : Context → Set ℓ
-⟦ ∅ ⟧Context = Empty
-⟦ τ • Γ ⟧Context = Bind ⟦ τ ⟧ ⟦ Γ ⟧Context
+⟦_⟧Context = DependentList ⟦_⟧Type
 
 meaningOfContext : Meaning Context
 meaningOfContext = meaning ⟦_⟧Context

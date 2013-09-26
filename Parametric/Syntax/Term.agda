@@ -14,15 +14,19 @@ Structure : Set₁
 Structure = Context → Type → Set
 
 module Structure (Const : Structure) where
+  import Base.Data.DependentList as DependentList
+  open DependentList public using (∅ ; _•_)
+  open DependentList
 
   -- Declarations of Term and Terms to enable mutual recursion
   data Term
     (Γ : Context) :
     (τ : Type) → Set
 
-  data Terms
-    (Γ : Context) :
-    (Σ : Context) → Set
+  -- (Terms Γ Σ) represents a list of terms with types from Σ
+  -- with free variables bound in Γ.
+  Terms : Context → Context → Set
+  Terms Γ = DependentList (Term Γ)
 
   -- (Term Γ τ) represents a term of type τ
   -- with free variables bound in Γ.
@@ -41,17 +45,6 @@ module Structure (Const : Structure) where
     abs : ∀ {σ τ}
       (t : Term (σ • Γ) τ) →
       Term Γ (σ ⇒ τ)
-
-  -- (Terms Γ Σ) represents a list of terms with types from Σ
-  -- with free variables bound in Γ.
-  data Terms Γ where
-    ∅ : Terms Γ ∅
-    _•_ : ∀ {τ Σ} →
-      Term Γ τ →
-      Terms Γ Σ →
-      Terms Γ (τ • Σ)
-
-  infixr 9 _•_
 
   -- Weakening
 

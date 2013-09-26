@@ -100,7 +100,7 @@ main-theorem {σ} {τ} {f} {x} {y} =
     open FunctionDisambiguation σ τ
     _+₀_ = _⊞_ {σ}
   in
-    ext {A = EmptyEnv} (λ { ∅ →
+    ext {A = ⟦ ∅ ⟧Context} (λ { ∅ →
     begin
       h u
     ≡⟨ cong h (sym (v+[u-v]=u {σ})) ⟩

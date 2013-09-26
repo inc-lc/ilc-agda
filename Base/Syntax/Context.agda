@@ -17,19 +17,13 @@ open import Relation.Binary.PropositionalEquality
 
 -- Syntax
 
-data Context : Set where
-  ∅ : Context
-  _•_ : (τ : Type) (Γ : Context) → Context
+import Data.List as List
+open List public
+  using ()
+  renaming ([] to ∅ ; _∷_ to _•_)
 
-infixr 9 _•_
-
--- Specialized congruence rules
-
-⟨∅⟩ : ∅ ≡ ∅
-⟨∅⟩ = refl
-
-_⟨•⟩_ : ∀ {τ₁ τ₂ Γ₁ Γ₂} → τ₁ ≡ τ₂ → Γ₁ ≡ Γ₂ → τ₁ • Γ₁ ≡ τ₂ • Γ₂
-_⟨•⟩_ = cong₂ _•_
+Context : Set
+Context = List.List Type
 
 -- VARIABLES
 
@@ -107,7 +101,7 @@ module Prefixes where
 -- of this file.
 
 module Subcontexts where
-  infix 8 _≼_
+  infix 4 _≼_
 
   data _≼_ : (Γ₁ Γ₂ : Context) → Set where
     ∅ : ∅ ≼ ∅
