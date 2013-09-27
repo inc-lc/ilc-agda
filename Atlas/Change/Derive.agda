@@ -1,4 +1,4 @@
-module Atlas.Change.Derivation where
+module Atlas.Change.Derive where
 
 open import Atlas.Syntax.Type
 open import Atlas.Syntax.Term
