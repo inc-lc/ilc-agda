@@ -4,7 +4,7 @@ module Denotation.Derive.Canon-Popl14 where
 -- for Calculus Popl14. In particular, the main theorem
 -- about it producing the correct incremental behavior.
 
-open import Syntax.Derive.Canon-Popl14 public
+open import Popl14.Change.Derive public
 open import Denotation.Implementation.Popl14 public
 
 open import Relation.Binary.PropositionalEquality

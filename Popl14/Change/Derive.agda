@@ -1,4 +1,4 @@
-module Syntax.Derive.Canon-Popl14 where
+module Popl14.Change.Derive where
 
 open import Popl14.Syntax.Type
 open import Popl14.Syntax.Term

@@ -11,7 +11,7 @@ module README where
 import Popl14.Syntax.Term
 import Base.Syntax.Context
 import Base.Change.Context
-import Syntax.Derive.Canon-Popl14
+import Popl14.Change.Derive
 import Syntax.FreeVars.Popl14
 {- Language definition of Calc. Atlas -}
 import Atlas.Syntax.Term
