@@ -5,15 +5,17 @@ open import Atlas.Syntax.Term
 open import Atlas.Change.Type
 open import Atlas.Change.Term
 
-ΔConst : ∀ {Γ Σ τ} → (c : Const Σ τ) →
-  Term Γ (internalizeContext (ΔContext′ Σ) (ΔType τ))
+ΔConst : ∀ {Γ Σ τ} →
+  Const Σ τ →
+  Terms (ΔContext Γ) (ΔContext Σ) →
+  Term (ΔContext Γ) (ΔType τ)
 
-ΔConst true  = false!
-ΔConst false = false!
+ΔConst true  ∅ = false!
+ΔConst false ∅ = false!
 
-ΔConst xor = abs₄ (λ x Δx y Δy → xor! Δx Δy)
+ΔConst xor (Δx • x • Δy • y • ∅) = xor! Δx Δy
 
-ΔConst empty = empty!
+ΔConst empty ∅ = empty!
 
 -- If k ⊕ Δk ≡ k, then
 --   Δupdate k Δk v Δv m Δm = update k Δv Δm
@@ -22,8 +24,8 @@ open import Atlas.Change.Term
 --     insert (k ⊕ Δk) (v ⊕ Δv) (delete k v Δm)
 --
 -- We implement the else-branch only for the moment.
-ΔConst update = abs₆ (λ k Δk v Δv m Δm →
-  insert (apply Δk k) (apply Δv v) (delete k v Δm))
+ΔConst (update {κ} {ι}) (Δk • k • Δv • v • Δm • m • ∅) =
+  insert (apply {base κ} Δk k) (apply {base ι} Δv v) (delete k v Δm)
 
 -- Δlookup k Δk m Δm | true? (k ⊕ Δk ≡ k)
 -- ... | true  = lookup k Δm
@@ -32,12 +34,12 @@ open import Atlas.Change.Term
 --     ⊝ lookup k m
 --
 -- Only the false-branch is implemented.
-ΔConst lookup = abs₄ (λ k Δk m Δm →
+ΔConst (lookup {κ} {ι}) (Δk • k • Δm • m • ∅) =
   let
-    k′ = apply Δk k
+    k′ = apply {base κ} Δk k
   in
     (diff (apply {base _} (lookup! k′ Δm) (lookup! k′ m))
-          (lookup! k m)))
+          (lookup! k m))
 
 -- Δzip f Δf m₁ Δm₁ m₂ Δm₂ | true? (f ⊕ Δf ≡ f)
 --
@@ -48,11 +50,11 @@ open import Atlas.Change.Term
 -- ... | false = zip₄ Δf m₁ Δm₁ m₂ Δm₂
 --
 -- we implement the false-branch for the moment.
-ΔConst zip = abs₆ (λ f Δf m₁ Δm₁ m₂ Δm₂ →
+ΔConst zip (Δf • f • Δm₁ • m₁ • Δm₂ • m₂ • ∅) =
   let
     g = abs (app₂ (weaken₁ Δf) (var this) nil-term)
   in
-    zip4! g m₁ Δm₁ m₂ Δm₂)
+    zip4! g m₁ Δm₁ m₂ Δm₂
 
 -- Δfold f Δf z Δz m Δm = proj₂
 --   (fold (λ k [a,Δa] [b,Δb] →
@@ -65,16 +67,12 @@ open import Atlas.Change.Term
 -- Δfold is efficient only if evaluation is lazy and Δf is
 -- self-maintainable: it doesn't look at the argument
 -- (b = fold f k a b₀) at all.
-ΔConst (fold {κ} {α} {β}) =
+ΔConst (fold {κ} {α} {β}) (Δf′ • f′ • Δz • z • Δm • m • ∅) =
     let -- TODO (tedius): write weaken₇
       f  = weaken₃ (weaken₃ (weaken₁
-        (var (that (that (that (that (that this))))))))
+        f′))
       Δf = weaken₃ (weaken₃ (weaken₁
-        (var (that (that (that (that this)))))))
-      z  = var (that (that (that this)))
-      Δz = var (that (that this))
-      m  = var (that this)
-      Δm = var this
+        Δf′))
       k = weaken₃ (weaken₁ (var (that (that this))))
       [a,Δa] = var (that this)
       [b,Δb] = var this
@@ -88,5 +86,4 @@ open import Atlas.Change.Term
             (weaken₂ [b,Δb])))) [a,Δa])))
       proj₂ = uncurry (abs (abs (var this)))
     in
-      abs (abs (abs (abs (abs (abs
-        (proj₂ (fold! g (pair z Δz) (zip-pair m Δm))))))))
+      proj₂ (fold! g (pair z Δz) (zip-pair m Δm))
