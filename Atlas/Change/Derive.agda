@@ -5,10 +5,9 @@ open import Atlas.Syntax.Term
 open import Atlas.Change.Type
 open import Atlas.Change.Term
 
-ΔConst : ∀ {Γ Σ τ} →
-  Const Σ τ →
-  Terms (ΔContext Γ) (ΔContext Σ) →
-  Term (ΔContext Γ) (ΔType τ)
+import Parametric.Change.Derive Const ΔBase as Derive
+
+ΔConst : Derive.Structure
 
 ΔConst true  ∅ = false!
 ΔConst false ∅ = false!
@@ -87,3 +86,5 @@ open import Atlas.Change.Term
       proj₂ = uncurry (abs (abs (var this)))
     in
       proj₂ (fold! g (pair z Δz) (zip-pair m Δm))
+
+open Derive.Structure ΔConst public
