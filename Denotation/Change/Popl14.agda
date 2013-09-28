@@ -54,8 +54,11 @@ v+[u-v]=u : ∀ {τ : Type} {u v : ⟦ τ ⟧} →
 -- Implementation --
 --------------------
 
--- ΔVal τ is intended to be the semantic domain for changes of values
--- of type τ.
+-- (ΔVal τ) is the set of changes of type τ. This set is
+-- strictly smaller than ⟦ ΔType τ⟧ if τ is a function type. In
+-- particular, (ΔVal (σ ⇒ τ)) is a function that accepts only
+-- valid changes, while ⟦ ΔType (σ ⇒ τ) ⟧ accepts also invalid
+-- changes.
 --
 -- ΔVal τ is the target of the denotational specification ⟦_⟧Δ.
 -- Detailed motivation:
