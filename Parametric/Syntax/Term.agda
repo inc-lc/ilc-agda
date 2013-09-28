@@ -53,18 +53,18 @@ module Structure (Const : Structure) where
     Term Γ₁ τ →
     Term Γ₂ τ
 
-  weakenAll : ∀ {Γ₁ Γ₂ Σ} →
+  weaken-terms : ∀ {Γ₁ Γ₂ Σ} →
     (Γ₁≼Γ₂ : Γ₁ ≼ Γ₂) →
     Terms Γ₁ Σ →
     Terms Γ₂ Σ
 
-  weaken Γ₁≼Γ₂ (const c ts) = const c (weakenAll Γ₁≼Γ₂ ts)
-  weaken Γ₁≼Γ₂ (var x) = var (lift Γ₁≼Γ₂ x)
+  weaken Γ₁≼Γ₂ (const c ts) = const c (weaken-terms Γ₁≼Γ₂ ts)
+  weaken Γ₁≼Γ₂ (var x) = var (weaken-var Γ₁≼Γ₂ x)
   weaken Γ₁≼Γ₂ (app s t) = app (weaken Γ₁≼Γ₂ s) (weaken Γ₁≼Γ₂ t)
   weaken Γ₁≼Γ₂ (abs {σ} t) = abs (weaken (keep σ • Γ₁≼Γ₂) t)
 
-  weakenAll Γ₁≼Γ₂ ∅ = ∅
-  weakenAll Γ₁≼Γ₂ (t • ts) = weaken Γ₁≼Γ₂ t • weakenAll Γ₁≼Γ₂ ts
+  weaken-terms Γ₁≼Γ₂ ∅ = ∅
+  weaken-terms Γ₁≼Γ₂ (t • ts) = weaken Γ₁≼Γ₂ t • weaken-terms Γ₁≼Γ₂ ts
 
   -- Specialized weakening
   weaken₁ : ∀ {Γ σ τ} →

@@ -158,10 +158,10 @@ module Subcontexts where
 
   -- Lift a variable to a super context
 
-  lift : ∀ {Γ₁ Γ₂ τ} → Γ₁ ≼ Γ₂ → Var Γ₁ τ → Var Γ₂ τ
-  lift (keep τ • ≼₁) this = this
-  lift (keep τ • ≼₁) (that x) = that (lift ≼₁ x)
-  lift (drop τ • ≼₁) x = that (lift ≼₁ x)
+  weaken-var : ∀ {Γ₁ Γ₂ τ} → Γ₁ ≼ Γ₂ → Var Γ₁ τ → Var Γ₂ τ
+  weaken-var (keep τ • ≼₁) this = this
+  weaken-var (keep τ • ≼₁) (that x) = that (weaken-var ≼₁ x)
+  weaken-var (drop τ • ≼₁) x = that (weaken-var ≼₁ x)
 
 -- Currently, we export the subcontext relation as well as the
 -- definition of _⋎_.

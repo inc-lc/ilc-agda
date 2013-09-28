@@ -72,10 +72,10 @@ meaningOf≼ = meaning ⟦_⟧≼
 
 -- SOUNDNESS of variable lifting
 
-lift-sound : ∀ {Γ₁ Γ₂ τ} (Γ′ : Γ₁ ≼ Γ₂) (x : Var Γ₁ τ) →
-  ∀ (ρ : ⟦ Γ₂ ⟧) → ⟦ lift Γ′ x ⟧ ρ ≡ ⟦ x ⟧ (⟦ Γ′ ⟧ ρ)
-lift-sound ∅ () ρ
-lift-sound (keep τ • Γ′) this (v • ρ) = refl
-lift-sound (keep τ • Γ′) (that x) (v • ρ) = lift-sound Γ′ x ρ
-lift-sound (drop τ • Γ′) this (v • ρ) = lift-sound Γ′ this ρ
-lift-sound (drop τ • Γ′) (that x) (v • ρ) = lift-sound Γ′ (that x) ρ
+weaken-var-sound : ∀ {Γ₁ Γ₂ τ} (Γ′ : Γ₁ ≼ Γ₂) (x : Var Γ₁ τ) →
+  ∀ (ρ : ⟦ Γ₂ ⟧) → ⟦ weaken-var Γ′ x ⟧ ρ ≡ ⟦ x ⟧ (⟦ Γ′ ⟧ ρ)
+weaken-var-sound ∅ () ρ
+weaken-var-sound (keep τ • Γ′) this (v • ρ) = refl
+weaken-var-sound (keep τ • Γ′) (that x) (v • ρ) = weaken-var-sound Γ′ x ρ
+weaken-var-sound (drop τ • Γ′) this (v • ρ) = weaken-var-sound Γ′ this ρ
+weaken-var-sound (drop τ • Γ′) (that x) (v • ρ) = weaken-var-sound Γ′ (that x) ρ
