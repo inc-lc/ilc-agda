@@ -27,13 +27,8 @@ weakenVar-sound : ∀ {Γ₁ Γ₂ τ} (subctx : Γ₁ ≼ Γ₂) (x : Var Γ₁
   ∀ (ρ : ⟦ Γ₂ ⟧) → ⟦ lift subctx x ⟧ ρ ≡ ⟦ x ⟧ (⟦ subctx ⟧ ρ)
 weakenVar-sound = lift-sound
 
-Soundness-of-weakening : ∀ {Γ₁ Γ₂ : Context} {τ}
-  (t : Term Γ₁ τ) (ρ : ⟦ Γ₂ ⟧) (Γ₁≼Γ₂ : Γ₁ ≼ Γ₂) → Set
-Soundness-of-weakening t ρ Γ₁≼Γ₂ =
-  ⟦ weaken Γ₁≼Γ₂ t ⟧ ρ ≡ ⟦ t ⟧ (⟦ Γ₁≼Γ₂ ⟧ ρ)
-
 weaken-sound : ∀ {Γ₁ Γ₂ τ} {Γ₁≼Γ₂ : Γ₁ ≼ Γ₂}
-  (t : Term Γ₁ τ) (ρ : ⟦ Γ₂ ⟧) → Soundness-of-weakening t ρ Γ₁≼Γ₂
+  (t : Term Γ₁ τ) (ρ : ⟦ Γ₂ ⟧) → ⟦ weaken Γ₁≼Γ₂ t ⟧ ρ ≡ ⟦ t ⟧ (⟦ Γ₁≼Γ₂ ⟧ ρ)
 
 weaken-sound-terms : ∀ {Γ₁ Γ₂ Σ} {Γ₁≼Γ₂ : Γ₁ ≼ Γ₂}
   (terms : Terms Γ₁ Σ) (ρ : ⟦ Γ₂ ⟧) →
