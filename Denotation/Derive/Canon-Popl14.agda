@@ -98,13 +98,12 @@ main-theorem {σ} {τ} {f} {x} {y} =
     -- Denotation.Implementation.Popl14.Disambiguation
     -- Denotation.Implementation.Popl14.FunctionDisambiguation
     open FunctionDisambiguation σ τ
-    _+₀_ = _⊞_ {σ}
   in
     ext {A = ⟦ ∅ ⟧Context} (λ { ∅ →
     begin
       h u
     ≡⟨ cong h (sym (v+[u-v]=u {σ})) ⟩
-      h (v +₀ (u ⊟ v))
+      h (v ⊞₍ σ ₎ (u ⊟ v))
     ≡⟨ corollary-closed {σ} {τ} {f} {v} {u ⊟ v} {R[v,u-v] {σ}} ⟩
       h v ⊞ Δh v (u ⊟ v) (R[v,u-v] {σ} {u} {v})
     ≡⟨ carry-over {τ}
