@@ -81,7 +81,7 @@ module Parametric (Base : Set) where
     weaken : ∀ {Γ₁ Γ₂ τ} → Γ₁ ≼ Γ₂ → Term Γ₁ τ → Term Γ₂ τ
     weaken Γ₁≼Γ₂ (abs t) = abs (weaken (keep _ • Γ₁≼Γ₂) t)
     weaken Γ₁≼Γ₂ (app t₁ t₂) = app (weaken Γ₁≼Γ₂ t₁) (weaken Γ₁≼Γ₂ t₂)
-    weaken Γ₁≼Γ₂ (var x) = var (lift Γ₁≼Γ₂ x)
+    weaken Γ₁≼Γ₂ (var x) = var (weaken-var Γ₁≼Γ₂ x)
     weaken Γ₁≼Γ₂ (con c) = con c
 
   -- SYMBOLIC EXECUTION and REIFICATION

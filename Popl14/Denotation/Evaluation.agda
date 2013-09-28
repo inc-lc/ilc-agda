@@ -44,31 +44,6 @@ private
     _⋆_ : Type → Context → Context
     _⋆_ = _•_
 
-weaken-sound : ∀ {Γ₁ Γ₂ τ} {Γ₁≼Γ₂ : Γ₁ ≼ Γ₂} (t : Term Γ₁ τ) →
-  ∀ (ρ : ⟦ Γ₂ ⟧) → ⟦ weaken Γ₁≼Γ₂ t ⟧ ρ ≡ ⟦ t ⟧ (⟦ Γ₁≼Γ₂ ⟧ ρ)
-
-weaken-sound (intlit n) ρ = refl
-weaken-sound (add s t) ρ =
-  cong₂ _+_ (weaken-sound s ρ) (weaken-sound t ρ)
-weaken-sound (minus t) ρ = cong -_ (weaken-sound t ρ)
-
-weaken-sound empty ρ = refl
-weaken-sound (insert s t) ρ =
-  cong₂ _++_
-    (cong singletonBag (weaken-sound s ρ))
-    (weaken-sound t ρ)
-weaken-sound (union s t) ρ =
-  cong₂ _++_ (weaken-sound s ρ) (weaken-sound t ρ)
-weaken-sound (negate t) ρ = cong negateBag (weaken-sound t ρ)
-
-weaken-sound (flatmap s t) ρ =
-  cong₂ flatmapBag (weaken-sound s ρ) (weaken-sound t ρ)
-weaken-sound (sum t) ρ = cong sumBag (weaken-sound t ρ)
-
-weaken-sound {Γ₁≼Γ₂ = Γ₁≼Γ₂} (var x) ρ = weakenVar-sound Γ₁≼Γ₂ x ρ
-weaken-sound (app s t) ρ = weaken-sound s ρ ⟨$⟩ weaken-sound t ρ
-weaken-sound (abs t) ρ = ext (λ v → weaken-sound t (v • ρ))
-
 -- Relating `diff` with `diff-term`, `apply` with `apply-term`
 meaning-⊕ : ∀ {τ Γ}
   {t : Term Γ τ} {Δt : Term Γ (ΔType τ)} {ρ : ⟦ Γ ⟧} →

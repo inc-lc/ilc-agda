@@ -12,6 +12,7 @@ open import Data.Product
 open import Data.Integer
 open import Structure.Bag.Popl14
 open import Postulate.Extensionality
+open import Popl14.Denotation.WeakenSound
 
 -- Better name for v ≈ ⟦ t ⟧:
 -- t implements v.
