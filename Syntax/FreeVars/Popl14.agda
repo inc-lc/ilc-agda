@@ -7,7 +7,7 @@ module Syntax.FreeVars.Popl14 where
 -- closed?: test if a term is closed, producing a witness if yes.
 
 open import Popl14.Syntax.Type
-open import Popl14.Change.Term
+open import Popl14.Syntax.Term
 open import Base.Syntax.Vars Type public
 
 open import Relation.Binary.PropositionalEquality
