@@ -8,6 +8,8 @@ module Denotation.Specification.Canon-Popl14 where
 -- - `corollary`: ⟦_⟧Δ reacts to both environment and arguments
 -- - `corollary-closed`: binding-time-shifted main theorem
 
+open import Popl14.Syntax.Type
+open import Popl14.Syntax.Term
 open import Popl14.Denotation.Evaluation public
 open import Denotation.Environment.Popl14 public
 
