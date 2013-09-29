@@ -125,21 +125,3 @@ _⊞_ {τ} v dv = v ⊞₍ τ ₎ dv
 
 _⊟_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → ΔVal τ
 _⊟_ {τ} u v = u ⊟₍ τ ₎ v
-
--- `diff` and `apply`, without validity proofs
-infixl 6 _⟦⊕⟧_ _⟦⊝⟧_
-_⟦⊕⟧_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ ΔType τ ⟧ → ⟦ τ ⟧
-_⟦⊝⟧_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ ΔType τ ⟧
-
-_⟦⊕⟧_ {base base-int}  n Δn = n +  Δn
-_⟦⊕⟧_ {base base-bag}  b Δb = b ++ Δb
-_⟦⊕⟧_ {σ ⇒ τ} f Δf = λ v →
-  let
-    _-₀_ = _⟦⊝⟧_ {σ}
-    _+₁_ = _⟦⊕⟧_ {τ}
-  in
-    f v +₁ Δf v (v -₀ v)
-
-_⟦⊝⟧_ {base base-int}  m n = m -  n
-_⟦⊝⟧_ {base base-bag}  a b = a \\ b
-_⟦⊝⟧_ {σ ⇒ τ} g f = λ v Δv → _⟦⊝⟧_ {τ} (g (_⟦⊕⟧_ {σ} v Δv)) (f v)

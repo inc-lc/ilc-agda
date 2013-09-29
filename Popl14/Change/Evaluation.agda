@@ -4,12 +4,12 @@ open import Popl14.Syntax.Type
 open import Popl14.Syntax.Term
 open import Popl14.Change.Type
 open import Popl14.Change.Term
+open import Popl14.Change.Value
 open import Popl14.Denotation.Value
 open import Popl14.Denotation.Evaluation
 
 open import Relation.Binary.PropositionalEquality
 open import Base.Denotation.Notation
-open import Denotation.Change.Popl14
 
 open import Postulate.Extensionality
 
