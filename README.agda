@@ -12,7 +12,6 @@ import Popl14.Syntax.Term
 import Base.Syntax.Context
 import Base.Change.Context
 import Popl14.Change.Derive
-import Syntax.FreeVars.Popl14
 {- Language definition of Calc. Atlas -}
 import Atlas.Syntax.Term
 {- Terms of a calculus described in Plotkin style

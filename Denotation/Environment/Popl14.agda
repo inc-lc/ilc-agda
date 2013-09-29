@@ -15,7 +15,6 @@ open import Structure.Tuples public -- re-export `cons` constructor
 open import Base.Denotation.Notation public
 open import Popl14.Denotation.Value public
 open import Denotation.Change.Popl14 public
-open import Base.Syntax.Vars Type public
 
 open import Relation.Binary.PropositionalEquality
 open import Data.Unit

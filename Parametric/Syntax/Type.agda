@@ -15,6 +15,7 @@ module Structure (Base : Structure) where
     _⇒_ : (σ : Type) → (τ : Type) → Type
 
   open import Base.Syntax.Context Type public
+  open import Base.Syntax.Vars Type public
 
   -- Internalize a context to a type.
   --

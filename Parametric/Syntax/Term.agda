@@ -6,7 +6,10 @@ module Parametric.Syntax.Term
 
 -- Terms of languages described in Plotkin style
 
+open import Relation.Binary.PropositionalEquality
 open import Function using (_∘_)
+open import Data.Unit
+open import Data.Sum
 
 open Type.Structure Base
 
@@ -45,6 +48,21 @@ module Structure (Const : Structure) where
     abs : ∀ {σ τ}
       (t : Term (σ • Γ) τ) →
       Term Γ (σ ⇒ τ)
+
+  -- Free variables
+  FV : ∀ {τ Γ} → Term Γ τ → Vars Γ
+  FV-terms : ∀ {Σ Γ} → Terms Γ Σ → Vars Γ
+
+  FV (const ι ts) = FV-terms ts
+  FV (var x) = singleton x
+  FV (abs t) = tail (FV t)
+  FV (app s t) = FV s ∪ FV t
+
+  FV-terms ∅ = none
+  FV-terms (t • ts) = FV t ∪ FV-terms ts
+
+  closed? : ∀ {τ Γ} → (t : Term Γ τ) → (FV t ≡ none) ⊎ ⊤
+  closed? t = empty? (FV t)
 
   -- Weakening
 
