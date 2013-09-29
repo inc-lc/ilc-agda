@@ -12,7 +12,6 @@ open Type.Structure Base
 open Term.Structure Base Const
 open Value.Structure Base ⟦_⟧Base
 
-open import Base.Denotation.Environment Type ⟦_⟧Type
 open import Base.Denotation.Notation
 
 Structure : Set

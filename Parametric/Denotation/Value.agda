@@ -18,3 +18,5 @@ module Structure (⟦_⟧Base : Structure) where
 
   meaningOfType : Meaning Type
   meaningOfType = meaning ⟦_⟧Type
+
+  open import Base.Denotation.Environment Type ⟦_⟧Type public

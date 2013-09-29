@@ -19,7 +19,6 @@ open Evaluation.Structure Const ⟦_⟧Base ⟦_⟧Const
 
 open import Relation.Binary.PropositionalEquality
 open import Base.Denotation.Notation
-open import Base.Denotation.Environment Type ⟦_⟧Type
 open import Theorem.CongApp
 open import Postulate.Extensionality
 
