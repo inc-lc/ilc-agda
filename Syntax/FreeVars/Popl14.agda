@@ -15,21 +15,15 @@ open import Data.Unit
 open import Data.Sum
 
 FV : ∀ {τ Γ} → Term Γ τ → Vars Γ
-FV {Γ = Γ} (intlit n) = none
-FV (add s t) = FV s ∪ FV t
-FV (minus t) = FV t
+FV-terms : ∀ {Σ Γ} → Terms Γ Σ → Vars Γ
 
-FV {Γ = Γ} empty = none
-FV (insert s t) = FV s ∪ FV t
-FV (union s t) = FV s ∪ FV t
-FV (negate t) = FV t
-
-FV (flatmap s t) = FV s ∪ FV t
-FV (sum t) = FV t
-
+FV (const ι ts) = FV-terms ts
 FV (var x) = singleton x
 FV (abs t) = tail (FV t)
 FV (app s t) = FV s ∪ FV t
+
+FV-terms ∅ = none
+FV-terms (t • ts) = FV t ∪ FV-terms ts
 
 closed? : ∀ {τ Γ} → (t : Term Γ τ) → (FV t ≡ none) ⊎ ⊤
 closed? t = empty? (FV t)
