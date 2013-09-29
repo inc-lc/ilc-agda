@@ -20,6 +20,10 @@ open import Base.Syntax.Vars Type public
 open import Relation.Binary.PropositionalEquality
 open import Data.Unit
 open import Data.Product
+open import Data.Bool
+
+pattern have x = true • x
+pattern lack x = false • x
 
 data EmptyEnv : Set where
   ∅ : EmptyEnv
