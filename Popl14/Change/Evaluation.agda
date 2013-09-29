@@ -24,7 +24,7 @@ private
 -- Relating `diff` with `diff-term`, `apply` with `apply-term`
 meaning-⊕ : ∀ {τ Γ}
   {t : Term Γ τ} {Δt : Term Γ (ΔType τ)} {ρ : ⟦ Γ ⟧} →
-  ⟦ t ⟧ ρ ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ ≡ ⟦ t ⊕ Δt ⟧ ρ
+  ⟦ t ⟧ ρ ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ ≡ ⟦ t ⊕₍ τ ₎ Δt ⟧ ρ
 
 meaning-⊝ : ∀ {τ Γ}
   {s : Term Γ τ} {t : Term Γ τ} {ρ : ⟦ Γ ⟧} →
@@ -52,7 +52,7 @@ meaning-⊕ {σ ⇒ τ} {Γ} {t} {Δt} {ρ} = ext (λ v →
          (meaning-⊝ {s = x} {x} {ρ′}) ⟩
       ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v (⟦ x ⊝ x ⟧ ρ′)
     ≡⟨ meaning-⊕ {t = y} {Δt = Δy} {ρ′} ⟩
-      ⟦ y ⊕ Δy ⟧ ρ′
+      ⟦ y ⊕₍ τ ₎ Δy ⟧ ρ′
     ∎)
   where
     open ≡-Reasoning
@@ -75,13 +75,13 @@ meaning-⊝ {σ ⇒ τ} {Γ} {s} {t} {ρ} =
     g  : Term Γ′ (σ ⇒ τ)
     g  = var (that (that (that this)))
     y  = app f x
-    y′ = app g (x ⊕ Δx)
+    y′ = app g (x ⊕₍ σ ₎ Δx)
   in
     begin
       ⟦ s ⟧ ρ (v ⟦⊕₍ σ ₎⟧ Δv) ⟦⊝₍ τ ₎⟧ ⟦ t ⟧ ρ v
     ≡⟨ cong (λ hole → ⟦ s ⟧ ρ hole ⟦⊝₍ τ ₎⟧ ⟦ t ⟧ ρ v)
          (meaning-⊕ {t = x} {Δt = Δx} {ρ′}) ⟩
-      ⟦ s ⟧ ρ (⟦ x ⊕ Δx ⟧ ρ′) ⟦⊝₍ τ ₎⟧ ⟦ t ⟧ ρ v
+      ⟦ s ⟧ ρ (⟦ x ⊕₍ σ ₎ Δx ⟧ ρ′) ⟦⊝₍ τ ₎⟧ ⟦ t ⟧ ρ v
     ≡⟨ meaning-⊝ {s = y′} {y} {ρ′} ⟩
       ⟦ y′ ⊝ y ⟧ ρ′
     ∎))

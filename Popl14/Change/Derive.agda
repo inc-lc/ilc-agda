@@ -14,10 +14,10 @@ deriveConst (intlit-const n) ∅ = intlit (+ 0)
 deriveConst add-const        (ds • s • dt • t • ∅) = add ds dt
 deriveConst minus-const      (dt • t • ∅) = minus dt
 deriveConst empty-const      ∅ = empty
-deriveConst insert-const     (ds • s • dt • t • ∅) = insert (apply {int} ds s) (apply {bag} dt t) ⊝ insert s t
+deriveConst insert-const     (ds • s • dt • t • ∅) = insert (s ⊕₍ int ₎ ds) (t ⊕₍ bag ₎ dt) ⊝ insert s t
 deriveConst union-const      (ds • s • dt • t • ∅) = union ds dt
 deriveConst negate-const     (dt • t • ∅) = negate dt
-deriveConst flatmap-const    (ds • s • dt • t • ∅) = flatmap (apply {int ⇒ bag} ds s) (apply {bag} dt t) ⊝ flatmap s t
+deriveConst flatmap-const    (ds • s • dt • t • ∅) = flatmap (s ⊕₍ int ⇒ bag ₎ ds) (t ⊕₍ bag ₎ dt) ⊝ flatmap s t
 deriveConst sum-const        (dt • t • ∅) = sum dt
 
 open Derive.Structure deriveConst public

@@ -49,16 +49,27 @@ module Structure
      in
        abs₃ (λ Δh h y → app h y ⊕τ app (app Δh y) (y ⊝σ y)))
 
-  diff : ∀ {τ Γ} →
+  diff : ∀ τ {Γ} →
     Term Γ τ → Term Γ τ →
     Term Γ (ΔType τ)
-  diff = app₂ diff-term
+  diff _ = app₂ diff-term
 
-  apply : ∀ {τ Γ} →
+  apply : ∀ τ {Γ} →
     Term Γ (ΔType τ) → Term Γ τ →
     Term Γ τ
-  apply = app₂ apply-term
+  apply _ = app₂ apply-term
 
   infixl 6 apply diff
-  syntax apply x Δx = Δx ⊕ x
-  syntax diff x y = x ⊝ y
+  syntax apply τ x Δx = Δx ⊕₍ τ ₎ x
+  syntax diff τ x y = x ⊝₍ τ ₎ y
+
+  infixl 6 _⊕_ _⊝_
+  _⊝_ : ∀ {τ Γ} →
+    Term Γ τ → Term Γ τ →
+    Term Γ (ΔType τ)
+  _⊝_ {τ} = diff τ
+
+  _⊕_ : ∀ {τ Γ} →
+    Term Γ (ΔType τ) → Term Γ τ →
+    Term Γ τ
+  _⊕_ {τ} = app₂ apply-term

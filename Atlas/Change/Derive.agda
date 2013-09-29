@@ -24,7 +24,7 @@ import Parametric.Change.Derive Const ΔBase as Derive
 --
 -- We implement the else-branch only for the moment.
 ΔConst (update {κ} {ι}) (Δk • k • Δv • v • Δm • m • ∅) =
-  insert (apply {base κ} Δk k) (apply {base ι} Δv v) (delete k v Δm)
+  insert (k ⊕₍ base κ ₎ Δk) (v ⊕₍ base ι ₎ Δv) (delete k v Δm)
 
 -- Δlookup k Δk m Δm | true? (k ⊕ Δk ≡ k)
 -- ... | true  = lookup k Δm
@@ -35,10 +35,9 @@ import Parametric.Change.Derive Const ΔBase as Derive
 -- Only the false-branch is implemented.
 ΔConst (lookup {κ} {ι}) (Δk • k • Δm • m • ∅) =
   let
-    k′ = apply {base κ} Δk k
+    k′ = k ⊕₍ base κ ₎ Δk
   in
-    (diff (apply {base _} (lookup! k′ Δm) (lookup! k′ m))
-          (lookup! k m))
+    (lookup! k′ m ⊕₍ base _ ₎ lookup! k′ Δm) ⊝ (lookup! k m)
 
 -- Δzip f Δf m₁ Δm₁ m₂ Δm₂ | true? (f ⊕ Δf ≡ f)
 --

@@ -49,6 +49,6 @@ delete : ∀ {κ ι Γ} →
   Term Γ (ΔType (base (Map κ ι))) →
   Term Γ (ΔType (base (Map κ ι)))
 
-insert k v acc = update! k (diff v neutral-term) acc
-delete k v acc = update! k (diff neutral-term v) acc
+insert k v acc = update! k (v ⊝ neutral-term) acc
+delete k v acc = update! k (neutral-term ⊝ v) acc
 

@@ -87,7 +87,7 @@ derive-correct {t = abs t} {ρ} {ρ′} {C} =
 main-theorem : ∀ {σ τ}
   {f : Term ∅ (σ ⇒ τ)} {x : Term ∅ σ} {y : Term ∅ σ}
   → ⟦ app f y ⟧
-  ≡ ⟦ app f x ⊕ app (app (derive f) x) (y ⊝ x) ⟧
+  ≡ ⟦ app f x ⊕₍ τ ₎ app (app (derive f) x) (y ⊝ x) ⟧
 
 main-theorem {σ} {τ} {f} {x} {y} =
   let
@@ -118,5 +118,5 @@ main-theorem {σ} {τ} {f} {x} {y} =
     ≡⟨ trans
         (cong (λ hole → h v ✚₁ Δh′ v hole) (meaning-⊝ {σ} {s = y} {x}))
         (meaning-⊕ {t = app f x} {Δt = Δoutput-term}) ⟩
-      ⟦ app f x ⊕ app (app (derive f) x) (y ⊝ x) ⟧ ∅
+      ⟦ app f x ⊕₍ τ ₎ app (app (derive f) x) (y ⊝ x) ⟧ ∅
     ∎}) where open ≡-Reasoning
