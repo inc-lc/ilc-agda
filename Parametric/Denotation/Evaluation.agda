@@ -12,10 +12,8 @@ open Type.Structure Base
 open Term.Structure Base Const
 open Value.Structure Base ⟦_⟧Base
 
-open import Base.Syntax.Context Type
 open import Base.Denotation.Environment Type ⟦_⟧Type
 open import Base.Denotation.Notation
-open import Base.Data.DependentList
 
 Structure : Set
 Structure = ∀ {Σ τ} → Const Σ τ → ⟦ Σ ⟧ → ⟦ τ ⟧
