@@ -24,17 +24,11 @@ private
 -- Relating `diff` with `diff-term`, `apply` with `apply-term`
 meaning-⊕ : ∀ {τ Γ}
   {t : Term Γ τ} {Δt : Term Γ (ΔType τ)} {ρ : ⟦ Γ ⟧} →
-  let
-    _+_ = _⟦⊕⟧_ {τ}
-  in
-    ⟦ t ⟧ ρ + ⟦ Δt ⟧ ρ ≡ ⟦ t ⊕ Δt ⟧ ρ
+  ⟦ t ⟧ ρ ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ ≡ ⟦ t ⊕ Δt ⟧ ρ
 
 meaning-⊝ : ∀ {τ Γ}
   {s : Term Γ τ} {t : Term Γ τ} {ρ : ⟦ Γ ⟧} →
-  let
-    _-_ = _⟦⊝⟧_ {τ}
-  in
-    ⟦ s ⟧ ρ - ⟦ t ⟧ ρ ≡ ⟦ s ⊝ t ⟧ ρ
+  ⟦ s ⟧ ρ ⟦⊝₍ τ ₎⟧ ⟦ t ⟧ ρ ≡ ⟦ s ⊝ t ⟧ ρ
 
 meaning-⊕ {base base-int} = refl
 meaning-⊕ {base base-bag} = refl
@@ -43,8 +37,6 @@ meaning-⊕ {σ ⇒ τ} {Γ} {t} {Δt} {ρ} = ext (λ v →
     Γ′ = σ ⋆ (σ ⇒ τ) ⋆ ΔType (σ ⇒ τ) ⋆ Γ
     ρ′ : ⟦ Γ′ ⟧
     ρ′ = v • (⟦ t ⟧ ρ) • (⟦ Δt ⟧ ρ) • ρ
-    _-₀_ = _⟦⊝⟧_ {σ}
-    _+₁_ = _⟦⊕⟧_ {τ}
     x  : Term Γ′ σ
     x  = var this
     f  : Term Γ′ (σ ⇒ τ)
@@ -55,10 +47,10 @@ meaning-⊕ {σ ⇒ τ} {Γ} {t} {Δt} {ρ} = ext (λ v →
     Δy = app (app Δf x) (x ⊝ x)
   in
     begin
-      ⟦ t ⟧ ρ v +₁ ⟦ Δt ⟧ ρ v (v -₀ v)
-    ≡⟨ cong (λ hole → ⟦ t ⟧ ρ v +₁ ⟦ Δt ⟧ ρ v hole)
+      ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v (v ⟦⊝₍ σ ₎⟧ v)
+    ≡⟨ cong (λ hole → ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v hole)
          (meaning-⊝ {s = x} {x} {ρ′}) ⟩
-      ⟦ t ⟧ ρ v +₁ ⟦ Δt ⟧ ρ v (⟦ x ⊝ x ⟧ ρ′)
+      ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v (⟦ x ⊝ x ⟧ ρ′)
     ≡⟨ meaning-⊕ {t = y} {Δt = Δy} {ρ′} ⟩
       ⟦ y ⊕ Δy ⟧ ρ′
     ∎)
@@ -84,14 +76,12 @@ meaning-⊝ {σ ⇒ τ} {Γ} {s} {t} {ρ} =
     g  = var (that (that (that this)))
     y  = app f x
     y′ = app g (x ⊕ Δx)
-    _+₀_ = _⟦⊕⟧_ {σ}
-    _-₁_ = _⟦⊝⟧_ {τ}
   in
     begin
-      ⟦ s ⟧ ρ (v +₀ Δv) -₁ ⟦ t ⟧ ρ v
-    ≡⟨ cong (λ hole → ⟦ s ⟧ ρ hole -₁ ⟦ t ⟧ ρ v)
+      ⟦ s ⟧ ρ (v ⟦⊕₍ σ ₎⟧ Δv) ⟦⊝₍ τ ₎⟧ ⟦ t ⟧ ρ v
+    ≡⟨ cong (λ hole → ⟦ s ⟧ ρ hole ⟦⊝₍ τ ₎⟧ ⟦ t ⟧ ρ v)
          (meaning-⊕ {t = x} {Δt = Δx} {ρ′}) ⟩
-      ⟦ s ⟧ ρ (⟦ x ⊕ Δx ⟧ ρ′) -₁ ⟦ t ⟧ ρ v
+      ⟦ s ⟧ ρ (⟦ x ⊕ Δx ⟧ ρ′) ⟦⊝₍ τ ₎⟧ ⟦ t ⟧ ρ v
     ≡⟨ meaning-⊝ {s = y′} {y} {ρ′} ⟩
       ⟦ y′ ⊝ y ⟧ ρ′
     ∎))
