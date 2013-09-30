@@ -57,7 +57,6 @@ import Theorem.EqualityUnique
 import Theorem.Groups-Popl14
 import Theorem.IrrelevanceUnique-Popl14
 import Theorem.ProductUnique
-import Theorem.ValidityUnique-Popl14
 import UNDEFINED
 
 import Everything
