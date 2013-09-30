@@ -1,21 +1,15 @@
 module Denotation.Environment.Popl14 where
 
--- Environment of Calculus Popl14
+-- Irrelevancy proofs:
 --
--- Contents
--- - Environment specialized to Calculus Popl14
--- - Rename `data Empty` to `EmptyEnv` so that it's unrelated to ⊥
--- - ΔEnv: validity-embedded environment of values and changes
--- - `ignore` and `update` for ΔEnv
--- - Irrelevance: proof that a set of variables are unchanging
---     in an ΔEnv, and its properties
--- - Semantic properties of special subcontext relations
+-- All that's left after ΔEnv moves out.
 
 open import Structure.Tuples public -- re-export `cons` constructor
 open import Base.Denotation.Notation public
 open import Popl14.Denotation.Value public
 open import Popl14.Change.Validity public
 open import Popl14.Change.Value public
+open import Popl14.Change.Environment public 
 
 open import Relation.Binary.PropositionalEquality
 open import Data.Unit
@@ -24,27 +18,6 @@ open import Data.Bool
 
 pattern have x = true • x
 pattern lack x = false • x
-
-data EmptyEnv : Set where
-  ∅ : EmptyEnv
-
-ΔEnv : Context → Set
-
--- ΔEnv : Context → Set
-ΔEnv ∅ = EmptyEnv
-ΔEnv (τ • Γ) = Quadruple
-  ⟦ τ ⟧
-  (λ _ → ΔVal τ)
-  (λ v dv → valid {τ} v dv)
-  (λ _ _ _ → ΔEnv Γ)
-
-ignore : ∀ {Γ : Context} → (ρ : ΔEnv Γ) → ⟦ Γ ⟧
-ignore {∅} ρ = ∅
-ignore {τ • Γ} (cons v dv R[v,dv] ρ) = v • ignore ρ
-
-update : ∀ {Γ : Context} → (ρ : ΔEnv Γ) → ⟦ Γ ⟧
-update {∅} ρ = ∅
-update {τ • Γ} (cons v dv R[v,dv] ρ) = (v ⊞₍ τ ₎ dv) • update ρ
 
 -- Irrelevance: A set of variables is irrelevant in a ΔEnv
 -- if their associated changes have no effect when applied.

@@ -12,9 +12,8 @@ open import Popl14.Change.Value
 open import Theorem.Groups-Popl14
 open import Data.Unit
 
-private
-  structure : Validity.Structure
-  structure = record
+validity-structure : Validity.Structure
+validity-structure = record
     { ΔVal-base = λ ι → ⟦ ΔBase ι ⟧Base
     ; valid-base = λ _ _ → ⊤
     ; apply-ΔVal-base = ⟦apply-base⟧
@@ -26,4 +25,4 @@ private
         }
     }
 
-open Validity.Structure structure public
+open Validity.Structure validity-structure public
