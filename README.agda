@@ -28,7 +28,7 @@ import Parametric.Syntax.Type
 import Popl14.Syntax.Type
 import Base.Syntax.Vars
 
-import Denotation.Change.Popl14
+import Popl14.Change.Validity
 {- Correctness theorem for canonical derivation of Calc. Popl14 -}
 import Denotation.Derive.Canon-Popl14
 import Denotation.Environment.Popl14

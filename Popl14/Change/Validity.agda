@@ -1,4 +1,4 @@
-module Denotation.Change.Popl14 where
+module Popl14.Change.Validity where
 
 -- Changes for Calculus Popl14
 --
