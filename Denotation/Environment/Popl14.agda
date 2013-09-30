@@ -35,7 +35,7 @@ data EmptyEnv : Set where
 ΔEnv (τ • Γ) = Quadruple
   ⟦ τ ⟧
   (λ _ → ΔVal τ)
-  (λ v dv → valid v dv)
+  (λ v dv → valid {τ} v dv)
   (λ _ _ _ → ΔEnv Γ)
 
 ignore : ∀ {Γ : Context} → (ρ : ΔEnv Γ) → ⟦ Γ ⟧
@@ -44,7 +44,7 @@ ignore {τ • Γ} (cons v dv R[v,dv] ρ) = v • ignore ρ
 
 update : ∀ {Γ : Context} → (ρ : ΔEnv Γ) → ⟦ Γ ⟧
 update {∅} ρ = ∅
-update {τ • Γ} (cons v dv R[v,dv] ρ) = (v ⊞ dv) • update ρ
+update {τ • Γ} (cons v dv R[v,dv] ρ) = (v ⊞₍ τ ₎ dv) • update ρ
 
 -- Irrelevance: A set of variables is irrelevant in a ΔEnv
 -- if their associated changes have no effect when applied.
@@ -52,7 +52,7 @@ irrelevant : ∀ {Γ} (S : Vars Γ) (ρ : ΔEnv Γ) → Set
 irrelevant {∅} ∅ ∅ = ⊤
 irrelevant {τ • Γ} (lack S) (cons _ _ _ ρ) = irrelevant S ρ
 irrelevant {τ • Γ} (have S) (cons v Δv _ ρ) =
-  (v ⊞ Δv ≡ v)   ×   (irrelevant S ρ)
+  (v ⊞₍ τ ₎ Δv ≡ v)   ×   (irrelevant S ρ)
 
 -- Project irrelevance onto subsets of variables
 project-irrelevance : ∀ {Γ : Context} {ρ : ΔEnv Γ} {R S} →
