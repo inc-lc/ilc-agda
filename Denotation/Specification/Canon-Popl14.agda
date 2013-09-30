@@ -8,8 +8,8 @@ module Denotation.Specification.Canon-Popl14 where
 -- - `corollary`: ⟦_⟧Δ reacts to both environment and arguments
 -- - `corollary-closed`: binding-time-shifted main theorem
 
-open import Popl14.Syntax.Type
 open import Popl14.Syntax.Term
+open import Popl14.Denotation.Value
 open import Popl14.Denotation.Evaluation public
 open import Denotation.Environment.Popl14 public
 
@@ -26,11 +26,11 @@ open import Postulate.Extensionality
 
 -- better name is: ⟦_⟧Δ reacts to future arguments
 validity : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ} →
-  valid (⟦ t ⟧ (ignore ρ)) (⟦ t ⟧Δ ρ)
+  valid {τ} (⟦ t ⟧ (ignore ρ)) (⟦ t ⟧Δ ρ)
 
 -- better name is: ⟦_⟧Δ reacts to free variables
 correctness : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ}
-  → ⟦ t ⟧ (ignore ρ) ⊞ ⟦ t ⟧Δ ρ ≡ ⟦ t ⟧ (update ρ)
+  → ⟦ t ⟧ (ignore ρ) ⊞₍ τ ₎ ⟦ t ⟧Δ ρ ≡ ⟦ t ⟧ (update ρ)
 
 ⟦_⟧ΔVar : ∀ {τ Γ} → Var Γ τ → ΔEnv Γ → ΔVal τ
 ⟦ this   ⟧ΔVar (cons v dv R[v,dv] ρ) = dv
@@ -47,7 +47,7 @@ correctness : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ}
     Δn = ⟦ s ⟧Δ ρ
     Δb = ⟦ t ⟧Δ ρ
   in
-    (singletonBag (n ⊞ Δn) ++ (b ⊞ Δb)) ⊟ (singletonBag n ++ b)
+    (singletonBag (n ⊞₍ int ₎ Δn) ++ (b ⊞₍ bag ₎ Δb)) ⊟₍ bag ₎ (singletonBag n ++ b)
 ⟦_⟧Δ (union s t) ρ = ⟦ s ⟧Δ ρ ++ ⟦ t ⟧Δ ρ
 ⟦_⟧Δ (negate t) ρ = negateBag (⟦ t ⟧Δ ρ)
 ⟦_⟧Δ (flatmap s t) ρ =
@@ -57,20 +57,21 @@ correctness : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ}
     Δf = ⟦ s ⟧Δ ρ
     Δb = ⟦ t ⟧Δ ρ
   in
-    flatmapBag (f ⊞ Δf) (b ⊞ Δb) ⊟ flatmapBag f b
+    flatmapBag (f ⊞₍ int ⇒ bag ₎ Δf) (b ⊞₍ bag ₎ Δb) ⊟₍ bag ₎ flatmapBag f b
 ⟦_⟧Δ (sum t) ρ = sumBag (⟦ t ⟧Δ ρ)
 ⟦_⟧Δ (var x) ρ = ⟦ x ⟧ΔVar ρ
-⟦_⟧Δ (app s t) ρ = 
-  (⟦ s ⟧Δ ρ) (⟦ t ⟧ (ignore ρ)) (⟦ t ⟧Δ ρ) (validity {t = t})
+⟦_⟧Δ (app {σ} {τ} s t) ρ = 
+  (⟦ s ⟧Δ ρ) (⟦ t ⟧ (ignore ρ)) (⟦ t ⟧Δ ρ)
+  (validity {σ} {t = t})
 ⟦_⟧Δ (abs t) ρ = λ v Δv R[v,Δv] →
   ⟦ t ⟧Δ (cons v Δv R[v,Δv] ρ)
 
 validVar : ∀ {τ Γ} (x : Var Γ τ) →
-  ∀ {ρ : ΔEnv Γ} → valid (⟦ x ⟧ (ignore ρ)) (⟦ x ⟧ΔVar ρ)
+  ∀ {ρ : ΔEnv Γ} → valid {τ} (⟦ x ⟧ (ignore ρ)) (⟦ x ⟧ΔVar ρ)
 validVar this {cons v Δv R[v,Δv] _} = R[v,Δv]
-validVar (that x) {cons _ _ _ ρ} = validVar x
+validVar {τ} (that x) {cons _ _ _ ρ} = validVar {τ} x
 
-validity {t = intlit n}       = tt
+validity {t = intlit n}    = tt
 validity {t = add s t}     = tt
 validity {t = minus t}     = tt
 validity {t = empty}       = tt
@@ -79,7 +80,8 @@ validity {t = union s t}   = tt
 validity {t = negate t}    = tt
 validity {t = flatmap s t} = tt
 validity {t = sum t}       = tt
-validity {t = var x} = validVar x
+
+validity {τ} {t = var x} = validVar {τ} x
 
 validity {t = app s t} {ρ} =
   let
@@ -90,25 +92,25 @@ validity {t = app s t} {ρ} =
 
 validity {σ ⇒ τ} {t = abs t} {ρ} = λ v Δv R[v,Δv] →
   let
-    v′ = v ⊞ Δv
-    Δv′ = v′ ⊟ v′
+    v′ = v ⊞₍ σ ₎ Δv
+    Δv′ = v′ ⊟₍ σ ₎ v′
     ρ₁ = cons v Δv R[v,Δv] ρ
     ρ₂ = cons v′ Δv′ (R[v,u-v] {σ} {v′} {v′}) ρ
   in
     validity {t = t} {ρ₁}
     ,
     (begin
-      ⟦ t ⟧ (ignore ρ₂) ⊞ ⟦ t ⟧Δ ρ₂
+      ⟦ t ⟧ (ignore ρ₂) ⊞₍ τ ₎ ⟦ t ⟧Δ ρ₂
     ≡⟨ correctness {t = t} {ρ₂} ⟩
       ⟦ t ⟧ (update ρ₂)
     ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • update ρ)) (v+[u-v]=u {σ}) ⟩
       ⟦ t ⟧ (update ρ₁)
     ≡⟨ sym (correctness {t = t} {ρ₁}) ⟩
-      ⟦ t ⟧ (ignore ρ₁) ⊞ ⟦ t ⟧Δ ρ₁
+      ⟦ t ⟧ (ignore ρ₁) ⊞₍ τ ₎ ⟦ t ⟧Δ ρ₁
     ∎) where open ≡-Reasoning
 
 correctVar : ∀ {τ Γ} {x : Var Γ τ} {ρ : ΔEnv Γ} →
-  ⟦ x ⟧ (ignore ρ) ⊞ ⟦ x ⟧ΔVar ρ ≡ ⟦ x ⟧ (update ρ)
+  ⟦ x ⟧ (ignore ρ) ⊞₍ τ ₎ ⟦ x ⟧ΔVar ρ ≡ ⟦ x ⟧ (update ρ)
 correctVar {x = this  } {cons v dv R[v,dv] ρ} = refl
 correctVar {x = that y} {cons v dv R[v,dv] ρ} = correctVar {x = y} {ρ}
 
@@ -133,9 +135,11 @@ correctness {t = insert s t} {ρ} =
   in
     begin
       (singletonBag n ++ b) ++
-         (singletonBag (n ⊞ Δn) ++ (b ⊞ Δb)) \\ (singletonBag n ++ b)
+         (singletonBag (n ⊞₍ base base-int ₎ Δn) ++
+           (b ⊞₍ base base-bag ₎ Δb)) \\ (singletonBag n ++ b)
     ≡⟨ a++[b\\a]=b ⟩
-      singletonBag (n ⊞ Δn) ++ (b ⊞ Δb)
+      singletonBag (n ⊞₍ base base-int ₎ Δn) ++
+        (b ⊞₍ base base-bag ₎ Δb)
     ≡⟨ cong₂ _++_
          (cong singletonBag (correctness {t = s}))
          (correctness {t = t}) ⟩
@@ -156,7 +160,9 @@ correctness {t = flatmap s t} {ρ} =
     Δf = ⟦ s ⟧Δ ρ
     Δb = ⟦ t ⟧Δ ρ
   in trans
-      (a++[b\\a]=b {flatmapBag f b} {flatmapBag (f ⊞ Δf) (b ⊞ Δb)})
+      (a++[b\\a]=b {flatmapBag f b}
+        {flatmapBag (f ⊞₍ base base-int ⇒ base base-bag ₎ Δf)
+                    (b ⊞₍ base base-bag ₎ Δb)})
       (cong₂ flatmapBag (correctness {t = s}) (correctness {t = t}))
 correctness {t = sum t} {ρ} =
   let
@@ -165,8 +171,8 @@ correctness {t = sum t} {ρ} =
   in
     trans (sym homo-sum) (cong sumBag (correctness {t = t}))
 
-correctness {t = var x} = correctVar {x = x}
-correctness {t = app s t} {ρ} =
+correctness {τ} {t = var x} = correctVar {τ} {x = x}
+correctness {t = app {σ} {τ} s t} {ρ} =
   let
     f = ⟦ s ⟧ (ignore ρ)
     g = ⟦ s ⟧ (update ρ)
@@ -176,20 +182,20 @@ correctness {t = app s t} {ρ} =
     Δu = ⟦ t ⟧Δ ρ
   in
     begin
-      f u ⊞ Δf u Δu (validity {t = t})
-    ≡⟨ sym (proj₂ (validity {t = s} u Δu (validity {t = t}))) ⟩
-      (f ⊞ Δf) (u ⊞ Δu)
-    ≡⟨ correctness {t = s} ⟨$⟩ correctness {t = t} ⟩
+      f u ⊞₍ τ ₎ Δf u Δu (validity {σ} {t = t})
+    ≡⟨ sym (proj₂ (validity {σ ⇒ τ} {t = s} u Δu (validity {σ} {t = t}))) ⟩
+      (f ⊞₍ σ ⇒ τ ₎ Δf) (u ⊞₍ σ ₎ Δu)
+    ≡⟨ correctness {σ ⇒ τ} {t = s} ⟨$⟩ correctness {σ} {t = t} ⟩
       g v
     ∎ where open ≡-Reasoning
 correctness {σ ⇒ τ} {Γ} {abs t} {ρ} = ext (λ v →
   let
     ρ′ : ΔEnv (σ • Γ)
-    ρ′ = cons v (v ⊟ v) (R[v,u-v] {σ} {v} {v}) ρ
+    ρ′ = cons v (v ⊟₍ σ ₎ v) (R[v,u-v] {σ} {v} {v}) ρ
   in
     begin
-      ⟦ t ⟧ (ignore ρ′) ⊞ ⟦ t ⟧Δ ρ′
-    ≡⟨ correctness {t = t} {ρ′} ⟩
+      ⟦ t ⟧ (ignore ρ′) ⊞₍ τ ₎ ⟦ t ⟧Δ ρ′
+    ≡⟨ correctness {τ} {t = t} {ρ′} ⟩
       ⟦ t ⟧ (update ρ′)
     ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • update ρ)) (v+[u-v]=u {σ}) ⟩
       ⟦ t ⟧ (v • update ρ)
@@ -199,27 +205,31 @@ correctness {σ ⇒ τ} {Γ} {abs t} {ρ} = ext (λ v →
 -- Corollary: (f ⊞ df) (v ⊞ dv) = f v ⊞ df v dv
 corollary : ∀ {σ τ Γ}
   (s : Term Γ (σ ⇒ τ)) (t : Term Γ σ) {ρ : ΔEnv Γ} →
-    (⟦ s ⟧ (ignore ρ) ⊞ ⟦ s ⟧Δ ρ) (⟦ t ⟧ (ignore ρ) ⊞ ⟦ t ⟧Δ ρ)
+    (⟦ s ⟧ (ignore ρ) ⊞₍ σ ⇒ τ ₎ ⟦ s ⟧Δ ρ)
+      (⟦ t ⟧ (ignore ρ) ⊞₍ σ ₎ ⟦ t ⟧Δ ρ)
   ≡ (⟦ s ⟧ (ignore ρ)) (⟦ t ⟧ (ignore ρ))
-  ⊞ (⟦ s ⟧Δ ρ) (⟦ t ⟧ (ignore ρ)) (⟦ t ⟧Δ ρ) (validity {t = t})
+    ⊞₍ τ ₎
+    (⟦ s ⟧Δ ρ) (⟦ t ⟧ (ignore ρ)) (⟦ t ⟧Δ ρ) (validity {σ} {t = t})
 
-corollary s t {ρ} = proj₂
-  (validity {t = s} (⟦ t ⟧ (ignore ρ)) (⟦ t ⟧Δ ρ) (validity {t = t}))
+corollary {σ} {τ} s t {ρ} = proj₂
+  (validity {σ ⇒ τ} {t = s} (⟦ t ⟧ (ignore ρ))
+     (⟦ t ⟧Δ ρ) (validity {σ} {t = t}))
 
 corollary-closed : ∀ {σ τ} {t : Term ∅ (σ ⇒ τ)}
-  {v : ⟦ σ ⟧} {Δv : ΔVal σ} {R[v,Δv] : valid v Δv}
-  → ⟦ t ⟧ ∅ (v ⊞ Δv)
-  ≡ ⟦ t ⟧ ∅ v ⊞ ⟦ t ⟧Δ ∅ v Δv R[v,Δv]
+  {v : ⟦ σ ⟧} {Δv : ΔVal σ} {R[v,Δv] : valid {σ} v Δv}
+  → ⟦ t ⟧ ∅ (v ⊞₍ σ ₎ Δv)
+  ≡ ⟦ t ⟧ ∅ v ⊞₍ τ ₎ ⟦ t ⟧Δ ∅ v Δv R[v,Δv]
 
-corollary-closed {t = t} {v} {Δv} {R[v,Δv]} =
+corollary-closed {σ} {τ} {t = t} {v} {Δv} {R[v,Δv]} =
   let
     f  = ⟦ t ⟧ ∅
     Δf = ⟦ t ⟧Δ ∅
   in
     begin
-      f (v ⊞ Δv)
-    ≡⟨ cong (λ hole → hole (v ⊞ Δv)) (sym (correctness {t = t})) ⟩
-      (f ⊞ Δf) (v ⊞ Δv)
-    ≡⟨ proj₂ (validity {t = t} v Δv R[v,Δv]) ⟩
-      f v ⊞ Δf v Δv R[v,Δv]
+      f (v ⊞₍ σ ₎ Δv)
+    ≡⟨ cong (λ hole → hole (v ⊞₍ σ ₎ Δv))
+            (sym (correctness {σ ⇒ τ} {t = t})) ⟩
+      (f ⊞₍ σ ⇒ τ ₎ Δf) (v ⊞₍ σ ₎ Δv)
+    ≡⟨ proj₂ (validity {σ ⇒ τ} {t = t} v Δv R[v,Δv]) ⟩
+      f v ⊞₍ τ ₎ Δf v Δv R[v,Δv]
     ∎ where open ≡-Reasoning

@@ -4,14 +4,18 @@ module Denotation.Implementation.Popl14 where
 -- for Calculus Popl14
 
 open import Denotation.Specification.Canon-Popl14 public
+
 open import Popl14.Syntax.Type
 open import Popl14.Syntax.Term
+open import Popl14.Denotation.Value
 open import Popl14.Change.Derive
+open import Popl14.Change.Value
 
 open import Relation.Binary.PropositionalEquality
 open import Data.Unit
 open import Data.Product
 open import Data.Integer
+open import Structure.Tuples
 open import Structure.Bag.Popl14
 open import Postulate.Extensionality
 open import Popl14.Denotation.WeakenSound
@@ -63,31 +67,31 @@ module FunctionDisambiguation (σ : Type) (τ : Type) where
 compatible : ∀ {Γ} → ΔEnv Γ → ⟦ ΔContext Γ ⟧ → Set
 compatible {∅} ∅ ∅ = ⊤
 compatible {τ • Γ} (cons v Δv _ ρ) (Δv′ • v′ • ρ′) =
-  Triple (v ≡ v′) (λ _ → Δv ≈ Δv′) (λ _ _ → compatible ρ ρ′)
+  Triple (v ≡ v′) (λ _ → Δv ≈₍ τ ₎ Δv′) (λ _ _ → compatible ρ ρ′)
 
 -- If a program implements a specification, then certain things
 -- proven about the specification carry over to the programs.
 carry-over : ∀ {τ}
   {v : ⟦ τ ⟧} {Δv : ΔVal τ} {Δv′ : ⟦ ΔType τ ⟧}
- (R[v,Δv] : valid v Δv) (Δv≈Δv′ : Δv ≈ Δv′) →
+ (R[v,Δv] : valid {τ} v Δv) (Δv≈Δv′ : Δv ≈₍ τ ₎ Δv′) →
  let open Disambiguation τ in
-   v ⊞ Δv ≡ v ✚ Δv′
+   v ⊞₍ τ ₎ Δv ≡ v ✚ Δv′
 
 u⊟v≈u⊝v : ∀ {τ : Type} {u v : ⟦ τ ⟧} →
   let open Disambiguation τ in
-    u ⊟ v ≃ u − v
-u⊟v≈u⊝v {int} = refl
-u⊟v≈u⊝v {bag} = refl
+    u ⊟₍ τ ₎ v ≃ u − v
+u⊟v≈u⊝v {base base-int} = refl
+u⊟v≈u⊝v {base base-bag} = refl
 u⊟v≈u⊝v {σ ⇒ τ} {g} {f} = result where
   open FunctionDisambiguation σ τ
   result : (w : ⟦ σ ⟧) (Δw : ΔVal σ) (Δw′ : ⟦ ΔType σ ⟧) →
-    valid w Δw → Δw ≈ Δw′ →
-    g (w ⊞ Δw) ⊟ f w ≃₁ g (w ✚₀ Δw′) −₁ f w
+    valid {σ} w Δw → Δw ≈₍ σ ₎ Δw′ →
+    g (w ⊞₍ σ ₎ Δw) ⊟₍ τ ₎ f w ≃₁ g (w ✚₀ Δw′) −₁ f w
   result w Δw Δw′ R[w,Δw] Δw≈Δw′
     rewrite carry-over {σ} {w} R[w,Δw] Δw≈Δw′ =
     u⊟v≈u⊝v {τ} {g (w ✚₀ Δw′)} {f w}
-carry-over {int} {v} tt Δv≈Δv′ = cong (_+_  v) Δv≈Δv′
-carry-over {bag} {v} tt Δv≈Δv′ = cong (_++_ v) Δv≈Δv′
+carry-over {base base-int} {v} _ Δv≈Δv′ = cong (_+_  v) Δv≈Δv′
+carry-over {base base-bag} {v} _ Δv≈Δv′ = cong (_++_ v) Δv≈Δv′
 carry-over {σ ⇒ τ} {f} {Δf} {Δf′} R[f,Δf] Δf≈Δf′ =
   ext (λ v →
   let
@@ -96,9 +100,9 @@ carry-over {σ ⇒ τ} {f} {Δf} {Δf′} R[f,Δf] Δf≈Δf′ =
     S = u⊟v≈u⊝v {σ} {v} {v}
   in
     carry-over {τ} {f v}
-      {Δf v (v ⊟ v) V} {Δf′ v (v −₀ v)}
-      (proj₁ (R[f,Δf] v (v ⊟ v) V))
-      (Δf≈Δf′ v (v ⊟ v) (v −₀ v) V S))
+      {Δf v (v ⊟₍ σ ₎ v) V} {Δf′ v (v −₀ v)}
+      (proj₁ (R[f,Δf] v (v ⊟₍ σ ₎ v) V))
+      (Δf≈Δf′ v (v ⊟₍ σ ₎ v) (v −₀ v) V S))
 
 -- A property relating `ignore` and the subcontext relation Γ≼ΔΓ
 ⟦Γ≼ΔΓ⟧ : ∀ {Γ} {ρ : ΔEnv Γ} {ρ′ : ⟦ ΔContext Γ ⟧}

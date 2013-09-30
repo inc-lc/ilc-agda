@@ -6,11 +6,13 @@ module Denotation.Derive.Canon-Popl14 where
 
 open import Popl14.Syntax.Type
 open import Popl14.Syntax.Term
+open import Popl14.Denotation.Value
 open import Popl14.Change.Term
 open import Popl14.Change.Evaluation
 open import Popl14.Change.Derive public
 open import Denotation.Implementation.Popl14 public
 
+open import Base.Denotation.Notation
 open import Relation.Binary.PropositionalEquality
 open import Data.Unit
 open import Data.Product
@@ -20,7 +22,7 @@ open import Postulate.Extensionality
 
 deriveVar-correct : ∀ {τ Γ} {x : Var Γ τ}
   {ρ : ΔEnv Γ} {ρ′ : ⟦ ΔContext Γ ⟧} {C : compatible ρ ρ′} →
-  ⟦ x ⟧ΔVar ρ ≈ ⟦ deriveVar x ⟧ ρ′
+  ⟦ x ⟧ΔVar ρ ≈₍ τ ₎ ⟦ deriveVar x ⟧ ρ′
 
 deriveVar-correct {x = this}
   {cons _ _ _ _} {_ • _ • _} {cons _ Δv≈Δv′ _} = Δv≈Δv′
@@ -31,7 +33,7 @@ deriveVar-correct {x = that y}
 -- That `derive t` implements ⟦ t ⟧Δ
 derive-correct : ∀ {τ Γ} {t : Term Γ τ}
   {ρ : ΔEnv Γ} {ρ′ : ⟦ ΔContext Γ ⟧} {C : compatible ρ ρ′} →
-  ⟦ t ⟧Δ ρ ≈ ⟦ derive t ⟧ ρ′
+  ⟦ t ⟧Δ ρ ≈₍ τ ₎ ⟦ derive t ⟧ ρ′
 
 derive-correct {t = intlit n} = refl
 derive-correct {t = add s t} {ρ} {ρ′} {C} = cong₂ _+_
@@ -107,13 +109,13 @@ main-theorem {σ} {τ} {f} {x} {y} =
     begin
       h u
     ≡⟨ cong h (sym (v+[u-v]=u {σ})) ⟩
-      h (v ⊞₍ σ ₎ (u ⊟ v))
-    ≡⟨ corollary-closed {σ} {τ} {f} {v} {u ⊟ v} {R[v,u-v] {σ}} ⟩
-      h v ⊞ Δh v (u ⊟ v) (R[v,u-v] {σ} {u} {v})
+      h (v ⊞₍ σ ₎ (u ⊟₍ σ ₎ v))
+    ≡⟨ corollary-closed {σ} {τ} {f} {v} {u ⊟₍ σ ₎ v} {R[v,u-v] {σ}} ⟩
+      h v ⊞₍ τ ₎ Δh v (u ⊟₍ σ ₎ v) (R[v,u-v] {σ} {u} {v})
     ≡⟨ carry-over {τ}
-        (proj₁ (validity {Γ = ∅} {f} v (u ⊟ v) _))
+        (proj₁ (validity {Γ = ∅} {f} v (u ⊟₍ σ ₎ v) _))
         (derive-correct {Γ = ∅} {t = f}
-          {∅} {∅} v (u ⊟ v) (u −₀ v) _ (u⊟v≈u⊝v {σ} {u} {v})) ⟩
+          {∅} {∅} v (u ⊟₍ σ ₎ v) (u −₀ v) _ (u⊟v≈u⊝v {σ} {u} {v})) ⟩
       h v ✚₁ Δh′ v (u −₀ v)
     ≡⟨ trans
         (cong (λ hole → h v ✚₁ Δh′ v hole) (meaning-⊝ {σ} {s = y} {x}))
