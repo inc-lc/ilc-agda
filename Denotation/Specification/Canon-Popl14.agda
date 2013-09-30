@@ -10,8 +10,9 @@ module Denotation.Specification.Canon-Popl14 where
 
 open import Popl14.Syntax.Term
 open import Popl14.Denotation.Value
+open import Popl14.Change.Validity
 open import Popl14.Denotation.Evaluation public
-open import Denotation.Environment.Popl14 public
+open import Popl14.Change.Environment public
 
 open import Relation.Binary.PropositionalEquality
 open import Data.Unit

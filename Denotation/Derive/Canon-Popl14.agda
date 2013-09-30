@@ -9,6 +9,7 @@ open import Popl14.Syntax.Term
 open import Popl14.Denotation.Value
 open import Popl14.Change.Term
 open import Popl14.Change.Evaluation
+open import Popl14.Change.Validity
 open import Popl14.Change.Derive public
 open import Denotation.Implementation.Popl14 public
 

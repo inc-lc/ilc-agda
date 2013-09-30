@@ -6,7 +6,7 @@ module Theorem.IrrelevanceUnique-Popl14 where
 open import Property.Uniqueness public
 
 open import Relation.Binary.PropositionalEquality
-open import Denotation.Environment.Popl14
+open import Theorem.Irrelevance-Popl14
 open import Theorem.EqualityUnique
 open import Theorem.ProductUnique
 

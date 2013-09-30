@@ -31,7 +31,7 @@ import Base.Syntax.Vars
 import Popl14.Change.Validity
 {- Correctness theorem for canonical derivation of Calc. Popl14 -}
 import Denotation.Derive.Canon-Popl14
-import Denotation.Environment.Popl14
+import Theorem.Irrelevance-Popl14
 import Base.Denotation.Environment
 import Popl14.Denotation.Evaluation
 {- The idea of implementing a denotational specification for Calc. Popl14 -}

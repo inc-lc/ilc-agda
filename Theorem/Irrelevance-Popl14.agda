@@ -1,4 +1,4 @@
-module Denotation.Environment.Popl14 where
+module Theorem.Irrelevance-Popl14 where
 
 -- Irrelevancy proofs:
 --
