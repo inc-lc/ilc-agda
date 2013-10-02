@@ -16,16 +16,20 @@ open import Structure.Bag.Popl14
 open import Postulate.Extensionality
 open import Popl14.Denotation.WeakenSound
 
--- Better name for v ≈ ⟦ t ⟧:
--- t implements v.
+infix 4 implements
+syntax implements τ u v = u ≈₍ τ ₎ v
+implements : ∀ (τ : Type) → ΔVal τ → ⟦ ΔType τ ⟧ → Set
+
+u ≈₍ int ₎ v = u ≡ v
+u ≈₍ bag ₎ v = u ≡ v
+u ≈₍ σ ⇒ τ ₎ v =
+  (w : ⟦ σ ⟧) (Δw : ΔVal σ) (Δw′ : ⟦ ΔType σ ⟧)
+  (R[w,Δw] : valid {σ} w Δw) (Δw≈Δw′ : implements σ Δw Δw′) →
+  implements τ (u w Δw R[w,Δw]) (v w Δw′)
+
 infix 4 _≈_
 _≈_ : ∀ {τ} → ΔVal τ → ⟦ ΔType τ ⟧ → Set
-_≈_ {int} u v = u ≡ v
-_≈_ {bag} u v = u ≡ v
-_≈_ {σ ⇒ τ} u v = 
-  (w : ⟦ σ ⟧) (Δw : ΔVal σ) (Δw′ : ⟦ ΔType σ ⟧)
-  (R[w,Δw] : valid w Δw) (Δw≈Δw′ : Δw ≈ Δw′) →
-  u w Δw R[w,Δw] ≈ v w Δw′
+_≈_ {τ} = implements τ
 
 module Disambiguation (τ : Type) where
   _✚_ : ⟦ τ ⟧ → ⟦ ΔType τ ⟧ → ⟦ τ ⟧
