@@ -9,7 +9,6 @@ open import Base.Denotation.Notation public
 open import Popl14.Denotation.Value public
 open import Popl14.Change.Validity public
 open import Popl14.Change.Value public
-open import Popl14.Change.Environment public 
 
 open import Relation.Binary.PropositionalEquality
 open import Data.Unit

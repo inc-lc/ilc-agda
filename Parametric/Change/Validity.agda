@@ -28,7 +28,15 @@ open import Base.Denotation.Notation public
 
 open import Relation.Binary.PropositionalEquality
 open import Postulate.Extensionality
-open import Data.Product
+open import Data.Product hiding (map)
+
+import Structure.Tuples as Tuples
+open Tuples
+
+import Base.Data.DependentList as DependentList
+open DependentList
+
+open import Relation.Unary using (_⊆_)
 
 record Structure : Set₁ where
   ----------------
@@ -136,3 +144,31 @@ record Structure : Set₁ where
 
   _⊟_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → ΔVal τ
   _⊟_ {τ} u v = u ⊟₍ τ ₎ v
+
+  ------------------
+  -- Environments --
+  ------------------
+
+  open DependentList public using (∅; _•_)
+  open Tuples public using (cons)
+
+  ΔEnv-Entry : Type → Set
+  ΔEnv-Entry τ = Triple
+    ⟦ τ ⟧
+    (λ _ → ΔVal τ)
+    (λ v dv → valid {τ} v dv)
+
+  ΔEnv : Context → Set
+  ΔEnv = DependentList ΔEnv-Entry
+
+  ignore-entry : ΔEnv-Entry ⊆ ⟦_⟧
+  ignore-entry (cons v _ _) = v
+
+  update-entry : ΔEnv-Entry ⊆ ⟦_⟧
+  update-entry {τ} (cons v dv R[v,dv]) = v ⊞₍ τ ₎ dv
+
+  ignore : ∀ {Γ : Context} → (ρ : ΔEnv Γ) → ⟦ Γ ⟧
+  ignore = map (λ {τ} → ignore-entry {τ})
+
+  update : ∀ {Γ : Context} → (ρ : ΔEnv Γ) → ⟦ Γ ⟧
+  update = map (λ {τ} → update-entry {τ})
