@@ -22,6 +22,8 @@ import Base.Data.DependentList as DependentList
 open DependentList public using (∅; _•_)
 open DependentList
 
+open import Relation.Unary using (_⊆_)
+
 ΔEnv-Entry : Type → Set
 ΔEnv-Entry τ = Triple
   ⟦ τ ⟧
@@ -31,10 +33,14 @@ open DependentList
 ΔEnv : Context → Set
 ΔEnv = DependentList ΔEnv-Entry
 
+ignore-entry : ΔEnv-Entry ⊆ ⟦_⟧
+ignore-entry (cons v _ _) = v
+
+update-entry : ΔEnv-Entry ⊆ ⟦_⟧
+update-entry {τ} (cons v dv R[v,dv]) = v ⊞₍ τ ₎ dv
+
 ignore : ∀ {Γ : Context} → (ρ : ΔEnv Γ) → ⟦ Γ ⟧
-ignore {∅} ρ = ∅
-ignore {τ • Γ} (cons v dv R[v,dv] • ρ) = v • ignore ρ
+ignore = map (λ {τ} → ignore-entry {τ})
 
 update : ∀ {Γ : Context} → (ρ : ΔEnv Γ) → ⟦ Γ ⟧
-update {∅} ρ = ∅
-update {τ • Γ} (cons v dv R[v,dv] • ρ) = (v ⊞₍ τ ₎ dv) • update ρ
+update = map (λ {τ} → update-entry {τ})

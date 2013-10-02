@@ -4,6 +4,7 @@ open import Data.List.All public
   using
     ( head
     ; tail
+    ; map
     ; tabulate
     )
   renaming
