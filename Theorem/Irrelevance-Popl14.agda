@@ -23,30 +23,30 @@ pattern lack x = false • x
 -- if their associated changes have no effect when applied.
 irrelevant : ∀ {Γ} (S : Vars Γ) (ρ : ΔEnv Γ) → Set
 irrelevant {∅} ∅ ∅ = ⊤
-irrelevant {τ • Γ} (lack S) (cons _ _ _ ρ) = irrelevant S ρ
-irrelevant {τ • Γ} (have S) (cons v Δv _ ρ) =
+irrelevant {τ • Γ} (lack S) (cons _ _ _ • ρ) = irrelevant S ρ
+irrelevant {τ • Γ} (have S) (cons v Δv _ • ρ) =
   (v ⊞₍ τ ₎ Δv ≡ v)   ×   (irrelevant S ρ)
 
 -- Project irrelevance onto subsets of variables
 project-irrelevance : ∀ {Γ : Context} {ρ : ΔEnv Γ} {R S} →
   irrelevant (R ∪ S) ρ → irrelevant R ρ × irrelevant S ρ
 project-irrelevance {∅} {∅} {∅} {∅} tt = tt , tt
-project-irrelevance {R = lack R} {lack S} I =
+project-irrelevance {ρ = _ • _} {lack R} {lack S} I =
   project-irrelevance {R = R} {S} I
-project-irrelevance {R = lack R} {have S} (eq , I) =
+project-irrelevance {ρ = _ • _} {lack R} {have S} (eq , I) =
   let IR , IS = project-irrelevance {R = R} {S} I
   in IR , (eq , IS)
-project-irrelevance {R = have R} {lack S} (eq , I) =
+project-irrelevance {ρ = _ • _} {have R} {lack S} (eq , I) =
   let IR , IS = project-irrelevance {R = R} {S} I
   in (eq , IR) , IS
-project-irrelevance {R = have R} {have S} (eq , I) =
+project-irrelevance {ρ = _ • _} {have R} {have S} (eq , I) =
   let IR , IS = project-irrelevance {R = R} {S} I
   in (eq , IR) , (eq , IS)
 
 -- The empty set of variables is irrelevant in all environments
 irrelevance : ∀ {Γ} {ρ : ΔEnv Γ} → irrelevant none ρ
 irrelevance {∅} {∅} = tt
-irrelevance {τ • Γ} {cons _ _ _ ρ} = irrelevance {ρ = ρ}
+irrelevance {τ • Γ} {cons _ _ _ • ρ} = irrelevance {ρ = ρ}
 
 -- Semantic properties of special subcontext relations
 ⟦Γ≼Γ⟧ : ∀ {Γ} {ρ : ⟦ Γ ⟧} → ⟦ ≼-refl {Γ} ⟧ ρ ≡ ρ

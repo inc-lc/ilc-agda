@@ -26,9 +26,9 @@ deriveVar-correct : ∀ {τ Γ} {x : Var Γ τ}
   ⟦ x ⟧ΔVar ρ ≈₍ τ ₎ ⟦ deriveVar x ⟧ ρ′
 
 deriveVar-correct {x = this}
-  {cons _ _ _ _} {_ • _ • _} {cons _ Δv≈Δv′ _} = Δv≈Δv′
+  {cons _ _ _ • _} {_ • _ • _} {cons _ Δv≈Δv′ _} = Δv≈Δv′
 deriveVar-correct {x = that y}
-  {cons _ _ _ ρ} {_ • _ • ρ′} {cons _ _ C} =
+  {cons _ _ _ • ρ} {_ • _ • ρ′} {cons _ _ C} =
   deriveVar-correct {x = y} {ρ} {ρ′} {C}
 
 -- That `derive t` implements ⟦ t ⟧Δ
@@ -85,7 +85,7 @@ derive-correct {t = app s t} {ρ} {ρ′} {C}
 derive-correct {t = abs t} {ρ} {ρ′} {C} =
   λ w Δw Δw′ R[w,Δw] Δw≈Δw′ →
     derive-correct {t = t}
-      {cons w Δw R[w,Δw] ρ} {Δw′ • w • ρ′} {cons refl Δw≈Δw′ C}
+      {cons w Δw R[w,Δw] • ρ} {Δw′ • w • ρ′} {cons refl Δw≈Δw′ C}
 
 main-theorem : ∀ {σ τ}
   {f : Term ∅ (σ ⇒ τ)} {x : Term ∅ σ} {y : Term ∅ σ}

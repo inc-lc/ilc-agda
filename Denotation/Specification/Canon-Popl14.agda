@@ -34,8 +34,8 @@ correctness : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ}
   → ⟦ t ⟧ (ignore ρ) ⊞₍ τ ₎ ⟦ t ⟧Δ ρ ≡ ⟦ t ⟧ (update ρ)
 
 ⟦_⟧ΔVar : ∀ {τ Γ} → Var Γ τ → ΔEnv Γ → ΔVal τ
-⟦ this   ⟧ΔVar (cons v dv R[v,dv] ρ) = dv
-⟦ that x ⟧ΔVar (cons v dv R[v,dv] ρ) = ⟦ x ⟧ΔVar ρ
+⟦ this   ⟧ΔVar (cons v dv R[v,dv] • ρ) = dv
+⟦ that x ⟧ΔVar (cons v dv R[v,dv] • ρ) = ⟦ x ⟧ΔVar ρ
 
 ⟦_⟧Δ (intlit n) ρ = + 0
 ⟦_⟧Δ (add s t) ρ = ⟦ s ⟧Δ ρ + ⟦ t ⟧Δ ρ
@@ -65,12 +65,12 @@ correctness : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ}
   (⟦ s ⟧Δ ρ) (⟦ t ⟧ (ignore ρ)) (⟦ t ⟧Δ ρ)
   (validity {σ} {t = t})
 ⟦_⟧Δ (abs t) ρ = λ v Δv R[v,Δv] →
-  ⟦ t ⟧Δ (cons v Δv R[v,Δv] ρ)
+  ⟦ t ⟧Δ (cons v Δv R[v,Δv] • ρ)
 
 validVar : ∀ {τ Γ} (x : Var Γ τ) →
   ∀ {ρ : ΔEnv Γ} → valid {τ} (⟦ x ⟧ (ignore ρ)) (⟦ x ⟧ΔVar ρ)
-validVar this {cons v Δv R[v,Δv] _} = R[v,Δv]
-validVar {τ} (that x) {cons _ _ _ ρ} = validVar {τ} x
+validVar this {cons v Δv R[v,Δv] • _} = R[v,Δv]
+validVar {τ} (that x) {cons _ _ _ • ρ} = validVar {τ} x
 
 validity {t = intlit n}    = tt
 validity {t = add s t}     = tt
@@ -95,8 +95,8 @@ validity {σ ⇒ τ} {t = abs t} {ρ} = λ v Δv R[v,Δv] →
   let
     v′ = v ⊞₍ σ ₎ Δv
     Δv′ = v′ ⊟₍ σ ₎ v′
-    ρ₁ = cons v Δv R[v,Δv] ρ
-    ρ₂ = cons v′ Δv′ (R[v,u-v] {σ} {v′} {v′}) ρ
+    ρ₁ = cons v Δv R[v,Δv] • ρ
+    ρ₂ = cons v′ Δv′ (R[v,u-v] {σ} {v′} {v′}) • ρ
   in
     validity {t = t} {ρ₁}
     ,
@@ -112,8 +112,8 @@ validity {σ ⇒ τ} {t = abs t} {ρ} = λ v Δv R[v,Δv] →
 
 correctVar : ∀ {τ Γ} {x : Var Γ τ} {ρ : ΔEnv Γ} →
   ⟦ x ⟧ (ignore ρ) ⊞₍ τ ₎ ⟦ x ⟧ΔVar ρ ≡ ⟦ x ⟧ (update ρ)
-correctVar {x = this  } {cons v dv R[v,dv] ρ} = refl
-correctVar {x = that y} {cons v dv R[v,dv] ρ} = correctVar {x = y} {ρ}
+correctVar {x = this  } {cons v dv R[v,dv] • ρ} = refl
+correctVar {x = that y} {cons v dv R[v,dv] • ρ} = correctVar {x = y} {ρ}
 
 correctness {t = intlit n} = right-id-int n
 correctness {t = add s t} {ρ} = trans
@@ -192,7 +192,7 @@ correctness {t = app {σ} {τ} s t} {ρ} =
 correctness {σ ⇒ τ} {Γ} {abs t} {ρ} = ext (λ v →
   let
     ρ′ : ΔEnv (σ • Γ)
-    ρ′ = cons v (v ⊟₍ σ ₎ v) (R[v,u-v] {σ} {v} {v}) ρ
+    ρ′ = cons v (v ⊟₍ σ ₎ v) (R[v,u-v] {σ} {v} {v}) • ρ
   in
     begin
       ⟦ t ⟧ (ignore ρ′) ⊞₍ τ ₎ ⟦ t ⟧Δ ρ′

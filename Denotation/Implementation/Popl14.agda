@@ -67,7 +67,7 @@ module FunctionDisambiguation (σ : Type) (τ : Type) where
 
 compatible : ∀ {Γ} → ΔEnv Γ → ⟦ ΔContext Γ ⟧ → Set
 compatible {∅} ∅ ∅ = ⊤
-compatible {τ • Γ} (cons v Δv _ ρ) (Δv′ • v′ • ρ′) =
+compatible {τ • Γ} (cons v Δv _ • ρ) (Δv′ • v′ • ρ′) =
   Triple (v ≡ v′) (λ _ → Δv ≈₍ τ ₎ Δv′) (λ _ _ → compatible ρ ρ′)
 
 -- If a program implements a specification, then certain things
@@ -109,7 +109,7 @@ carry-over {σ ⇒ τ} {f} {Δf} {Δf′} R[f,Δf] Δf≈Δf′ =
 ⟦Γ≼ΔΓ⟧ : ∀ {Γ} {ρ : ΔEnv Γ} {ρ′ : ⟦ ΔContext Γ ⟧}
   (C : compatible ρ ρ′) → ignore ρ ≡ ⟦ Γ≼ΔΓ ⟧ ρ′
 ⟦Γ≼ΔΓ⟧ {∅} {∅} {∅} _ = refl
-⟦Γ≼ΔΓ⟧ {τ • Γ} {cons v dv _ ρ} {dv′ • v′ • ρ′}
+⟦Γ≼ΔΓ⟧ {τ • Γ} {cons v dv _ • ρ} {dv′ • v′ • ρ′}
   (cons v≡v′ _ C) = cong₂ _•_ v≡v′ (⟦Γ≼ΔΓ⟧ C)
 
 -- A specialization of the soundness of weakening

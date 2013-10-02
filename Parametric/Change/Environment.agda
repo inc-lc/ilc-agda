@@ -18,23 +18,23 @@ import Structure.Tuples as Tuples
 open Tuples public using (cons)
 open Tuples
 
-data EmptyEnv : Set where
-  ∅ : EmptyEnv
+import Base.Data.DependentList as DependentList
+open DependentList public using (∅; _•_)
+open DependentList
 
-ΔEnv : Context → Set
-
--- ΔEnv : Context → Set
-ΔEnv ∅ = EmptyEnv
-ΔEnv (τ • Γ) = Quadruple
+ΔEnv-Entry : Type → Set
+ΔEnv-Entry τ = Triple
   ⟦ τ ⟧
   (λ _ → ΔVal τ)
   (λ v dv → valid {τ} v dv)
-  (λ _ _ _ → ΔEnv Γ)
+
+ΔEnv : Context → Set
+ΔEnv = DependentList ΔEnv-Entry
 
 ignore : ∀ {Γ : Context} → (ρ : ΔEnv Γ) → ⟦ Γ ⟧
 ignore {∅} ρ = ∅
-ignore {τ • Γ} (cons v dv R[v,dv] ρ) = v • ignore ρ
+ignore {τ • Γ} (cons v dv R[v,dv] • ρ) = v • ignore ρ
 
 update : ∀ {Γ : Context} → (ρ : ΔEnv Γ) → ⟦ Γ ⟧
 update {∅} ρ = ∅
-update {τ • Γ} (cons v dv R[v,dv] ρ) = (v ⊞₍ τ ₎ dv) • update ρ
+update {τ • Γ} (cons v dv R[v,dv] • ρ) = (v ⊞₍ τ ₎ dv) • update ρ

@@ -14,5 +14,5 @@ open import Theorem.ProductUnique
 irrelevant-uniq : ∀ {Γ} {S : Vars Γ} {ρ : ΔEnv Γ} →
   uniq (irrelevant S ρ)
 irrelevant-uniq {S = ∅} {∅} = refl
-irrelevant-uniq {S = lack S} = irrelevant-uniq {S = S}
-irrelevant-uniq {S = have S} = Σ-uniq ≡-uniq (irrelevant-uniq {S = S})
+irrelevant-uniq {S = lack S} {_ • _} = irrelevant-uniq {S = S}
+irrelevant-uniq {S = have S} {_ • _} = Σ-uniq ≡-uniq (irrelevant-uniq {S = S})
