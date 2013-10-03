@@ -19,7 +19,6 @@ open import Data.Integer
 open import Structure.Tuples
 open import Structure.Bag.Popl14
 open import Postulate.Extensionality
-open import Popl14.Denotation.WeakenSound
 
 infix 4 implements
 syntax implements τ u v = u ≈₍ τ ₎ v
