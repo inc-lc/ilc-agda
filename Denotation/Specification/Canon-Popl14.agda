@@ -94,7 +94,7 @@ validity {σ ⇒ τ} {t = abs t} {ρ} = λ v →
     v′ = after {σ} v
     Δv′ = v′ ⊟₍ σ ₎ v′
     ρ₁ = v • ρ
-    ρ₂ = cons v′ Δv′ (R[v,u-v] {σ} {v′} {v′}) • ρ
+    ρ₂ = nil-valid-change σ v′ • ρ
   in
     validity {t = t} {ρ₁}
     ,
@@ -190,7 +190,7 @@ correctness {t = app {σ} {τ} s t} {ρ} =
 correctness {σ ⇒ τ} {Γ} {abs t} {ρ} = ext (λ v →
   let
     ρ′ : ΔEnv (σ • Γ)
-    ρ′ = cons v (v ⊟₍ σ ₎ v) (R[v,u-v] {σ} {v} {v}) • ρ
+    ρ′ = nil-valid-change σ v • ρ
   in
     begin
       ⟦ t ⟧ (ignore ρ′) ⊞₍ τ ₎ ⟦ t ⟧Δ ρ′

@@ -148,6 +148,10 @@ record Structure : Set₁ where
         v (before {σ} w) ⊞₍ τ ₎ (u ⊟₍ σ ⇒ τ ₎ v) w
       ∎) where open ≡-Reasoning
 
+  -- helpers
+  nil-valid-change : ∀ τ → ⟦ τ ⟧ → ValidChange τ
+  nil-valid-change τ v = cons v (v ⊟₍ τ ₎ v) (R[v,u-v] {τ} {v} {v})
+
   -- syntactic sugar for implicit indices
   infixl 6 _⊞_ _⊟_ -- as with + - in GHC.Num
 
