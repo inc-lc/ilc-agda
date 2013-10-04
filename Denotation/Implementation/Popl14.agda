@@ -72,8 +72,8 @@ compatible {τ • Γ} (cons v Δv _ • ρ) (Δv′ • v′ • ρ′) =
 -- If a program implements a specification, then certain things
 -- proven about the specification carry over to the programs.
 carry-over : ∀ {τ}
-  {v : ⟦ τ ⟧} {Δv : Change τ} {Δv′ : ⟦ ΔType τ ⟧}
- (R[v,Δv] : valid {τ} v Δv) (Δv≈Δv′ : Δv ≈₍ τ ₎ Δv′) →
+  {v : ⟦ τ ⟧} {Δv : Change τ} (R[v,Δv] : valid {τ} v Δv)
+  {Δv′ : ⟦ ΔType τ ⟧} (Δv≈Δv′ : Δv ≈₍ τ ₎ Δv′) →
  let open Disambiguation τ in
    v ⊞₍ τ ₎ Δv ≡ v ✚ Δv′
 
@@ -92,7 +92,7 @@ u⊟v≈u⊝v {σ ⇒ τ} {g} {f} = result where
     u⊟v≈u⊝v {τ} {g (w ✚₀ Δw′)} {f w}
 carry-over {base base-int} {v} _ Δv≈Δv′ = cong (_+_  v) Δv≈Δv′
 carry-over {base base-bag} {v} _ Δv≈Δv′ = cong (_++_ v) Δv≈Δv′
-carry-over {σ ⇒ τ} {f} {Δf} {Δf′} R[f,Δf] Δf≈Δf′ =
+carry-over {σ ⇒ τ} {f} {Δf} R[f,Δf] {Δf′} Δf≈Δf′ =
   ext (λ v →
   let
     open FunctionDisambiguation σ τ
@@ -100,8 +100,8 @@ carry-over {σ ⇒ τ} {f} {Δf} {Δf′} R[f,Δf] Δf≈Δf′ =
     S = u⊟v≈u⊝v {σ} {v} {v}
   in
     carry-over {τ} {f v}
-      {Δf (nil-valid-change σ v)} {Δf′ v (v −₀ v)}
-      (proj₁ (R[f,Δf] (nil-valid-change σ v)))
+      {Δf (nil-valid-change σ v)} (proj₁ (R[f,Δf] (nil-valid-change σ v)))
+      {Δf′ v (v −₀ v)}
       (Δf≈Δf′ v (v ⊟₍ σ ₎ v) V (v −₀ v) S))
 
 -- A property relating `ignore` and the subcontext relation Γ≼ΔΓ
