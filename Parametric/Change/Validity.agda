@@ -96,6 +96,12 @@ record Structure : Set₁ where
   Change (base ι) = Change-base ι
   Change (σ ⇒ τ) = (v : ⟦ σ ⟧) → (dv : Change σ) → valid v dv → Change τ
 
+  ignore-valid-change : ValidChange ⊆ ⟦_⟧
+  ignore-valid-change (cons v _ _) = v
+
+  update-valid-change : ValidChange ⊆ ⟦_⟧
+  update-valid-change {τ} (cons v dv R[v,dv]) = v ⊞₍ τ ₎ dv
+
   -- _⊞_ : ∀ {τ} → ⟦ τ ⟧ → Change τ → ⟦ τ ⟧
   n ⊞₍ base ι ₎ Δn = apply-change-base ι n Δn
   f ⊞₍ σ ⇒ τ ₎ Δf = λ v → f v ⊞₍ τ ₎ Δf v (v ⊟₍ σ ₎ v) (R[v,u-v] {σ})
@@ -160,12 +166,6 @@ record Structure : Set₁ where
 
   ΔEnv : Context → Set
   ΔEnv = DependentList ValidChange
-
-  ignore-valid-change : ValidChange ⊆ ⟦_⟧
-  ignore-valid-change (cons v _ _) = v
-
-  update-valid-change : ValidChange ⊆ ⟦_⟧
-  update-valid-change {τ} (cons v dv R[v,dv]) = v ⊞₍ τ ₎ dv
 
   ignore : ∀ {Γ : Context} → (ρ : ΔEnv Γ) → ⟦ Γ ⟧
   ignore = map (λ {τ} → ignore-valid-change {τ})
