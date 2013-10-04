@@ -152,23 +152,23 @@ record Structure : Set₁ where
   open DependentList public using (∅; _•_)
   open Tuples public using (cons)
 
-  ΔEnv-Entry : Type → Set
-  ΔEnv-Entry τ = Triple
+  ValidChange : Type → Set
+  ValidChange τ = Triple
     ⟦ τ ⟧
     (λ _ → ΔVal τ)
     (λ v dv → valid {τ} v dv)
 
   ΔEnv : Context → Set
-  ΔEnv = DependentList ΔEnv-Entry
+  ΔEnv = DependentList ValidChange
 
-  ignore-entry : ΔEnv-Entry ⊆ ⟦_⟧
-  ignore-entry (cons v _ _) = v
+  ignore-valid-change : ValidChange ⊆ ⟦_⟧
+  ignore-valid-change (cons v _ _) = v
 
-  update-entry : ΔEnv-Entry ⊆ ⟦_⟧
-  update-entry {τ} (cons v dv R[v,dv]) = v ⊞₍ τ ₎ dv
+  update-valid-change : ValidChange ⊆ ⟦_⟧
+  update-valid-change {τ} (cons v dv R[v,dv]) = v ⊞₍ τ ₎ dv
 
   ignore : ∀ {Γ : Context} → (ρ : ΔEnv Γ) → ⟦ Γ ⟧
-  ignore = map (λ {τ} → ignore-entry {τ})
+  ignore = map (λ {τ} → ignore-valid-change {τ})
 
   update : ∀ {Γ : Context} → (ρ : ΔEnv Γ) → ⟦ Γ ⟧
-  update = map (λ {τ} → update-entry {τ})
+  update = map (λ {τ} → update-valid-change {τ})
