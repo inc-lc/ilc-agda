@@ -100,8 +100,8 @@ carry-over {σ ⇒ τ} {f} {Δf} {Δf′} R[f,Δf] Δf≈Δf′ =
     S = u⊟v≈u⊝v {σ} {v} {v}
   in
     carry-over {τ} {f v}
-      {Δf (cons v (v ⊟₍ σ ₎ v) V)} {Δf′ v (v −₀ v)}
-      (proj₁ (R[f,Δf] (cons v (v ⊟₍ σ ₎ v) V)))
+      {Δf (nil-valid-change σ v)} {Δf′ v (v −₀ v)}
+      (proj₁ (R[f,Δf] (nil-valid-change σ v)))
       (Δf≈Δf′ v (v ⊟₍ σ ₎ v) (v −₀ v) V S))
 
 -- A property relating `ignore` and the subcontext relation Γ≼ΔΓ

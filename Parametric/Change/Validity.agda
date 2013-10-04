@@ -102,8 +102,11 @@ record Structure : Set₁ where
   after : ValidChange ⊆ ⟦_⟧
   after {τ} (cons v dv R[v,dv]) = v ⊞₍ τ ₎ dv
 
+  diff-valid-change : ∀ τ → (u v : ⟦ τ ⟧) → ValidChange τ
+  diff-valid-change τ u v = cons v (u ⊟₍ τ ₎ v) (R[v,u-v] {τ} {u} {v})
+
   nil-valid-change : ∀ τ → ⟦ τ ⟧ → ValidChange τ
-  nil-valid-change τ v = cons v (v ⊟₍ τ ₎ v) (R[v,u-v] {τ} {v} {v})
+  nil-valid-change τ v = diff-valid-change τ v v
 
   -- _⊞_ : ∀ {τ} → ⟦ τ ⟧ → Change τ → ⟦ τ ⟧
   n ⊞₍ base ι ₎ Δn = apply-change-base ι n Δn
