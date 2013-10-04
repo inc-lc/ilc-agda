@@ -112,9 +112,9 @@ main-theorem {σ} {τ} {f} {x} {y} =
     ≡⟨ cong h (sym (v+[u-v]=u {σ})) ⟩
       h (v ⊞₍ σ ₎ (u ⊟₍ σ ₎ v))
     ≡⟨ corollary-closed {σ} {τ} {f} {v} {u ⊟₍ σ ₎ v} {R[v,u-v] {σ}} ⟩
-      h v ⊞₍ τ ₎ Δh v (u ⊟₍ σ ₎ v) (R[v,u-v] {σ} {u} {v})
+      h v ⊞₍ τ ₎ Δh (cons v (u ⊟₍ σ ₎ v) (R[v,u-v] {σ} {u} {v}))
     ≡⟨ carry-over {τ}
-        (proj₁ (validity {Γ = ∅} {f} v (u ⊟₍ σ ₎ v) _))
+        (proj₁ (validity {Γ = ∅} {f} (cons v (u ⊟₍ σ ₎ v) _)))
         (derive-correct {Γ = ∅} {t = f}
           {∅} {∅} v (u ⊟₍ σ ₎ v) (u −₀ v) _ (u⊟v≈u⊝v {σ} {u} {v})) ⟩
       h v ✚₁ Δh′ v (u −₀ v)

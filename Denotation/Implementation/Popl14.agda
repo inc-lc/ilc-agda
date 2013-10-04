@@ -29,7 +29,7 @@ u ≈₍ bag ₎ v = u ≡ v
 u ≈₍ σ ⇒ τ ₎ v =
   (w : ⟦ σ ⟧) (Δw : Change σ) (Δw′ : ⟦ ΔType σ ⟧)
   (R[w,Δw] : valid {σ} w Δw) (Δw≈Δw′ : implements σ Δw Δw′) →
-  implements τ (u w Δw R[w,Δw]) (v w Δw′)
+  implements τ (u (cons w Δw R[w,Δw])) (v w Δw′)
 
 infix 4 _≈_
 _≈_ : ∀ {τ} → Change τ → ⟦ ΔType τ ⟧ → Set
@@ -100,8 +100,8 @@ carry-over {σ ⇒ τ} {f} {Δf} {Δf′} R[f,Δf] Δf≈Δf′ =
     S = u⊟v≈u⊝v {σ} {v} {v}
   in
     carry-over {τ} {f v}
-      {Δf v (v ⊟₍ σ ₎ v) V} {Δf′ v (v −₀ v)}
-      (proj₁ (R[f,Δf] v (v ⊟₍ σ ₎ v) V))
+      {Δf (cons v (v ⊟₍ σ ₎ v) V)} {Δf′ v (v −₀ v)}
+      (proj₁ (R[f,Δf] (cons v (v ⊟₍ σ ₎ v) V)))
       (Δf≈Δf′ v (v ⊟₍ σ ₎ v) (v −₀ v) V S))
 
 -- A property relating `ignore` and the subcontext relation Γ≼ΔΓ

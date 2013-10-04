@@ -86,15 +86,15 @@ record Structure : Set₁ where
   -- Detailed motivation:
   --
   -- https://github.com/ps-mr/ilc/blob/184a6291ac6eef80871c32d2483e3e62578baf06/POPL14/paper/sec-formal.tex
-  -- Change : Type → Set
   ValidChange : Type → Set
   ValidChange τ = Triple
     ⟦ τ ⟧
     (λ _ → Change τ)
     (λ v dv → valid {τ} v dv)
 
+  -- Change : Type → Set
   Change (base ι) = Change-base ι
-  Change (σ ⇒ τ) = (v : ⟦ σ ⟧) → (dv : Change σ) → valid v dv → Change τ
+  Change (σ ⇒ τ) = ValidChange σ → Change τ
 
   before : ValidChange ⊆ ⟦_⟧
   before (cons v _ _) = v
@@ -104,19 +104,19 @@ record Structure : Set₁ where
 
   -- _⊞_ : ∀ {τ} → ⟦ τ ⟧ → Change τ → ⟦ τ ⟧
   n ⊞₍ base ι ₎ Δn = apply-change-base ι n Δn
-  f ⊞₍ σ ⇒ τ ₎ Δf = λ v → f v ⊞₍ τ ₎ Δf v (v ⊟₍ σ ₎ v) (R[v,u-v] {σ})
+  f ⊞₍ σ ⇒ τ ₎ Δf = λ v → f v ⊞₍ τ ₎ Δf (cons v (v ⊟₍ σ ₎ v) (R[v,u-v] {σ}))
 
   -- _⊟_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → Change τ
   m ⊟₍ base ι ₎ n = diff-change-base ι m n
-  g ⊟₍ σ ⇒ τ ₎ f = λ v Δv R[v,Δv] → g (v ⊞₍ σ ₎ Δv) ⊟₍ τ ₎ f v
+  g ⊟₍ σ ⇒ τ ₎ f = λ v → g (after v) ⊟₍ τ ₎ f (before v)
 
   -- valid : ∀ {τ} → ⟦ τ ⟧ → Change τ → Set
   valid {base ι} n Δn = valid-base {ι} n Δn
   valid {σ ⇒ τ} f Δf =
-    ∀ (v : ⟦ σ ⟧) (Δv : Change σ) (R[v,Δv] : valid v Δv)
-    → valid {τ} (f v) (Δf v Δv R[v,Δv])
+    ∀ (v : ValidChange σ)
+    → valid {τ} (f (before v)) (Δf v)
     -- × (f ⊞ Δf) (v ⊞ Δv) ≡ f v ⊞ Δf v Δv R[v,Δv]
-    × (f ⊞₍ σ ⇒ τ ₎ Δf) (v ⊞₍ σ ₎ Δv) ≡ f v ⊞₍ τ ₎ Δf v Δv R[v,Δv]
+    × (f ⊞₍ σ ⇒ τ ₎ Δf) (after v) ≡ f (before v) ⊞₍ τ ₎ Δf v
 
   -- v+[u-v]=u : ∀ {τ : Type} {u v : ⟦ τ ⟧} → v ⊞ (u ⊟ v) ≡ u
   v+[u-v]=u {base ι} {u} {v} = v+[u-v]=u-base {ι} {u} {v}
@@ -134,9 +134,9 @@ record Structure : Set₁ where
         open ≡-Reasoning
 
   R[v,u-v] {base ι} {u} {v} = R[v,u-v]-base {ι} {u} {v}
-  R[v,u-v] {σ ⇒ τ} {u} {v} = λ w Δw R[w,Δw] →
+  R[v,u-v] {σ ⇒ τ} {u} {v} = λ w →
     let
-      w′ = w ⊞₍ σ ₎ Δw
+      w′ = after {σ} w
     in
       R[v,u-v] {τ}
       ,
@@ -144,8 +144,8 @@ record Structure : Set₁ where
         (v ⊞₍ σ ⇒ τ ₎ (u ⊟₍ σ ⇒ τ ₎ v)) w′
       ≡⟨ cong (λ hole → hole w′) (v+[u-v]=u {σ ⇒ τ} {u} {v}) ⟩
         u w′
-      ≡⟨ sym (v+[u-v]=u {τ} {u w′} {v w}) ⟩
-        v w ⊞₍ τ ₎ (u ⊟₍ σ ⇒ τ ₎ v) w Δw R[w,Δw]
+      ≡⟨ sym (v+[u-v]=u {τ} {u w′} {v (before {σ} w)}) ⟩
+        v (before {σ} w) ⊞₍ τ ₎ (u ⊟₍ σ ⇒ τ ₎ v) w
       ∎) where open ≡-Reasoning
 
   -- syntactic sugar for implicit indices

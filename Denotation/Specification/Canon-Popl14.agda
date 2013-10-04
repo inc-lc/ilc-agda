@@ -60,10 +60,10 @@ correctness : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ}
 ⟦_⟧Δ (sum t) ρ = sumBag (⟦ t ⟧Δ ρ)
 ⟦_⟧Δ (var x) ρ = ⟦ x ⟧ΔVar ρ
 ⟦_⟧Δ (app {σ} {τ} s t) ρ = 
-  (⟦ s ⟧Δ ρ) (⟦ t ⟧ (ignore ρ)) (⟦ t ⟧Δ ρ)
-  (validity {σ} {t = t})
-⟦_⟧Δ (abs t) ρ = λ v Δv R[v,Δv] →
-  ⟦ t ⟧Δ (cons v Δv R[v,Δv] • ρ)
+     (⟦ s ⟧Δ ρ) (cons (⟦ t ⟧ (ignore ρ)) (⟦ t ⟧Δ ρ)
+  (validity {σ} {t = t}))
+⟦_⟧Δ (abs t) ρ = λ v →
+  ⟦ t ⟧Δ (v • ρ)
 
 validVar : ∀ {τ Γ} (x : Var Γ τ) →
   ∀ {ρ : ΔEnv Γ} → valid {τ} (⟦ x ⟧ (ignore ρ)) (⟦ x ⟧ΔVar ρ)
@@ -87,13 +87,13 @@ validity {t = app s t} {ρ} =
     v = ⟦ t ⟧ (ignore ρ)
     Δv = ⟦ t ⟧Δ ρ
   in
-    proj₁ (validity {t = s} {ρ} v Δv (validity {t = t} {ρ}))
+    proj₁ (validity {t = s} {ρ} (cons v Δv (validity {t = t} {ρ})))
 
-validity {σ ⇒ τ} {t = abs t} {ρ} = λ v Δv R[v,Δv] →
+validity {σ ⇒ τ} {t = abs t} {ρ} = λ v →
   let
-    v′ = v ⊞₍ σ ₎ Δv
+    v′ = after {σ} v
     Δv′ = v′ ⊟₍ σ ₎ v′
-    ρ₁ = cons v Δv R[v,Δv] • ρ
+    ρ₁ = v • ρ
     ρ₂ = cons v′ Δv′ (R[v,u-v] {σ} {v′} {v′}) • ρ
   in
     validity {t = t} {ρ₁}
@@ -181,8 +181,8 @@ correctness {t = app {σ} {τ} s t} {ρ} =
     Δu = ⟦ t ⟧Δ ρ
   in
     begin
-      f u ⊞₍ τ ₎ Δf u Δu (validity {σ} {t = t})
-    ≡⟨ sym (proj₂ (validity {σ ⇒ τ} {t = s} u Δu (validity {σ} {t = t}))) ⟩
+      f u ⊞₍ τ ₎ Δf (cons u Δu (validity {σ} {t = t}))
+    ≡⟨ sym (proj₂ (validity {σ ⇒ τ} {t = s} (cons u Δu (validity {σ} {t = t})))) ⟩
       (f ⊞₍ σ ⇒ τ ₎ Δf) (u ⊞₍ σ ₎ Δu)
     ≡⟨ correctness {σ ⇒ τ} {t = s} ⟨$⟩ correctness {σ} {t = t} ⟩
       g v
@@ -208,16 +208,16 @@ corollary : ∀ {σ τ Γ}
       (⟦ t ⟧ (ignore ρ) ⊞₍ σ ₎ ⟦ t ⟧Δ ρ)
   ≡ (⟦ s ⟧ (ignore ρ)) (⟦ t ⟧ (ignore ρ))
     ⊞₍ τ ₎
-    (⟦ s ⟧Δ ρ) (⟦ t ⟧ (ignore ρ)) (⟦ t ⟧Δ ρ) (validity {σ} {t = t})
+    (⟦ s ⟧Δ ρ) (cons (⟦ t ⟧ (ignore ρ)) (⟦ t ⟧Δ ρ) (validity {σ} {t = t}))
 
 corollary {σ} {τ} s t {ρ} = proj₂
-  (validity {σ ⇒ τ} {t = s} (⟦ t ⟧ (ignore ρ))
-     (⟦ t ⟧Δ ρ) (validity {σ} {t = t}))
+  (validity {σ ⇒ τ} {t = s} (cons (⟦ t ⟧ (ignore ρ))
+     (⟦ t ⟧Δ ρ) (validity {σ} {t = t})))
 
 corollary-closed : ∀ {σ τ} {t : Term ∅ (σ ⇒ τ)}
   {v : ⟦ σ ⟧} {Δv : Change σ} {R[v,Δv] : valid {σ} v Δv}
   → ⟦ t ⟧ ∅ (v ⊞₍ σ ₎ Δv)
-  ≡ ⟦ t ⟧ ∅ v ⊞₍ τ ₎ ⟦ t ⟧Δ ∅ v Δv R[v,Δv]
+  ≡ ⟦ t ⟧ ∅ v ⊞₍ τ ₎ ⟦ t ⟧Δ ∅ (cons v Δv R[v,Δv])
 
 corollary-closed {σ} {τ} {t = t} {v} {Δv} {R[v,Δv]} =
   let
@@ -229,6 +229,6 @@ corollary-closed {σ} {τ} {t = t} {v} {Δv} {R[v,Δv]} =
     ≡⟨ cong (λ hole → hole (v ⊞₍ σ ₎ Δv))
             (sym (correctness {σ ⇒ τ} {t = t})) ⟩
       (f ⊞₍ σ ⇒ τ ₎ Δf) (v ⊞₍ σ ₎ Δv)
-    ≡⟨ proj₂ (validity {σ ⇒ τ} {t = t} v Δv R[v,Δv]) ⟩
-      f v ⊞₍ τ ₎ Δf v Δv R[v,Δv]
+    ≡⟨ proj₂ (validity {σ ⇒ τ} {t = t} (cons v Δv R[v,Δv])) ⟩
+      f v ⊞₍ τ ₎ Δf (cons v Δv R[v,Δv])
     ∎ where open ≡-Reasoning
