@@ -87,6 +87,12 @@ record Structure : Set₁ where
   --
   -- https://github.com/ps-mr/ilc/blob/184a6291ac6eef80871c32d2483e3e62578baf06/POPL14/paper/sec-formal.tex
   -- Change : Type → Set
+  ValidChange : Type → Set
+  ValidChange τ = Triple
+    ⟦ τ ⟧
+    (λ _ → Change τ)
+    (λ v dv → valid {τ} v dv)
+
   Change (base ι) = Change-base ι
   Change (σ ⇒ τ) = (v : ⟦ σ ⟧) → (dv : Change σ) → valid v dv → Change τ
 
@@ -151,12 +157,6 @@ record Structure : Set₁ where
 
   open DependentList public using (∅; _•_)
   open Tuples public using (cons)
-
-  ValidChange : Type → Set
-  ValidChange τ = Triple
-    ⟦ τ ⟧
-    (λ _ → Change τ)
-    (λ v dv → valid {τ} v dv)
 
   ΔEnv : Context → Set
   ΔEnv = DependentList ValidChange
