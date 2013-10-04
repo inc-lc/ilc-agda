@@ -22,17 +22,17 @@ open import Postulate.Extensionality
 
 infix 4 implements
 syntax implements τ u v = u ≈₍ τ ₎ v
-implements : ∀ (τ : Type) → ΔVal τ → ⟦ ΔType τ ⟧ → Set
+implements : ∀ (τ : Type) → Change τ → ⟦ ΔType τ ⟧ → Set
 
 u ≈₍ int ₎ v = u ≡ v
 u ≈₍ bag ₎ v = u ≡ v
 u ≈₍ σ ⇒ τ ₎ v =
-  (w : ⟦ σ ⟧) (Δw : ΔVal σ) (Δw′ : ⟦ ΔType σ ⟧)
+  (w : ⟦ σ ⟧) (Δw : Change σ) (Δw′ : ⟦ ΔType σ ⟧)
   (R[w,Δw] : valid {σ} w Δw) (Δw≈Δw′ : implements σ Δw Δw′) →
   implements τ (u w Δw R[w,Δw]) (v w Δw′)
 
 infix 4 _≈_
-_≈_ : ∀ {τ} → ΔVal τ → ⟦ ΔType τ ⟧ → Set
+_≈_ : ∀ {τ} → Change τ → ⟦ ΔType τ ⟧ → Set
 _≈_ {τ} = implements τ
 
 module Disambiguation (τ : Type) where
@@ -41,7 +41,7 @@ module Disambiguation (τ : Type) where
   _−_ : ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ ΔType τ ⟧
   _−_ = _⟦⊝⟧_ {τ}
   infixl 6 _✚_ _−_
-  _≃_ : ΔVal τ → ⟦ ΔType τ ⟧ → Set
+  _≃_ : Change τ → ⟦ ΔType τ ⟧ → Set
   _≃_ = _≈_ {τ}
   infix 4 _≃_
 
@@ -52,7 +52,7 @@ module FunctionDisambiguation (σ : Type) (τ : Type) where
   _−₁_ : ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ ΔType τ ⟧
   _−₁_ = _⟦⊝⟧_ {τ}
   infixl 6 _✚₁_ _−₁_
-  _≃₁_ : ΔVal τ → ⟦ ΔType τ ⟧ → Set
+  _≃₁_ : Change τ → ⟦ ΔType τ ⟧ → Set
   _≃₁_ = _≈_ {τ}
   infix 4 _≃₁_
   _✚₀_ : ⟦ σ ⟧ → ⟦ ΔType σ ⟧ → ⟦ σ ⟧
@@ -60,7 +60,7 @@ module FunctionDisambiguation (σ : Type) (τ : Type) where
   _−₀_ : ⟦ σ ⟧ → ⟦ σ ⟧ → ⟦ ΔType σ ⟧
   _−₀_ = _⟦⊝⟧_ {σ}
   infixl 6 _✚₀_ _−₀_
-  _≃₀_ : ΔVal σ → ⟦ ΔType σ ⟧ → Set
+  _≃₀_ : Change σ → ⟦ ΔType σ ⟧ → Set
   _≃₀_ = _≈_ {σ}
   infix 4 _≃₀_
 
@@ -72,7 +72,7 @@ compatible {τ • Γ} (cons v Δv _ • ρ) (Δv′ • v′ • ρ′) =
 -- If a program implements a specification, then certain things
 -- proven about the specification carry over to the programs.
 carry-over : ∀ {τ}
-  {v : ⟦ τ ⟧} {Δv : ΔVal τ} {Δv′ : ⟦ ΔType τ ⟧}
+  {v : ⟦ τ ⟧} {Δv : Change τ} {Δv′ : ⟦ ΔType τ ⟧}
  (R[v,Δv] : valid {τ} v Δv) (Δv≈Δv′ : Δv ≈₍ τ ₎ Δv′) →
  let open Disambiguation τ in
    v ⊞₍ τ ₎ Δv ≡ v ✚ Δv′
@@ -84,7 +84,7 @@ u⊟v≈u⊝v {base base-int} = refl
 u⊟v≈u⊝v {base base-bag} = refl
 u⊟v≈u⊝v {σ ⇒ τ} {g} {f} = result where
   open FunctionDisambiguation σ τ
-  result : (w : ⟦ σ ⟧) (Δw : ΔVal σ) (Δw′ : ⟦ ΔType σ ⟧) →
+  result : (w : ⟦ σ ⟧) (Δw : Change σ) (Δw′ : ⟦ ΔType σ ⟧) →
     valid {σ} w Δw → Δw ≈₍ σ ₎ Δw′ →
     g (w ⊞₍ σ ₎ Δw) ⊟₍ τ ₎ f w ≃₁ g (w ✚₀ Δw′) −₁ f w
   result w Δw Δw′ R[w,Δw] Δw≈Δw′

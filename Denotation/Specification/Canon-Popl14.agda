@@ -21,8 +21,7 @@ open import Structure.Bag.Popl14
 open import Theorem.Groups-Popl14
 open import Theorem.CongApp
 open import Postulate.Extensionality
-
-⟦_⟧Δ : ∀ {τ Γ} → (t : Term Γ τ) (ρ : ΔEnv Γ) → ΔVal τ
+⟦_⟧Δ : ∀ {τ Γ} → (t : Term Γ τ) (ρ : ΔEnv Γ) → Change τ
 
 -- better name is: ⟦_⟧Δ reacts to future arguments
 validity : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ} →
@@ -32,7 +31,7 @@ validity : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ} →
 correctness : ∀ {τ Γ} {t : Term Γ τ} {ρ : ΔEnv Γ}
   → ⟦ t ⟧ (ignore ρ) ⊞₍ τ ₎ ⟦ t ⟧Δ ρ ≡ ⟦ t ⟧ (update ρ)
 
-⟦_⟧ΔVar : ∀ {τ Γ} → Var Γ τ → ΔEnv Γ → ΔVal τ
+⟦_⟧ΔVar : ∀ {τ Γ} → Var Γ τ → ΔEnv Γ → Change τ
 ⟦ this   ⟧ΔVar (cons v dv R[v,dv] • ρ) = dv
 ⟦ that x ⟧ΔVar (cons v dv R[v,dv] • ρ) = ⟦ x ⟧ΔVar ρ
 
@@ -216,7 +215,7 @@ corollary {σ} {τ} s t {ρ} = proj₂
      (⟦ t ⟧Δ ρ) (validity {σ} {t = t}))
 
 corollary-closed : ∀ {σ τ} {t : Term ∅ (σ ⇒ τ)}
-  {v : ⟦ σ ⟧} {Δv : ΔVal σ} {R[v,Δv] : valid {σ} v Δv}
+  {v : ⟦ σ ⟧} {Δv : Change σ} {R[v,Δv] : valid {σ} v Δv}
   → ⟦ t ⟧ ∅ (v ⊞₍ σ ₎ Δv)
   ≡ ⟦ t ⟧ ∅ v ⊞₍ τ ₎ ⟦ t ⟧Δ ∅ v Δv R[v,Δv]
 

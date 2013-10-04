@@ -44,26 +44,26 @@ record Structure : Set₁ where
   ----------------
 
   field
-    ΔVal-base : Base → Set
-    valid-base : ∀ {ι} → ⟦ ι ⟧Base → ΔVal-base ι → Set
-    apply-ΔVal-base : ∀ ι → ⟦ ι ⟧Base → ΔVal-base ι → ⟦ ι ⟧Base
-    diff-ΔVal-base : ∀ ι → ⟦ ι ⟧Base → ⟦ ι ⟧Base → ΔVal-base ι
-    R[v,u-v]-base : ∀ {ι} {u v : ⟦ ι ⟧Base} → valid-base {ι} v (diff-ΔVal-base ι u v)
-    v+[u-v]=u-base : ∀ {ι} {u v : ⟦ ι ⟧Base} → apply-ΔVal-base ι v (diff-ΔVal-base ι u v) ≡ u
+    Change-base : Base → Set
+    valid-base : ∀ {ι} → ⟦ ι ⟧Base → Change-base ι → Set
+    apply-change-base : ∀ ι → ⟦ ι ⟧Base → Change-base ι → ⟦ ι ⟧Base
+    diff-change-base : ∀ ι → ⟦ ι ⟧Base → ⟦ ι ⟧Base → Change-base ι
+    R[v,u-v]-base : ∀ {ι} {u v : ⟦ ι ⟧Base} → valid-base {ι} v (diff-change-base ι u v)
+    v+[u-v]=u-base : ∀ {ι} {u v : ⟦ ι ⟧Base} → apply-change-base ι v (diff-change-base ι u v) ≡ u
 
   ---------------
   -- Interface --
   ---------------
 
-  ΔVal : Type → Set
-  valid : ∀ {τ} → ⟦ τ ⟧ → ΔVal τ → Set
+  Change : Type → Set
+  valid : ∀ {τ} → ⟦ τ ⟧ → Change τ → Set
 
-  apply-ΔVal : ∀ τ → ⟦ τ ⟧ → ΔVal τ → ⟦ τ ⟧
-  diff-ΔVal : ∀ τ → ⟦ τ ⟧ → ⟦ τ ⟧ → ΔVal τ
+  apply-change : ∀ τ → ⟦ τ ⟧ → Change τ → ⟦ τ ⟧
+  diff-change : ∀ τ → ⟦ τ ⟧ → ⟦ τ ⟧ → Change τ
 
-  infixl 6 apply-ΔVal diff-ΔVal -- as with + - in GHC.Num
-  syntax apply-ΔVal τ v dv = v ⊞₍ τ ₎ dv
-  syntax diff-ΔVal τ u v = u ⊟₍ τ ₎ v
+  infixl 6 apply-change diff-change -- as with + - in GHC.Num
+  syntax apply-change τ v dv = v ⊞₍ τ ₎ dv
+  syntax diff-change τ u v = u ⊟₍ τ ₎ v
 
   -- Lemma diff-is-valid
   R[v,u-v] : ∀ {τ : Type} {u v : ⟦ τ ⟧} → valid {τ} v (u ⊟₍ τ ₎ v)
@@ -76,32 +76,32 @@ record Structure : Set₁ where
   -- Implementation --
   --------------------
 
-  -- (ΔVal τ) is the set of changes of type τ. This set is
+  -- (Change τ) is the set of changes of type τ. This set is
   -- strictly smaller than ⟦ ΔType τ⟧ if τ is a function type. In
-  -- particular, (ΔVal (σ ⇒ τ)) is a function that accepts only
+  -- particular, (Change (σ ⇒ τ)) is a function that accepts only
   -- valid changes, while ⟦ ΔType (σ ⇒ τ) ⟧ accepts also invalid
   -- changes.
   --
-  -- ΔVal τ is the target of the denotational specification ⟦_⟧Δ.
+  -- Change τ is the target of the denotational specification ⟦_⟧Δ.
   -- Detailed motivation:
   --
   -- https://github.com/ps-mr/ilc/blob/184a6291ac6eef80871c32d2483e3e62578baf06/POPL14/paper/sec-formal.tex
-  -- ΔVal : Type → Set
-  ΔVal (base ι) = ΔVal-base ι
-  ΔVal (σ ⇒ τ) = (v : ⟦ σ ⟧) → (dv : ΔVal σ) → valid v dv → ΔVal τ
+  -- Change : Type → Set
+  Change (base ι) = Change-base ι
+  Change (σ ⇒ τ) = (v : ⟦ σ ⟧) → (dv : Change σ) → valid v dv → Change τ
 
-  -- _⊞_ : ∀ {τ} → ⟦ τ ⟧ → ΔVal τ → ⟦ τ ⟧
-  n ⊞₍ base ι ₎ Δn = apply-ΔVal-base ι n Δn
+  -- _⊞_ : ∀ {τ} → ⟦ τ ⟧ → Change τ → ⟦ τ ⟧
+  n ⊞₍ base ι ₎ Δn = apply-change-base ι n Δn
   f ⊞₍ σ ⇒ τ ₎ Δf = λ v → f v ⊞₍ τ ₎ Δf v (v ⊟₍ σ ₎ v) (R[v,u-v] {σ})
 
-  -- _⊟_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → ΔVal τ
-  m ⊟₍ base ι ₎ n = diff-ΔVal-base ι m n
+  -- _⊟_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → Change τ
+  m ⊟₍ base ι ₎ n = diff-change-base ι m n
   g ⊟₍ σ ⇒ τ ₎ f = λ v Δv R[v,Δv] → g (v ⊞₍ σ ₎ Δv) ⊟₍ τ ₎ f v
 
-  -- valid : ∀ {τ} → ⟦ τ ⟧ → ΔVal τ → Set
+  -- valid : ∀ {τ} → ⟦ τ ⟧ → Change τ → Set
   valid {base ι} n Δn = valid-base {ι} n Δn
   valid {σ ⇒ τ} f Δf =
-    ∀ (v : ⟦ σ ⟧) (Δv : ΔVal σ) (R[v,Δv] : valid v Δv)
+    ∀ (v : ⟦ σ ⟧) (Δv : Change σ) (R[v,Δv] : valid v Δv)
     → valid {τ} (f v) (Δf v Δv R[v,Δv])
     -- × (f ⊞ Δf) (v ⊞ Δv) ≡ f v ⊞ Δf v Δv R[v,Δv]
     × (f ⊞₍ σ ⇒ τ ₎ Δf) (v ⊞₍ σ ₎ Δv) ≡ f v ⊞₍ τ ₎ Δf v Δv R[v,Δv]
@@ -139,10 +139,10 @@ record Structure : Set₁ where
   -- syntactic sugar for implicit indices
   infixl 6 _⊞_ _⊟_ -- as with + - in GHC.Num
 
-  _⊞_ : ∀ {τ} → ⟦ τ ⟧ → ΔVal τ → ⟦ τ ⟧
+  _⊞_ : ∀ {τ} → ⟦ τ ⟧ → Change τ → ⟦ τ ⟧
   _⊞_ {τ} v dv = v ⊞₍ τ ₎ dv
 
-  _⊟_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → ΔVal τ
+  _⊟_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → Change τ
   _⊟_ {τ} u v = u ⊟₍ τ ₎ v
 
   ------------------
@@ -155,7 +155,7 @@ record Structure : Set₁ where
   ValidChange : Type → Set
   ValidChange τ = Triple
     ⟦ τ ⟧
-    (λ _ → ΔVal τ)
+    (λ _ → Change τ)
     (λ v dv → valid {τ} v dv)
 
   ΔEnv : Context → Set
