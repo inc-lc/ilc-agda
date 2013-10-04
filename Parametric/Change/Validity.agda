@@ -102,9 +102,12 @@ record Structure : Set₁ where
   after : ValidChange ⊆ ⟦_⟧
   after {τ} (cons v dv R[v,dv]) = v ⊞₍ τ ₎ dv
 
+  nil-valid-change : ∀ τ → ⟦ τ ⟧ → ValidChange τ
+  nil-valid-change τ v = cons v (v ⊟₍ τ ₎ v) (R[v,u-v] {τ} {v} {v})
+
   -- _⊞_ : ∀ {τ} → ⟦ τ ⟧ → Change τ → ⟦ τ ⟧
   n ⊞₍ base ι ₎ Δn = apply-change-base ι n Δn
-  f ⊞₍ σ ⇒ τ ₎ Δf = λ v → f v ⊞₍ τ ₎ Δf (cons v (v ⊟₍ σ ₎ v) (R[v,u-v] {σ}))
+  f ⊞₍ σ ⇒ τ ₎ Δf = λ v → f v ⊞₍ τ ₎ Δf (nil-valid-change σ v)
 
   -- _⊟_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → Change τ
   m ⊟₍ base ι ₎ n = diff-change-base ι m n
@@ -147,10 +150,6 @@ record Structure : Set₁ where
       ≡⟨ sym (v+[u-v]=u {τ} {u w′} {v (before {σ} w)}) ⟩
         v (before {σ} w) ⊞₍ τ ₎ (u ⊟₍ σ ⇒ τ ₎ v) w
       ∎) where open ≡-Reasoning
-
-  -- helpers
-  nil-valid-change : ∀ τ → ⟦ τ ⟧ → ValidChange τ
-  nil-valid-change τ v = cons v (v ⊟₍ τ ₎ v) (R[v,u-v] {τ} {v} {v})
 
   -- syntactic sugar for implicit indices
   infixl 6 _⊞_ _⊟_ -- as with + - in GHC.Num
