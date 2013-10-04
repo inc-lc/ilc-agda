@@ -215,20 +215,20 @@ corollary {σ} {τ} s t {ρ} = proj₂
      (⟦ t ⟧Δ ρ) (validity {σ} {t = t})))
 
 corollary-closed : ∀ {σ τ} {t : Term ∅ (σ ⇒ τ)}
-  {v : ⟦ σ ⟧} {Δv : Change σ} {R[v,Δv] : valid {σ} v Δv}
-  → ⟦ t ⟧ ∅ (v ⊞₍ σ ₎ Δv)
-  ≡ ⟦ t ⟧ ∅ v ⊞₍ τ ₎ ⟦ t ⟧Δ ∅ (cons v Δv R[v,Δv])
+  (v : ValidChange σ)
+  → ⟦ t ⟧ ∅ (after {σ} v)
+  ≡ ⟦ t ⟧ ∅ (before {σ} v) ⊞₍ τ ₎ ⟦ t ⟧Δ ∅ v
 
-corollary-closed {σ} {τ} {t = t} {v} {Δv} {R[v,Δv]} =
+corollary-closed {σ} {τ} {t = t} v =
   let
     f  = ⟦ t ⟧ ∅
     Δf = ⟦ t ⟧Δ ∅
   in
     begin
-      f (v ⊞₍ σ ₎ Δv)
-    ≡⟨ cong (λ hole → hole (v ⊞₍ σ ₎ Δv))
+      f (after {σ} v)
+    ≡⟨ cong (λ hole → hole (after {σ} v))
             (sym (correctness {σ ⇒ τ} {t = t})) ⟩
-      (f ⊞₍ σ ⇒ τ ₎ Δf) (v ⊞₍ σ ₎ Δv)
-    ≡⟨ proj₂ (validity {σ ⇒ τ} {t = t} (cons v Δv R[v,Δv])) ⟩
-      f v ⊞₍ τ ₎ Δf (cons v Δv R[v,Δv])
+      (f ⊞₍ σ ⇒ τ ₎ Δf) (after {σ} v)
+    ≡⟨ proj₂ (validity {σ ⇒ τ} {t = t} v) ⟩
+      f (before {σ} v) ⊞₍ τ ₎ Δf v
     ∎ where open ≡-Reasoning
