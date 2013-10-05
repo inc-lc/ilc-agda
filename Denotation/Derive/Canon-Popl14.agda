@@ -67,7 +67,7 @@ derive-correct {t = flatmap s t} {ρ} {ρ′} {C} =
         cong₂ _++_
           (cong (λ hole → hole v) (⟦fit⟧ s C))
           (derive-correct {t = s} {ρ} {ρ′} {C}
-            v (v - v) tt (v - v) refl)))
+            (nil-valid-change int v) (v - v) refl)))
       (cong₂ _++_
         (⟦fit⟧ t C)
         (derive-correct {t = t} {ρ} {ρ′} {C})))
@@ -80,12 +80,12 @@ derive-correct {t = var x} {ρ} {ρ′} {C} =
 derive-correct {t = app s t} {ρ} {ρ′} {C}
   rewrite sym (⟦fit⟧ t C) =
   derive-correct {t = s} {ρ} {ρ′} {C}
-  (⟦ t ⟧ (ignore ρ)) (⟦ t ⟧Δ ρ) (validity {t = t})
+  (cons (⟦ t ⟧ (ignore ρ)) (⟦ t ⟧Δ ρ) (validity {t = t}))
   (⟦ derive t ⟧ ρ′) (derive-correct {t = t} {ρ} {ρ′} {C})
-derive-correct {t = abs t} {ρ} {ρ′} {C} =
-  λ w Δw R[w,Δw] Δw′ Δw≈Δw′ →
+derive-correct {σ ⇒ τ} {t = abs t} {ρ} {ρ′} {C} =
+  λ Δw Δw′ Δw≈Δw′ →
     derive-correct {t = t}
-      {cons w Δw R[w,Δw] • ρ} {Δw′ • w • ρ′} {cons refl Δw≈Δw′ C}
+      {Δw • ρ} {Δw′ • before {σ} Δw • ρ′} {cons refl Δw≈Δw′ C}
 
 main-theorem : ∀ {σ τ}
   {f : Term ∅ (σ ⇒ τ)} {x : Term ∅ σ} {y : Term ∅ σ}
@@ -116,7 +116,7 @@ main-theorem {σ} {τ} {f} {x} {y} =
     ≡⟨ carry-over {τ}
         (cons _ _ (proj₁ (validity {Γ = ∅} {f} (diff-valid-change σ u v))))
         (derive-correct {Γ = ∅} {t = f}
-          {∅} {∅} v (u ⊟₍ σ ₎ v) _ (u −₀ v) (u⊟v≈u⊝v {σ} {u} {v})) ⟩
+          {∅} {∅} (diff-valid-change σ u v) (u −₀ v) (u⊟v≈u⊝v {σ} {u} {v})) ⟩
       h v ✚₁ Δh′ v (u −₀ v)
     ≡⟨ trans
         (cong (λ hole → h v ✚₁ Δh′ v hole) (meaning-⊝ {σ} {s = y} {x}))

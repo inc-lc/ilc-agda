@@ -27,9 +27,9 @@ implements : ∀ (τ : Type) → Change τ → ⟦ ΔType τ ⟧ → Set
 u ≈₍ int ₎ v = u ≡ v
 u ≈₍ bag ₎ v = u ≡ v
 u ≈₍ σ ⇒ τ ₎ v =
-  (w : ⟦ σ ⟧) (Δw : Change σ) (R[w,Δw] : valid {σ} w Δw)
-  (Δw′ : ⟦ ΔType σ ⟧) (Δw≈Δw′ : implements σ Δw Δw′) →
-  implements τ (u (cons w Δw R[w,Δw])) (v w Δw′)
+  (Δw : ValidChange σ)
+  (Δw′ : ⟦ ΔType σ ⟧) (Δw≈Δw′ : implements σ (change {σ} Δw) Δw′) →
+  implements τ (u Δw) (v (before {σ} Δw) Δw′)
 
 infix 4 _≈_
 _≈_ : ∀ {τ} → Change τ → ⟦ ΔType τ ⟧ → Set
@@ -84,24 +84,23 @@ u⊟v≈u⊝v {base base-int} = refl
 u⊟v≈u⊝v {base base-bag} = refl
 u⊟v≈u⊝v {σ ⇒ τ} {g} {f} = result where
   open FunctionDisambiguation σ τ
-  result : (w : ⟦ σ ⟧) (Δw : Change σ) → valid {σ} w Δw →
-    (Δw′ : ⟦ ΔType σ ⟧) → Δw ≈₍ σ ₎ Δw′ →
-    g (w ⊞₍ σ ₎ Δw) ⊟₍ τ ₎ f w ≃₁ g (w ✚₀ Δw′) −₁ f w
-  result w Δw R[w,Δw] Δw′ Δw≈Δw′
-    rewrite carry-over {σ} (cons w Δw R[w,Δw]) Δw≈Δw′ =
-    u⊟v≈u⊝v {τ} {g (w ✚₀ Δw′)} {f w}
+  result : (Δw : ValidChange σ) →
+    (Δw′ : ⟦ ΔType σ ⟧) → change {σ} Δw ≈₍ σ ₎ Δw′ →
+    g (after {σ} Δw) ⊟₍ τ ₎ f (before {σ} Δw) ≃₁ g (before {σ} Δw ✚₀ Δw′) −₁ f (before {σ} Δw)
+  result Δw Δw′ Δw≈Δw′
+    rewrite carry-over {σ} Δw Δw≈Δw′ =
+    u⊟v≈u⊝v {τ} {g (before {σ} Δw ✚₀ Δw′)} {f (before {σ} Δw)}
 carry-over {base base-int} Δv Δv≈Δv′ = cong (_+_  (before {int} Δv)) Δv≈Δv′
 carry-over {base base-bag} Δv Δv≈Δv′ = cong (_++_ (before {bag} Δv)) Δv≈Δv′
 carry-over {σ ⇒ τ} Δf {Δf′} Δf≈Δf′ =
   ext (λ v →
   let
     open FunctionDisambiguation σ τ
-    V = R[v,u-v] {σ} {v} {v}
     S = u⊟v≈u⊝v {σ} {v} {v}
   in
     carry-over {τ} (call-valid-change σ τ Δf (nil-valid-change σ v))
       {Δf′ v (v −₀ v)}
-      (Δf≈Δf′ v (v ⊟₍ σ ₎ v) V (v −₀ v) S))
+      (Δf≈Δf′ (nil-valid-change σ v) (v −₀ v) S))
 
 -- A property relating `ignore` and the subcontext relation Γ≼ΔΓ
 ⟦Γ≼ΔΓ⟧ : ∀ {Γ} {ρ : ΔEnv Γ} {ρ′ : ⟦ ΔContext Γ ⟧}
