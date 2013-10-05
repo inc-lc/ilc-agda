@@ -72,10 +72,10 @@ compatible {τ • Γ} (cons v Δv _ • ρ) (Δv′ • v′ • ρ′) =
 -- If a program implements a specification, then certain things
 -- proven about the specification carry over to the programs.
 carry-over : ∀ {τ}
-  {v : ⟦ τ ⟧} {Δv : Change τ} (R[v,Δv] : valid {τ} v Δv)
-  {Δv′ : ⟦ ΔType τ ⟧} (Δv≈Δv′ : Δv ≈₍ τ ₎ Δv′) →
+  (Δv : ValidChange τ)
+  {Δv′ : ⟦ ΔType τ ⟧} (Δv≈Δv′ : change {τ} Δv ≈₍ τ ₎ Δv′) →
  let open Disambiguation τ in
-   v ⊞₍ τ ₎ Δv ≡ v ✚ Δv′
+   after {τ} Δv ≡ before {τ} Δv ✚ Δv′
 
 u⊟v≈u⊝v : ∀ {τ : Type} {u v : ⟦ τ ⟧} →
   let open Disambiguation τ in
@@ -88,19 +88,18 @@ u⊟v≈u⊝v {σ ⇒ τ} {g} {f} = result where
     (Δw′ : ⟦ ΔType σ ⟧) → Δw ≈₍ σ ₎ Δw′ →
     g (w ⊞₍ σ ₎ Δw) ⊟₍ τ ₎ f w ≃₁ g (w ✚₀ Δw′) −₁ f w
   result w Δw R[w,Δw] Δw′ Δw≈Δw′
-    rewrite carry-over {σ} {w} R[w,Δw] Δw≈Δw′ =
+    rewrite carry-over {σ} (cons w Δw R[w,Δw]) Δw≈Δw′ =
     u⊟v≈u⊝v {τ} {g (w ✚₀ Δw′)} {f w}
-carry-over {base base-int} {v} _ Δv≈Δv′ = cong (_+_  v) Δv≈Δv′
-carry-over {base base-bag} {v} _ Δv≈Δv′ = cong (_++_ v) Δv≈Δv′
-carry-over {σ ⇒ τ} {f} {Δf} R[f,Δf] {Δf′} Δf≈Δf′ =
+carry-over {base base-int} Δv Δv≈Δv′ = cong (_+_  (before {int} Δv)) Δv≈Δv′
+carry-over {base base-bag} Δv Δv≈Δv′ = cong (_++_ (before {bag} Δv)) Δv≈Δv′
+carry-over {σ ⇒ τ} Δf {Δf′} Δf≈Δf′ =
   ext (λ v →
   let
     open FunctionDisambiguation σ τ
     V = R[v,u-v] {σ} {v} {v}
     S = u⊟v≈u⊝v {σ} {v} {v}
   in
-    carry-over {τ} {f v}
-      {Δf (nil-valid-change σ v)} (proj₁ (R[f,Δf] (nil-valid-change σ v)))
+    carry-over {τ} (call-valid-change σ τ Δf (nil-valid-change σ v))
       {Δf′ v (v −₀ v)}
       (Δf≈Δf′ v (v ⊟₍ σ ₎ v) V (v −₀ v) S))
 

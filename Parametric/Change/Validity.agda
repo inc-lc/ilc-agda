@@ -102,6 +102,9 @@ record Structure : Set₁ where
   after : ValidChange ⊆ ⟦_⟧
   after {τ} (cons v dv R[v,dv]) = v ⊞₍ τ ₎ dv
 
+  change : ValidChange ⊆ Change
+  change (cons _ dv _) = dv
+
   diff-valid-change : ∀ τ → (u v : ⟦ τ ⟧) → ValidChange τ
   diff-valid-change τ u v = cons v (u ⊟₍ τ ₎ v) (R[v,u-v] {τ} {u} {v})
 
@@ -162,6 +165,14 @@ record Structure : Set₁ where
 
   _⊟_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → Change τ
   _⊟_ {τ} u v = u ⊟₍ τ ₎ v
+
+  -- applicative structure
+  call-valid-change : ∀ σ τ →
+    ValidChange (σ ⇒ τ) →
+    ValidChange σ →
+    ValidChange τ
+  call-valid-change σ τ (cons f Δf R[f,Δf]) Δv =
+    cons (f (before {σ} Δv)) (Δf Δv) (proj₁ (R[f,Δf] Δv))
 
   ------------------
   -- Environments --

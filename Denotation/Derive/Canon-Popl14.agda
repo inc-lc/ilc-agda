@@ -114,7 +114,7 @@ main-theorem {σ} {τ} {f} {x} {y} =
     ≡⟨ corollary-closed {σ} {τ} {f} (diff-valid-change σ u v) ⟩
       h v ⊞₍ τ ₎ Δh (diff-valid-change σ u v)
     ≡⟨ carry-over {τ}
-        (proj₁ (validity {Γ = ∅} {f} (diff-valid-change σ u v)))
+        (cons _ _ (proj₁ (validity {Γ = ∅} {f} (diff-valid-change σ u v))))
         (derive-correct {Γ = ∅} {t = f}
           {∅} {∅} v (u ⊟₍ σ ₎ v) _ (u −₀ v) (u⊟v≈u⊝v {σ} {u} {v})) ⟩
       h v ✚₁ Δh′ v (u −₀ v)
