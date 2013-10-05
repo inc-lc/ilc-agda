@@ -35,35 +35,6 @@ infix 4 _≈_
 _≈_ : ∀ {τ} → Change τ → ⟦ ΔType τ ⟧ → Set
 _≈_ {τ} = implements τ
 
-module Disambiguation (τ : Type) where
-  _✚_ : ⟦ τ ⟧ → ⟦ ΔType τ ⟧ → ⟦ τ ⟧
-  _✚_ = _⟦⊕⟧_ {τ}
-  _−_ : ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ ΔType τ ⟧
-  _−_ = _⟦⊝⟧_ {τ}
-  infixl 6 _✚_ _−_
-  _≃_ : Change τ → ⟦ ΔType τ ⟧ → Set
-  _≃_ = _≈_ {τ}
-  infix 4 _≃_
-
-module FunctionDisambiguation (σ : Type) (τ : Type) where
-  open Disambiguation (σ ⇒ τ) public
-  _✚₁_ : ⟦ τ ⟧ → ⟦ ΔType τ ⟧ → ⟦ τ ⟧
-  _✚₁_ = _⟦⊕⟧_ {τ}
-  _−₁_ : ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ ΔType τ ⟧
-  _−₁_ = _⟦⊝⟧_ {τ}
-  infixl 6 _✚₁_ _−₁_
-  _≃₁_ : Change τ → ⟦ ΔType τ ⟧ → Set
-  _≃₁_ = _≈_ {τ}
-  infix 4 _≃₁_
-  _✚₀_ : ⟦ σ ⟧ → ⟦ ΔType σ ⟧ → ⟦ σ ⟧
-  _✚₀_ = _⟦⊕⟧_ {σ}
-  _−₀_ : ⟦ σ ⟧ → ⟦ σ ⟧ → ⟦ ΔType σ ⟧
-  _−₀_ = _⟦⊝⟧_ {σ}
-  infixl 6 _✚₀_ _−₀_
-  _≃₀_ : Change σ → ⟦ ΔType σ ⟧ → Set
-  _≃₀_ = _≈_ {σ}
-  infix 4 _≃₀_
-
 compatible : ∀ {Γ} → ΔEnv Γ → ⟦ ΔContext Γ ⟧ → Set
 compatible {∅} ∅ ∅ = ⊤
 compatible {τ • Γ} (cons v Δv _ • ρ) (Δv′ • v′ • ρ′) =
@@ -74,33 +45,29 @@ compatible {τ • Γ} (cons v Δv _ • ρ) (Δv′ • v′ • ρ′) =
 carry-over : ∀ {τ}
   (Δv : ValidChange τ)
   {Δv′ : ⟦ ΔType τ ⟧} (Δv≈Δv′ : change {τ} Δv ≈₍ τ ₎ Δv′) →
- let open Disambiguation τ in
-   after {τ} Δv ≡ before {τ} Δv ✚ Δv′
+    after {τ} Δv ≡ before {τ} Δv ⟦⊕₍ τ ₎⟧ Δv′
 
 u⊟v≈u⊝v : ∀ {τ : Type} {u v : ⟦ τ ⟧} →
-  let open Disambiguation τ in
-    u ⊟₍ τ ₎ v ≃ u − v
+  u ⊟₍ τ ₎ v ≈₍ τ ₎ u ⟦⊝₍ τ ₎⟧ v
 u⊟v≈u⊝v {base base-int} = refl
 u⊟v≈u⊝v {base base-bag} = refl
 u⊟v≈u⊝v {σ ⇒ τ} {g} {f} = result where
-  open FunctionDisambiguation σ τ
   result : (Δw : ValidChange σ) →
     (Δw′ : ⟦ ΔType σ ⟧) → change {σ} Δw ≈₍ σ ₎ Δw′ →
-    g (after {σ} Δw) ⊟₍ τ ₎ f (before {σ} Δw) ≃₁ g (before {σ} Δw ✚₀ Δw′) −₁ f (before {σ} Δw)
+    g (after {σ} Δw) ⊟₍ τ ₎ f (before {σ} Δw) ≈₍ τ ₎ g (before {σ} Δw ⟦⊕₍ σ ₎⟧ Δw′) ⟦⊝₍ τ ₎⟧ f (before {σ} Δw)
   result Δw Δw′ Δw≈Δw′
     rewrite carry-over {σ} Δw Δw≈Δw′ =
-    u⊟v≈u⊝v {τ} {g (before {σ} Δw ✚₀ Δw′)} {f (before {σ} Δw)}
+    u⊟v≈u⊝v {τ} {g (before {σ} Δw ⟦⊕₍ σ ₎⟧ Δw′)} {f (before {σ} Δw)}
 carry-over {base base-int} Δv Δv≈Δv′ = cong (_+_  (before {int} Δv)) Δv≈Δv′
 carry-over {base base-bag} Δv Δv≈Δv′ = cong (_++_ (before {bag} Δv)) Δv≈Δv′
 carry-over {σ ⇒ τ} Δf {Δf′} Δf≈Δf′ =
   ext (λ v →
   let
-    open FunctionDisambiguation σ τ
     S = u⊟v≈u⊝v {σ} {v} {v}
   in
     carry-over {τ} (call-valid-change σ τ Δf (nil-valid-change σ v))
-      {Δf′ v (v −₀ v)}
-      (Δf≈Δf′ (nil-valid-change σ v) (v −₀ v) S))
+      {Δf′ v (v ⟦⊝₍ σ ₎⟧ v)}
+      (Δf≈Δf′ (nil-valid-change σ v) (v ⟦⊝₍ σ ₎⟧ v) S))
 
 -- A property relating `ignore` and the subcontext relation Γ≼ΔΓ
 ⟦Γ≼ΔΓ⟧ : ∀ {Γ} {ρ : ΔEnv Γ} {ρ′ : ⟦ ΔContext Γ ⟧}

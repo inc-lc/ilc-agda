@@ -8,6 +8,7 @@ open import Popl14.Syntax.Type
 open import Popl14.Syntax.Term
 open import Popl14.Denotation.Value
 open import Popl14.Change.Term
+open import Popl14.Change.Value
 open import Popl14.Change.Evaluation
 open import Popl14.Change.Validity
 open import Popl14.Change.Derive public
@@ -100,11 +101,6 @@ main-theorem {σ} {τ} {f} {x} {y} =
     v  = ⟦ x ⟧ ∅
     u  = ⟦ y ⟧ ∅
     Δoutput-term = app (app (derive f) x) (y ⊝ x)
-    -- local disambiguators
-    -- TODO: Find location for modules:
-    -- Denotation.Implementation.Popl14.Disambiguation
-    -- Denotation.Implementation.Popl14.FunctionDisambiguation
-    open FunctionDisambiguation σ τ
   in
     ext {A = ⟦ ∅ ⟧Context} (λ { ∅ →
     begin
@@ -116,10 +112,10 @@ main-theorem {σ} {τ} {f} {x} {y} =
     ≡⟨ carry-over {τ}
         (cons _ _ (proj₁ (validity {Γ = ∅} {f} (diff-valid-change σ u v))))
         (derive-correct {Γ = ∅} {t = f}
-          {∅} {∅} (diff-valid-change σ u v) (u −₀ v) (u⊟v≈u⊝v {σ} {u} {v})) ⟩
-      h v ✚₁ Δh′ v (u −₀ v)
+          {∅} {∅} (diff-valid-change σ u v) (u ⟦⊝₍ σ ₎⟧ v) (u⊟v≈u⊝v {σ} {u} {v})) ⟩
+      h v ⟦⊕₍ τ ₎⟧ Δh′ v (u ⟦⊝₍ σ ₎⟧ v)
     ≡⟨ trans
-        (cong (λ hole → h v ✚₁ Δh′ v hole) (meaning-⊝ {σ} {s = y} {x}))
+        (cong (λ hole → h v ⟦⊕₍ τ ₎⟧ Δh′ v hole) (meaning-⊝ {σ} {s = y} {x}))
         (meaning-⊕ {t = app f x} {Δt = Δoutput-term}) ⟩
       ⟦ app f x ⊕₍ τ ₎ app (app (derive f) x) (y ⊝ x) ⟧ ∅
     ∎}) where open ≡-Reasoning
