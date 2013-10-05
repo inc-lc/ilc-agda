@@ -105,6 +105,9 @@ record Structure : Set₁ where
   change : ValidChange ⊆ Change
   change (cons _ dv _) = dv
 
+  apply-valid-change : ∀ τ → (v : ⟦ τ ⟧) (dv : ValidChange τ) → ⟦ τ ⟧
+  apply-valid-change τ v dv = apply-change τ v (change dv)
+
   diff-valid-change : ∀ τ → (u v : ⟦ τ ⟧) → ValidChange τ
   diff-valid-change τ u v = cons v (u ⊟₍ τ ₎ v) (R[v,u-v] {τ} {u} {v})
 
