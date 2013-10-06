@@ -66,9 +66,9 @@ correctness : ∀ {τ Γ} {t : Term Γ τ} {dρ : ΔEnv Γ}
   ⟦ t ⟧Δ (v • dρ)
 
 validVar : ∀ {τ Γ} (x : Var Γ τ) →
-  ∀ {dρ : ΔEnv Γ} → valid {τ} (⟦ x ⟧ (ignore dρ)) (⟦ x ⟧ΔVar dρ)
-validVar this {cons v Δv R[v,Δv] • _} = R[v,Δv]
-validVar {τ} (that x) {cons _ _ _ • dρ} = validVar {τ} x
+  (dρ : ΔEnv Γ) → valid {τ} (⟦ x ⟧ (ignore dρ)) (⟦ x ⟧ΔVar dρ)
+validVar this (cons v Δv R[v,Δv] • _) = R[v,Δv]
+validVar {τ} (that x) (cons _ _ _ • dρ) = validVar {τ} x dρ
 
 validity (intlit n)    dρ = tt
 validity (add s t)     dρ = tt
@@ -80,7 +80,7 @@ validity (negate t)    dρ = tt
 validity (flatmap s t) dρ = tt
 validity (sum t)       dρ = tt
 
-validity {τ} (var x) dρ = validVar {τ} x
+validity {τ} (var x) dρ = validVar {τ} x dρ
 
 validity (app s t) dρ =
   let
