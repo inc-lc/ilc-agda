@@ -187,8 +187,8 @@ record Structure : Set₁ where
   ΔEnv : Context → Set
   ΔEnv = DependentList ValidChange
 
-  ignore : ∀ {Γ : Context} → (ρ : ΔEnv Γ) → ⟦ Γ ⟧
+  ignore : ∀ {Γ : Context} → (dρ : ΔEnv Γ) → ⟦ Γ ⟧
   ignore = map (λ {τ} → before {τ})
 
-  update : ∀ {Γ : Context} → (ρ : ΔEnv Γ) → ⟦ Γ ⟧
+  update : ∀ {Γ : Context} → (dρ : ΔEnv Γ) → ⟦ Γ ⟧
   update = map (λ {τ} → after {τ})
