@@ -81,7 +81,7 @@ derive-correct {t = var x} {ρ} {ρ′} {C} =
 derive-correct {t = app s t} {ρ} {ρ′} {C}
   rewrite sym (⟦fit⟧ t C) =
   derive-correct {t = s} {ρ} {ρ′} {C}
-  (cons (⟦ t ⟧ (ignore ρ)) (⟦ t ⟧Δ ρ) (validity {t = t}))
+  (cons (⟦ t ⟧ (ignore ρ)) (⟦ t ⟧Δ ρ) (validity t ρ))
   (⟦ derive t ⟧ ρ′) (derive-correct {t = t} {ρ} {ρ′} {C})
 derive-correct {σ ⇒ τ} {t = abs t} {ρ} {ρ′} {C} =
   λ Δw Δw′ Δw≈Δw′ →
@@ -110,7 +110,7 @@ main-theorem {σ} {τ} {f} {x} {y} =
     ≡⟨ corollary-closed {σ} {τ} {f} (diff-valid-change σ u v) ⟩
       h v ⊞₍ τ ₎ Δh (diff-valid-change σ u v)
     ≡⟨ carry-over {τ}
-        (cons _ _ (proj₁ (validity {Γ = ∅} {f} (diff-valid-change σ u v))))
+        (cons _ _ (proj₁ (validity f ∅ (diff-valid-change σ u v))))
         (derive-correct {Γ = ∅} {t = f}
           {∅} {∅} (diff-valid-change σ u v) (u ⟦⊝₍ σ ₎⟧ v) (u⊟v≈u⊝v {σ} {u} {v})) ⟩
       h v ⟦⊕₍ τ ₎⟧ Δh′ v (u ⟦⊝₍ σ ₎⟧ v)

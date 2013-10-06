@@ -24,7 +24,7 @@ open import Postulate.Extensionality
 ⟦_⟧Δ : ∀ {τ Γ} → (t : Term Γ τ) (dρ : ΔEnv Γ) → Change τ
 
 -- better name is: ⟦_⟧Δ reacts to future arguments
-validity : ∀ {τ Γ} {t : Term Γ τ} {dρ : ΔEnv Γ} →
+validity : ∀ {τ Γ} (t : Term Γ τ) (dρ : ΔEnv Γ) →
   valid {τ} (⟦ t ⟧ (ignore dρ)) (⟦ t ⟧Δ dρ)
 
 -- better name is: ⟦_⟧Δ reacts to free variables
@@ -61,7 +61,7 @@ correctness : ∀ {τ Γ} {t : Term Γ τ} {dρ : ΔEnv Γ}
 ⟦_⟧Δ (var x) dρ = ⟦ x ⟧ΔVar dρ
 ⟦_⟧Δ (app {σ} {τ} s t) dρ =
      (⟦ s ⟧Δ dρ) (cons (⟦ t ⟧ (ignore dρ)) (⟦ t ⟧Δ dρ)
-  (validity {σ} {t = t}))
+  (validity {σ} t dρ))
 ⟦_⟧Δ (abs t) dρ = λ v →
   ⟦ t ⟧Δ (v • dρ)
 
@@ -70,33 +70,33 @@ validVar : ∀ {τ Γ} (x : Var Γ τ) →
 validVar this {cons v Δv R[v,Δv] • _} = R[v,Δv]
 validVar {τ} (that x) {cons _ _ _ • dρ} = validVar {τ} x
 
-validity {t = intlit n}    = tt
-validity {t = add s t}     = tt
-validity {t = minus t}     = tt
-validity {t = empty}       = tt
-validity {t = insert s t}  = tt
-validity {t = union s t}   = tt
-validity {t = negate t}    = tt
-validity {t = flatmap s t} = tt
-validity {t = sum t}       = tt
+validity (intlit n)    dρ = tt
+validity (add s t)     dρ = tt
+validity (minus t)     dρ = tt
+validity (empty)       dρ = tt
+validity (insert s t)  dρ = tt
+validity (union s t)   dρ = tt
+validity (negate t)    dρ = tt
+validity (flatmap s t) dρ = tt
+validity (sum t)       dρ = tt
 
-validity {τ} {t = var x} = validVar {τ} x
+validity {τ} (var x) dρ = validVar {τ} x
 
-validity {t = app s t} {dρ} =
+validity (app s t) dρ =
   let
     v = ⟦ t ⟧ (ignore dρ)
     Δv = ⟦ t ⟧Δ dρ
   in
-    proj₁ (validity {t = s} {dρ} (cons v Δv (validity {t = t} {dρ})))
+    proj₁ (validity s dρ (cons v Δv (validity t dρ)))
 
-validity {σ ⇒ τ} {t = abs t} {dρ} = λ v →
+validity {σ ⇒ τ} (abs t) dρ = λ v →
   let
     v′ = after {σ} v
     Δv′ = v′ ⊟₍ σ ₎ v′
     dρ₁ = v • dρ
     dρ₂ = nil-valid-change σ v′ • dρ
   in
-    validity {t = t} {dρ₁}
+    validity t dρ₁
     ,
     (begin
       ⟦ t ⟧ (ignore dρ₂) ⊞₍ τ ₎ ⟦ t ⟧Δ dρ₂
@@ -181,8 +181,8 @@ correctness {t = app {σ} {τ} s t} {dρ} =
     Δu = ⟦ t ⟧Δ dρ
   in
     begin
-      f u ⊞₍ τ ₎ Δf (cons u Δu (validity {σ} {t = t}))
-    ≡⟨ sym (proj₂ (validity {σ ⇒ τ} {t = s} (cons u Δu (validity {σ} {t = t})))) ⟩
+      f u ⊞₍ τ ₎ Δf (cons u Δu (validity {σ} t dρ))
+    ≡⟨ sym (proj₂ (validity {σ ⇒ τ} s dρ (cons u Δu (validity {σ} t dρ)))) ⟩
       (f ⊞₍ σ ⇒ τ ₎ Δf) (u ⊞₍ σ ₎ Δu)
     ≡⟨ correctness {σ ⇒ τ} {t = s} ⟨$⟩ correctness {σ} {t = t} ⟩
       g v
@@ -208,11 +208,11 @@ corollary : ∀ {σ τ Γ}
       (⟦ t ⟧ (ignore dρ) ⊞₍ σ ₎ ⟦ t ⟧Δ dρ)
   ≡ (⟦ s ⟧ (ignore dρ)) (⟦ t ⟧ (ignore dρ))
     ⊞₍ τ ₎
-    (⟦ s ⟧Δ dρ) (cons (⟦ t ⟧ (ignore dρ)) (⟦ t ⟧Δ dρ) (validity {σ} {t = t}))
+    (⟦ s ⟧Δ dρ) (cons (⟦ t ⟧ (ignore dρ)) (⟦ t ⟧Δ dρ) (validity {σ} t dρ))
 
 corollary {σ} {τ} s t {dρ} = proj₂
-  (validity {σ ⇒ τ} {t = s} (cons (⟦ t ⟧ (ignore dρ))
-     (⟦ t ⟧Δ dρ) (validity {σ} {t = t})))
+  (validity {σ ⇒ τ} s dρ (cons (⟦ t ⟧ (ignore dρ))
+     (⟦ t ⟧Δ dρ) (validity {σ} t dρ)))
 
 corollary-closed : ∀ {σ τ} {t : Term ∅ (σ ⇒ τ)}
   (v : ValidChange σ)
@@ -229,6 +229,6 @@ corollary-closed {σ} {τ} {t = t} v =
     ≡⟨ cong (λ hole → hole (after {σ} v))
             (sym (correctness {σ ⇒ τ} {t = t})) ⟩
       (f ⊞₍ σ ⇒ τ ₎ Δf) (after {σ} v)
-    ≡⟨ proj₂ (validity {σ ⇒ τ} {t = t} v) ⟩
+    ≡⟨ proj₂ (validity {σ ⇒ τ} t ∅ v) ⟩
       f (before {σ} v) ⊞₍ τ ₎ Δf v
     ∎ where open ≡-Reasoning
