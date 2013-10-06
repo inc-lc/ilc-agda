@@ -108,10 +108,10 @@ validity {σ ⇒ τ} (abs t) dρ = λ v →
       ⟦ t ⟧ (ignore dρ₁) ⊞₍ τ ₎ ⟦ t ⟧Δ dρ₁
     ∎) where open ≡-Reasoning
 
-correctVar : ∀ {τ Γ} {x : Var Γ τ} {dρ : ΔEnv Γ} →
+correctVar : ∀ {τ Γ} (x : Var Γ τ) (dρ : ΔEnv Γ) →
   ⟦ x ⟧ (ignore dρ) ⊞₍ τ ₎ ⟦ x ⟧ΔVar dρ ≡ ⟦ x ⟧ (update dρ)
-correctVar {x = this  } {cons v dv R[v,dv] • dρ} = refl
-correctVar {x = that y} {cons v dv R[v,dv] • dρ} = correctVar {x = y} {dρ}
+correctVar (this) (cons v dv R[v,dv] • dρ) = refl
+correctVar (that y) (cons v dv R[v,dv] • dρ) = correctVar y dρ
 
 correctness (intlit n) dρ = right-id-int n
 correctness (add s t) dρ = trans
@@ -170,7 +170,7 @@ correctness (sum t) dρ =
   in
     trans (sym homo-sum) (cong sumBag (correctness t dρ))
 
-correctness {τ} (var x) dρ = correctVar {τ} {x = x}
+correctness {τ} (var x) dρ = correctVar {τ} x dρ
 correctness (app {σ} {τ} s t) dρ =
   let
     f = ⟦ s ⟧ (ignore dρ)
