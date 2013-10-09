@@ -1,4 +1,4 @@
-module Denotation.Derive.Canon-Popl14 where
+module Popl14.Change.Correctness where
 
 -- The denotational properties of the `derive` transformation
 -- for Calculus Popl14. In particular, the main theorem
