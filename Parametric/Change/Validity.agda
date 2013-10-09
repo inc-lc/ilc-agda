@@ -89,12 +89,6 @@ record Structure : Set₁ where
     (λ Δf → ∀ v dv →
       f (v ⊞₍ σ ₎ dv) ⊞₍ τ ₎ Δf (v ⊞₍ σ ₎ dv) (nil-change σ (v ⊞₍ σ ₎ dv)) ≡ f v ⊞₍ τ ₎ Δf v dv)
 
-  before : ∀ {τ v} → Change τ v → ⟦ τ ⟧
-  before {τ} {v} _ = v
-
-  after : ∀ {τ v} → Change τ v → ⟦ τ ⟧
-  after {τ} {v} dv = v ⊞₍ τ ₎ dv
-
   open Pair public using () renaming
     ( cdr to is-valid
     ; car to call-change
@@ -108,7 +102,7 @@ record Structure : Set₁ where
 
   -- _⊟_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → Change τ
   diff-change (base ι) m n = diff-change-base ι m n
-  diff-change (σ ⇒ τ) g f = cons (λ v dv → g (after {σ} dv) ⊟₍ τ ₎ f v)
+  diff-change (σ ⇒ τ) g f = cons (λ v dv → g (v ⊞₍ σ ₎ dv) ⊟₍ τ ₎ f v)
     (λ v dv →
       begin
         f (v ⊞₍ σ ₎ dv) ⊞₍ τ ₎ (g ((v ⊞₍ σ ₎ dv) ⊞₍ σ ₎ ((v ⊞₍ σ ₎ dv) ⊟₍ σ ₎ (v ⊞₍ σ ₎ dv))) ⊟₍ τ ₎ f (v ⊞₍ σ ₎ dv))
@@ -145,6 +139,13 @@ record Structure : Set₁ where
 
   _⊟_ : ∀ {τ} → (u v : ⟦ τ ⟧) → Change τ v
   _⊟_ {τ} u v = u ⊟₍ τ ₎ v
+
+  -- abbrevitations
+  before : ∀ {τ v} → Change τ v → ⟦ τ ⟧
+  before {τ} {v} _ = v
+
+  after : ∀ {τ v} → Change τ v → ⟦ τ ⟧
+  after {τ} {v} dv = v ⊞₍ τ ₎ dv
 
   ------------------
   -- Environments --
