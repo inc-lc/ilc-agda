@@ -11,7 +11,7 @@ module Popl14.Change.Specification where
 open import Popl14.Syntax.Term
 open import Popl14.Denotation.Value
 open import Popl14.Change.Validity
-open import Popl14.Denotation.Evaluation public
+open import Popl14.Denotation.Evaluation
 
 open import Relation.Binary.PropositionalEquality
 open import Data.Integer

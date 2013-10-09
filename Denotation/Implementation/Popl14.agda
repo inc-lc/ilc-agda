@@ -8,6 +8,7 @@ open import Popl14.Change.Specification public
 open import Popl14.Syntax.Type
 open import Popl14.Syntax.Term
 open import Popl14.Denotation.Value
+open import Popl14.Denotation.Evaluation
 open import Popl14.Change.Derive
 open import Popl14.Change.Value
 open import Popl14.Change.Validity

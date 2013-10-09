@@ -7,6 +7,7 @@ module Denotation.Derive.Canon-Popl14 where
 open import Popl14.Syntax.Type
 open import Popl14.Syntax.Term
 open import Popl14.Denotation.Value
+open import Popl14.Denotation.Evaluation
 open import Popl14.Change.Term
 open import Popl14.Change.Value
 open import Popl14.Change.Evaluation
