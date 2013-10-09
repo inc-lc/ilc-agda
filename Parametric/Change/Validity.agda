@@ -167,3 +167,10 @@ record Structure : Set₁ where
   update : ∀ {Γ : Context} → {ρ : ⟦ Γ ⟧} (dρ : ΔEnv Γ ρ) → ⟦ Γ ⟧
   update ∅ = ∅
   update {τ • Γ} (dv • dρ) = after {τ} dv • update dρ
+
+  apply-env : ∀ Γ → (ρ : ⟦ Γ ⟧) → (dρ : ΔEnv Γ ρ) → ⟦ Γ ⟧
+  apply-env Γ ρ dρ = update {Γ} dρ
+
+  diff-env : ∀ Γ → (π ρ : ⟦ Γ ⟧) → ΔEnv Γ ρ
+  diff-env ∅ ∅ ∅ = ∅
+  diff-env (τ • Γ) (u • ρ) (v • π) = diff-change τ u v • diff-env Γ ρ π
