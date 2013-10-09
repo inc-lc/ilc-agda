@@ -1,4 +1,4 @@
-module Denotation.Implementation.Popl14 where
+module Popl14.Change.Implementation where
 
 -- Notions of programs being implementations of specifications
 -- for Calculus Popl14

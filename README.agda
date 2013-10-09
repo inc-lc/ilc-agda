@@ -35,7 +35,7 @@ import Theorem.Irrelevance-Popl14
 import Base.Denotation.Environment
 import Popl14.Denotation.Evaluation
 {- The idea of implementing a denotational specification for Calc. Popl14 -}
-import Denotation.Implementation.Popl14
+import Popl14.Change.Implementation
 import Base.Denotation.Notation
 {- Denotation-as-specification for canonical derivation of Calc. Popl14 -}
 import Popl14.Change.Specification
