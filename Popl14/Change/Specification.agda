@@ -14,10 +14,7 @@ open import Popl14.Change.Validity
 open import Popl14.Denotation.Evaluation public
 
 open import Relation.Binary.PropositionalEquality
-open import Data.Unit
-open import Data.Product
 open import Data.Integer
-open import Structure.Bag.Popl14
 open import Theorem.Groups-Popl14
 open import Theorem.CongApp
 open import Postulate.Extensionality
