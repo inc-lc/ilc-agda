@@ -21,10 +21,6 @@ open import Structure.Tuples
 open import Structure.Bag.Popl14
 open import Postulate.Extensionality
 
-alternate : ∀ {Γ} → ⟦ Γ ⟧ → ⟦ mapContext ΔType Γ ⟧ → ⟦ ΔContext Γ ⟧
-alternate {∅} ∅ ∅ = ∅
-alternate {τ • Γ} (v • ρ) (dv • dρ) = dv • v • alternate ρ dρ
-
 infix 4 implements
 syntax implements τ u v = u ≈₍ τ ₎ v
 implements : ∀ τ {v} → Change τ v → ⟦ ΔType τ ⟧ → Set

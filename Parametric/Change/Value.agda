@@ -51,3 +51,7 @@ module Structure
 
   _⟦⊝⟧_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ ΔType τ ⟧
   _⟦⊝⟧_ {τ} = ⟦diff⟧ τ
+
+  alternate : ∀ {Γ} → ⟦ Γ ⟧ → ⟦ mapContext ΔType Γ ⟧ → ⟦ ΔContext Γ ⟧
+  alternate {∅} ∅ ∅ = ∅
+  alternate {τ • Γ} (v • ρ) (dv • dρ) = dv • v • alternate ρ dρ
