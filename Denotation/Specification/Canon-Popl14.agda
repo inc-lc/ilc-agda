@@ -21,116 +21,84 @@ open import Structure.Bag.Popl14
 open import Theorem.Groups-Popl14
 open import Theorem.CongApp
 open import Postulate.Extensionality
-⟦_⟧Δ : ∀ {τ Γ} → (t : Term Γ τ) (dρ : ΔEnv Γ) → Change τ
 
--- better name is: ⟦_⟧Δ reacts to future arguments
-validity : ∀ {τ Γ} (t : Term Γ τ) (dρ : ΔEnv Γ) →
-  valid {τ} (⟦ t ⟧ (ignore dρ)) (⟦ t ⟧Δ dρ)
+⟦_⟧Δ : ∀ {τ Γ} → (t : Term Γ τ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) → Change τ (⟦ t ⟧ ρ)
 
--- better name is: ⟦_⟧Δ reacts to free variables
-correctness : ∀ {τ Γ} (t : Term Γ τ) (dρ : ΔEnv Γ)
-  → ⟦ t ⟧ (ignore dρ) ⊞₍ τ ₎ ⟦ t ⟧Δ dρ ≡ ⟦ t ⟧ (update dρ)
+correctness : ∀ {τ Γ} (t : Term Γ τ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ)
+  → after {τ} (⟦ t ⟧Δ ρ dρ) ≡ ⟦ t ⟧ (update dρ)
 
-⟦_⟧ΔVar : ∀ {τ Γ} → Var Γ τ → ΔEnv Γ → Change τ
-⟦ this   ⟧ΔVar (cons v dv R[v,dv] • dρ) = dv
-⟦ that x ⟧ΔVar (cons v dv R[v,dv] • dρ) = ⟦ x ⟧ΔVar dρ
+⟦_⟧ΔVar : ∀ {τ Γ} → (x : Var Γ τ) → (ρ : ⟦ Γ ⟧) → ΔEnv Γ ρ → Change τ (⟦ x ⟧Var ρ)
+⟦ this   ⟧ΔVar (v • ρ) (dv • dρ) = dv
+⟦ that x ⟧ΔVar (v • ρ) (dv • dρ) = ⟦ x ⟧ΔVar ρ dρ
 
-⟦_⟧Δ (intlit n) dρ = + 0
-⟦_⟧Δ (add s t) dρ = ⟦ s ⟧Δ dρ + ⟦ t ⟧Δ dρ
-⟦_⟧Δ (minus t) dρ = - ⟦ t ⟧Δ dρ
-⟦_⟧Δ empty dρ = emptyBag
-⟦_⟧Δ (insert s t) dρ =
+⟦_⟧Δ (intlit n) ρ dρ = + 0
+⟦_⟧Δ (add s t) ρ dρ = ⟦ s ⟧Δ ρ dρ + ⟦ t ⟧Δ ρ dρ
+⟦_⟧Δ (minus t) ρ dρ = - ⟦ t ⟧Δ ρ dρ
+⟦_⟧Δ empty ρ dρ = emptyBag
+⟦_⟧Δ (insert s t) ρ dρ =
   let
     n = ⟦ s ⟧ (ignore dρ)
     b = ⟦ t ⟧ (ignore dρ)
-    Δn = ⟦ s ⟧Δ dρ
-    Δb = ⟦ t ⟧Δ dρ
+    Δn = ⟦ s ⟧Δ ρ dρ
+    Δb = ⟦ t ⟧Δ ρ dρ
   in
     (singletonBag (n ⊞₍ int ₎ Δn) ++ (b ⊞₍ bag ₎ Δb)) ⊟₍ bag ₎ (singletonBag n ++ b)
-⟦_⟧Δ (union s t) dρ = ⟦ s ⟧Δ dρ ++ ⟦ t ⟧Δ dρ
-⟦_⟧Δ (negate t) dρ = negateBag (⟦ t ⟧Δ dρ)
-⟦_⟧Δ (flatmap s t) dρ =
+⟦_⟧Δ (union s t) ρ dρ = ⟦ s ⟧Δ ρ dρ ++ ⟦ t ⟧Δ ρ dρ
+⟦_⟧Δ (negate t) ρ dρ = negateBag (⟦ t ⟧Δ ρ dρ)
+⟦_⟧Δ (flatmap s t) ρ dρ =
   let
-    f = ⟦ s ⟧ (ignore dρ)
-    b = ⟦ t ⟧ (ignore dρ)
-    Δf = ⟦ s ⟧Δ dρ
-    Δb = ⟦ t ⟧Δ dρ
+    f = ⟦ s ⟧ ρ
+    b = ⟦ t ⟧ ρ
+    Δf : Change (int ⇒ bag) f
+    Δf = ⟦ s ⟧Δ ρ dρ
+    Δb = ⟦ t ⟧Δ ρ dρ
   in
     flatmapBag (f ⊞₍ int ⇒ bag ₎ Δf) (b ⊞₍ bag ₎ Δb) ⊟₍ bag ₎ flatmapBag f b
-⟦_⟧Δ (sum t) dρ = sumBag (⟦ t ⟧Δ dρ)
-⟦_⟧Δ (var x) dρ = ⟦ x ⟧ΔVar dρ
-⟦_⟧Δ (app {σ} {τ} s t) dρ =
-     (⟦ s ⟧Δ dρ) (cons (⟦ t ⟧ (ignore dρ)) (⟦ t ⟧Δ dρ)
-  (validity {σ} t dρ))
-⟦_⟧Δ (abs t) dρ = λ v →
-  ⟦ t ⟧Δ (v • dρ)
-
-validVar : ∀ {τ Γ} (x : Var Γ τ) →
-  (dρ : ΔEnv Γ) → valid {τ} (⟦ x ⟧ (ignore dρ)) (⟦ x ⟧ΔVar dρ)
-validVar this (cons v Δv R[v,Δv] • _) = R[v,Δv]
-validVar {τ} (that x) (cons _ _ _ • dρ) = validVar {τ} x dρ
-
-validity (intlit n)    dρ = tt
-validity (add s t)     dρ = tt
-validity (minus t)     dρ = tt
-validity (empty)       dρ = tt
-validity (insert s t)  dρ = tt
-validity (union s t)   dρ = tt
-validity (negate t)    dρ = tt
-validity (flatmap s t) dρ = tt
-validity (sum t)       dρ = tt
-
-validity {τ} (var x) dρ = validVar {τ} x dρ
-
-validity (app s t) dρ =
-  let
-    v = ⟦ t ⟧ (ignore dρ)
-    Δv = ⟦ t ⟧Δ dρ
-  in
-    proj₁ (validity s dρ (cons v Δv (validity t dρ)))
-
-validity {σ ⇒ τ} (abs t) dρ = λ v →
-  let
-    v′ = after {σ} v
-    Δv′ = v′ ⊟₍ σ ₎ v′
-    dρ₁ = v • dρ
-    dρ₂ = nil-valid-change σ v′ • dρ
-  in
-    validity t dρ₁
-    ,
-    (begin
-      ⟦ t ⟧ (ignore dρ₂) ⊞₍ τ ₎ ⟦ t ⟧Δ dρ₂
-    ≡⟨ correctness t dρ₂ ⟩
-      ⟦ t ⟧ (update dρ₂)
-    ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • update dρ)) (v+[u-v]=u {σ}) ⟩
-      ⟦ t ⟧ (update dρ₁)
-    ≡⟨ sym (correctness t dρ₁) ⟩
-      ⟦ t ⟧ (ignore dρ₁) ⊞₍ τ ₎ ⟦ t ⟧Δ dρ₁
+⟦_⟧Δ (sum t) ρ dρ = sumBag (⟦ t ⟧Δ ρ dρ)
+⟦_⟧Δ (var x) ρ dρ = ⟦ x ⟧ΔVar ρ dρ
+⟦_⟧Δ (app {σ} {τ} s t) ρ dρ =
+     call-change (⟦ s ⟧Δ ρ dρ) (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ)
+⟦_⟧Δ (abs {σ} {τ} t) ρ dρ = cons
+  (λ v dv → ⟦ t ⟧Δ (v • ρ) (dv • dρ))
+  (λ v dv →
+    begin
+      ⟦ t ⟧ (v ⊞₍ σ ₎ dv • ρ)  ⊞₍ τ ₎
+      ⟦ t ⟧Δ (v ⊞₍ σ ₎ dv • ρ) ((v ⊞₍ σ ₎ dv) ⊟₍ σ ₎ (v ⊞₍ σ ₎ dv) • dρ)
+    ≡⟨  correctness t (v ⊞₍ σ ₎ dv • ρ) ((v ⊞₍ σ ₎ dv) ⊟₍ σ ₎ (v ⊞₍ σ ₎ dv) • dρ) ⟩
+      ⟦ t ⟧ (update ((v ⊞₍ σ ₎ dv) ⊟₍ σ ₎ (v ⊞₍ σ ₎ dv) • dρ))
+    ≡⟨⟩
+      ⟦ t ⟧ (((v ⊞₍ σ ₎ dv) ⊞₍ σ ₎ ((v ⊞₍ σ ₎ dv) ⊟₍ σ ₎ (v ⊞₍ σ ₎ dv))) • update dρ)
+    ≡⟨  cong (λ hole → ⟦ t ⟧ (hole • update dρ)) (v+[u-v]=u {σ})  ⟩
+      ⟦ t ⟧ (v ⊞₍ σ ₎ dv • update dρ)
+    ≡⟨⟩
+      ⟦ t ⟧ (update (dv • dρ))
+    ≡⟨  sym (correctness t (v • ρ) (dv • dρ))  ⟩
+      ⟦ t ⟧ (v • ρ)  ⊞₍ τ ₎  ⟦ t ⟧Δ (v • ρ) (dv • dρ)
     ∎) where open ≡-Reasoning
 
-correctVar : ∀ {τ Γ} (x : Var Γ τ) (dρ : ΔEnv Γ) →
-  ⟦ x ⟧ (ignore dρ) ⊞₍ τ ₎ ⟦ x ⟧ΔVar dρ ≡ ⟦ x ⟧ (update dρ)
-correctVar (this) (cons v dv R[v,dv] • dρ) = refl
-correctVar (that y) (cons v dv R[v,dv] • dρ) = correctVar y dρ
+correctVar : ∀ {τ Γ} (x : Var Γ τ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) →
+  ⟦ x ⟧ ρ ⊞₍ τ ₎ ⟦ x ⟧ΔVar ρ dρ ≡ ⟦ x ⟧ (update dρ)
+correctVar (this) (v • ρ) (dv • dρ) = refl
+correctVar (that y) (v • ρ) (dv • dρ) = correctVar y ρ dρ
 
-correctness (intlit n) dρ = right-id-int n
-correctness (add s t) dρ = trans
+correctness (intlit n) ρ dρ = right-id-int n
+correctness (add s t) ρ dρ = trans
   (mn·pq=mp·nq
-    {⟦ s ⟧ (ignore dρ)} {⟦ t ⟧ (ignore dρ)} {⟦ s ⟧Δ dρ} {⟦ t ⟧Δ dρ})
-  (cong₂ _+_ (correctness s dρ) (correctness t dρ))
-correctness (minus t) dρ = trans
-  (-m·-n=-mn {⟦ t ⟧ (ignore dρ)} {⟦ t ⟧Δ dρ})
-  (cong -_ (correctness t dρ))
+    {⟦ s ⟧ ρ} {⟦ t ⟧ ρ} {⟦ s ⟧Δ ρ dρ} {⟦ t ⟧Δ ρ dρ})
+  (cong₂ _+_ (correctness s ρ dρ) (correctness t ρ dρ))
+correctness (minus t) ρ dρ = trans
+  (-m·-n=-mn {⟦ t ⟧ ρ} {⟦ t ⟧Δ ρ dρ})
+  (cong -_ (correctness t ρ dρ))
 
-correctness empty dρ = right-id-bag emptyBag
-correctness (insert s t) dρ =
+correctness empty ρ dρ = right-id-bag emptyBag
+correctness (insert s t) ρ dρ =
   let
-    n = ⟦ s ⟧ (ignore dρ)
-    b = ⟦ t ⟧ (ignore dρ)
+    n = ⟦ s ⟧ ρ
+    b = ⟦ t ⟧ ρ
     n′ = ⟦ s ⟧ (update dρ)
     b′ = ⟦ t ⟧ (update dρ)
-    Δn = ⟦ s ⟧Δ dρ
-    Δb = ⟦ t ⟧Δ dρ
+    Δn = ⟦ s ⟧Δ ρ dρ
+    Δb = ⟦ t ⟧Δ ρ dρ
   in
     begin
       (singletonBag n ++ b) ++
@@ -140,61 +108,61 @@ correctness (insert s t) dρ =
       singletonBag (n ⊞₍ base base-int ₎ Δn) ++
         (b ⊞₍ base base-bag ₎ Δb)
     ≡⟨ cong₂ _++_
-         (cong singletonBag (correctness s dρ))
-         (correctness t dρ) ⟩
+         (cong singletonBag (correctness s ρ dρ))
+         (correctness t ρ dρ) ⟩
       singletonBag n′ ++ b′
     ∎ where open ≡-Reasoning
-correctness (union s t) dρ = trans
+correctness (union s t) ρ dρ = trans
   (ab·cd=ac·bd
-    {⟦ s ⟧ (ignore dρ)} {⟦ t ⟧ (ignore dρ)} {⟦ s ⟧Δ dρ} {⟦ t ⟧Δ dρ})
-  (cong₂ _++_ (correctness s dρ) (correctness t dρ))
-correctness (negate t) dρ = trans
-  (-a·-b=-ab {⟦ t ⟧ (ignore dρ)} {⟦ t ⟧Δ dρ})
-  (cong negateBag (correctness t dρ))
+    {⟦ s ⟧ ρ} {⟦ t ⟧ ρ} {⟦ s ⟧Δ ρ dρ} {⟦ t ⟧Δ ρ dρ})
+  (cong₂ _++_ (correctness s ρ dρ) (correctness t ρ dρ))
+correctness (negate t) ρ dρ = trans
+  (-a·-b=-ab {⟦ t ⟧ ρ} {⟦ t ⟧Δ ρ dρ})
+  (cong negateBag (correctness t ρ dρ))
 
-correctness (flatmap s t) dρ =
+correctness (flatmap s t) ρ dρ =
   let
-    f = ⟦ s ⟧ (ignore dρ)
-    b = ⟦ t ⟧ (ignore dρ)
-    Δf = ⟦ s ⟧Δ dρ
-    Δb = ⟦ t ⟧Δ dρ
+    f = ⟦ s ⟧ ρ
+    b = ⟦ t ⟧ ρ
+    Δf = ⟦ s ⟧Δ ρ dρ
+    Δb = ⟦ t ⟧Δ ρ dρ
   in trans
       (a++[b\\a]=b {flatmapBag f b}
         {flatmapBag (f ⊞₍ base base-int ⇒ base base-bag ₎ Δf)
                     (b ⊞₍ base base-bag ₎ Δb)})
-      (cong₂ flatmapBag (correctness s dρ) (correctness t dρ))
-correctness (sum t) dρ =
+      (cong₂ flatmapBag (correctness s ρ dρ) (correctness t ρ dρ))
+correctness (sum t) ρ dρ =
   let
-    b = ⟦ t ⟧ (ignore dρ)
-    Δb = ⟦ t ⟧Δ dρ
+    b = ⟦ t ⟧ ρ
+    Δb = ⟦ t ⟧Δ ρ dρ
   in
-    trans (sym homo-sum) (cong sumBag (correctness t dρ))
+    trans (sym homo-sum) (cong sumBag (correctness t ρ dρ))
 
-correctness {τ} (var x) dρ = correctVar {τ} x dρ
-correctness (app {σ} {τ} s t) dρ =
+correctness {τ} (var x) ρ dρ = correctVar {τ} x ρ dρ
+correctness (app {σ} {τ} s t) ρ dρ =
   let
-    f = ⟦ s ⟧ (ignore dρ)
+    f = ⟦ s ⟧ ρ
     g = ⟦ s ⟧ (update dρ)
-    u = ⟦ t ⟧ (ignore dρ)
+    u = ⟦ t ⟧ ρ
     v = ⟦ t ⟧ (update dρ)
-    Δf = ⟦ s ⟧Δ dρ
-    Δu = ⟦ t ⟧Δ dρ
+    Δf = ⟦ s ⟧Δ ρ dρ
+    Δu = ⟦ t ⟧Δ ρ dρ
   in
     begin
-      f u ⊞₍ τ ₎ Δf (cons u Δu (validity {σ} t dρ))
-    ≡⟨ sym (proj₂ (validity {σ ⇒ τ} s dρ (cons u Δu (validity {σ} t dρ)))) ⟩
-      (f ⊞₍ σ ⇒ τ ₎ Δf) (u ⊞₍ σ ₎ Δu)
-    ≡⟨ correctness {σ ⇒ τ} s dρ ⟨$⟩ correctness {σ} t dρ ⟩
+      f u ⊞₍ τ ₎ call-change Δf u Δu
+    ≡⟨  sym (is-valid Δf u Δu) ⟩
+       (f ⊞₍ σ ⇒ τ ₎ Δf) (u ⊞₍ σ ₎ Δu)
+    ≡⟨ correctness {σ ⇒ τ} s ρ dρ ⟨$⟩ correctness {σ} t ρ dρ ⟩
       g v
     ∎ where open ≡-Reasoning
-correctness {σ ⇒ τ} {Γ} (abs t) dρ = ext (λ v →
+correctness {σ ⇒ τ} {Γ} (abs t) ρ dρ = ext (λ v →
   let
-    dρ′ : ΔEnv (σ • Γ)
-    dρ′ = nil-valid-change σ v • dρ
+    -- dρ′ : ΔEnv (σ • Γ) (v • ρ)
+    dρ′ = nil-change σ v • dρ
   in
     begin
-      ⟦ t ⟧ (ignore dρ′) ⊞₍ τ ₎ ⟦ t ⟧Δ dρ′
-    ≡⟨ correctness {τ} t dρ′ ⟩
+      ⟦ t ⟧ (ignore dρ′) ⊞₍ τ ₎ ⟦ t ⟧Δ _ dρ′
+    ≡⟨ correctness {τ} t _ dρ′ ⟩
       ⟦ t ⟧ (update dρ′)
     ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • update dρ)) (v+[u-v]=u {σ}) ⟩
       ⟦ t ⟧ (v • update dρ)
@@ -202,33 +170,33 @@ correctness {σ ⇒ τ} {Γ} (abs t) dρ = ext (λ v →
   ) where open ≡-Reasoning
 
 -- Corollary: (f ⊞ df) (v ⊞ dv) = f v ⊞ df v dv
+
 corollary : ∀ {σ τ Γ}
-  (s : Term Γ (σ ⇒ τ)) (t : Term Γ σ) {dρ : ΔEnv Γ} →
-    (⟦ s ⟧ (ignore dρ) ⊞₍ σ ⇒ τ ₎ ⟦ s ⟧Δ dρ)
-      (⟦ t ⟧ (ignore dρ) ⊞₍ σ ₎ ⟦ t ⟧Δ dρ)
-  ≡ (⟦ s ⟧ (ignore dρ)) (⟦ t ⟧ (ignore dρ))
+  (s : Term Γ (σ ⇒ τ)) (t : Term Γ σ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) →
+    (⟦ s ⟧ ρ ⊞₍ σ ⇒ τ ₎ ⟦ s ⟧Δ ρ dρ)
+      (⟦ t ⟧ ρ ⊞₍ σ ₎ ⟦ t ⟧Δ ρ dρ)
+  ≡ (⟦ s ⟧ ρ) (⟦ t ⟧ ρ)
     ⊞₍ τ ₎
-    (⟦ s ⟧Δ dρ) (cons (⟦ t ⟧ (ignore dρ)) (⟦ t ⟧Δ dρ) (validity {σ} t dρ))
+    (call-change (⟦ s ⟧Δ ρ dρ)) (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ)
 
-corollary {σ} {τ} s t {dρ} = proj₂
-  (validity {σ ⇒ τ} s dρ (cons (⟦ t ⟧ (ignore dρ))
-     (⟦ t ⟧Δ dρ) (validity {σ} t dρ)))
+corollary {σ} {τ} s t ρ dρ =
+  is-valid (⟦ s ⟧Δ ρ dρ) (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ)
 
-corollary-closed : ∀ {σ τ} {t : Term ∅ (σ ⇒ τ)}
-  (v : ValidChange σ)
-  → ⟦ t ⟧ ∅ (after {σ} v)
-  ≡ ⟦ t ⟧ ∅ (before {σ} v) ⊞₍ τ ₎ ⟦ t ⟧Δ ∅ v
+corollary-closed : ∀ {σ τ} (t : Term ∅ (σ ⇒ τ))
+  (v : ⟦ σ ⟧) (dv : Change σ v)
+  → ⟦ t ⟧ ∅ (after {σ} dv)
+  ≡ ⟦ t ⟧ ∅ v ⊞₍ τ ₎ call-change (⟦ t ⟧Δ ∅ ∅) v dv
 
-corollary-closed {σ} {τ} {t = t} v =
+corollary-closed {σ} {τ} t v dv =
   let
     f  = ⟦ t ⟧ ∅
-    Δf = ⟦ t ⟧Δ ∅
+    Δf = ⟦ t ⟧Δ ∅ ∅
   in
     begin
-      f (after {σ} v)
-    ≡⟨ cong (λ hole → hole (after {σ} v))
-            (sym (correctness {σ ⇒ τ} t ∅)) ⟩
-      (f ⊞₍ σ ⇒ τ ₎ Δf) (after {σ} v)
-    ≡⟨ proj₂ (validity {σ ⇒ τ} t ∅ v) ⟩
-      f (before {σ} v) ⊞₍ τ ₎ Δf v
+      f (after {σ} dv)
+    ≡⟨ cong (λ hole → hole (after {σ} dv))
+            (sym (correctness {σ ⇒ τ} t ∅ ∅)) ⟩
+      (f ⊞₍ σ ⇒ τ ₎ Δf) (after {σ} dv)
+    ≡⟨ is-valid (⟦ t ⟧Δ ∅ ∅) v dv ⟩
+      f (before {σ} dv) ⊞₍ τ ₎ call-change Δf v dv
     ∎ where open ≡-Reasoning

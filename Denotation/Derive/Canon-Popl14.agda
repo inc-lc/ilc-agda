@@ -22,71 +22,66 @@ open import Data.Integer
 open import Structure.Bag.Popl14
 open import Postulate.Extensionality
 
-deriveVar-correct : ∀ {τ Γ} {x : Var Γ τ}
-  {ρ : ΔEnv Γ} {ρ′ : ⟦ ΔContext Γ ⟧} {C : compatible ρ ρ′} →
-  ⟦ x ⟧ΔVar ρ ≈₍ τ ₎ ⟦ deriveVar x ⟧ ρ′
+deriveVar-correct : ∀ {τ Γ} (x : Var Γ τ)
+  (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
+  ⟦ x ⟧ΔVar ρ dρ ≈₍ τ ₎ ⟦ deriveVar x ⟧ (alternate ρ ρ′)
 
-deriveVar-correct {x = this}
-  {cons _ _ _ • _} {_ • _ • _} {cons _ Δv≈Δv′ _} = Δv≈Δv′
-deriveVar-correct {x = that y}
-  {cons _ _ _ • ρ} {_ • _ • ρ′} {cons _ _ C} =
-  deriveVar-correct {x = y} {ρ} {ρ′} {C}
+deriveVar-correct this (v • ρ) (dv • dρ) (dv′ • dρ′) (dv≈dv′ • dρ≈dρ′) = dv≈dv′
+deriveVar-correct (that x) (v • ρ) (dv • dρ) (dv′ • dρ′) (dv≈dv′ • dρ≈dρ′) = deriveVar-correct x ρ dρ dρ′ dρ≈dρ′
 
 -- That `derive t` implements ⟦ t ⟧Δ
-derive-correct : ∀ {τ Γ} {t : Term Γ τ}
-  {ρ : ΔEnv Γ} {ρ′ : ⟦ ΔContext Γ ⟧} {C : compatible ρ ρ′} →
-  ⟦ t ⟧Δ ρ ≈₍ τ ₎ ⟦ derive t ⟧ ρ′
+derive-correct : ∀ {τ Γ} (t : Term Γ τ)
+  (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
+  ⟦ t ⟧Δ ρ dρ ≈₍ τ ₎ ⟦ derive t ⟧ (alternate ρ ρ′)
 
-derive-correct {t = intlit n} = refl
-derive-correct {t = add s t} {ρ} {ρ′} {C} = cong₂ _+_
-  (derive-correct {t = s} {ρ} {ρ′} {C})
-  (derive-correct {t = t} {ρ} {ρ′} {C})
-derive-correct {t = minus t} {ρ} {ρ′} {C} =
-  cong -_ (derive-correct {t = t} {ρ} {ρ′} {C})
+derive-correct (intlit n) ρ dρ ρ′ dρ≈ρ′ = refl
+derive-correct (add s t) ρ dρ ρ′ dρ≈ρ′ = cong₂ _+_
+  (derive-correct s ρ dρ ρ′ dρ≈ρ′)
+  (derive-correct t ρ dρ ρ′ dρ≈ρ′)
+derive-correct (minus t) ρ dρ ρ′ dρ≈ρ′ =
+  cong -_ (derive-correct t ρ dρ ρ′ dρ≈ρ′)
 
-derive-correct {t = empty} = refl
-derive-correct {t = insert s t} {ρ} {ρ′} {C} =
+derive-correct empty ρ dρ ρ′ dρ≈ρ′ = refl
+derive-correct (insert s t) ρ dρ ρ′ dρ≈ρ′ =
   cong₂ _\\_
     (cong₂ _++_
       (cong singletonBag (cong₂ _+_
-        (⟦fit⟧ s C)
-        (derive-correct {t = s} {ρ} {ρ′} {C})))
+        (⟦fit⟧ s ρ ρ′)
+        (derive-correct s ρ dρ ρ′ dρ≈ρ′)))
       (cong₂ _++_
-        (⟦fit⟧ t C)
-        (derive-correct {t = t} {ρ} {ρ′} {C})))
-    (cong₂ _++_ (cong singletonBag (⟦fit⟧ s C)) (⟦fit⟧ t C))
-derive-correct {t = union s t} {ρ} {ρ′} {C} = cong₂ _++_
-  (derive-correct {t = s} {ρ} {ρ′} {C})
-  (derive-correct {t = t} {ρ} {ρ′} {C})
-derive-correct {t = negate t} {ρ} {ρ′} {C} =
-  cong negateBag (derive-correct {t = t} {ρ} {ρ′} {C})
+        (⟦fit⟧ t ρ ρ′)
+        (derive-correct t ρ dρ ρ′ dρ≈ρ′)))
+    (cong₂ _++_ (cong singletonBag (⟦fit⟧ s ρ ρ′)) (⟦fit⟧ t ρ ρ′))
+derive-correct (union s t) ρ dρ ρ′ dρ≈ρ′ = cong₂ _++_
+  (derive-correct s ρ dρ ρ′ dρ≈ρ′)
+  (derive-correct t ρ dρ ρ′ dρ≈ρ′)
+derive-correct (negate t) ρ dρ ρ′ dρ≈ρ′ =
+  cong negateBag (derive-correct t ρ dρ ρ′ dρ≈ρ′)
 
-derive-correct {t = flatmap s t} {ρ} {ρ′} {C} =
+derive-correct (flatmap s t) ρ dρ ρ′ dρ≈ρ′ =
   cong₂ _\\_
     (cong₂ flatmapBag
       (ext (λ v →
         cong₂ _++_
-          (cong (λ hole → hole v) (⟦fit⟧ s C))
-          (derive-correct {t = s} {ρ} {ρ′} {C}
-            (nil-valid-change int v) (v - v) refl)))
+          (cong (λ hole → hole v) (⟦fit⟧ s ρ ρ′))
+            (derive-correct s ρ dρ ρ′ dρ≈ρ′ v (nil-change int v) (v - v) refl)))
       (cong₂ _++_
-        (⟦fit⟧ t C)
-        (derive-correct {t = t} {ρ} {ρ′} {C})))
-    (cong₂ flatmapBag (⟦fit⟧ s C) (⟦fit⟧ t C))
-derive-correct {t = sum t} {ρ} {ρ′} {C} =
-  cong sumBag (derive-correct {t = t} {ρ} {ρ′} {C})
+        (⟦fit⟧ t ρ ρ′)
+        (derive-correct t ρ dρ ρ′ dρ≈ρ′)))
+    (cong₂ flatmapBag (⟦fit⟧ s ρ ρ′) (⟦fit⟧ t ρ ρ′))
+derive-correct (sum t) ρ dρ ρ′ dρ≈ρ′ =
+  cong sumBag (derive-correct t ρ dρ ρ′ dρ≈ρ′)
 
-derive-correct {t = var x} {ρ} {ρ′} {C} =
-  deriveVar-correct {x = x} {ρ} {ρ′} {C}
-derive-correct {t = app s t} {ρ} {ρ′} {C}
-  rewrite sym (⟦fit⟧ t C) =
-  derive-correct {t = s} {ρ} {ρ′} {C}
-  (cons (⟦ t ⟧ (ignore ρ)) (⟦ t ⟧Δ ρ) (validity t ρ))
-  (⟦ derive t ⟧ ρ′) (derive-correct {t = t} {ρ} {ρ′} {C})
-derive-correct {σ ⇒ τ} {t = abs t} {ρ} {ρ′} {C} =
-  λ Δw Δw′ Δw≈Δw′ →
-    derive-correct {t = t}
-      {Δw • ρ} {Δw′ • before {σ} Δw • ρ′} {cons refl Δw≈Δw′ C}
+derive-correct (var x) ρ dρ ρ′ dρ≈ρ′ =
+  deriveVar-correct x ρ dρ ρ′ dρ≈ρ′
+derive-correct (app s t) ρ dρ ρ′ dρ≈ρ′
+  rewrite sym (⟦fit⟧ t ρ ρ′) =
+    derive-correct s ρ dρ ρ′ dρ≈ρ′
+    (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ) (⟦ derive t ⟧ (alternate ρ ρ′)) (derive-correct t ρ dρ ρ′ dρ≈ρ′)
+
+derive-correct (abs {σ} {τ} t) ρ dρ ρ′ dρ≈ρ′ =
+  λ w dw w′ dw≈w′ →
+    derive-correct t (w • ρ) (dw • dρ) (w′ • ρ′) (dw≈w′ • dρ≈ρ′)
 
 main-theorem : ∀ {σ τ}
   {f : Term ∅ (σ ⇒ τ)} {x : Term ∅ σ} {y : Term ∅ σ}
@@ -96,7 +91,7 @@ main-theorem : ∀ {σ τ}
 main-theorem {σ} {τ} {f} {x} {y} =
   let
     h  = ⟦ f ⟧ ∅
-    Δh = ⟦ f ⟧Δ ∅
+    Δh = ⟦ f ⟧Δ ∅ ∅
     Δh′ = ⟦ derive f ⟧ ∅
     v  = ⟦ x ⟧ ∅
     u  = ⟦ y ⟧ ∅
@@ -107,12 +102,12 @@ main-theorem {σ} {τ} {f} {x} {y} =
       h u
     ≡⟨ cong h (sym (v+[u-v]=u {σ})) ⟩
       h (v ⊞₍ σ ₎ (u ⊟₍ σ ₎ v))
-    ≡⟨ corollary-closed {σ} {τ} {f} (diff-valid-change σ u v) ⟩
-      h v ⊞₍ τ ₎ Δh (diff-valid-change σ u v)
+    ≡⟨ corollary-closed {σ} {τ} f v (u ⊟₍ σ ₎ v) ⟩
+      h v ⊞₍ τ ₎ call-change Δh v (u ⊟₍ σ ₎ v)
     ≡⟨ carry-over {τ}
-        (cons _ _ (proj₁ (validity f ∅ (diff-valid-change σ u v))))
-        (derive-correct {Γ = ∅} {t = f}
-          {∅} {∅} (diff-valid-change σ u v) (u ⟦⊝₍ σ ₎⟧ v) (u⊟v≈u⊝v {σ} {u} {v})) ⟩
+        (call-change Δh v (u ⊟₍ σ ₎ v))
+        (derive-correct f
+          ∅ ∅ ∅ ∅ v (u ⊟₍ σ ₎ v) (u ⟦⊝₍ σ ₎⟧ v) (u⊟v≈u⊝v {σ} {u} {v})) ⟩
       h v ⟦⊕₍ τ ₎⟧ Δh′ v (u ⟦⊝₍ σ ₎⟧ v)
     ≡⟨ trans
         (cong (λ hole → h v ⟦⊕₍ τ ₎⟧ Δh′ v hole) (meaning-⊝ {σ} {s = y} {x}))

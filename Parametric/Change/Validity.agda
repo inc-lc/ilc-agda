@@ -44,29 +44,23 @@ record Structure : Set₁ where
   ----------------
 
   field
-    Change-base : Base → Set
-    valid-base : ∀ {ι} → ⟦ ι ⟧Base → Change-base ι → Set
-    apply-change-base : ∀ ι → ⟦ ι ⟧Base → Change-base ι → ⟦ ι ⟧Base
-    diff-change-base : ∀ ι → ⟦ ι ⟧Base → ⟦ ι ⟧Base → Change-base ι
-    R[v,u-v]-base : ∀ {ι} {u v : ⟦ ι ⟧Base} → valid-base {ι} v (diff-change-base ι u v)
+    Change-base : (ι : Base) → ⟦ ι ⟧Base → Set
+    apply-change-base : ∀ ι → (v : ⟦ ι ⟧Base) → Change-base ι v → ⟦ ι ⟧Base
+    diff-change-base : ∀ ι → (u v : ⟦ ι ⟧Base) → Change-base ι v
     v+[u-v]=u-base : ∀ {ι} {u v : ⟦ ι ⟧Base} → apply-change-base ι v (diff-change-base ι u v) ≡ u
 
   ---------------
   -- Interface --
   ---------------
 
-  Change : Type → Set
-  valid : ∀ {τ} → ⟦ τ ⟧ → Change τ → Set
+  Change : (τ : Type) → ⟦ τ ⟧ → Set
 
-  apply-change : ∀ τ → ⟦ τ ⟧ → Change τ → ⟦ τ ⟧
-  diff-change : ∀ τ → ⟦ τ ⟧ → ⟦ τ ⟧ → Change τ
+  apply-change : ∀ τ → (v : ⟦ τ ⟧) (dv : Change τ v) → ⟦ τ ⟧
+  diff-change : ∀ τ → (u v : ⟦ τ ⟧) → Change τ v
 
   infixl 6 apply-change diff-change -- as with + - in GHC.Num
   syntax apply-change τ v dv = v ⊞₍ τ ₎ dv
   syntax diff-change τ u v = u ⊟₍ τ ₎ v
-
-  -- Lemma diff-is-valid
-  R[v,u-v] : ∀ {τ : Type} {u v : ⟦ τ ⟧} → valid {τ} v (u ⊟₍ τ ₎ v)
 
   -- Lemma apply-diff
   v+[u-v]=u : ∀ {τ : Type} {u v : ⟦ τ ⟧} →
@@ -86,56 +80,56 @@ record Structure : Set₁ where
   -- Detailed motivation:
   --
   -- https://github.com/ps-mr/ilc/blob/184a6291ac6eef80871c32d2483e3e62578baf06/POPL14/paper/sec-formal.tex
-  ValidChange : Type → Set
-  ValidChange τ = Triple
-    ⟦ τ ⟧
-    (λ _ → Change τ)
-    (λ v dv → valid {τ} v dv)
+
+
+  nil-change : ∀ τ v → Change τ v
 
   -- Change : Type → Set
-  Change (base ι) = Change-base ι
-  Change (σ ⇒ τ) = ValidChange σ → Change τ
+  Change (base ι) v = Change-base ι v
+  Change (σ ⇒ τ) f = Pair
+    (∀ v → Change σ v → Change τ (f v))
+    (λ Δf → ∀ v dv →
+      f (v ⊞₍ σ ₎ dv) ⊞₍ τ ₎ Δf (v ⊞₍ σ ₎ dv) (nil-change σ (v ⊞₍ σ ₎ dv)) ≡ f v ⊞₍ τ ₎ Δf v dv)
 
-  before : ValidChange ⊆ ⟦_⟧
-  before (cons v _ _) = v
+  before : ∀ {τ v} → Change τ v → ⟦ τ ⟧
+  before {τ} {v} _ = v
 
-  after : ValidChange ⊆ ⟦_⟧
-  after {τ} (cons v dv R[v,dv]) = v ⊞₍ τ ₎ dv
+  after : ∀ {τ v} → Change τ v → ⟦ τ ⟧
+  after {τ} {v} dv = v ⊞₍ τ ₎ dv
 
-  change : ValidChange ⊆ Change
-  change (cons _ dv _) = dv
+  open Pair public using () renaming
+    ( cdr to is-valid
+    ; car to call-change
+    )
 
-  apply-valid-change : ∀ τ → (v : ⟦ τ ⟧) (dv : ValidChange τ) → ⟦ τ ⟧
-  apply-valid-change τ v dv = apply-change τ v (change dv)
-
-  diff-valid-change : ∀ τ → (u v : ⟦ τ ⟧) → ValidChange τ
-  diff-valid-change τ u v = cons v (u ⊟₍ τ ₎ v) (R[v,u-v] {τ} {u} {v})
-
-  nil-valid-change : ∀ τ → ⟦ τ ⟧ → ValidChange τ
-  nil-valid-change τ v = diff-valid-change τ v v
+  nil-change τ v = diff-change τ v v
 
   -- _⊞_ : ∀ {τ} → ⟦ τ ⟧ → Change τ → ⟦ τ ⟧
-  n ⊞₍ base ι ₎ Δn = apply-change-base ι n Δn
-  f ⊞₍ σ ⇒ τ ₎ Δf = λ v → f v ⊞₍ τ ₎ Δf (nil-valid-change σ v)
+  apply-change (base ι) n Δn = apply-change-base ι n Δn
+  apply-change (σ ⇒ τ) f Δf = λ v → f v ⊞₍ τ ₎ call-change Δf v (nil-change σ v)
 
   -- _⊟_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → Change τ
-  m ⊟₍ base ι ₎ n = diff-change-base ι m n
-  g ⊟₍ σ ⇒ τ ₎ f = λ v → g (after v) ⊟₍ τ ₎ f (before v)
+  diff-change (base ι) m n = diff-change-base ι m n
+  diff-change (σ ⇒ τ) g f = cons (λ v dv → g (after {σ} dv) ⊟₍ τ ₎ f v)
+    (λ v dv →
+      begin
+        f (v ⊞₍ σ ₎ dv) ⊞₍ τ ₎ (g ((v ⊞₍ σ ₎ dv) ⊞₍ σ ₎ ((v ⊞₍ σ ₎ dv) ⊟₍ σ ₎ (v ⊞₍ σ ₎ dv))) ⊟₍ τ ₎ f (v ⊞₍ σ ₎ dv))
+      ≡⟨ cong (λ □ → f (v ⊞₍ σ ₎ dv) ⊞₍ τ ₎ (g □ ⊟₍ τ ₎ (f (v ⊞₍ σ ₎ dv))))
+              (v+[u-v]=u {σ} {v ⊞₍ σ ₎ dv} {v ⊞₍ σ ₎ dv}) ⟩
+        f (v ⊞₍ σ ₎ dv) ⊞₍ τ ₎ (g (v ⊞₍ σ ₎ dv) ⊟₍ τ ₎ f (v ⊞₍ σ ₎ dv))
+      ≡⟨ v+[u-v]=u {τ} {g (v ⊞₍ σ ₎ dv)} {f (v ⊞₍ σ ₎ dv)} ⟩
+        g (v ⊞₍ σ ₎ dv)
+      ≡⟨  sym (v+[u-v]=u {τ} {g (v ⊞₍ σ ₎ dv)} {f v} )  ⟩
+        f v ⊞₍ τ ₎ (g (v ⊞₍ σ ₎ dv) ⊟₍ τ ₎ f v)
+      ∎) where open ≡-Reasoning
 
-  -- valid : ∀ {τ} → ⟦ τ ⟧ → Change τ → Set
-  valid {base ι} n Δn = valid-base {ι} n Δn
-  valid {σ ⇒ τ} f Δf =
-    ∀ (v : ValidChange σ)
-    → valid {τ} (f (before v)) (Δf v)
-    -- × (f ⊞ Δf) (v ⊞ Δv) ≡ f v ⊞ Δf v Δv R[v,Δv]
-    × (f ⊞₍ σ ⇒ τ ₎ Δf) (after v) ≡ f (before v) ⊞₍ τ ₎ Δf v
-
+  -- call this lemma "replace"?
   -- v+[u-v]=u : ∀ {τ : Type} {u v : ⟦ τ ⟧} → v ⊞ (u ⊟ v) ≡ u
   v+[u-v]=u {base ι} {u} {v} = v+[u-v]=u-base {ι} {u} {v}
   v+[u-v]=u {σ ⇒ τ} {u} {v} =
       ext {-⟦ σ ⟧} {λ _ → ⟦ τ ⟧-} (λ w →
         begin
-          (v ⊞₍ σ ⇒ τ ₎ (u ⊟₍ σ ⇒ τ ₎ v)) w
+          (apply-change (σ ⇒ τ) v (diff-change (σ ⇒ τ) u v)) w
         ≡⟨ refl ⟩
           v w ⊞₍ τ ₎ (u (w ⊞₍ σ ₎ (w ⊟₍ σ ₎ w)) ⊟₍ τ ₎ v w)
         ≡⟨ cong (λ hole → v w ⊞₍ τ ₎ (u hole ⊟₍ τ ₎ v w)) (v+[u-v]=u {σ}) ⟩
@@ -145,37 +139,14 @@ record Structure : Set₁ where
         ∎) where
         open ≡-Reasoning
 
-  R[v,u-v] {base ι} {u} {v} = R[v,u-v]-base {ι} {u} {v}
-  R[v,u-v] {σ ⇒ τ} {u} {v} = λ w →
-    let
-      w′ = after {σ} w
-    in
-      R[v,u-v] {τ}
-      ,
-      (begin
-        (v ⊞₍ σ ⇒ τ ₎ (u ⊟₍ σ ⇒ τ ₎ v)) w′
-      ≡⟨ cong (λ hole → hole w′) (v+[u-v]=u {σ ⇒ τ} {u} {v}) ⟩
-        u w′
-      ≡⟨ sym (v+[u-v]=u {τ} {u w′} {v (before {σ} w)}) ⟩
-        v (before {σ} w) ⊞₍ τ ₎ (u ⊟₍ σ ⇒ τ ₎ v) w
-      ∎) where open ≡-Reasoning
-
   -- syntactic sugar for implicit indices
   infixl 6 _⊞_ _⊟_ -- as with + - in GHC.Num
 
-  _⊞_ : ∀ {τ} → ⟦ τ ⟧ → Change τ → ⟦ τ ⟧
+  _⊞_ : ∀ {τ} → (v : ⟦ τ ⟧) → Change τ v → ⟦ τ ⟧
   _⊞_ {τ} v dv = v ⊞₍ τ ₎ dv
 
-  _⊟_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → Change τ
+  _⊟_ : ∀ {τ} → (u v : ⟦ τ ⟧) → Change τ v
   _⊟_ {τ} u v = u ⊟₍ τ ₎ v
-
-  -- applicative structure
-  call-valid-change : ∀ σ τ →
-    ValidChange (σ ⇒ τ) →
-    ValidChange σ →
-    ValidChange τ
-  call-valid-change σ τ (cons f Δf R[f,Δf]) Δv =
-    cons (f (before {σ} Δv)) (Δf Δv) (proj₁ (R[f,Δf] Δv))
 
   ------------------
   -- Environments --
@@ -184,11 +155,16 @@ record Structure : Set₁ where
   open DependentList public using (∅; _•_)
   open Tuples public using (cons)
 
-  ΔEnv : Context → Set
-  ΔEnv = DependentList ValidChange
+  data ΔEnv : ∀ (Γ : Context) → ⟦ Γ ⟧ → Set where
+    ∅ : ΔEnv ∅ ∅
+    _•_ : ∀ {τ Γ v ρ} →
+      (dv : Change τ v) →
+      (dρ : ΔEnv Γ ρ) →
+      ΔEnv (τ • Γ) (v • ρ)
 
-  ignore : ∀ {Γ : Context} → (dρ : ΔEnv Γ) → ⟦ Γ ⟧
-  ignore = map (λ {τ} → before {τ})
+  ignore : ∀ {Γ : Context} → {ρ : ⟦ Γ ⟧} (dρ : ΔEnv Γ ρ) → ⟦ Γ ⟧
+  ignore {Γ} {ρ} _ = ρ
 
-  update : ∀ {Γ : Context} → (dρ : ΔEnv Γ) → ⟦ Γ ⟧
-  update = map (λ {τ} → after {τ})
+  update : ∀ {Γ : Context} → {ρ : ⟦ Γ ⟧} (dρ : ΔEnv Γ ρ) → ⟦ Γ ⟧
+  update ∅ = ∅
+  update {τ • Γ} (dv • dρ) = after {τ} dv • update dρ

@@ -11,8 +11,8 @@ open import Theorem.EqualityUnique
 open import Theorem.ProductUnique
 
 -- Irrelevance proofs are uniq
-irrelevant-uniq : ∀ {Γ} {S : Vars Γ} {ρ : ΔEnv Γ} →
-  uniq (irrelevant S ρ)
-irrelevant-uniq {S = ∅} {∅} = refl
-irrelevant-uniq {S = lack S} {_ • _} = irrelevant-uniq {S = S}
-irrelevant-uniq {S = have S} {_ • _} = Σ-uniq ≡-uniq (irrelevant-uniq {S = S})
+irrelevant-uniq : ∀ {Γ} {S : Vars Γ} {ρ : ⟦ Γ ⟧} {dρ : ΔEnv Γ ρ} →
+  uniq (irrelevant S ρ dρ)
+irrelevant-uniq {S = ∅} {∅} {∅} = refl
+irrelevant-uniq {S = lack S} {_ • _} {_ • _} = irrelevant-uniq {S = S}
+irrelevant-uniq {S = have S} {_ • _} {_ • _} = Σ-uniq ≡-uniq (irrelevant-uniq {S = S})

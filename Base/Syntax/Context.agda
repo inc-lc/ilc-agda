@@ -20,7 +20,10 @@ open import Relation.Binary.PropositionalEquality
 import Data.List as List
 open List public
   using ()
-  renaming ([] to ∅ ; _∷_ to _•_)
+  renaming
+    ( [] to ∅ ; _∷_ to _•_
+    ; map to mapContext
+    )
 
 Context : Set
 Context = List.List Type

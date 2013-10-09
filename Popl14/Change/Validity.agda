@@ -14,11 +14,9 @@ open import Data.Unit
 
 validity-structure : Validity.Structure
 validity-structure = record
-    { Change-base = λ ι → ⟦ ΔBase ι ⟧Base
-    ; valid-base = λ _ _ → ⊤
+    { Change-base = λ ι _ → ⟦ ΔBase ι ⟧Base
     ; apply-change-base = ⟦apply-base⟧
     ; diff-change-base = ⟦diff-base⟧
-    ; R[v,u-v]-base = tt
     ; v+[u-v]=u-base = λ
         { {base-int} {u} {v} → n+[m-n]=m {v} {u}
         ; {base-bag} {u} {v} → a++[b\\a]=b {v} {u}
