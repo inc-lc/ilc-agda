@@ -55,6 +55,7 @@ record Structure : Set₁ where
 
   Change : (τ : Type) → ⟦ τ ⟧ → Set
 
+  nil-change : ∀ τ v → Change τ v
   apply-change : ∀ τ → (v : ⟦ τ ⟧) (dv : Change τ v) → ⟦ τ ⟧
   diff-change : ∀ τ → (u v : ⟦ τ ⟧) → Change τ v
 
@@ -80,9 +81,6 @@ record Structure : Set₁ where
   -- Detailed motivation:
   --
   -- https://github.com/ps-mr/ilc/blob/184a6291ac6eef80871c32d2483e3e62578baf06/POPL14/paper/sec-formal.tex
-
-
-  nil-change : ∀ τ v → Change τ v
 
   -- Change : Type → Set
   Change (base ι) v = Change-base ι v
