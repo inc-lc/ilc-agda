@@ -9,12 +9,12 @@ import Parametric.Change.Derive Const ΔBase as Derive
 
 ΔConst : Derive.Structure
 
-ΔConst true  ∅ = false!
-ΔConst false ∅ = false!
+ΔConst true  ∅ ∅ = false!
+ΔConst false ∅ ∅ = false!
 
-ΔConst xor (Δx • x • Δy • y • ∅) = xor! Δx Δy
+ΔConst xor (x • y • ∅) (Δx • Δy • ∅) = xor! Δx Δy
 
-ΔConst empty ∅ = empty!
+ΔConst empty ∅ ∅ = empty!
 
 -- If k ⊕ Δk ≡ k, then
 --   Δupdate k Δk v Δv m Δm = update k Δv Δm
@@ -23,7 +23,7 @@ import Parametric.Change.Derive Const ΔBase as Derive
 --     insert (k ⊕ Δk) (v ⊕ Δv) (delete k v Δm)
 --
 -- We implement the else-branch only for the moment.
-ΔConst (update {κ} {ι}) (Δk • k • Δv • v • Δm • m • ∅) =
+ΔConst (update {κ} {ι}) (k • v • m • ∅) (Δk • Δv • Δm • ∅) =
   insert (k ⊕₍ base κ ₎ Δk) (v ⊕₍ base ι ₎ Δv) (delete k v Δm)
 
 -- Δlookup k Δk m Δm | true? (k ⊕ Δk ≡ k)
@@ -33,7 +33,7 @@ import Parametric.Change.Derive Const ΔBase as Derive
 --     ⊝ lookup k m
 --
 -- Only the false-branch is implemented.
-ΔConst (lookup {κ} {ι}) (Δk • k • Δm • m • ∅) =
+ΔConst (lookup {κ} {ι}) (k • m • ∅) (Δk • Δm • ∅) =
   let
     k′ = k ⊕₍ base κ ₎ Δk
   in
@@ -48,7 +48,7 @@ import Parametric.Change.Derive Const ΔBase as Derive
 -- ... | false = zip₄ Δf m₁ Δm₁ m₂ Δm₂
 --
 -- we implement the false-branch for the moment.
-ΔConst zip (Δf • f • Δm₁ • m₁ • Δm₂ • m₂ • ∅) =
+ΔConst zip (f • m₁ • m₂ • ∅) (Δf • Δm₁ • Δm₂ • ∅) =
   let
     g = abs (app₂ (weaken₁ Δf) (var this) nil-term)
   in
@@ -65,7 +65,7 @@ import Parametric.Change.Derive Const ΔBase as Derive
 -- Δfold is efficient only if evaluation is lazy and Δf is
 -- self-maintainable: it doesn't look at the argument
 -- (b = fold f k a b₀) at all.
-ΔConst (fold {κ} {α} {β}) (Δf′ • f′ • Δz • z • Δm • m • ∅) =
+ΔConst (fold {κ} {α} {β}) (f′ • z • m • ∅) (Δf′ • Δz • Δm • ∅) =
     let -- TODO (tedius): write weaken₇
       f  = weaken₃ (weaken₃ (weaken₁
         f′))

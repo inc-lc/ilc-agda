@@ -10,14 +10,14 @@ open import Data.Integer
 import Parametric.Change.Derive Const ΔBase as Derive
 
 deriveConst : Derive.Structure
-deriveConst (intlit-const n) ∅ = intlit (+ 0)
-deriveConst add-const        (ds • s • dt • t • ∅) = add ds dt
-deriveConst minus-const      (dt • t • ∅) = minus dt
-deriveConst empty-const      ∅ = empty
-deriveConst insert-const     (ds • s • dt • t • ∅) = insert (s ⊕₍ int ₎ ds) (t ⊕₍ bag ₎ dt) ⊝ insert s t
-deriveConst union-const      (ds • s • dt • t • ∅) = union ds dt
-deriveConst negate-const     (dt • t • ∅) = negate dt
-deriveConst flatmap-const    (ds • s • dt • t • ∅) = flatmap (s ⊕₍ int ⇒ bag ₎ ds) (t ⊕₍ bag ₎ dt) ⊝ flatmap s t
-deriveConst sum-const        (dt • t • ∅) = sum dt
+deriveConst (intlit-const n) ∅ ∅ = intlit (+ 0)
+deriveConst add-const        (s • t • ∅) (ds • dt • ∅) = add ds dt
+deriveConst minus-const      (t • ∅) (dt • ∅) = minus dt
+deriveConst empty-const      ∅ ∅ = empty
+deriveConst insert-const     (s • t • ∅) (ds • dt • ∅) = insert (s ⊕₍ int ₎ ds) (t ⊕₍ bag ₎ dt) ⊝ insert s t
+deriveConst union-const      (s • t • ∅) (ds • dt • ∅) = union ds dt
+deriveConst negate-const     (t • ∅) (dt • ∅) = negate dt
+deriveConst flatmap-const    (s • t • ∅) (ds • dt • ∅) = flatmap (s ⊕₍ int ⇒ bag ₎ ds) (t ⊕₍ bag ₎ dt) ⊝ flatmap s t
+deriveConst sum-const        (t • ∅) (dt • ∅) = sum dt
 
 open Derive.Structure deriveConst public
