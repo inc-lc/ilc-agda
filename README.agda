@@ -38,7 +38,7 @@ import Popl14.Denotation.Evaluation
 import Denotation.Implementation.Popl14
 import Base.Denotation.Notation
 {- Denotation-as-specification for canonical derivation of Calc. Popl14 -}
-import Denotation.Specification.Canon-Popl14
+import Popl14.Change.Specification
 import Popl14.Denotation.Value
 import experimental.DecidableEq
 import experimental.FoldableBag

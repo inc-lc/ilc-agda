@@ -1,4 +1,4 @@
-module Denotation.Specification.Canon-Popl14 where
+module Popl14.Change.Specification where
 
 -- Denotation-as-specification for Calculus Popl14
 --

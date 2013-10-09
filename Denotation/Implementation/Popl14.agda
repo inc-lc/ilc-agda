@@ -3,7 +3,7 @@ module Denotation.Implementation.Popl14 where
 -- Notions of programs being implementations of specifications
 -- for Calculus Popl14
 
-open import Denotation.Specification.Canon-Popl14 public
+open import Popl14.Change.Specification public
 
 open import Popl14.Syntax.Type
 open import Popl14.Syntax.Term
