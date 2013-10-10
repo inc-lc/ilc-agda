@@ -17,9 +17,6 @@ open ChangeType.Structure Base ΔBase
 
 open import Base.Denotation.Notation
 
-open import Data.Integer
-open import Structure.Bag.Popl14
-
 -- `diff` and `apply`, without validity proofs
 
 ApplyStructure : Set
