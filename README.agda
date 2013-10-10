@@ -8,18 +8,12 @@ module README where
 --   * multiple calculi
 
 
-import Syntax.Constant.Popl14
-import Syntax.Context.Plotkin
-import Syntax.Context.Popl14
-import Syntax.Context
-import Syntax.DeltaContext
-import Syntax.Derive.Canon-Popl14
-import Syntax.Derive.Optimized-Popl14
-import Syntax.FreeVars.Popl14
+import Popl14.Syntax.Term
+import Base.Syntax.Context
+import Base.Change.Context
+import Popl14.Change.Derive
 {- Language definition of Calc. Atlas -}
-import Syntax.Language.Atlas
-import Syntax.Language.Calculus
-import Syntax.Language.Popl14
+import Atlas.Syntax.Term
 {- Terms of a calculus described in Plotkin style
   - types are parametric in base types
   - terms are parametric in constants
@@ -27,29 +21,25 @@ import Syntax.Language.Popl14
   G. D. Plotkin. "LCF considered as a programming language."
   Theoretical Computer Science 5(3) pp. 223--255, 1997.
   http://dx.doi.org/10.1016/0304-3975(77)90044-5 -}
-import Syntax.Term.Plotkin
-import Syntax.Term.Popl14
-import Syntax.Type.Atlas
-import Syntax.Type.Plotkin
-import Syntax.Type.Popl14
-import Syntax.Vars
+import Parametric.Syntax.Term
+import Popl14.Change.Term
+import Atlas.Syntax.Type
+import Parametric.Syntax.Type
+import Popl14.Syntax.Type
+import Base.Syntax.Vars
 
-import Denotation.Change.Popl14
+import Popl14.Change.Validity
 {- Correctness theorem for canonical derivation of Calc. Popl14 -}
-import Denotation.Derive.Canon-Popl14
-{- Correctness theorem for optimized derivation of Calc. Popl14 -}
-import Denotation.Derive.Optimized-Popl14
-import Denotation.Environment.Popl14
-import Denotation.Environment
-import Denotation.Evaluation.Popl14
-import Denotation.FreeVars.Popl14
+import Popl14.Change.Correctness
+import Theorem.Irrelevance-Popl14
+import Base.Denotation.Environment
+import Popl14.Denotation.Evaluation
 {- The idea of implementing a denotational specification for Calc. Popl14 -}
-import Denotation.Implementation.Popl14
-import Denotation.Notation
+import Popl14.Change.Implementation
+import Base.Denotation.Notation
 {- Denotation-as-specification for canonical derivation of Calc. Popl14 -}
-import Denotation.Specification.Canon-Popl14
-import Denotation.Specification.Optimized-Popl14
-import Denotation.Value.Popl14
+import Popl14.Change.Specification
+import Popl14.Denotation.Value
 import experimental.DecidableEq
 import experimental.FoldableBag
 import experimental.FoldableBagParametric
@@ -67,7 +57,6 @@ import Theorem.EqualityUnique
 import Theorem.Groups-Popl14
 import Theorem.IrrelevanceUnique-Popl14
 import Theorem.ProductUnique
-import Theorem.ValidityUnique-Popl14
 import UNDEFINED
 
 import Everything

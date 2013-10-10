@@ -21,7 +21,7 @@ module Parametric (Base : Set) where
     _⇒_ : (τ₁ τ₂ : Type) → Type
     base : (b : Base) → Type
 
-  open import Syntax.Context Type public
+  open import Base.Syntax.Context Type public
 
   -- DOMAIN CONSTRUCTION
   --
@@ -50,7 +50,7 @@ module Parametric (Base : Set) where
     liftType {base b} w₁≤w₂ w₁⊩b = liftBase w₁≤w₂ w₁⊩b
 
     module _ (w : World) where
-      open import Denotation.Environment Type (λ τ → w ⊩⟦ τ ⟧Type) public
+      open import Base.Denotation.Environment Type (λ τ → w ⊩⟦ τ ⟧Type) public
         renaming (⟦_⟧Context to _⊩⟦_⟧Context; ⟦_⟧Var to _⊩⟦_⟧Var)
 
     liftContext : Lift {Context} _⊩⟦_⟧Context
@@ -81,7 +81,7 @@ module Parametric (Base : Set) where
     weaken : ∀ {Γ₁ Γ₂ τ} → Γ₁ ≼ Γ₂ → Term Γ₁ τ → Term Γ₂ τ
     weaken Γ₁≼Γ₂ (abs t) = abs (weaken (keep _ • Γ₁≼Γ₂) t)
     weaken Γ₁≼Γ₂ (app t₁ t₂) = app (weaken Γ₁≼Γ₂ t₁) (weaken Γ₁≼Γ₂ t₂)
-    weaken Γ₁≼Γ₂ (var x) = var (lift Γ₁≼Γ₂ x)
+    weaken Γ₁≼Γ₂ (var x) = var (weaken-var Γ₁≼Γ₂ x)
     weaken Γ₁≼Γ₂ (con c) = con c
 
   -- SYMBOLIC EXECUTION and REIFICATION
