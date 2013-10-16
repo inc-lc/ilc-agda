@@ -98,7 +98,7 @@ isLibraryModule f =
 extractHeader :: FilePath -> IO [String]
 extractHeader mod = fmap (extract . lines) $ readFileUTF8 mod
   where
-  delimiter = all (== '-')
+  delimiter line = length line /= 0 && all (== '-') line
 
   extract (d1 : expectedMarker : "--" : ss)
     | delimiter d1
