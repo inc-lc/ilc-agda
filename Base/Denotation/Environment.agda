@@ -1,10 +1,7 @@
-module Base.Denotation.Environment
-    (Type : Set)
-    {ℓ}
-    (⟦_⟧Type : Type → Set ℓ)
-  where
-
--- ENVIRONMENTS
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Environments
 --
 -- This module defines the meaning of contexts, that is,
 -- the type of environments that fit a context, together
@@ -13,6 +10,13 @@ module Base.Denotation.Environment
 -- This module is parametric in the syntax and semantics
 -- of types, so it can be reused for different calculi
 -- and models.
+------------------------------------------------------------------------
+
+module Base.Denotation.Environment
+    (Type : Set)
+    {ℓ}
+    (⟦_⟧Type : Type → Set ℓ)
+  where
 
 open import Relation.Binary.PropositionalEquality
 

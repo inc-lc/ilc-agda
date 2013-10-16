@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Value domains for languages described in Plotkin style
+------------------------------------------------------------------------
+
 import Parametric.Syntax.Type as Type
 
 module Parametric.Denotation.Value

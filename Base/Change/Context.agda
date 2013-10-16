@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Change contexts
+------------------------------------------------------------------------
+
 module Base.Change.Context
     {Type : Set}
     (ΔType : Type → Type) where

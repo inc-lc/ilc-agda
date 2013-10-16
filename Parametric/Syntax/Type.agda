@@ -1,8 +1,12 @@
-module Parametric.Syntax.Type where
-
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
 -- Types for language description à la Plotkin (LCF as PL)
 --
 -- Given base types, we build function types.
+------------------------------------------------------------------------
+
+module Parametric.Syntax.Type where
 
 Structure : Set₁
 Structure = Set
