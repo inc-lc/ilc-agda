@@ -93,6 +93,12 @@ isLibraryModule f =
   takeExtension f `elem` [".agda", ".lagda"] &&
   dropExtension (takeFileName f) /= "Core"
 
+trim toTrim list = core
+  where
+    (prefix, rest) = span toTrim list
+    (revSuffix, revCore) = span toTrim (reverse rest)
+    core = reverse revCore
+
 -- | Reads a module and extracts the header.
 
 extractHeader :: FilePath -> IO [String]
@@ -106,7 +112,7 @@ extractHeader mod = fmap (extract . lines) $ readFileUTF8 mod
     , (info, rest) <- span ("--" `List.isPrefixOf`) ss
     , let d2 = last info
     , delimiter d2
-    = info
+    = trim delimiter info
   extract _ = []
 
 -- | Formats the extracted module information.
