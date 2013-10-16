@@ -103,7 +103,8 @@ extractHeader mod = fmap (extract . lines) $ readFileUTF8 mod
   extract (d1 : expectedMarker : "--" : ss)
     | delimiter d1
     , expectedMarker == "-- " ++ marker
-    , (info, d2 : rest) <- span ("-- " `List.isPrefixOf`) ss
+    , (info, rest) <- span ("--" `List.isPrefixOf`) ss
+    , let d2 = last info
     , delimiter d2
     = info
   extract _ = []
