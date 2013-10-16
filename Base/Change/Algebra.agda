@@ -14,6 +14,12 @@ record IsChangeAlgebra
   field
     update-diff : ∀ u v → update v (diff u v) ≡ u
 
+  nil : ∀ v → Change v
+  nil v = diff v v
+
+  update-nil : ∀ v → update v (nil v) ≡ v
+  update-nil v = update-diff v v
+
 record ChangeAlgebra {c} ℓ
     (Carrier : Set c) : Set (c ⊔ suc ℓ) where
   field
@@ -31,6 +37,8 @@ record ChangeAlgebra {c} ℓ
 open ChangeAlgebra {{...}} public
   using
     ( update-diff
+    ; update-nil
+    ; nil
     )
   renaming
     ( Change to Δ
