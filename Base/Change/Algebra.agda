@@ -78,3 +78,47 @@ syntax update′ x v dv = v ⊞₍ x ₎ dv
 
 diff′ = Family.diff
 syntax diff′ x u v = u ⊟₍ x ₎ v
+
+-- Abelian groups induce change algebras
+
+open import Algebra.Structures
+open import Data.Product
+open import Function
+
+module GroupChanges
+    {a} (A : Set a) {_⊕_} {ε} {_⁻¹}
+    {{isAbelianGroup : IsAbelianGroup {A = A} _≡_ _⊕_ ε _⁻¹}}
+  where
+    open IsAbelianGroup isAbelianGroup
+      hiding
+        ( refl
+        )
+      renaming
+        ( _-_ to _⊝_
+        ; ∙-cong to _⟨⊕⟩_
+        )
+
+    open ≡-Reasoning
+
+    changeAlgebra : ChangeAlgebra a A
+    changeAlgebra = record
+      { Change = const A
+      ; update = _⊕_
+      ; diff = _⊝_
+      ; isChangeAlgebra = record
+        { update-diff = λ u v →
+            begin
+              v ⊕ (u ⊝ v)
+            ≡⟨ comm _ _ ⟩
+              (u ⊝ v ) ⊕ v
+            ≡⟨⟩
+              (u ⊕ (v ⁻¹)) ⊕ v
+            ≡⟨ assoc _ _ _ ⟩
+              u ⊕ ((v ⁻¹) ⊕ v)
+            ≡⟨  refl ⟨⊕⟩ proj₁ inverse v  ⟩
+              u ⊕ ε
+            ≡⟨  proj₂ identity u ⟩
+              u
+            ∎
+        }
+      }
