@@ -68,7 +68,7 @@ record Structure : Set₁ where
   implements (σ ⇒ τ) {f} Δf Δf′ =
     (w : ⟦ σ ⟧) (Δw : Change σ w)
     (Δw′ : ⟦ ΔType σ ⟧) (Δw≈Δw′ : implements σ {w} Δw Δw′) →
-    implements τ {f w} (call-change Δf w Δw) (Δf′ w Δw′)
+    implements τ {f w} (call-change {σ} {τ} Δf w Δw) (Δf′ w Δw′)
 
   infix 4 _≈_
   _≈_ : ∀ {τ v} → Change τ v → ⟦ ΔType τ ⟧ → Set
@@ -108,7 +108,7 @@ record Structure : Set₁ where
   carry-over {base ι} Δv Δv≈Δv′ = carry-over-base Δv Δv≈Δv′
   carry-over {σ ⇒ τ} {f} Δf {Δf′} Δf≈Δf′ =
     ext (λ v →
-      carry-over {τ} {f v} (call-change Δf v (nil-change σ v))
+      carry-over {τ} {f v} (call-change {σ} {τ} Δf v (nil-change σ v))
         {Δf′ v (v ⟦⊝₍ σ ₎⟧ v)}
         (Δf≈Δf′ v (nil-change σ v) (v ⟦⊝₍ σ ₎⟧ v) ( u⊟v≈u⊝v {σ} {v} {v})))
 

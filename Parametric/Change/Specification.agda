@@ -68,7 +68,7 @@ record Structure : Set₁ where
   ⟦_⟧Δ (const c ts) ρ dρ = ⟦ c ⟧ΔConst (⟦ ts ⟧Terms ρ) (⟦ ts ⟧ΔTerms ρ dρ)
   ⟦_⟧Δ (var x) ρ dρ = ⟦ x ⟧ΔVar ρ dρ
   ⟦_⟧Δ (app {σ} {τ} s t) ρ dρ =
-       call-change (⟦ s ⟧Δ ρ dρ) (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ)
+       call-change {σ} {τ} (⟦ s ⟧Δ ρ dρ) (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ)
   ⟦_⟧Δ (abs {σ} {τ} t) ρ dρ = cons
     (λ v dv → ⟦ t ⟧Δ (v • ρ) (dv • dρ))
     (λ v dv →
@@ -120,8 +120,8 @@ record Structure : Set₁ where
       Δu = ⟦ t ⟧Δ ρ dρ
     in
       begin
-        f u ⊞₍ τ ₎ call-change Δf u Δu
-      ≡⟨  sym (is-valid Δf u Δu) ⟩
+        f u ⊞₍ τ ₎ call-change {σ} {τ} Δf u Δu
+      ≡⟨  sym (is-valid {σ} {τ} Δf u Δu) ⟩
         (f ⊞₍ σ ⇒ τ ₎ Δf) (u ⊞₍ σ ₎ Δu)
       ≡⟨ correctness {σ ⇒ τ} s ρ dρ ⟨$⟩ correctness {σ} t ρ dρ ⟩
         g v
@@ -148,15 +148,15 @@ record Structure : Set₁ where
         (⟦ t ⟧ ρ ⊞₍ σ ₎ ⟦ t ⟧Δ ρ dρ)
     ≡ (⟦ s ⟧ ρ) (⟦ t ⟧ ρ)
       ⊞₍ τ ₎
-      (call-change (⟦ s ⟧Δ ρ dρ)) (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ)
+      (call-change {σ} {τ} (⟦ s ⟧Δ ρ dρ)) (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ)
 
   corollary {σ} {τ} s t ρ dρ =
-    is-valid (⟦ s ⟧Δ ρ dρ) (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ)
+    is-valid {σ} {τ} (⟦ s ⟧Δ ρ dρ) (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ)
 
   corollary-closed : ∀ {σ τ} (t : Term ∅ (σ ⇒ τ))
     (v : ⟦ σ ⟧) (dv : Change σ v)
     → ⟦ t ⟧ ∅ (after {σ} dv)
-    ≡ ⟦ t ⟧ ∅ v ⊞₍ τ ₎ call-change (⟦ t ⟧Δ ∅ ∅) v dv
+    ≡ ⟦ t ⟧ ∅ v ⊞₍ τ ₎ call-change {σ} {τ} (⟦ t ⟧Δ ∅ ∅) v dv
 
   corollary-closed {σ} {τ} t v dv =
     let
@@ -168,6 +168,6 @@ record Structure : Set₁ where
       ≡⟨ cong (λ hole → hole (after {σ} dv))
               (sym (correctness {σ ⇒ τ} t ∅ ∅)) ⟩
          (f ⊞₍ σ ⇒ τ ₎ Δf) (after {σ} dv)
-      ≡⟨ is-valid (⟦ t ⟧Δ ∅ ∅) v dv ⟩
-        f (before {σ} dv) ⊞₍ τ ₎ call-change Δf v dv
+      ≡⟨ is-valid {σ} {τ} (⟦ t ⟧Δ ∅ ∅) v dv ⟩
+        f (before {σ} dv) ⊞₍ τ ₎ call-change {σ} {τ} Δf v dv
       ∎ where open ≡-Reasoning

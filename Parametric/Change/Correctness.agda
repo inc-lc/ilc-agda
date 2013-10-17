@@ -123,9 +123,9 @@ module Structure (derive-const-correct : Structure) where
       ≡⟨ cong h (sym (v+[u-v]=u {σ})) ⟩
         h (v ⊞₍ σ ₎ (u ⊟₍ σ ₎ v))
       ≡⟨ corollary-closed {σ} {τ} f v (u ⊟₍ σ ₎ v) ⟩
-        h v ⊞₍ τ ₎ call-change Δh v (u ⊟₍ σ ₎ v)
+        h v ⊞₍ τ ₎ call-change {σ} {τ} Δh v (u ⊟₍ σ ₎ v)
       ≡⟨ carry-over {τ}
-         (call-change Δh v (u ⊟₍ σ ₎ v))
+         (call-change {σ} {τ} Δh v (u ⊟₍ σ ₎ v))
          (derive-correct f
            ∅ ∅ ∅ ∅ v (u ⊟₍ σ ₎ v) (u ⟦⊝₍ σ ₎⟧ v) (u⊟v≈u⊝v {σ} {u} {v})) ⟩
          h v ⟦⊕₍ τ ₎⟧ Δh′ v (u ⟦⊝₍ σ ₎⟧ v)
