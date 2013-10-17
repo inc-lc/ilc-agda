@@ -122,3 +122,51 @@ module GroupChanges
             ∎
         }
       }
+
+-- Function changes
+
+module FunctionChanges
+    {a} {b} {c} {d} (A : Set a) (B : Set b) {{CA : ChangeAlgebra c A}} {{CB : ChangeAlgebra d B}}
+  where
+    record FunctionChange (f : A → B) : Set (a ⊔ b ⊔ c ⊔ d) where
+      constructor
+        cons
+      field
+        apply : (a : A) (da : Δ a) →
+          Δ (f a)
+        correct : (a : A) (da : Δ a) →
+          f (a ⊞ da) ⊞ apply (a ⊞ da) (nil (a ⊞ da)) ≡ f a ⊞ apply a da
+
+    open FunctionChange
+    open ≡-Reasoning
+    open import Postulate.Extensionality
+
+    changeAlgebra : ChangeAlgebra (a ⊔ b ⊔ c ⊔ d) (A → B)
+    changeAlgebra = record
+      { Change = FunctionChange
+      ; update = λ f df a → f a ⊞ apply df a (nil a)
+      ; diff = λ g f → record
+        { apply = λ a da → g (a ⊞ da) ⊟ f a
+        ; correct = λ a da →
+          begin
+            f (a ⊞ da) ⊞ (g ((a ⊞ da) ⊞ nil (a ⊞ da)) ⊟ f (a ⊞ da))
+          ≡⟨ cong (λ □ → f (a ⊞ da) ⊞ (g □ ⊟ f (a ⊞ da)))
+               (update-nil (a ⊞ da)) ⟩
+            f (a ⊞ da) ⊞ (g (a ⊞ da) ⊟ f (a ⊞ da))
+          ≡⟨ update-diff (g (a ⊞ da)) (f (a ⊞ da)) ⟩
+            g (a ⊞ da)
+          ≡⟨ sym (update-diff (g (a ⊞ da)) (f a)) ⟩
+            f a ⊞ (g (a ⊞ da) ⊟ f a)
+          ∎
+        }
+      ; isChangeAlgebra = record
+        { update-diff = λ g f → ext (λ a →
+          begin
+            f a ⊞ (g (a ⊞ nil a) ⊟ f a)
+          ≡⟨ cong (λ □ → f a ⊞ (g □ ⊟ f a)) (update-nil a) ⟩
+            f a ⊞ (g a ⊟ f a)
+          ≡⟨ update-diff (g a) (f a) ⟩
+            g a
+          ∎)
+        }
+      }
