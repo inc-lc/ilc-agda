@@ -196,3 +196,42 @@ module FunctionChanges
            (update-nil f) ⟩
         f (a ⊞ da)
       ∎
+
+-- List changes
+
+open import Data.List
+open import Data.List.All
+
+data All′ {a p q} {A : Set a}
+    {P : A → Set p}
+    (Q : {x : A} → P x → Set q)
+  : {xs : List A} (pxs : All P xs) → Set (p ⊔ q ⊔ a) where
+    []  : All′ Q []
+    _∷_ : ∀ {x xs} {px : P x} {pxs : All P xs} (qx : Q px) (qxs : All′ Q pxs) → All′ Q (px ∷ pxs)
+
+module ListChanges
+    {a} {c} {A : Set a} (P : A → Set) {{C : ChangeAlgebraFamily c P}}
+  where
+    update-all : ∀ {xs} → (pxs : All P xs) → All′ (Δ₍ _ ₎) pxs → All P xs
+    update-all {[]} [] [] = []
+    update-all {x ∷ xs} (px ∷ pxs) (dpx ∷ dpxs) = (px ⊞₍ x ₎ dpx) ∷ update-all pxs dpxs
+
+    diff-all : ∀ {xs} → (pxs′ pxs : All P xs) → All′ (Δ₍ _ ₎) pxs
+    diff-all [] [] = []
+    diff-all (px′ ∷ pxs′) (px ∷ pxs) = (px′ ⊟₍ _ ₎ px) ∷ diff-all pxs′ pxs
+
+    update-diff-all : ∀ {xs} → (pxs′ pxs : All P xs) → update-all pxs (diff-all pxs′ pxs) ≡ pxs′
+    update-diff-all [] [] = refl
+    update-diff-all (px′ ∷ pxs′) (px ∷ pxs) = cong₂ _∷_ (update-diff₍ _ ₎ px′ px) (update-diff-all pxs′ pxs)
+
+    changeAlgebra : ChangeAlgebraFamily (c ⊔ a) (All P)
+    changeAlgebra = record
+      { change-algebra = λ xs → record
+        { Change = All′ Δ₍ _ ₎
+        ; update = update-all
+        ; diff = diff-all
+        ; isChangeAlgebra = record
+          { update-diff = update-diff-all
+          }
+        }
+      }
