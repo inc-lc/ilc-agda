@@ -79,6 +79,16 @@ syntax update′ x v dv = v ⊞₍ x ₎ dv
 diff′ = Family.diff
 syntax diff′ x u v = u ⊟₍ x ₎ v
 
+-- Derivatives
+
+Derivative : ∀ {a b c d} {A : Set a} {B : Set b} →
+  {{CA : ChangeAlgebra c A}} →
+  {{CB : ChangeAlgebra d B}} →
+  (f : A → B) →
+  (df : (a : A) (da : Δ a) → Δ (f a)) →
+  Set (a ⊔ b ⊔ c)
+Derivative f df = ∀ a da → f a ⊞ df a da ≡ f (a ⊞ da)
+
 -- Abelian groups induce change algebras
 
 open import Algebra.Structures
@@ -170,3 +180,19 @@ module FunctionChanges
           ∎)
         }
       }
+
+    incrementalization : ∀ (f : A → B) df a da →
+      (f ⊞ df) (a ⊞ da) ≡ f a ⊞ apply df a da
+    incrementalization f df a da = correct df a da
+
+    nil-is-derivative : ∀ (f : A → B) →
+      Derivative f (apply (nil f))
+    nil-is-derivative f a da =
+      begin
+        f a ⊞ apply (nil f) a da
+      ≡⟨ sym (incrementalization f (nil f) a da) ⟩
+        (f ⊞ nil f) (a ⊞ da)
+      ≡⟨ cong (λ □ → □ (a ⊞ da))
+           (update-nil f) ⟩
+        f (a ⊞ da)
+      ∎
