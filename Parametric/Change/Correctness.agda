@@ -94,10 +94,10 @@ module Structure (derive-const-correct : Structure) where
       (derive-terms-correct ts ρ dρ ρ′ dρ≈ρ′)
   derive-correct (var x) ρ dρ ρ′ dρ≈ρ′ =
     deriveVar-correct x ρ dρ ρ′ dρ≈ρ′
-  derive-correct (app s t) ρ dρ ρ′ dρ≈ρ′
-    rewrite sym (⟦fit⟧ t ρ ρ′) =
-      derive-correct s ρ dρ ρ′ dρ≈ρ′
-      (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ) (⟦ derive t ⟧ (alternate ρ ρ′)) (derive-correct t ρ dρ ρ′ dρ≈ρ′)
+  derive-correct (app {σ} {τ} s t) ρ dρ ρ′ dρ≈ρ′
+   = subst (λ ⟦t⟧ → ⟦ app s t ⟧Δ ρ dρ ≈₍ τ ₎ (⟦ derive s ⟧Term (alternate ρ ρ′)) ⟦t⟧ (⟦ derive t ⟧Term (alternate ρ ρ′))) (⟦fit⟧ t ρ ρ′)
+       (derive-correct {σ ⇒ τ} s ρ dρ ρ′ dρ≈ρ′
+          (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ) (⟦ derive t ⟧ (alternate ρ ρ′)) (derive-correct {σ} t ρ dρ ρ′ dρ≈ρ′))
 
   derive-correct (abs {σ} {τ} t) ρ dρ ρ′ dρ≈ρ′ =
     λ w dw w′ dw≈w′ →
