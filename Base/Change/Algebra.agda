@@ -45,3 +45,36 @@ open ChangeAlgebra {{...}} public
     ; update to _⊞_
     ; diff to _⊟_
     )
+
+-- Families of change algebras
+
+record ChangeAlgebraFamily {a p} ℓ {A : Set a} (P : A → Set p): Set (suc ℓ ⊔ p ⊔ a) where
+  constructor
+    family
+  field
+    change-algebra : ∀ x → ChangeAlgebra ℓ (P x)
+
+  module _ x where
+    open ChangeAlgebra (change-algebra x) public
+
+module Family = ChangeAlgebraFamily {{...}}
+
+open Family public
+  using
+    (
+    )
+  renaming
+    ( Change to Δ₍_₎
+    ; nil to nil₍_₎
+    ; update-diff to update-diff₍_₎
+    ; update-nil to update-nil₍_₎
+    ; change-algebra to change-algebra₍_₎
+    )
+
+infixl 6 update′ diff′
+
+update′ = Family.update
+syntax update′ x v dv = v ⊞₍ x ₎ dv
+
+diff′ = Family.diff
+syntax diff′ x u v = u ⊟₍ x ₎ v
