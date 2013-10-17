@@ -28,7 +28,7 @@ import Parametric.Change.Correctness
   diff-base apply-base
   ⟦apply-base⟧ ⟦diff-base⟧
   meaning-⊕-base meaning-⊝-base
-  validity-structure specification-structure
+  change-algebra-base-family specification-structure
   deriveConst implementation-structure as Correctness
 
 derive-const-correct : Correctness.Structure

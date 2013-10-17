@@ -22,7 +22,7 @@ open import Structure.Bag.Popl14
 
 import Parametric.Change.Implementation
     Const ⟦_⟧Base ⟦_⟧Const ΔBase
-    validity-structure specification-structure
+    change-algebra-base-family specification-structure
     ⟦apply-base⟧ ⟦diff-base⟧ deriveConst as Implementation
 
 private

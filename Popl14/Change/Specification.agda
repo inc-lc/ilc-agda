@@ -19,7 +19,7 @@ open import Data.Integer
 open import Theorem.Groups-Popl14
 
 import Parametric.Change.Specification
-  Const ⟦_⟧Base ⟦_⟧Const validity-structure as Specification
+  Const ⟦_⟧Base ⟦_⟧Const change-algebra-base-family as Specification
 
 private
   ⟦_⟧ΔConst : ∀ {Σ τ} → (c  : Const Σ τ) (ρ : ⟦ Σ ⟧) → ΔEnv Σ ρ → Change τ (⟦ c ⟧Const ρ)
