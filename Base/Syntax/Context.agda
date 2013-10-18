@@ -1,14 +1,19 @@
-module Base.Syntax.Context
-    (Type : Set)
-  where
-
--- CONTEXTS
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Variables and contexts
 --
 -- This module defines the syntax of contexts, prefixes of
 -- contexts and variables and properties of these notions.
 --
 -- This module is parametric in the syntax of types, so it
 -- can be reused for different calculi.
+--
+------------------------------------------------------------------------
+
+module Base.Syntax.Context
+    (Type : Set)
+  where
 
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality

@@ -1,10 +1,14 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Terms of languages described in Plotkin style
+------------------------------------------------------------------------
+
 import Parametric.Syntax.Type as Type
 
 module Parametric.Syntax.Term
     (Base : Type.Structure)
   where
-
--- Terms of languages described in Plotkin style
 
 open import Relation.Binary.PropositionalEquality
 open import Function using (_∘_)
