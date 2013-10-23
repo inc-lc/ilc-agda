@@ -74,7 +74,7 @@ record Structure : Set₁ where
   _≈_ : ∀ {τ v} → Δ₍ τ ₎ v → ⟦ ΔType τ ⟧ → Set
   _≈_ {τ} {v} = implements τ {v}
 
-  data implements-env : ∀ Γ → {ρ : ⟦ Γ ⟧} (dρ : ΔEnv Γ ρ) → ⟦ mapContext ΔType Γ ⟧ → Set where
+  data implements-env : ∀ Γ → {ρ : ⟦ Γ ⟧} (dρ : Δ₍ Γ ₎ ρ) → ⟦ mapContext ΔType Γ ⟧ → Set where
     ∅ : implements-env ∅ {∅} ∅ ∅
     _•_ : ∀ {τ Γ v ρ dv dρ v′ ρ′} →
       (dv≈v′ : implements τ {v} dv v′) →

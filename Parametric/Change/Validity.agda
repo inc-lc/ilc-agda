@@ -96,8 +96,5 @@ module Structure (change-algebra-base : Structure) where
     ( changeAlgebra to environment-changes
     )
 
-  ΔEnv : ∀ (Γ : Context) → ⟦ Γ ⟧ → Set
-  ΔEnv Γ ρ = CA.Δ₍ Γ ₎ ρ
-
-  after-env : ∀ {Γ : Context} → {ρ : ⟦ Γ ⟧} (dρ : ΔEnv Γ ρ) → ⟦ Γ ⟧
+  after-env : ∀ {Γ : Context} → {ρ : ⟦ Γ ⟧} (dρ : Δ₍  Γ ₎ ρ) → ⟦ Γ ⟧
   after-env {Γ} = after₍ Γ ₎

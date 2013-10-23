@@ -65,24 +65,24 @@ open import Postulate.Extensionality
 
 Structure : Set
 Structure = ∀ {Σ Γ τ} (c : Const Σ τ) (ts : Terms Γ Σ)
-  (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
+  (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
   (ts-correct : implements-env Σ (⟦ ts ⟧ΔTerms ρ dρ) (⟦ derive-terms ts ⟧Terms (alternate ρ ρ′))) →
   ⟦ c ⟧ΔConst (⟦ ts ⟧Terms ρ) (⟦ ts ⟧ΔTerms ρ dρ) ≈₍ τ ₎ ⟦ derive-const c (fit-terms ts) (derive-terms ts) ⟧ (alternate ρ ρ′)
 
 module Structure (derive-const-correct : Structure) where
   deriveVar-correct : ∀ {τ Γ} (x : Var Γ τ)
-    (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
+    (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
     ⟦ x ⟧ΔVar ρ dρ ≈₍ τ ₎ ⟦ deriveVar x ⟧ (alternate ρ ρ′)
   deriveVar-correct this (v • ρ) (dv • dρ) (dv′ • dρ′) (dv≈dv′ • dρ≈dρ′) = dv≈dv′
   deriveVar-correct (that x) (v • ρ) (dv • dρ) (dv′ • dρ′) (dv≈dv′ • dρ≈dρ′) = deriveVar-correct x ρ dρ dρ′ dρ≈dρ′
 
   -- That `derive t` implements ⟦ t ⟧Δ
   derive-correct : ∀ {τ Γ} (t : Term Γ τ)
-    (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
+    (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
     ⟦ t ⟧Δ ρ dρ ≈₍ τ ₎ ⟦ derive t ⟧ (alternate ρ ρ′)
 
   derive-terms-correct : ∀ {Σ Γ} (ts : Terms Γ Σ)
-    (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
+    (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
     implements-env Σ (⟦ ts ⟧ΔTerms ρ dρ) (⟦ derive-terms ts ⟧Terms (alternate ρ ρ′))
 
   derive-terms-correct ∅ ρ dρ ρ′ dρ≈ρ′ = ∅

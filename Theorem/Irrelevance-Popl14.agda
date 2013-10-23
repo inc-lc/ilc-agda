@@ -20,14 +20,14 @@ pattern lack x = false • x
 
 -- Irrelevance: A set of variables is irrelevant in a ΔEnv
 -- if their associated changes have no effect when applied.
-irrelevant : ∀ {Γ} (S : Vars Γ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) → Set
+irrelevant : ∀ {Γ} (S : Vars Γ) (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) → Set
 irrelevant {∅} ∅ ∅ ∅ = ⊤
 irrelevant {τ • Γ} (lack S) (_ • ρ) (_ • dρ) = irrelevant S ρ dρ
 irrelevant {τ • Γ} (have S) (v • ρ) (Δv • dρ) =
   (v ⊞₍ τ ₎ Δv ≡ v)   ×   (irrelevant S ρ dρ)
 
 -- Project irrelevance onto subsets of variables
-project-irrelevance : ∀ {Γ : Context} {ρ : ⟦ Γ ⟧} {dρ : ΔEnv Γ ρ} {R S} →
+project-irrelevance : ∀ {Γ : Context} {ρ : ⟦ Γ ⟧} {dρ : Δ₍ Γ ₎ ρ} {R S} →
   irrelevant (R ∪ S) ρ dρ → irrelevant R ρ dρ × irrelevant S ρ dρ
 project-irrelevance {∅} {∅} {∅} {∅} {∅} tt = tt , tt
 project-irrelevance {dρ = _ • _} {lack R} {lack S} I =
@@ -43,7 +43,7 @@ project-irrelevance {dρ = _ • _} {have R} {have S} (eq , I) =
   in (eq , IR) , (eq , IS)
 
 -- The empty set of variables is irrelevant in all environments
-irrelevance : ∀ {Γ} {ρ : ⟦ Γ ⟧} {dρ : ΔEnv Γ ρ} → irrelevant none ρ dρ
+irrelevance : ∀ {Γ} {ρ : ⟦ Γ ⟧} {dρ : Δ₍ Γ ₎ ρ} → irrelevant none ρ dρ
 irrelevance {∅} {dρ = ∅} = tt
 irrelevance {τ • Γ} {dρ = _ • dρ} = irrelevance {dρ = dρ}
 

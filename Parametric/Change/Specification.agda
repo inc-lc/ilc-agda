@@ -39,29 +39,29 @@ record Structure : Set₁ where
   ----------------
 
   field
-    ⟦_⟧ΔConst : ∀ {Σ τ} → (c  : Const Σ τ) (ρ : ⟦ Σ ⟧) → ΔEnv Σ ρ → Δ₍ τ ₎ (⟦ c ⟧Const ρ)
+    ⟦_⟧ΔConst : ∀ {Σ τ} → (c  : Const Σ τ) (ρ : ⟦ Σ ⟧) → Δ₍ Σ ₎ ρ → Δ₍ τ ₎ (⟦ c ⟧Const ρ)
 
-    correctness-const : ∀ {Σ τ} (c : Const Σ τ) (ρ : ⟦ Σ ⟧) (dρ : ΔEnv Σ ρ)
+    correctness-const : ∀ {Σ τ} (c : Const Σ τ) (ρ : ⟦ Σ ⟧) (dρ : Δ₍ Σ ₎ ρ)
       → after₍ τ ₎ (⟦ c ⟧ΔConst ρ dρ) ≡ ⟦ c ⟧Const (after-env dρ)
 
   ---------------
   -- Interface --
   ---------------
 
-  ⟦_⟧Δ : ∀ {τ Γ} → (t : Term Γ τ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) → Δ₍ τ ₎ (⟦ t ⟧ ρ)
-  ⟦_⟧ΔTerms : ∀ {Σ Γ} → (ts : Terms Γ Σ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) → ΔEnv Σ (⟦ ts ⟧Terms ρ)
+  ⟦_⟧Δ : ∀ {τ Γ} → (t : Term Γ τ) (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) → Δ₍ τ ₎ (⟦ t ⟧ ρ)
+  ⟦_⟧ΔTerms : ∀ {Σ Γ} → (ts : Terms Γ Σ) (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) → Δ₍ Σ ₎ (⟦ ts ⟧Terms ρ)
 
-  correctness : ∀ {τ Γ} (t : Term Γ τ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ)
+  correctness : ∀ {τ Γ} (t : Term Γ τ) (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ)
     → after₍ τ ₎ (⟦ t ⟧Δ ρ dρ) ≡ ⟦ t ⟧ (after-env dρ)
 
-  correctness-terms : ∀ {Σ Γ} (ts : Terms Γ Σ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ)
+  correctness-terms : ∀ {Σ Γ} (ts : Terms Γ Σ) (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ)
     → after-env (⟦ ts ⟧ΔTerms ρ dρ) ≡ ⟦ ts ⟧Terms (after-env dρ)
 
   --------------------
   -- Implementation --
   --------------------
 
-  ⟦_⟧ΔVar : ∀ {τ Γ} → (x : Var Γ τ) → (ρ : ⟦ Γ ⟧) → ΔEnv Γ ρ → Δ₍ τ ₎ (⟦ x ⟧Var ρ)
+  ⟦_⟧ΔVar : ∀ {τ Γ} → (x : Var Γ τ) → (ρ : ⟦ Γ ⟧) → Δ₍ Γ ₎ ρ → Δ₍ τ ₎ (⟦ x ⟧Var ρ)
   ⟦ this   ⟧ΔVar (v • ρ) (dv • dρ) = dv
   ⟦ that x ⟧ΔVar (v • ρ) (dv • dρ) = ⟦ x ⟧ΔVar ρ dρ
 
@@ -90,7 +90,7 @@ record Structure : Set₁ where
   ⟦ ∅ ⟧ΔTerms ρ dρ = ∅
   ⟦ t • ts ⟧ΔTerms ρ dρ = ⟦ t ⟧Δ ρ dρ • ⟦ ts ⟧ΔTerms ρ dρ
 
-  correctVar : ∀ {τ Γ} (x : Var Γ τ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) →
+  correctVar : ∀ {τ Γ} (x : Var Γ τ) (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) →
     ⟦ x ⟧ ρ ⊞₍ τ ₎ ⟦ x ⟧ΔVar ρ dρ ≡ ⟦ x ⟧ (after-env dρ)
   correctVar (this) (v • ρ) (dv • dρ) = refl
   correctVar (that y) (v • ρ) (dv • dρ) = correctVar y ρ dρ
@@ -143,7 +143,7 @@ record Structure : Set₁ where
   -- Corollary: (f ⊞ df) (v ⊞ dv) = f v ⊞ df v dv
 
   corollary : ∀ {σ τ Γ}
-    (s : Term Γ (σ ⇒ τ)) (t : Term Γ σ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) →
+    (s : Term Γ (σ ⇒ τ)) (t : Term Γ σ) (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) →
       (⟦ s ⟧ ρ ⊞₍ σ ⇒ τ ₎ ⟦ s ⟧Δ ρ dρ)
         (⟦ t ⟧ ρ ⊞₍ σ ₎ ⟦ t ⟧Δ ρ dρ)
     ≡ (⟦ s ⟧ ρ) (⟦ t ⟧ ρ)
