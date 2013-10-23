@@ -100,6 +100,18 @@ Derivative : ∀ {a b c d} {A : Set a} {B : Set b} →
   Set (a ⊔ b ⊔ c)
 Derivative f df = ∀ a da → f a ⊞ df a da ≡ f (a ⊞ da)
 
+Derivative₍_,_₎ : ∀ {a b p q c d} {A : Set a} {B : Set b} {P : A → Set p} {Q : B → Set q} →
+  {{CP : ChangeAlgebraFamily c P}} →
+  {{CQ : ChangeAlgebraFamily d Q}} →
+  (x : A) →
+  (y : B) →
+  (f : P x → Q y) →
+  (df : (px : P x) (dpx : Δ₍ x ₎ px) → Δ₍ y ₎ (f px)) →
+  Set (p ⊔ q ⊔ c)
+Derivative₍ x , y ₎ f df = Derivative f df where
+  CPx = change-algebra₍ x ₎
+  CQy = change-algebra₍ y ₎
+
 -- Abelian groups induce change algebras
 
 open import Algebra.Structures
