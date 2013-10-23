@@ -36,7 +36,7 @@ private
   ⟦ sum-const ⟧ΔConst (b • ∅) (db • ∅) = sumBag db
 
   correctness-const : ∀ {Σ τ} (c : Const Σ τ) (ρ : ⟦ Σ ⟧) (dρ : ΔEnv Σ ρ) →
-    after {τ} (⟦ c ⟧ΔConst ρ dρ) ≡ ⟦ c ⟧Const (update dρ)
+    after₍ τ ₎ (⟦ c ⟧ΔConst ρ dρ) ≡ ⟦ c ⟧Const (update dρ)
   correctness-const (intlit-const n) ∅ ∅ = right-id-int n
   correctness-const add-const (n₁ • n₂ • ∅) (dn₁ • dn₂ • ∅) =
     mn·pq=mp·nq {n₁} {n₂} {dn₁} {dn₂}

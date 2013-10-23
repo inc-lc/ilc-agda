@@ -91,7 +91,7 @@ record Structure : Set₁ where
     {v : ⟦ τ ⟧}
     (Δv : Change τ v)
     {Δv′ : ⟦ ΔType τ ⟧} (Δv≈Δv′ : Δv ≈₍ τ ₎ Δv′) →
-      after {τ} Δv ≡ before {τ} Δv ⟦⊕₍ τ ₎⟧ Δv′
+      after₍ τ ₎ Δv ≡ before₍ τ ₎ Δv ⟦⊕₍ τ ₎⟧ Δv′
 
   u⊟v≈u⊝v : ∀ {τ : Type} {u v : ⟦ τ ⟧} →
     diff-change τ u v ≈₍ τ ₎ u ⟦⊝₍ τ ₎⟧ v
@@ -100,10 +100,10 @@ record Structure : Set₁ where
   u⊟v≈u⊝v {σ ⇒ τ} {g} {f} = result where
     result : (w : ⟦ σ ⟧) (Δw : Change σ w) →
       (Δw′ : ⟦ ΔType σ ⟧) → Δw ≈₍ σ ₎ Δw′ →
-        diff-change τ (g (after {σ} Δw)) (f (before {σ} Δw)) ≈₍ τ ₎ g (before {σ} Δw ⟦⊕₍ σ ₎⟧ Δw′) ⟦⊝₍ τ ₎⟧ f (before {σ} Δw)
+        diff-change τ (g (after₍ σ ₎ Δw)) (f (before₍ σ ₎ Δw)) ≈₍ τ ₎ g (before₍ σ ₎ Δw ⟦⊕₍ σ ₎⟧ Δw′) ⟦⊝₍ τ ₎⟧ f (before₍ σ ₎ Δw)
     result w Δw Δw′ Δw≈Δw′
       rewrite carry-over {σ} Δw Δw≈Δw′ =
-      u⊟v≈u⊝v {τ} {g (before {σ} Δw ⟦⊕₍ σ ₎⟧ Δw′)} {f (before {σ} Δw)}
+      u⊟v≈u⊝v {τ} {g (before₍ σ ₎ Δw ⟦⊕₍ σ ₎⟧ Δw′)} {f (before₍ σ ₎ Δw)}
 
   carry-over {base ι} Δv Δv≈Δv′ = carry-over-base Δv Δv≈Δv′
   carry-over {σ ⇒ τ} {f} Δf {Δf′} Δf≈Δf′ =

@@ -42,7 +42,7 @@ record Structure : Set₁ where
     ⟦_⟧ΔConst : ∀ {Σ τ} → (c  : Const Σ τ) (ρ : ⟦ Σ ⟧) → ΔEnv Σ ρ → Change τ (⟦ c ⟧Const ρ)
 
     correctness-const : ∀ {Σ τ} (c : Const Σ τ) (ρ : ⟦ Σ ⟧) (dρ : ΔEnv Σ ρ)
-      → after {τ} (⟦ c ⟧ΔConst ρ dρ) ≡ ⟦ c ⟧Const (update dρ)
+      → after₍ τ ₎ (⟦ c ⟧ΔConst ρ dρ) ≡ ⟦ c ⟧Const (update dρ)
 
   ---------------
   -- Interface --
@@ -52,7 +52,7 @@ record Structure : Set₁ where
   ⟦_⟧ΔTerms : ∀ {Σ Γ} → (ts : Terms Γ Σ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) → ΔEnv Σ (⟦ ts ⟧Terms ρ)
 
   correctness : ∀ {τ Γ} (t : Term Γ τ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ)
-    → after {τ} (⟦ t ⟧Δ ρ dρ) ≡ ⟦ t ⟧ (update dρ)
+    → after₍ τ ₎ (⟦ t ⟧Δ ρ dρ) ≡ ⟦ t ⟧ (update dρ)
 
   correctness-terms : ∀ {Σ Γ} (ts : Terms Γ Σ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ)
     → update (⟦ ts ⟧ΔTerms ρ dρ) ≡ ⟦ ts ⟧Terms (update dρ)
@@ -103,7 +103,7 @@ record Structure : Set₁ where
 
   correctness (const {Σ} {τ} c ts) ρ dρ =
     begin
-      after {τ} (⟦ c ⟧ΔConst (⟦ ts ⟧Terms ρ) (⟦ ts ⟧ΔTerms ρ dρ))
+      after₍ τ ₎ (⟦ c ⟧ΔConst (⟦ ts ⟧Terms ρ) (⟦ ts ⟧ΔTerms ρ dρ))
     ≡⟨ correctness-const c (⟦ ts ⟧Terms ρ) (⟦ ts ⟧ΔTerms ρ dρ) ⟩
       ⟦ c ⟧Const (update (⟦ ts ⟧ΔTerms ρ dρ))
     ≡⟨ cong ⟦ c ⟧Const (correctness-terms ts ρ dρ) ⟩
@@ -155,7 +155,7 @@ record Structure : Set₁ where
 
   corollary-closed : ∀ {σ τ} (t : Term ∅ (σ ⇒ τ))
     (v : ⟦ σ ⟧) (dv : Change σ v)
-    → ⟦ t ⟧ ∅ (after {σ} dv)
+    → ⟦ t ⟧ ∅ (after₍ σ ₎ dv)
     ≡ ⟦ t ⟧ ∅ v ⊞₍ τ ₎ call-change {σ} {τ} (⟦ t ⟧Δ ∅ ∅) v dv
 
   corollary-closed {σ} {τ} t v dv =
@@ -164,10 +164,10 @@ record Structure : Set₁ where
       Δf = ⟦ t ⟧Δ ∅ ∅
     in
       begin
-        f (after {σ} dv)
-      ≡⟨ cong (λ hole → hole (after {σ} dv))
+        f (after₍ σ ₎ dv)
+      ≡⟨ cong (λ hole → hole (after₍ σ ₎ dv))
               (sym (correctness {σ ⇒ τ} t ∅ ∅)) ⟩
-         (f ⊞₍ σ ⇒ τ ₎ Δf) (after {σ} dv)
+         (f ⊞₍ σ ⇒ τ ₎ Δf) (after₍ σ ₎ dv)
       ≡⟨ is-valid {σ} {τ} (⟦ t ⟧Δ ∅ ∅) v dv ⟩
-        f (before {σ} dv) ⊞₍ τ ₎ call-change {σ} {τ} Δf v dv
+        f (before₍ σ ₎ dv) ⊞₍ τ ₎ call-change {σ} {τ} Δf v dv
       ∎ where open ≡-Reasoning

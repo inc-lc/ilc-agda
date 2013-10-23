@@ -41,7 +41,7 @@ private
     {Δv′ : ⟦ ΔBase ι ⟧Base} (Δv≈Δv′ : implements-base ι {v} Δv Δv′) →
       v ⊞₍ base ι ₎ Δv ≡ v ⟦⊕₍ base ι ₎⟧ Δv′
   carry-over-base {base-int} {v} Δv Δv≈Δv′ = cong (_+_ v) Δv≈Δv′
-  carry-over-base {base-bag} Δv Δv≈Δv′ = cong (_++_ (before {bag} Δv)) Δv≈Δv′
+  carry-over-base {base-bag} Δv Δv≈Δv′ = cong (_++_ (before₍ bag ₎ Δv)) Δv≈Δv′
 
 implementation-structure : Implementation.Structure
 implementation-structure = record

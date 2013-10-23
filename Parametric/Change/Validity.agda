@@ -77,11 +77,11 @@ module Structure (change-algebra-base : Structure) where
         )
 
   -- abbrevitations
-  before : ∀ {τ v} → Change τ v → ⟦ τ ⟧Type
-  before {τ} {v} _ = v
+  before₍_₎ : ∀ τ {v} → Change τ v → ⟦ τ ⟧Type
+  before₍ τ ₎ {v} _ = v
 
-  after : ∀ {τ v} → Change τ v → ⟦ τ ⟧Type
-  after {τ} {v} dv = v ⊞₍ τ ₎ dv
+  after₍_₎ : ∀ τ {v} → Change τ v → ⟦ τ ⟧Type
+  after₍ τ ₎ {v} dv = v ⊞₍ τ ₎ dv
 
   ------------------
   -- Environments --
