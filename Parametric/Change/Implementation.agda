@@ -62,16 +62,16 @@ record Structure : Set₁ where
 
   infix 4 implements
   syntax implements τ u v = u ≈₍ τ ₎ v
-  implements : ∀ τ {v} → Change τ v → ⟦ ΔType τ ⟧ → Set
+  implements : ∀ τ {v} → Δ₍ τ ₎ v → ⟦ ΔType τ ⟧ → Set
 
   implements (base ι) Δf Δf′ = implements-base ι Δf Δf′
   implements (σ ⇒ τ) {f} Δf Δf′ =
-    (w : ⟦ σ ⟧) (Δw : Change σ w)
+    (w : ⟦ σ ⟧) (Δw : Δ₍ σ ₎ w)
     (Δw′ : ⟦ ΔType σ ⟧) (Δw≈Δw′ : implements σ {w} Δw Δw′) →
     implements τ {f w} (call-change {σ} {τ} Δf w Δw) (Δf′ w Δw′)
 
   infix 4 _≈_
-  _≈_ : ∀ {τ v} → Change τ v → ⟦ ΔType τ ⟧ → Set
+  _≈_ : ∀ {τ v} → Δ₍ τ ₎ v → ⟦ ΔType τ ⟧ → Set
   _≈_ {τ} {v} = implements τ {v}
 
   data implements-env : ∀ Γ → {ρ : ⟦ Γ ⟧} (dρ : ΔEnv Γ ρ) → ⟦ mapContext ΔType Γ ⟧ → Set where
@@ -89,7 +89,7 @@ record Structure : Set₁ where
   -- proven about the specification carry over to the programs.
   carry-over : ∀ {τ}
     {v : ⟦ τ ⟧}
-    (Δv : Change τ v)
+    (Δv : Δ₍ τ ₎ v)
     {Δv′ : ⟦ ΔType τ ⟧} (Δv≈Δv′ : Δv ≈₍ τ ₎ Δv′) →
       after₍ τ ₎ Δv ≡ before₍ τ ₎ Δv ⟦⊕₍ τ ₎⟧ Δv′
 
@@ -98,7 +98,7 @@ record Structure : Set₁ where
 
   u⊟v≈u⊝v {base ι} {u} {v} = u⊟v≈u⊝v-base ι {u} {v}
   u⊟v≈u⊝v {σ ⇒ τ} {g} {f} = result where
-    result : (w : ⟦ σ ⟧) (Δw : Change σ w) →
+    result : (w : ⟦ σ ⟧) (Δw : Δ₍ σ ₎ w) →
       (Δw′ : ⟦ ΔType σ ⟧) → Δw ≈₍ σ ₎ Δw′ →
         diff-change τ (g (after₍ σ ₎ Δw)) (f (before₍ σ ₎ Δw)) ≈₍ τ ₎ g (before₍ σ ₎ Δw ⟦⊕₍ σ ₎⟧ Δw′) ⟦⊝₍ τ ₎⟧ f (before₍ σ ₎ Δw)
     result w Δw Δw′ Δw≈Δw′

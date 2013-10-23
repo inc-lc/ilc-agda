@@ -39,7 +39,7 @@ record Structure : Set₁ where
   ----------------
 
   field
-    ⟦_⟧ΔConst : ∀ {Σ τ} → (c  : Const Σ τ) (ρ : ⟦ Σ ⟧) → ΔEnv Σ ρ → Change τ (⟦ c ⟧Const ρ)
+    ⟦_⟧ΔConst : ∀ {Σ τ} → (c  : Const Σ τ) (ρ : ⟦ Σ ⟧) → ΔEnv Σ ρ → Δ₍ τ ₎ (⟦ c ⟧Const ρ)
 
     correctness-const : ∀ {Σ τ} (c : Const Σ τ) (ρ : ⟦ Σ ⟧) (dρ : ΔEnv Σ ρ)
       → after₍ τ ₎ (⟦ c ⟧ΔConst ρ dρ) ≡ ⟦ c ⟧Const (after-env dρ)
@@ -48,7 +48,7 @@ record Structure : Set₁ where
   -- Interface --
   ---------------
 
-  ⟦_⟧Δ : ∀ {τ Γ} → (t : Term Γ τ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) → Change τ (⟦ t ⟧ ρ)
+  ⟦_⟧Δ : ∀ {τ Γ} → (t : Term Γ τ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) → Δ₍ τ ₎ (⟦ t ⟧ ρ)
   ⟦_⟧ΔTerms : ∀ {Σ Γ} → (ts : Terms Γ Σ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) → ΔEnv Σ (⟦ ts ⟧Terms ρ)
 
   correctness : ∀ {τ Γ} (t : Term Γ τ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ)
@@ -61,7 +61,7 @@ record Structure : Set₁ where
   -- Implementation --
   --------------------
 
-  ⟦_⟧ΔVar : ∀ {τ Γ} → (x : Var Γ τ) → (ρ : ⟦ Γ ⟧) → ΔEnv Γ ρ → Change τ (⟦ x ⟧Var ρ)
+  ⟦_⟧ΔVar : ∀ {τ Γ} → (x : Var Γ τ) → (ρ : ⟦ Γ ⟧) → ΔEnv Γ ρ → Δ₍ τ ₎ (⟦ x ⟧Var ρ)
   ⟦ this   ⟧ΔVar (v • ρ) (dv • dρ) = dv
   ⟦ that x ⟧ΔVar (v • ρ) (dv • dρ) = ⟦ x ⟧ΔVar ρ dρ
 
@@ -154,7 +154,7 @@ record Structure : Set₁ where
     is-valid {σ} {τ} (⟦ s ⟧Δ ρ dρ) (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ)
 
   corollary-closed : ∀ {σ τ} (t : Term ∅ (σ ⇒ τ))
-    (v : ⟦ σ ⟧) (dv : Change σ v)
+    (v : ⟦ σ ⟧) (dv : Δ₍ σ ₎ v)
     → ⟦ t ⟧ ∅ (after₍ σ ₎ dv)
     ≡ ⟦ t ⟧ ∅ v ⊞₍ τ ₎ call-change {σ} {τ} (⟦ t ⟧Δ ∅ ∅) v dv
 

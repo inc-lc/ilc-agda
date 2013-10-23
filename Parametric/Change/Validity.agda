@@ -48,11 +48,10 @@ module Structure (change-algebra-base : Structure) where
 
   open CA public
     using
-      (
+      ( Δ₍_₎
       )
     renaming
-      ( Δ₍_₎ to Change
-      ; update′ to apply-change
+      ( update′ to apply-change
       ; diff′ to diff-change
       ; nil₍_₎ to nil-change
       )

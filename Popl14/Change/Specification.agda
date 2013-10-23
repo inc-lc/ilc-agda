@@ -22,7 +22,7 @@ import Parametric.Change.Specification
   Const ⟦_⟧Base ⟦_⟧Const change-algebra-base-family as Specification
 
 private
-  ⟦_⟧ΔConst : ∀ {Σ τ} → (c  : Const Σ τ) (ρ : ⟦ Σ ⟧) → ΔEnv Σ ρ → Change τ (⟦ c ⟧Const ρ)
+  ⟦_⟧ΔConst : ∀ {Σ τ} → (c  : Const Σ τ) (ρ : ⟦ Σ ⟧) → ΔEnv Σ ρ → Δ₍ τ ₎ (⟦ c ⟧Const ρ)
   ⟦ intlit-const n ⟧ΔConst ∅ ∅ = + 0
   ⟦ add-const ⟧ΔConst (n₁ • n₂ • ∅) (dn₁ • dn₂ • ∅) = dn₁ + dn₂
   ⟦ minus-const ⟧ΔConst (n • ∅) (dn • ∅) = - dn
