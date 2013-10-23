@@ -132,7 +132,7 @@ record Structure : Set₁ where
       dρ′ = nil-change σ v • dρ
     in
       begin
-        ⟦ t ⟧ (ignore dρ′) ⊞₍ τ ₎ ⟦ t ⟧Δ _ dρ′
+        ⟦ t ⟧ (v • ρ) ⊞₍ τ ₎ ⟦ t ⟧Δ _ dρ′
       ≡⟨ correctness {τ} t _ dρ′ ⟩
         ⟦ t ⟧ (update dρ′)
       ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • update dρ)) (v+[u-v]=u {σ}) ⟩

@@ -100,9 +100,6 @@ module Structure (change-algebra-base : Structure) where
   ΔEnv : ∀ (Γ : Context) → ⟦ Γ ⟧ → Set
   ΔEnv Γ ρ = CA.Δ₍ Γ ₎ ρ
 
-  ignore : ∀ {Γ : Context} → {ρ : ⟦ Γ ⟧} (dρ : ΔEnv Γ ρ) → ⟦ Γ ⟧
-  ignore {Γ} = before₍ Γ ₎
-
   update : ∀ {Γ : Context} → {ρ : ⟦ Γ ⟧} (dρ : ΔEnv Γ ρ) → ⟦ Γ ⟧
   update {Γ} = after₍ Γ ₎
 
