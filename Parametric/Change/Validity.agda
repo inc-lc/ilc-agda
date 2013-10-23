@@ -102,9 +102,3 @@ module Structure (change-algebra-base : Structure) where
 
   after-env : ∀ {Γ : Context} → {ρ : ⟦ Γ ⟧} (dρ : ΔEnv Γ ρ) → ⟦ Γ ⟧
   after-env {Γ} = after₍ Γ ₎
-
-  apply-env : ∀ Γ → (ρ : ⟦ Γ ⟧) → (dρ : ΔEnv Γ ρ) → ⟦ Γ ⟧
-  apply-env = CA.update′
-
-  diff-env : ∀ Γ → (π ρ : ⟦ Γ ⟧) → ΔEnv Γ ρ
-  diff-env = CA.diff′
