@@ -41,8 +41,8 @@ record Structure : Set₁ where
   field
     ⟦_⟧ΔConst : ∀ {Σ τ} → (c  : Const Σ τ) (ρ : ⟦ Σ ⟧) → Δ₍ Σ ₎ ρ → Δ₍ τ ₎ (⟦ c ⟧Const ρ)
 
-    correctness-const : ∀ {Σ τ} (c : Const Σ τ) (ρ : ⟦ Σ ⟧) (dρ : Δ₍ Σ ₎ ρ)
-      → after₍ τ ₎ (⟦ c ⟧ΔConst ρ dρ) ≡ ⟦ c ⟧Const (after-env dρ)
+    correctness-const : ∀ {Σ τ} (c : Const Σ τ) →
+      Derivative₍ Σ , τ ₎ ⟦ c ⟧Const ⟦ c ⟧ΔConst
 
   ---------------
   -- Interface --
@@ -51,11 +51,11 @@ record Structure : Set₁ where
   ⟦_⟧Δ : ∀ {τ Γ} → (t : Term Γ τ) (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) → Δ₍ τ ₎ (⟦ t ⟧ ρ)
   ⟦_⟧ΔTerms : ∀ {Σ Γ} → (ts : Terms Γ Σ) (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) → Δ₍ Σ ₎ (⟦ ts ⟧Terms ρ)
 
-  correctness : ∀ {τ Γ} (t : Term Γ τ) (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ)
-    → after₍ τ ₎ (⟦ t ⟧Δ ρ dρ) ≡ ⟦ t ⟧ (after-env dρ)
+  correctness : ∀ {τ Γ} (t : Term Γ τ) →
+    Derivative₍ Γ , τ ₎ ⟦ t ⟧ ⟦ t ⟧Δ
 
-  correctness-terms : ∀ {Σ Γ} (ts : Terms Γ Σ) (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ)
-    → after-env (⟦ ts ⟧ΔTerms ρ dρ) ≡ ⟦ ts ⟧Terms (after-env dρ)
+  correctness-terms : ∀ {Σ Γ} (ts : Terms Γ Σ) →
+    Derivative₍ Γ , Σ ₎ ⟦ ts ⟧Terms ⟦ ts ⟧ΔTerms
 
   --------------------
   -- Implementation --
@@ -90,8 +90,8 @@ record Structure : Set₁ where
   ⟦ ∅ ⟧ΔTerms ρ dρ = ∅
   ⟦ t • ts ⟧ΔTerms ρ dρ = ⟦ t ⟧Δ ρ dρ • ⟦ ts ⟧ΔTerms ρ dρ
 
-  correctVar : ∀ {τ Γ} (x : Var Γ τ) (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) →
-    ⟦ x ⟧ ρ ⊞₍ τ ₎ ⟦ x ⟧ΔVar ρ dρ ≡ ⟦ x ⟧ (after-env dρ)
+  correctVar : ∀ {τ Γ} (x : Var Γ τ) →
+    Derivative₍ Γ , τ ₎ ⟦ x ⟧ ⟦ x ⟧ΔVar
   correctVar (this) (v • ρ) (dv • dρ) = refl
   correctVar (that y) (v • ρ) (dv • dρ) = correctVar y ρ dρ
 
