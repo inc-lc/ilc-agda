@@ -94,13 +94,13 @@ record Structure : Set₁ where
       after₍ τ ₎ Δv ≡ before₍ τ ₎ Δv ⟦⊕₍ τ ₎⟧ Δv′
 
   u⊟v≈u⊝v : ∀ {τ : Type} {u v : ⟦ τ ⟧} →
-    diff-change τ u v ≈₍ τ ₎ u ⟦⊝₍ τ ₎⟧ v
+    u ⊟₍ τ ₎ v ≈₍ τ ₎ u ⟦⊝₍ τ ₎⟧ v
 
   u⊟v≈u⊝v {base ι} {u} {v} = u⊟v≈u⊝v-base ι {u} {v}
   u⊟v≈u⊝v {σ ⇒ τ} {g} {f} = result where
     result : (w : ⟦ σ ⟧) (Δw : Δ₍ σ ₎ w) →
       (Δw′ : ⟦ ΔType σ ⟧) → Δw ≈₍ σ ₎ Δw′ →
-        diff-change τ (g (after₍ σ ₎ Δw)) (f (before₍ σ ₎ Δw)) ≈₍ τ ₎ g (before₍ σ ₎ Δw ⟦⊕₍ σ ₎⟧ Δw′) ⟦⊝₍ τ ₎⟧ f (before₍ σ ₎ Δw)
+        (g (after₍ σ ₎ Δw) ⊟₍ τ ₎ f (before₍ σ ₎ Δw)) ≈₍ τ ₎ g (before₍ σ ₎ Δw ⟦⊕₍ σ ₎⟧ Δw′) ⟦⊝₍ τ ₎⟧ f (before₍ σ ₎ Δw)
     result w Δw Δw′ Δw≈Δw′
       rewrite carry-over {σ} Δw Δw≈Δw′ =
       u⊟v≈u⊝v {τ} {g (before₍ σ ₎ Δw ⟦⊕₍ σ ₎⟧ Δw′)} {f (before₍ σ ₎ Δw)}

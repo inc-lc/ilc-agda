@@ -49,11 +49,11 @@ module Structure (change-algebra-base : Structure) where
   open CA public
     using
       ( Δ₍_₎
+      ; update′
+      ; diff′
       )
     renaming
-      ( update′ to apply-change
-      ; diff′ to diff-change
-      ; nil₍_₎ to nil-change
+      ( nil₍_₎ to nil-change
       )
 
   -- Lemma apply-diff
