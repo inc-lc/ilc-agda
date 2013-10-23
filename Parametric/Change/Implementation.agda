@@ -47,12 +47,12 @@ record Structure : Set₁ where
   ----------------
 
   field
-    implements-base : ∀ ι {v} → Change-base ι v → ⟦ ΔBase ι ⟧Base → Set
+    implements-base : ∀ ι {v : ⟦ ι ⟧Base} → Δ₍ ι ₎ v → ⟦ ΔBase ι ⟧Base → Set
     u⊟v≈u⊝v-base : ∀ ι {u v : ⟦ ι ⟧Base} →
       implements-base ι (diff-change-base ι u v) (⟦diff-base⟧ ι u v)
     carry-over-base : ∀ {ι}
       {v : ⟦ ι ⟧Base}
-      (Δv : Change-base ι v)
+      (Δv : Δ₍ ι ₎ v)
       {Δv′ : ⟦ ΔBase ι ⟧Base} (Δv≈Δv′ : implements-base ι Δv Δv′) →
         v ⊞₍ base ι ₎ Δv ≡ v ⟦⊕₍ base ι ₎⟧ Δv′
 

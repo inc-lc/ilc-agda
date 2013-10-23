@@ -18,6 +18,7 @@ open import Base.Change.Algebra as CA using
   ; ChangeAlgebraFamily
   ; change-algebra₍_₎
   ; family
+  ; Δ₍_₎
   )
 open import Level
 
@@ -36,10 +37,7 @@ module Structure (change-algebra-base : Structure) where
   -- Parameters --
   ----------------
 
-  Change-base : (ι : Base) → ⟦ ι ⟧Base → Set
-  Change-base = CA.Δ₍_₎
-
-  diff-change-base : ∀ ι → (u v : ⟦ ι ⟧Base) → Change-base ι v
+  diff-change-base : ∀ ι → (u v : ⟦ ι ⟧Base) → Δ₍ ι ₎ v
   diff-change-base = CA.diff′
 
   ---------------

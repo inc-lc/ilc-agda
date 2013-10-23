@@ -26,7 +26,7 @@ import Parametric.Change.Implementation
     ⟦apply-base⟧ ⟦diff-base⟧ deriveConst as Implementation
 
 private
-  implements-base : ∀ ι {v} → Change-base ι v → ⟦ ΔBase ι ⟧Base → Set
+  implements-base : ∀ ι {v : ⟦ ι ⟧Base} → Δ₍ ι ₎ v → ⟦ ΔBase ι ⟧Base → Set
   implements-base base-int {v} Δv Δv′ = Δv ≡ Δv′
   implements-base base-bag {v} Δv Δv′ = Δv ≡ Δv′
 
@@ -37,7 +37,7 @@ private
 
   carry-over-base : ∀ {ι}
     {v : ⟦ ι ⟧Base}
-    (Δv : Change-base ι v)
+    (Δv : Δ₍ ι ₎ v)
     {Δv′ : ⟦ ΔBase ι ⟧Base} (Δv≈Δv′ : implements-base ι {v} Δv Δv′) →
       v ⊞₍ base ι ₎ Δv ≡ v ⟦⊕₍ base ι ₎⟧ Δv′
   carry-over-base {base-int} {v} Δv Δv≈Δv′ = cong (_+_ v) Δv≈Δv′
