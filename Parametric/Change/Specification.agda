@@ -42,7 +42,7 @@ record Structure : Set₁ where
     ⟦_⟧ΔConst : ∀ {Σ τ} → (c  : Const Σ τ) (ρ : ⟦ Σ ⟧) → ΔEnv Σ ρ → Change τ (⟦ c ⟧Const ρ)
 
     correctness-const : ∀ {Σ τ} (c : Const Σ τ) (ρ : ⟦ Σ ⟧) (dρ : ΔEnv Σ ρ)
-      → after₍ τ ₎ (⟦ c ⟧ΔConst ρ dρ) ≡ ⟦ c ⟧Const (update dρ)
+      → after₍ τ ₎ (⟦ c ⟧ΔConst ρ dρ) ≡ ⟦ c ⟧Const (after-env dρ)
 
   ---------------
   -- Interface --
@@ -52,10 +52,10 @@ record Structure : Set₁ where
   ⟦_⟧ΔTerms : ∀ {Σ Γ} → (ts : Terms Γ Σ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) → ΔEnv Σ (⟦ ts ⟧Terms ρ)
 
   correctness : ∀ {τ Γ} (t : Term Γ τ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ)
-    → after₍ τ ₎ (⟦ t ⟧Δ ρ dρ) ≡ ⟦ t ⟧ (update dρ)
+    → after₍ τ ₎ (⟦ t ⟧Δ ρ dρ) ≡ ⟦ t ⟧ (after-env dρ)
 
   correctness-terms : ∀ {Σ Γ} (ts : Terms Γ Σ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ)
-    → update (⟦ ts ⟧ΔTerms ρ dρ) ≡ ⟦ ts ⟧Terms (update dρ)
+    → after-env (⟦ ts ⟧ΔTerms ρ dρ) ≡ ⟦ ts ⟧Terms (after-env dρ)
 
   --------------------
   -- Implementation --
@@ -76,13 +76,13 @@ record Structure : Set₁ where
         ⟦ t ⟧ (v ⊞₍ σ ₎ dv • ρ)  ⊞₍ τ ₎
         ⟦ t ⟧Δ (v ⊞₍ σ ₎ dv • ρ) (nil-change σ (v ⊞₍ σ ₎ dv) • dρ)
       ≡⟨  correctness t (v ⊞₍ σ ₎ dv • ρ) (nil-change σ (v ⊞₍ σ ₎ dv) • dρ) ⟩
-        ⟦ t ⟧ (update (nil-change σ (v ⊞₍ σ ₎ dv) • dρ))
+        ⟦ t ⟧ (after-env (nil-change σ (v ⊞₍ σ ₎ dv) • dρ))
       ≡⟨⟩
-        ⟦ t ⟧ (((v ⊞₍ σ ₎ dv) ⊞₍ σ ₎ nil-change σ (v ⊞₍ σ ₎ dv)) • update dρ)
-      ≡⟨  cong (λ hole → ⟦ t ⟧ (hole • update dρ)) (v+[u-v]=u {σ})  ⟩
-        ⟦ t ⟧ (v ⊞₍ σ ₎ dv • update dρ)
+        ⟦ t ⟧ (((v ⊞₍ σ ₎ dv) ⊞₍ σ ₎ nil-change σ (v ⊞₍ σ ₎ dv)) • after-env dρ)
+      ≡⟨  cong (λ hole → ⟦ t ⟧ (hole • after-env dρ)) (v+[u-v]=u {σ})  ⟩
+        ⟦ t ⟧ (v ⊞₍ σ ₎ dv • after-env dρ)
       ≡⟨⟩
-        ⟦ t ⟧ (update (dv • dρ))
+        ⟦ t ⟧ (after-env (dv • dρ))
       ≡⟨  sym (correctness t (v • ρ) (dv • dρ))  ⟩
         ⟦ t ⟧ (v • ρ)  ⊞₍ τ ₎  ⟦ t ⟧Δ (v • ρ) (dv • dρ)
       ∎) where open ≡-Reasoning
@@ -91,7 +91,7 @@ record Structure : Set₁ where
   ⟦ t • ts ⟧ΔTerms ρ dρ = ⟦ t ⟧Δ ρ dρ • ⟦ ts ⟧ΔTerms ρ dρ
 
   correctVar : ∀ {τ Γ} (x : Var Γ τ) (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) →
-    ⟦ x ⟧ ρ ⊞₍ τ ₎ ⟦ x ⟧ΔVar ρ dρ ≡ ⟦ x ⟧ (update dρ)
+    ⟦ x ⟧ ρ ⊞₍ τ ₎ ⟦ x ⟧ΔVar ρ dρ ≡ ⟦ x ⟧ (after-env dρ)
   correctVar (this) (v • ρ) (dv • dρ) = refl
   correctVar (that y) (v • ρ) (dv • dρ) = correctVar y ρ dρ
 
@@ -105,17 +105,17 @@ record Structure : Set₁ where
     begin
       after₍ τ ₎ (⟦ c ⟧ΔConst (⟦ ts ⟧Terms ρ) (⟦ ts ⟧ΔTerms ρ dρ))
     ≡⟨ correctness-const c (⟦ ts ⟧Terms ρ) (⟦ ts ⟧ΔTerms ρ dρ) ⟩
-      ⟦ c ⟧Const (update (⟦ ts ⟧ΔTerms ρ dρ))
+      ⟦ c ⟧Const (after-env (⟦ ts ⟧ΔTerms ρ dρ))
     ≡⟨ cong ⟦ c ⟧Const (correctness-terms ts ρ dρ) ⟩
-      ⟦ c ⟧Const (⟦ ts ⟧Terms (update dρ))
+      ⟦ c ⟧Const (⟦ ts ⟧Terms (after-env dρ))
     ∎ where open ≡-Reasoning
   correctness {τ} (var x) ρ dρ = correctVar {τ} x ρ dρ
   correctness (app {σ} {τ} s t) ρ dρ =
     let
       f = ⟦ s ⟧ ρ
-      g = ⟦ s ⟧ (update dρ)
+      g = ⟦ s ⟧ (after-env dρ)
       u = ⟦ t ⟧ ρ
-      v = ⟦ t ⟧ (update dρ)
+      v = ⟦ t ⟧ (after-env dρ)
       Δf = ⟦ s ⟧Δ ρ dρ
       Δu = ⟦ t ⟧Δ ρ dρ
     in
@@ -134,9 +134,9 @@ record Structure : Set₁ where
       begin
         ⟦ t ⟧ (v • ρ) ⊞₍ τ ₎ ⟦ t ⟧Δ _ dρ′
       ≡⟨ correctness {τ} t _ dρ′ ⟩
-        ⟦ t ⟧ (update dρ′)
-      ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • update dρ)) (v+[u-v]=u {σ}) ⟩
-        ⟦ t ⟧ (v • update dρ)
+        ⟦ t ⟧ (after-env dρ′)
+      ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • after-env dρ)) (v+[u-v]=u {σ}) ⟩
+        ⟦ t ⟧ (v • after-env dρ)
       ∎
     ) where open ≡-Reasoning
 
