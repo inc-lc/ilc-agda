@@ -74,11 +74,11 @@ record Structure : Set₁ where
     (λ v dv →
       begin
         ⟦ t ⟧ (v ⊞₍ σ ₎ dv • ρ)  ⊞₍ τ ₎
-        ⟦ t ⟧Δ (v ⊞₍ σ ₎ dv • ρ) ((v ⊞₍ σ ₎ dv) ⊟₍ σ ₎ (v ⊞₍ σ ₎ dv) • dρ)
-      ≡⟨  correctness t (v ⊞₍ σ ₎ dv • ρ) ((v ⊞₍ σ ₎ dv) ⊟₍ σ ₎ (v ⊞₍ σ ₎ dv) • dρ) ⟩
-        ⟦ t ⟧ (update ((v ⊞₍ σ ₎ dv) ⊟₍ σ ₎ (v ⊞₍ σ ₎ dv) • dρ))
+        ⟦ t ⟧Δ (v ⊞₍ σ ₎ dv • ρ) (nil-change σ (v ⊞₍ σ ₎ dv) • dρ)
+      ≡⟨  correctness t (v ⊞₍ σ ₎ dv • ρ) (nil-change σ (v ⊞₍ σ ₎ dv) • dρ) ⟩
+        ⟦ t ⟧ (update (nil-change σ (v ⊞₍ σ ₎ dv) • dρ))
       ≡⟨⟩
-        ⟦ t ⟧ (((v ⊞₍ σ ₎ dv) ⊞₍ σ ₎ ((v ⊞₍ σ ₎ dv) ⊟₍ σ ₎ (v ⊞₍ σ ₎ dv))) • update dρ)
+        ⟦ t ⟧ (((v ⊞₍ σ ₎ dv) ⊞₍ σ ₎ nil-change σ (v ⊞₍ σ ₎ dv)) • update dρ)
       ≡⟨  cong (λ hole → ⟦ t ⟧ (hole • update dρ)) (v+[u-v]=u {σ})  ⟩
         ⟦ t ⟧ (v ⊞₍ σ ₎ dv • update dρ)
       ≡⟨⟩
