@@ -76,12 +76,12 @@ module Structure (change-algebra-base : Structure) where
         ; apply to call-change
         )
 
-  -- abbrevitations
-  before₍_₎ : ∀ τ {v} → Change τ v → ⟦ τ ⟧Type
-  before₍ τ ₎ {v} _ = v
-
-  after₍_₎ : ∀ τ {v} → Change τ v → ⟦ τ ⟧Type
-  after₍ τ ₎ {v} dv = v ⊞₍ τ ₎ dv
+  open CA public using
+    ( before
+    ; after
+    ; before₍_₎
+    ; after₍_₎
+    )
 
   ------------------
   -- Environments --
@@ -101,10 +101,10 @@ module Structure (change-algebra-base : Structure) where
   ΔEnv Γ ρ = CA.Δ₍ Γ ₎ ρ
 
   ignore : ∀ {Γ : Context} → {ρ : ⟦ Γ ⟧} (dρ : ΔEnv Γ ρ) → ⟦ Γ ⟧
-  ignore {Γ} {ρ} _ = ρ
+  ignore {Γ} = before₍ Γ ₎
 
   update : ∀ {Γ : Context} → {ρ : ⟦ Γ ⟧} (dρ : ΔEnv Γ ρ) → ⟦ Γ ⟧
-  update {Γ} {ρ} dρ = CA.update′ Γ ρ dρ
+  update {Γ} = after₍ Γ ₎
 
   apply-env : ∀ Γ → (ρ : ⟦ Γ ⟧) → (dρ : ΔEnv Γ ρ) → ⟦ Γ ⟧
   apply-env = CA.update′

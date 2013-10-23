@@ -20,6 +20,13 @@ record IsChangeAlgebra
   update-nil : ∀ v → update v (nil v) ≡ v
   update-nil v = update-diff v v
 
+  -- abbrevitations
+  before : ∀ {v} → Change v → Carrier
+  before {v} _ = v
+
+  after : ∀ {v} → Change v → Carrier
+  after {v} dv = update v dv
+
 record ChangeAlgebra {c} ℓ
     (Carrier : Set c) : Set (c ⊔ suc ℓ) where
   field
@@ -39,6 +46,8 @@ open ChangeAlgebra {{...}} public
     ( update-diff
     ; update-nil
     ; nil
+    ; before
+    ; after
     )
   renaming
     ( Change to Δ
@@ -69,6 +78,8 @@ open Family public
     ; update-diff to update-diff₍_₎
     ; update-nil to update-nil₍_₎
     ; change-algebra to change-algebra₍_₎
+    ; before to before₍_₎
+    ; after to after₍_₎
     )
 
 infixl 6 update′ diff′
