@@ -33,13 +33,6 @@ module Structure (change-algebra-base : Structure) where
   change-algebra-family : ChangeAlgebraFamily zero ⟦_⟧Type
   change-algebra-family = family change-algebra
 
-  ----------------
-  -- Parameters --
-  ----------------
-
-  diff-change-base : ∀ ι → (u v : ⟦ ι ⟧Base) → Δ₍ ι ₎ v
-  diff-change-base = CA.diff′
-
   ---------------
   -- Interface --
   ---------------

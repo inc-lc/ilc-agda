@@ -31,7 +31,7 @@ private
   implements-base base-bag {v} Δv Δv′ = Δv ≡ Δv′
 
   u⊟v≈u⊝v-base : ∀ ι → {u v : ⟦ ι ⟧Base} →
-      implements-base ι {v} (diff-change-base ι u v) (⟦diff-base⟧ ι u v)
+      implements-base ι {v} (u ⊟₍ ι ₎ v) (⟦diff-base⟧ ι u v)
   u⊟v≈u⊝v-base base-int = refl
   u⊟v≈u⊝v-base base-bag = refl
 

@@ -49,7 +49,7 @@ record Structure : Set₁ where
   field
     implements-base : ∀ ι {v : ⟦ ι ⟧Base} → Δ₍ ι ₎ v → ⟦ ΔBase ι ⟧Base → Set
     u⊟v≈u⊝v-base : ∀ ι {u v : ⟦ ι ⟧Base} →
-      implements-base ι (diff-change-base ι u v) (⟦diff-base⟧ ι u v)
+      implements-base ι (u ⊟₍ ι ₎ v) (⟦diff-base⟧ ι u v)
     carry-over-base : ∀ {ι}
       {v : ⟦ ι ⟧Base}
       (Δv : Δ₍ ι ₎ v)
