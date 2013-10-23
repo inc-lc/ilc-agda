@@ -79,7 +79,7 @@ record Structure : Set₁ where
         ⟦ t ⟧ (after-env (nil₍ σ ₎ (v ⊞₍ σ ₎ dv) • dρ))
       ≡⟨⟩
         ⟦ t ⟧ (((v ⊞₍ σ ₎ dv) ⊞₍ σ ₎ nil₍ σ ₎ (v ⊞₍ σ ₎ dv)) • after-env dρ)
-      ≡⟨  cong (λ hole → ⟦ t ⟧ (hole • after-env dρ)) (v+[u-v]=u {σ})  ⟩
+      ≡⟨  cong (λ hole → ⟦ t ⟧ (hole • after-env dρ)) (update-nil₍ σ ₎ (v ⊞₍ σ ₎ dv))  ⟩
         ⟦ t ⟧ (v ⊞₍ σ ₎ dv • after-env dρ)
       ≡⟨⟩
         ⟦ t ⟧ (after-env (dv • dρ))
@@ -135,7 +135,7 @@ record Structure : Set₁ where
         ⟦ t ⟧ (v • ρ) ⊞₍ τ ₎ ⟦ t ⟧Δ _ dρ′
       ≡⟨ correctness {τ} t _ dρ′ ⟩
         ⟦ t ⟧ (after-env dρ′)
-      ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • after-env dρ)) (v+[u-v]=u {σ}) ⟩
+      ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • after-env dρ)) (update-nil₍ σ ₎ v) ⟩
         ⟦ t ⟧ (v • after-env dρ)
       ∎
     ) where open ≡-Reasoning

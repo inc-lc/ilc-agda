@@ -120,7 +120,7 @@ module Structure (derive-const-correct : Structure) where
       ext {A = ⟦ ∅ ⟧Context} (λ { ∅ →
       begin
         h u
-      ≡⟨ cong h (sym (v+[u-v]=u {σ})) ⟩
+      ≡⟨ cong h (sym (update-diff₍ σ ₎ u v)) ⟩
         h (v ⊞₍ σ ₎ (u ⊟₍ σ ₎ v))
       ≡⟨ corollary-closed {σ} {τ} f v (u ⊟₍ σ ₎ v) ⟩
         h v ⊞₍ τ ₎ call-change {σ} {τ} Δh v (u ⊟₍ σ ₎ v)

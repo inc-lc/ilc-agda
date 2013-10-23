@@ -52,12 +52,9 @@ module Structure (change-algebra-base : Structure) where
       ; update′
       ; diff′
       ; nil₍_₎
+      ; update-diff₍_₎
+      ; update-nil₍_₎
       )
-
-  -- Lemma apply-diff
-  v+[u-v]=u : ∀ {τ : Type} {u v : ⟦ τ ⟧} →
-    v ⊞₍ τ ₎ (u ⊟₍ τ ₎ v) ≡ u
-  v+[u-v]=u {τ} {u} {v} = CA.update-diff₍ τ ₎ u v
 
   --------------------
   -- Implementation --
