@@ -51,9 +51,7 @@ module Structure (change-algebra-base : Structure) where
       ( Δ₍_₎
       ; update′
       ; diff′
-      )
-    renaming
-      ( nil₍_₎ to nil-change
+      ; nil₍_₎
       )
 
   -- Lemma apply-diff

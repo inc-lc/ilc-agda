@@ -74,11 +74,11 @@ record Structure : Set₁ where
     (λ v dv →
       begin
         ⟦ t ⟧ (v ⊞₍ σ ₎ dv • ρ)  ⊞₍ τ ₎
-        ⟦ t ⟧Δ (v ⊞₍ σ ₎ dv • ρ) (nil-change σ (v ⊞₍ σ ₎ dv) • dρ)
-      ≡⟨  correctness t (v ⊞₍ σ ₎ dv • ρ) (nil-change σ (v ⊞₍ σ ₎ dv) • dρ) ⟩
-        ⟦ t ⟧ (after-env (nil-change σ (v ⊞₍ σ ₎ dv) • dρ))
+        ⟦ t ⟧Δ (v ⊞₍ σ ₎ dv • ρ) (nil₍ σ ₎ (v ⊞₍ σ ₎ dv) • dρ)
+      ≡⟨  correctness t (v ⊞₍ σ ₎ dv • ρ) (nil₍ σ ₎ (v ⊞₍ σ ₎ dv) • dρ) ⟩
+        ⟦ t ⟧ (after-env (nil₍ σ ₎ (v ⊞₍ σ ₎ dv) • dρ))
       ≡⟨⟩
-        ⟦ t ⟧ (((v ⊞₍ σ ₎ dv) ⊞₍ σ ₎ nil-change σ (v ⊞₍ σ ₎ dv)) • after-env dρ)
+        ⟦ t ⟧ (((v ⊞₍ σ ₎ dv) ⊞₍ σ ₎ nil₍ σ ₎ (v ⊞₍ σ ₎ dv)) • after-env dρ)
       ≡⟨  cong (λ hole → ⟦ t ⟧ (hole • after-env dρ)) (v+[u-v]=u {σ})  ⟩
         ⟦ t ⟧ (v ⊞₍ σ ₎ dv • after-env dρ)
       ≡⟨⟩
@@ -129,7 +129,7 @@ record Structure : Set₁ where
   correctness {σ ⇒ τ} {Γ} (abs t) ρ dρ = ext (λ v →
     let
       -- dρ′ : ΔEnv (σ • Γ) (v • ρ)
-      dρ′ = nil-change σ v • dρ
+      dρ′ = nil₍ σ ₎ v • dρ
     in
       begin
         ⟦ t ⟧ (v • ρ) ⊞₍ τ ₎ ⟦ t ⟧Δ _ dρ′

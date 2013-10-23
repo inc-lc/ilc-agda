@@ -108,9 +108,9 @@ record Structure : Set₁ where
   carry-over {base ι} Δv Δv≈Δv′ = carry-over-base Δv Δv≈Δv′
   carry-over {σ ⇒ τ} {f} Δf {Δf′} Δf≈Δf′ =
     ext (λ v →
-      carry-over {τ} {f v} (call-change {σ} {τ} Δf v (nil-change σ v))
+      carry-over {τ} {f v} (call-change {σ} {τ} Δf v (nil₍ σ ₎ v))
         {Δf′ v (v ⟦⊝₍ σ ₎⟧ v)}
-        (Δf≈Δf′ v (nil-change σ v) (v ⟦⊝₍ σ ₎⟧ v) ( u⊟v≈u⊝v {σ} {v} {v})))
+        (Δf≈Δf′ v (nil₍ σ ₎ v) (v ⟦⊝₍ σ ₎⟧ v) ( u⊟v≈u⊝v {σ} {v} {v})))
 
   -- A property relating `alternate` and the subcontext relation Γ≼ΔΓ
   ⟦Γ≼ΔΓ⟧ : ∀ {Γ} (ρ : ⟦ Γ ⟧) (dρ : ⟦ mapContext ΔType Γ ⟧) →
