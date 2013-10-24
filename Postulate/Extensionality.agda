@@ -5,10 +5,9 @@ module Postulate.Extensionality where
 -- Justification on Agda mailing list:
 -- http://permalink.gmane.org/gmane.comp.lang.agda/2343
 
-open import Level using (zero)
 open import Relation.Binary.PropositionalEquality
 
-postulate ext : Extensionality zero zero
+postulate ext : ∀ {a b} → Extensionality a b
 
 -- Convenience of using extensionality 3 times in a row
 -- (using it twice in a row is moderately tolerable)

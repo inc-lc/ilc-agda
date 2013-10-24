@@ -9,18 +9,18 @@ import Parametric.Change.Validity ⟦_⟧Base as Validity
 
 open import Popl14.Change.Type 
 open import Popl14.Change.Value
-open import Theorem.Groups-Popl14
-open import Data.Unit
 
-validity-structure : Validity.Structure
-validity-structure = record
-    { Change-base = λ ι _ → ⟦ ΔBase ι ⟧Base
-    ; apply-change-base = ⟦apply-base⟧
-    ; diff-change-base = ⟦diff-base⟧
-    ; v+[u-v]=u-base = λ
-        { {base-int} {u} {v} → n+[m-n]=m {v} {u}
-        ; {base-bag} {u} {v} → a++[b\\a]=b {v} {u}
-        }
-    }
+open import Data.Integer
+open import Structure.Bag.Popl14
+open import Base.Change.Algebra
 
-open Validity.Structure validity-structure public
+open import Level
+
+change-algebra-base : ∀ ι → ChangeAlgebra zero ⟦ ι ⟧Base
+change-algebra-base base-int = GroupChanges.changeAlgebra ℤ
+change-algebra-base base-bag = GroupChanges.changeAlgebra Bag
+
+change-algebra-base-family : ChangeAlgebraFamily zero ⟦_⟧Base
+change-algebra-base-family = family change-algebra-base
+
+open Validity.Structure change-algebra-base-family public

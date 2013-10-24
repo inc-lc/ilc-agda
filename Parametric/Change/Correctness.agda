@@ -65,24 +65,24 @@ open import Postulate.Extensionality
 
 Structure : Set
 Structure = ∀ {Σ Γ τ} (c : Const Σ τ) (ts : Terms Γ Σ)
-  (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
+  (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
   (ts-correct : implements-env Σ (⟦ ts ⟧ΔTerms ρ dρ) (⟦ derive-terms ts ⟧Terms (alternate ρ ρ′))) →
   ⟦ c ⟧ΔConst (⟦ ts ⟧Terms ρ) (⟦ ts ⟧ΔTerms ρ dρ) ≈₍ τ ₎ ⟦ derive-const c (fit-terms ts) (derive-terms ts) ⟧ (alternate ρ ρ′)
 
 module Structure (derive-const-correct : Structure) where
   deriveVar-correct : ∀ {τ Γ} (x : Var Γ τ)
-    (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
+    (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
     ⟦ x ⟧ΔVar ρ dρ ≈₍ τ ₎ ⟦ deriveVar x ⟧ (alternate ρ ρ′)
   deriveVar-correct this (v • ρ) (dv • dρ) (dv′ • dρ′) (dv≈dv′ • dρ≈dρ′) = dv≈dv′
   deriveVar-correct (that x) (v • ρ) (dv • dρ) (dv′ • dρ′) (dv≈dv′ • dρ≈dρ′) = deriveVar-correct x ρ dρ dρ′ dρ≈dρ′
 
   -- That `derive t` implements ⟦ t ⟧Δ
   derive-correct : ∀ {τ Γ} (t : Term Γ τ)
-    (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
+    (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
     ⟦ t ⟧Δ ρ dρ ≈₍ τ ₎ ⟦ derive t ⟧ (alternate ρ ρ′)
 
   derive-terms-correct : ∀ {Σ Γ} (ts : Terms Γ Σ)
-    (ρ : ⟦ Γ ⟧) (dρ : ΔEnv Γ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
+    (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
     implements-env Σ (⟦ ts ⟧ΔTerms ρ dρ) (⟦ derive-terms ts ⟧Terms (alternate ρ ρ′))
 
   derive-terms-correct ∅ ρ dρ ρ′ dρ≈ρ′ = ∅
@@ -94,10 +94,10 @@ module Structure (derive-const-correct : Structure) where
       (derive-terms-correct ts ρ dρ ρ′ dρ≈ρ′)
   derive-correct (var x) ρ dρ ρ′ dρ≈ρ′ =
     deriveVar-correct x ρ dρ ρ′ dρ≈ρ′
-  derive-correct (app s t) ρ dρ ρ′ dρ≈ρ′
-    rewrite sym (⟦fit⟧ t ρ ρ′) =
-      derive-correct s ρ dρ ρ′ dρ≈ρ′
-      (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ) (⟦ derive t ⟧ (alternate ρ ρ′)) (derive-correct t ρ dρ ρ′ dρ≈ρ′)
+  derive-correct (app {σ} {τ} s t) ρ dρ ρ′ dρ≈ρ′
+   = subst (λ ⟦t⟧ → ⟦ app s t ⟧Δ ρ dρ ≈₍ τ ₎ (⟦ derive s ⟧Term (alternate ρ ρ′)) ⟦t⟧ (⟦ derive t ⟧Term (alternate ρ ρ′))) (⟦fit⟧ t ρ ρ′)
+       (derive-correct {σ ⇒ τ} s ρ dρ ρ′ dρ≈ρ′
+          (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ) (⟦ derive t ⟧ (alternate ρ ρ′)) (derive-correct {σ} t ρ dρ ρ′ dρ≈ρ′))
 
   derive-correct (abs {σ} {τ} t) ρ dρ ρ′ dρ≈ρ′ =
     λ w dw w′ dw≈w′ →
@@ -120,12 +120,12 @@ module Structure (derive-const-correct : Structure) where
       ext {A = ⟦ ∅ ⟧Context} (λ { ∅ →
       begin
         h u
-      ≡⟨ cong h (sym (v+[u-v]=u {σ})) ⟩
+      ≡⟨ cong h (sym (update-diff₍ σ ₎ u v)) ⟩
         h (v ⊞₍ σ ₎ (u ⊟₍ σ ₎ v))
       ≡⟨ corollary-closed {σ} {τ} f v (u ⊟₍ σ ₎ v) ⟩
-        h v ⊞₍ τ ₎ call-change Δh v (u ⊟₍ σ ₎ v)
+        h v ⊞₍ τ ₎ call-change {σ} {τ} Δh v (u ⊟₍ σ ₎ v)
       ≡⟨ carry-over {τ}
-         (call-change Δh v (u ⊟₍ σ ₎ v))
+         (call-change {σ} {τ} Δh v (u ⊟₍ σ ₎ v))
          (derive-correct f
            ∅ ∅ ∅ ∅ v (u ⊟₍ σ ₎ v) (u ⟦⊝₍ σ ₎⟧ v) (u⊟v≈u⊝v {σ} {u} {v})) ⟩
          h v ⟦⊕₍ τ ₎⟧ Δh′ v (u ⟦⊝₍ σ ₎⟧ v)

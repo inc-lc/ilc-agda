@@ -47,12 +47,12 @@ record Structure : Set₁ where
   ----------------
 
   field
-    implements-base : ∀ ι {v} → Change-base ι v → ⟦ ΔBase ι ⟧Base → Set
+    implements-base : ∀ ι {v : ⟦ ι ⟧Base} → Δ₍ ι ₎ v → ⟦ ΔBase ι ⟧Base → Set
     u⊟v≈u⊝v-base : ∀ ι {u v : ⟦ ι ⟧Base} →
-      implements-base ι (diff-change-base ι u v) (⟦diff-base⟧ ι u v)
+      implements-base ι (u ⊟₍ ι ₎ v) (⟦diff-base⟧ ι u v)
     carry-over-base : ∀ {ι}
       {v : ⟦ ι ⟧Base}
-      (Δv : Change-base ι v)
+      (Δv : Δ₍ ι ₎ v)
       {Δv′ : ⟦ ΔBase ι ⟧Base} (Δv≈Δv′ : implements-base ι Δv Δv′) →
         v ⊞₍ base ι ₎ Δv ≡ v ⟦⊕₍ base ι ₎⟧ Δv′
 
@@ -62,19 +62,19 @@ record Structure : Set₁ where
 
   infix 4 implements
   syntax implements τ u v = u ≈₍ τ ₎ v
-  implements : ∀ τ {v} → Change τ v → ⟦ ΔType τ ⟧ → Set
+  implements : ∀ τ {v} → Δ₍ τ ₎ v → ⟦ ΔType τ ⟧ → Set
 
   implements (base ι) Δf Δf′ = implements-base ι Δf Δf′
   implements (σ ⇒ τ) {f} Δf Δf′ =
-    (w : ⟦ σ ⟧) (Δw : Change σ w)
+    (w : ⟦ σ ⟧) (Δw : Δ₍ σ ₎ w)
     (Δw′ : ⟦ ΔType σ ⟧) (Δw≈Δw′ : implements σ {w} Δw Δw′) →
-    implements τ {f w} (call-change Δf w Δw) (Δf′ w Δw′)
+    implements τ {f w} (call-change {σ} {τ} Δf w Δw) (Δf′ w Δw′)
 
   infix 4 _≈_
-  _≈_ : ∀ {τ v} → Change τ v → ⟦ ΔType τ ⟧ → Set
+  _≈_ : ∀ {τ v} → Δ₍ τ ₎ v → ⟦ ΔType τ ⟧ → Set
   _≈_ {τ} {v} = implements τ {v}
 
-  data implements-env : ∀ Γ → {ρ : ⟦ Γ ⟧} (dρ : ΔEnv Γ ρ) → ⟦ mapContext ΔType Γ ⟧ → Set where
+  data implements-env : ∀ Γ → {ρ : ⟦ Γ ⟧} (dρ : Δ₍ Γ ₎ ρ) → ⟦ mapContext ΔType Γ ⟧ → Set where
     ∅ : implements-env ∅ {∅} ∅ ∅
     _•_ : ∀ {τ Γ v ρ dv dρ v′ ρ′} →
       (dv≈v′ : implements τ {v} dv v′) →
@@ -89,28 +89,28 @@ record Structure : Set₁ where
   -- proven about the specification carry over to the programs.
   carry-over : ∀ {τ}
     {v : ⟦ τ ⟧}
-    (Δv : Change τ v)
+    (Δv : Δ₍ τ ₎ v)
     {Δv′ : ⟦ ΔType τ ⟧} (Δv≈Δv′ : Δv ≈₍ τ ₎ Δv′) →
-      after {τ} Δv ≡ before {τ} Δv ⟦⊕₍ τ ₎⟧ Δv′
+      after₍ τ ₎ Δv ≡ before₍ τ ₎ Δv ⟦⊕₍ τ ₎⟧ Δv′
 
   u⊟v≈u⊝v : ∀ {τ : Type} {u v : ⟦ τ ⟧} →
-    diff-change τ u v ≈₍ τ ₎ u ⟦⊝₍ τ ₎⟧ v
+    u ⊟₍ τ ₎ v ≈₍ τ ₎ u ⟦⊝₍ τ ₎⟧ v
 
   u⊟v≈u⊝v {base ι} {u} {v} = u⊟v≈u⊝v-base ι {u} {v}
   u⊟v≈u⊝v {σ ⇒ τ} {g} {f} = result where
-    result : (w : ⟦ σ ⟧) (Δw : Change σ w) →
+    result : (w : ⟦ σ ⟧) (Δw : Δ₍ σ ₎ w) →
       (Δw′ : ⟦ ΔType σ ⟧) → Δw ≈₍ σ ₎ Δw′ →
-        diff-change τ (g (after {σ} Δw)) (f (before {σ} Δw)) ≈₍ τ ₎ g (before {σ} Δw ⟦⊕₍ σ ₎⟧ Δw′) ⟦⊝₍ τ ₎⟧ f (before {σ} Δw)
+        (g (after₍ σ ₎ Δw) ⊟₍ τ ₎ f (before₍ σ ₎ Δw)) ≈₍ τ ₎ g (before₍ σ ₎ Δw ⟦⊕₍ σ ₎⟧ Δw′) ⟦⊝₍ τ ₎⟧ f (before₍ σ ₎ Δw)
     result w Δw Δw′ Δw≈Δw′
       rewrite carry-over {σ} Δw Δw≈Δw′ =
-      u⊟v≈u⊝v {τ} {g (before {σ} Δw ⟦⊕₍ σ ₎⟧ Δw′)} {f (before {σ} Δw)}
+      u⊟v≈u⊝v {τ} {g (before₍ σ ₎ Δw ⟦⊕₍ σ ₎⟧ Δw′)} {f (before₍ σ ₎ Δw)}
 
   carry-over {base ι} Δv Δv≈Δv′ = carry-over-base Δv Δv≈Δv′
   carry-over {σ ⇒ τ} {f} Δf {Δf′} Δf≈Δf′ =
     ext (λ v →
-      carry-over {τ} {f v} (call-change Δf v (nil-change σ v))
+      carry-over {τ} {f v} (call-change {σ} {τ} Δf v (nil₍ σ ₎ v))
         {Δf′ v (v ⟦⊝₍ σ ₎⟧ v)}
-        (Δf≈Δf′ v (nil-change σ v) (v ⟦⊝₍ σ ₎⟧ v) ( u⊟v≈u⊝v {σ} {v} {v})))
+        (Δf≈Δf′ v (nil₍ σ ₎ v) (v ⟦⊝₍ σ ₎⟧ v) ( u⊟v≈u⊝v {σ} {v} {v})))
 
   -- A property relating `alternate` and the subcontext relation Γ≼ΔΓ
   ⟦Γ≼ΔΓ⟧ : ∀ {Γ} (ρ : ⟦ Γ ⟧) (dρ : ⟦ mapContext ΔType Γ ⟧) →

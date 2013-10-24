@@ -22,26 +22,26 @@ open import Structure.Bag.Popl14
 
 import Parametric.Change.Implementation
     Const ⟦_⟧Base ⟦_⟧Const ΔBase
-    validity-structure specification-structure
+    change-algebra-base-family specification-structure
     ⟦apply-base⟧ ⟦diff-base⟧ deriveConst as Implementation
 
 private
-  implements-base : ∀ ι {v} → Change-base ι v → ⟦ ΔBase ι ⟧Base → Set
+  implements-base : ∀ ι {v : ⟦ ι ⟧Base} → Δ₍ ι ₎ v → ⟦ ΔBase ι ⟧Base → Set
   implements-base base-int {v} Δv Δv′ = Δv ≡ Δv′
   implements-base base-bag {v} Δv Δv′ = Δv ≡ Δv′
 
   u⊟v≈u⊝v-base : ∀ ι → {u v : ⟦ ι ⟧Base} →
-      implements-base ι {v} (diff-change-base ι u v) (⟦diff-base⟧ ι u v)
+      implements-base ι {v} (u ⊟₍ ι ₎ v) (⟦diff-base⟧ ι u v)
   u⊟v≈u⊝v-base base-int = refl
   u⊟v≈u⊝v-base base-bag = refl
 
   carry-over-base : ∀ {ι}
     {v : ⟦ ι ⟧Base}
-    (Δv : Change-base ι v)
+    (Δv : Δ₍ ι ₎ v)
     {Δv′ : ⟦ ΔBase ι ⟧Base} (Δv≈Δv′ : implements-base ι {v} Δv Δv′) →
       v ⊞₍ base ι ₎ Δv ≡ v ⟦⊕₍ base ι ₎⟧ Δv′
   carry-over-base {base-int} {v} Δv Δv≈Δv′ = cong (_+_ v) Δv≈Δv′
-  carry-over-base {base-bag} Δv Δv≈Δv′ = cong (_++_ (before {bag} Δv)) Δv≈Δv′
+  carry-over-base {base-bag} Δv Δv≈Δv′ = cong (_++_ (before₍ bag ₎ Δv)) Δv≈Δv′
 
 implementation-structure : Implementation.Structure
 implementation-structure = record

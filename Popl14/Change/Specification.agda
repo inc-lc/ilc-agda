@@ -19,10 +19,10 @@ open import Data.Integer
 open import Theorem.Groups-Popl14
 
 import Parametric.Change.Specification
-  Const ⟦_⟧Base ⟦_⟧Const validity-structure as Specification
+  Const ⟦_⟧Base ⟦_⟧Const change-algebra-base-family as Specification
 
 private
-  ⟦_⟧ΔConst : ∀ {Σ τ} → (c  : Const Σ τ) (ρ : ⟦ Σ ⟧) → ΔEnv Σ ρ → Change τ (⟦ c ⟧Const ρ)
+  ⟦_⟧ΔConst : ∀ {Σ τ} → (c  : Const Σ τ) (ρ : ⟦ Σ ⟧) → Δ₍ Σ ₎ ρ → Δ₍ τ ₎ (⟦ c ⟧Const ρ)
   ⟦ intlit-const n ⟧ΔConst ∅ ∅ = + 0
   ⟦ add-const ⟧ΔConst (n₁ • n₂ • ∅) (dn₁ • dn₂ • ∅) = dn₁ + dn₂
   ⟦ minus-const ⟧ΔConst (n • ∅) (dn • ∅) = - dn
@@ -35,8 +35,8 @@ private
       flatmapBag (f ⊞₍ int ⇒ bag ₎ df) (b ++ db) \\ flatmapBag f b
   ⟦ sum-const ⟧ΔConst (b • ∅) (db • ∅) = sumBag db
 
-  correctness-const : ∀ {Σ τ} (c : Const Σ τ) (ρ : ⟦ Σ ⟧) (dρ : ΔEnv Σ ρ) →
-    after {τ} (⟦ c ⟧ΔConst ρ dρ) ≡ ⟦ c ⟧Const (update dρ)
+  correctness-const : ∀ {Σ τ} (c : Const Σ τ) →
+    Derivative₍ Σ , τ ₎ ⟦ c ⟧Const ⟦ c ⟧ΔConst
   correctness-const (intlit-const n) ∅ ∅ = right-id-int n
   correctness-const add-const (n₁ • n₂ • ∅) (dn₁ • dn₂ • ∅) =
     mn·pq=mp·nq {n₁} {n₂} {dn₁} {dn₂}
