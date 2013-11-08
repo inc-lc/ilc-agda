@@ -103,6 +103,7 @@ module Structure (derive-const-correct : Structure) where
     λ w dw w′ dw≈w′ →
       derive-correct t (w • ρ) (dw • dρ) (w′ • ρ′) (dw≈w′ • dρ≈ρ′)
 
+  -- Our main theorem, as we used to state it in the paper.
   main-theorem : ∀ {σ τ}
     {f : Term ∅ (σ ⇒ τ)} {x : Term ∅ σ} {y : Term ∅ σ}
     → ⟦ app f y ⟧
@@ -134,3 +135,15 @@ module Structure (derive-const-correct : Structure) where
          (meaning-⊕ {t = app f x} {Δt = Δoutput-term}) ⟩
          ⟦ app f x ⊕₍ τ ₎ app (app (derive f) x) (y ⊝ x) ⟧ ∅
       ∎}) where open ≡-Reasoning
+
+  -- A corollary, closer to what we state in the paper.
+  main-theorem-coroll : ∀ {σ τ}
+    {f : Term ∅ (σ ⇒ τ)} {x : Term ∅ σ} {dx : Term ∅ (ΔType σ)}
+    → ⟦ app f (x ⊕₍ σ ₎ dx) ⟧
+    ≡ ⟦ app f x ⊕₍ τ ₎ app (app (derive f) x) ((x ⊕₍ σ ₎ dx) ⊝ x) ⟧
+  main-theorem-coroll {σ} {τ} {f} {x} {dx} = main-theorem {σ} {τ} {f} {x} {x ⊕₍ σ ₎ dx}
+
+  -- For the statement in the paper, we'd need to talk about valid changes in
+  -- the lambda calculus. In fact we can, thanks to the `implements` relation;
+  -- but I guess the required proof must be done directly from derive-correct,
+  -- not from main-theorem.
