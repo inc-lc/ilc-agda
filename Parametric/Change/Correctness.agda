@@ -103,47 +103,39 @@ module Structure (derive-const-correct : Structure) where
     λ w dw w′ dw≈w′ →
       derive-correct t (w • ρ) (dw • dρ) (w′ • ρ′) (dw≈w′ • dρ≈ρ′)
 
-  -- Our main theorem, as we used to state it in the paper.
-  main-theorem : ∀ {σ τ}
-    {f : Term ∅ (σ ⇒ τ)} {x : Term ∅ σ} {y : Term ∅ σ}
-    → ⟦ app f y ⟧
-    ≡ ⟦ app f x ⊕₍ τ ₎ app (app (derive f) x) (y ⊝ x) ⟧
+  derive-correct-closed : ∀ {τ} (t : Term ∅ τ) →
+    ⟦ t ⟧Δ ∅ ∅ ≈₍ τ ₎ ⟦ derive t ⟧ ∅
 
-  main-theorem {σ} {τ} {f} {x} {y} =
+  derive-correct-closed t = derive-correct t ∅ ∅ ∅ ∅
+
+  main-theorem : ∀ {σ τ}
+    {f : Term ∅ (σ ⇒ τ)} {s : Term ∅ σ} {ds : Term ∅ (ΔType σ)} →
+    {dv : Δ₍ σ ₎ (⟦ s ⟧ ∅)} {erasure : dv ≈₍ σ ₎ (⟦ ds ⟧ ∅)} →
+
+    ⟦ app f (s ⊕₍ σ ₎ ds) ⟧ ≡ ⟦ app f s ⊕₍ τ ₎ app (app (derive f) s) ds ⟧
+
+  main-theorem {σ} {τ} {f} {s} {ds} {dv} {erasure} =
     let
-      h  = ⟦ f ⟧ ∅
-      Δh = ⟦ f ⟧Δ ∅ ∅
-      Δh′ = ⟦ derive f ⟧ ∅
-      v  = ⟦ x ⟧ ∅
-      u  = ⟦ y ⟧ ∅
-      Δoutput-term = app (app (derive f) x) (y ⊝ x)
+      g  = ⟦ f ⟧ ∅
+      Δg = ⟦ f ⟧Δ ∅ ∅
+      Δg′ = ⟦ derive f ⟧ ∅
+      v  = ⟦ s ⟧ ∅
+      dv′ = ⟦ ds ⟧ ∅
+      u  = ⟦ s ⊕₍ σ ₎ ds ⟧ ∅
+      -- Δoutput-term = app (app (derive f) x) (y ⊝ x)
     in
       ext {A = ⟦ ∅ ⟧Context} (λ { ∅ →
       begin
-        h u
-      ≡⟨ cong h (sym (update-diff₍ σ ₎ u v)) ⟩
-        h (v ⊞₍ σ ₎ (u ⊟₍ σ ₎ v))
-      ≡⟨ corollary-closed {σ} {τ} f v (u ⊟₍ σ ₎ v) ⟩
-        h v ⊞₍ τ ₎ call-change {σ} {τ} Δh v (u ⊟₍ σ ₎ v)
-      ≡⟨ carry-over {τ}
-         (call-change {σ} {τ} Δh v (u ⊟₍ σ ₎ v))
-         (derive-correct f
-           ∅ ∅ ∅ ∅ v (u ⊟₍ σ ₎ v) (u ⟦⊝₍ σ ₎⟧ v) (u⊟v≈u⊝v {σ} {u} {v})) ⟩
-         h v ⟦⊕₍ τ ₎⟧ Δh′ v (u ⟦⊝₍ σ ₎⟧ v)
-      ≡⟨ trans
-         (cong (λ hole → h v ⟦⊕₍ τ ₎⟧ Δh′ v hole) (meaning-⊝ {σ} {s = y} {x}))
-         (meaning-⊕ {t = app f x} {Δt = Δoutput-term}) ⟩
-         ⟦ app f x ⊕₍ τ ₎ app (app (derive f) x) (y ⊝ x) ⟧ ∅
+        g u
+      ≡⟨ cong g (sym (meaning-⊕ {t = s} {Δt = ds})) ⟩
+        g (v ⟦⊕₍ σ ₎⟧ dv′)
+      ≡⟨ cong g (sym (carry-over {σ} dv erasure)) ⟩
+        g (v ⊞₍ σ ₎ dv)
+      ≡⟨ corollary-closed {σ} {τ} f v dv ⟩
+        g v ⊞₍ τ ₎ call-change {σ} {τ} Δg v dv
+      ≡⟨ carry-over {τ} (call-change {σ} {τ} Δg v dv)
+           (derive-correct f ∅ ∅ ∅ ∅ v dv dv′ erasure) ⟩
+        g v ⟦⊕₍ τ ₎⟧ Δg′ v dv′
+      ≡⟨ meaning-⊕ {t = app f s} {Δt = app (app (derive f) s) ds} ⟩
+        ⟦ app f s ⊕₍ τ ₎ app (app (derive f) s) ds ⟧ ∅
       ∎}) where open ≡-Reasoning
-
-  -- A corollary, closer to what we state in the paper.
-  main-theorem-coroll : ∀ {σ τ}
-    {f : Term ∅ (σ ⇒ τ)} {x : Term ∅ σ} {dx : Term ∅ (ΔType σ)}
-    → ⟦ app f (x ⊕₍ σ ₎ dx) ⟧
-    ≡ ⟦ app f x ⊕₍ τ ₎ app (app (derive f) x) ((x ⊕₍ σ ₎ dx) ⊝ x) ⟧
-  main-theorem-coroll {σ} {τ} {f} {x} {dx} = main-theorem {σ} {τ} {f} {x} {x ⊕₍ σ ₎ dx}
-
-  -- For the statement in the paper, we'd need to talk about valid changes in
-  -- the lambda calculus. In fact we can, thanks to the `implements` relation;
-  -- but I guess the required proof must be done directly from derive-correct,
-  -- not from main-theorem.
