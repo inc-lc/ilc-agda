@@ -16,8 +16,6 @@ open import Function
 -- "ChangeAlgebra", given in the using-clause.
 
 -- Definition 2.1 (Change structures)
--- (d) ChangeAlgebra.diff
--- (e) IsChangeAlgebra.update-diff
 open import Base.Change.Algebra using (ChangeAlgebra)
 ---- Carrier in record ChangeAlgebra                        --(a)
 open Base.Change.Algebra.ChangeAlgebra   using (Change)     --(b)
