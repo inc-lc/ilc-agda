@@ -107,4 +107,7 @@ open Parametric.Change.Implementation.Structure using (carry-over)
 
 -- Lemma 3.14 (⟦ t ⟧Δ erases to Derive(t))
 import Parametric.Change.Correctness
+open Parametric.Change.Correctness.Structure using (derive-correct-closed)
+
+-- Theorem 3.15 (Correctness of differentiation)
 open Parametric.Change.Correctness.Structure using (main-theorem)
