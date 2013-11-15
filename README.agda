@@ -7,6 +7,9 @@ module README where
 --
 -- IMPORTANT FILES
 --
+-- modules.pdf
+--   The graph of dependencies between Agda modules.
+--
 -- README.agda
 --   This file. A coarse-grained introduction to the Agda formalization.
 --

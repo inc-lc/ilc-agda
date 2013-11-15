@@ -8,7 +8,7 @@ open import Function
 -- to README.agda.
 --
 -- Agda modules corresponding to definitions, lemmas and theorems
--- are listed here with the most important name. For example,
+-- are listed here with the most important names. For example,
 -- after this file type checks (C-C C-L), placing the cursor
 -- on the purple "Base.Change.Algebra" and pressing M-. will
 -- bring you to the file where change structures are defined.
