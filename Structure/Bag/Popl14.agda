@@ -1,11 +1,11 @@
-module Structure.Bag.Popl14 where
+module Structure.Bag.Nehemiah where
 
--- Bags of integers, version Popl14
+-- Bags of integers, version Nehemiah
 --
 -- This module imports postulates about bags of integers
 -- with negative multiplicities as a group under additive union.
 
-open import Postulate.Bag-Popl14 public
+open import Postulate.Bag-Nehemiah public
 
 open import Relation.Binary.PropositionalEquality
 open import Algebra using (CommutativeRing)

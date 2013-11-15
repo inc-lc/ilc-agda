@@ -1,9 +1,9 @@
-module Theorem.Groups-Popl14 where
+module Theorem.Groups-Nehemiah where
 
 -- Theorems regarding the group structure of integers and bags
--- as needed by Calculus Popl14
+-- as needed by Calculus Nehemiah
 
-open import Structure.Bag.Popl14 public
+open import Structure.Bag.Nehemiah public
 
 open import Relation.Binary.PropositionalEquality
 open import Data.Integer

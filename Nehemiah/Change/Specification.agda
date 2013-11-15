@@ -1,6 +1,6 @@
-module Popl14.Change.Specification where
+module Nehemiah.Change.Specification where
 
--- Denotation-as-specification for Calculus Popl14
+-- Denotation-as-specification for Calculus Nehemiah
 --
 -- Contents
 -- - ⟦_⟧Δ : binding-time-shifted derive
@@ -8,15 +8,15 @@ module Popl14.Change.Specification where
 -- - `corollary`: ⟦_⟧Δ reacts to both environment and arguments
 -- - `corollary-closed`: binding-time-shifted main theorem
 
-open import Popl14.Syntax.Type
-open import Popl14.Syntax.Term
-open import Popl14.Denotation.Value
-open import Popl14.Denotation.Evaluation
-open import Popl14.Change.Validity
+open import Nehemiah.Syntax.Type
+open import Nehemiah.Syntax.Term
+open import Nehemiah.Denotation.Value
+open import Nehemiah.Denotation.Evaluation
+open import Nehemiah.Change.Validity
 
 open import Relation.Binary.PropositionalEquality
 open import Data.Integer
-open import Theorem.Groups-Popl14
+open import Theorem.Groups-Nehemiah
 
 import Parametric.Change.Specification
   Const ⟦_⟧Base ⟦_⟧Const change-algebra-base-family as Specification

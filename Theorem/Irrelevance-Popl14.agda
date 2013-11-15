@@ -1,4 +1,4 @@
-module Theorem.Irrelevance-Popl14 where
+module Theorem.Irrelevance-Nehemiah where
 
 -- Irrelevancy proofs:
 --
@@ -6,9 +6,9 @@ module Theorem.Irrelevance-Popl14 where
 
 open import Structure.Tuples public -- re-export `cons` constructor
 open import Base.Denotation.Notation public
-open import Popl14.Denotation.Value public
-open import Popl14.Change.Validity public
-open import Popl14.Change.Value public
+open import Nehemiah.Denotation.Value public
+open import Nehemiah.Change.Validity public
+open import Nehemiah.Change.Value public
 
 open import Relation.Binary.PropositionalEquality
 open import Data.Unit

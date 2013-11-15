@@ -1,11 +1,11 @@
-module Popl14.Change.Value where
+module Nehemiah.Change.Value where
 
-open import Popl14.Syntax.Type
-open import Popl14.Syntax.Term
-open import Popl14.Denotation.Value
+open import Nehemiah.Syntax.Type
+open import Nehemiah.Syntax.Term
+open import Nehemiah.Denotation.Value
 
 open import Data.Integer
-open import Structure.Bag.Popl14
+open import Structure.Bag.Nehemiah
 
 import Parametric.Change.Value Const ⟦_⟧Base ΔBase as ChangeValue
 

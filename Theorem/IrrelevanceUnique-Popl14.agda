@@ -1,12 +1,12 @@
-module Theorem.IrrelevanceUnique-Popl14 where
+module Theorem.IrrelevanceUnique-Nehemiah where
 
--- Theorem IrrelevanceUnique-Popl14.
--- Every two irrelevance proofs in Calculus Popl14 are identical.
+-- Theorem IrrelevanceUnique-Nehemiah.
+-- Every two irrelevance proofs in Calculus Nehemiah are identical.
 
 open import Property.Uniqueness public
 
 open import Relation.Binary.PropositionalEquality
-open import Theorem.Irrelevance-Popl14
+open import Theorem.Irrelevance-Nehemiah
 open import Theorem.EqualityUnique
 open import Theorem.ProductUnique
 

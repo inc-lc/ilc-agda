@@ -1,6 +1,6 @@
-module Popl14.Change.Type where
+module Nehemiah.Change.Type where
 
-open import Popl14.Syntax.Type
+open import Nehemiah.Syntax.Type
 
 import Parametric.Change.Type Base as ChangeType
 

@@ -1,6 +1,6 @@
-module Popl14.Syntax.Term where
+module Nehemiah.Syntax.Term where
 
-open import Popl14.Syntax.Type
+open import Nehemiah.Syntax.Type
 
 open import Data.Integer
 

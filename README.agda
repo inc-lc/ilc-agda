@@ -89,32 +89,32 @@ import Parametric.Change.Specification
 import Parametric.Change.Implementation
 import Parametric.Change.Correctness
 
--- # Popl14 plugin
+-- # Nehemiah plugin
 --
 -- The structure is the same as the parametric proof (down to the
 -- order and the grouping of modules), except for the postulate module.
 
 -- Postulate an abstract data type for integer Bags.
-import Postulate.Bag-Popl14
+import Postulate.Bag-Nehemiah
 
 -- ## Definitions
-import Popl14.Syntax.Type
-import Popl14.Syntax.Term
+import Nehemiah.Syntax.Type
+import Nehemiah.Syntax.Term
 
-import Popl14.Denotation.Value
-import Popl14.Denotation.Evaluation
+import Nehemiah.Denotation.Value
+import Nehemiah.Denotation.Evaluation
 
-import Popl14.Change.Term
-import Popl14.Change.Type
+import Nehemiah.Change.Term
+import Nehemiah.Change.Type
 
-import Popl14.Change.Derive
+import Nehemiah.Change.Derive
 
-import Popl14.Change.Value
-import Popl14.Change.Evaluation
+import Nehemiah.Change.Value
+import Nehemiah.Change.Evaluation
 
 -- ## Proofs
 
-import Popl14.Change.Validity
-import Popl14.Change.Specification
-import Popl14.Change.Implementation
-import Popl14.Change.Correctness
+import Nehemiah.Change.Validity
+import Nehemiah.Change.Specification
+import Nehemiah.Change.Implementation
+import Nehemiah.Change.Correctness

@@ -1,9 +1,9 @@
-module Popl14.Change.Derive where
+module Nehemiah.Change.Derive where
 
-open import Popl14.Syntax.Type
-open import Popl14.Syntax.Term
-open import Popl14.Change.Type
-open import Popl14.Change.Term
+open import Nehemiah.Syntax.Type
+open import Nehemiah.Syntax.Term
+open import Nehemiah.Change.Type
+open import Nehemiah.Change.Term
 
 open import Data.Integer
 

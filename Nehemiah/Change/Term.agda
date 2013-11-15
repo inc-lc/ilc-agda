@@ -1,6 +1,6 @@
-module Popl14.Change.Term where
+module Nehemiah.Change.Term where
 
--- Terms Calculus Popl14
+-- Terms Calculus Nehemiah
 --
 -- Contents
 -- - Term constructors
@@ -10,9 +10,9 @@ module Popl14.Change.Term where
 
 open import Data.Integer
 
-open import Popl14.Syntax.Type public
-open import Popl14.Syntax.Term public
-open import Popl14.Change.Type public
+open import Nehemiah.Syntax.Type public
+open import Nehemiah.Syntax.Term public
+open import Nehemiah.Change.Type public
 
 import Parametric.Change.Term Const ΔBase as ChangeTerm
 

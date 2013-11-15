@@ -1,17 +1,17 @@
-module Popl14.Change.Validity where
+module Nehemiah.Change.Validity where
 
-open import Popl14.Syntax.Type
-open import Popl14.Denotation.Value
+open import Nehemiah.Syntax.Type
+open import Nehemiah.Denotation.Value
 
 import Parametric.Change.Validity ⟦_⟧Base as Validity
 
--- Changes for Calculus Popl14
+-- Changes for Calculus Nehemiah
 
-open import Popl14.Change.Type 
-open import Popl14.Change.Value
+open import Nehemiah.Change.Type 
+open import Nehemiah.Change.Value
 
 open import Data.Integer
-open import Structure.Bag.Popl14
+open import Structure.Bag.Nehemiah
 open import Base.Change.Algebra
 
 open import Level

@@ -1,24 +1,24 @@
-module Popl14.Change.Implementation where
+module Nehemiah.Change.Implementation where
 
-open import Popl14.Syntax.Type
-open import Popl14.Syntax.Term
-open import Popl14.Denotation.Value
-open import Popl14.Denotation.Evaluation
-open import Popl14.Change.Validity
-open import Popl14.Change.Specification
-open import Popl14.Change.Type
-open import Popl14.Change.Value
-open import Popl14.Change.Derive
+open import Nehemiah.Syntax.Type
+open import Nehemiah.Syntax.Term
+open import Nehemiah.Denotation.Value
+open import Nehemiah.Denotation.Evaluation
+open import Nehemiah.Change.Validity
+open import Nehemiah.Change.Specification
+open import Nehemiah.Change.Type
+open import Nehemiah.Change.Value
+open import Nehemiah.Change.Derive
 
 -- Notions of programs being implementations of specifications
--- for Calculus Popl14
+-- for Calculus Nehemiah
 
 open import Relation.Binary.PropositionalEquality
 open import Data.Unit
 open import Data.Product
 open import Data.Integer
 open import Structure.Tuples
-open import Structure.Bag.Popl14
+open import Structure.Bag.Nehemiah
 
 import Parametric.Change.Implementation
     Const ⟦_⟧Base ⟦_⟧Const ΔBase

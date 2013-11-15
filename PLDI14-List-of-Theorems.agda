@@ -55,19 +55,19 @@ open Base.Change.Algebra.FunctionChanges using (incrementalization)
 open Base.Change.Algebra.FunctionChanges using (nil-is-derivative)
 
 -- For each plugin requirement, we include its definition and
--- a concrete instantiation called "Popl14" with integers and
+-- a concrete instantiation called "Nehemiah" with integers and
 -- bags of integers as base types.
 
 -- Plugin Requirement 3.1 (Domains of base types)
 open import Parametric.Denotation.Value using (Structure)
-open import     Popl14.Denotation.Value using (⟦_⟧Base)
+open import     Nehemiah.Denotation.Value using (⟦_⟧Base)
 
 -- Definition 3.2 (Domains)
 open Parametric.Denotation.Value.Structure using (⟦_⟧Type)
 
 -- Plugin Requirement 3.3 (Evaluation of constants)
 open import Parametric.Denotation.Evaluation using (Structure)
-open import     Popl14.Denotation.Evaluation using (⟦_⟧Const)
+open import     Nehemiah.Denotation.Evaluation using (⟦_⟧Const)
 
 -- Definition 3.4 (Environments)
 open import Base.Denotation.Environment using (⟦_⟧Context)
@@ -77,7 +77,7 @@ open Parametric.Denotation.Evaluation.Structure using (⟦_⟧Term)
 
 -- Plugin Requirement 3.6 (Changes on base types)
 open import Parametric.Change.Validity using (Structure)
-open import     Popl14.Change.Validity using (change-algebra-base-family)
+open import     Nehemiah.Change.Validity using (change-algebra-base-family)
 
 -- Definition 3.7 (Changes)
 open Parametric.Change.Validity.Structure using (change-algebra)
@@ -87,7 +87,7 @@ open Parametric.Change.Validity.Structure using (environment-changes)
 
 -- Plugin Requirement 3.9 (Change semantics for constants)
 open import Parametric.Change.Specification using (Structure)
-open import     Popl14.Change.Specification using (specification-structure)
+open import     Nehemiah.Change.Specification using (specification-structure)
 
 -- Definition 3.10 (Change semantics)
 open Parametric.Change.Specification.Structure using (⟦_⟧Δ)
@@ -98,7 +98,7 @@ open Parametric.Change.Specification.Structure using (correctness)
 -- Definition 3.12 (Erasure)
 import Parametric.Change.Implementation
 open Parametric.Change.Implementation.Structure using (_≈_)
-open import Popl14.Change.Implementation using (implements-base)
+open import Nehemiah.Change.Implementation using (implements-base)
 
 -- Lemma 3.13 (The erased version of a change is almost the same)
 open Parametric.Change.Implementation.Structure using (carry-over)

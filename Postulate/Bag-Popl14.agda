@@ -1,6 +1,6 @@
-module Postulate.Bag-Popl14 where
+module Postulate.Bag-Nehemiah where
 
--- Postulates about bags of integers, version Popl14
+-- Postulates about bags of integers, version Nehemiah
 --
 -- This module postulates bags of integers with negative
 -- multiplicities as a group under additive union.

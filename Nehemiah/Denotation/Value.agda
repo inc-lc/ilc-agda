@@ -1,13 +1,13 @@
-module Popl14.Denotation.Value where
+module Nehemiah.Denotation.Value where
 
-open import Popl14.Syntax.Type public
-open import Popl14.Change.Type public
+open import Nehemiah.Syntax.Type public
+open import Nehemiah.Change.Type public
 open import Base.Denotation.Notation public
 
-open import Structure.Bag.Popl14
+open import Structure.Bag.Nehemiah
 open import Data.Integer
 
--- Values of Calculus Popl14
+-- Values of Calculus Nehemiah
 --
 -- Contents
 -- - Domains associated with types

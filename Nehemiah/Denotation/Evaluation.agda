@@ -1,13 +1,13 @@
-module Popl14.Denotation.Evaluation where
+module Nehemiah.Denotation.Evaluation where
 
--- Evaluating terms of Calculus Popl14 into Agda values
+-- Evaluating terms of Calculus Nehemiah into Agda values
 
-open import Popl14.Syntax.Type
-open import Popl14.Syntax.Term
-open import Popl14.Denotation.Value
+open import Nehemiah.Syntax.Type
+open import Nehemiah.Syntax.Term
+open import Nehemiah.Denotation.Value
 
 open import Data.Integer
-open import Structure.Bag.Popl14
+open import Structure.Bag.Nehemiah
 
 import Parametric.Denotation.Evaluation Const ⟦_⟧Base as Evaluation
 

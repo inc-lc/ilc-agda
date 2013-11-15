@@ -1,6 +1,6 @@
-module Popl14.Syntax.Type where
+module Nehemiah.Syntax.Type where
 
--- Types of Calculus Popl14
+-- Types of Calculus Nehemiah
 
 import Parametric.Syntax.Type as Type
 
