@@ -134,7 +134,7 @@ module Structure (derive-const-correct : Structure) where
       ≡⟨ corollary-closed {σ} {τ} f v dv ⟩
         g v ⊞₍ τ ₎ call-change {σ} {τ} Δg v dv
       ≡⟨ carry-over {τ} (call-change {σ} {τ} Δg v dv)
-           (derive-correct f ∅ ∅ ∅ ∅ v dv dv′ erasure) ⟩
+           (derive-correct-closed f v dv dv′ erasure) ⟩
         g v ⟦⊕₍ τ ₎⟧ Δg′ v dv′
       ≡⟨ meaning-⊕ {t = app f s} {Δt = app (app (derive f) s) ds} ⟩
         ⟦ app f s ⊕₍ τ ₎ app (app (derive f) s) ds ⟧ ∅
