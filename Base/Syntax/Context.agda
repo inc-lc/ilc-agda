@@ -108,6 +108,13 @@ module Prefixes where
 -- The contents of this module are currently exported at the end
 -- of this file.
 
+-- This handling of contexts is recommended by [this
+-- email](https://lists.chalmers.se/pipermail/agda/2011/003423.html) and
+-- attributed to Conor McBride.
+--
+-- The associated thread discusses a few alternatives solutions, including one
+-- where beta-reduction can handle associativity of ++.
+
 module Subcontexts where
   infix 4 _≼_
 
