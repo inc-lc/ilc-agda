@@ -107,8 +107,7 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
 
   _,_′-real : Δ _,_
   _,_′-real = nil _,_
-  module FCΔA→B→A×B = ΔA→B→A×B.FunctionChange
-  _,_′-real-Derivative : Derivative {{CA}} {{B→A×B}} _,_ (FCΔA→B→A×B.apply _,_′-real)
+  _,_′-real-Derivative : Derivative {{CA}} {{B→A×B}} _,_ (ΔA→B→A×B.apply _,_′-real)
   _,_′-real-Derivative =
     FunctionChanges.nil-is-derivative A (B → A × B) {{CA}} {{B→A×B}} _,_
 
@@ -138,10 +137,11 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
         (_,_′′ (a ⊞ da) (nil (a ⊞ da)))
       ≡⟨ {!!} ⟩
         update (_,_ a) (_,_′′ a da)
-        --ChangeAlgebra.update B→A×B (_,_ a) (a , da ′′)
       ∎
     }
     where
+      -- This is needed to use update above.
+      -- Passing the change structure seems hard with the given operators; maybe I'm just using them wrongly.
       open ChangeAlgebra B→A×B hiding (nil)
 {-
   {!
@@ -164,10 +164,10 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
     begin
       _⊞_ {{B→A×B}} (_,_ a) (_,_′′ a da)
     ≡⟨⟩
-      (λ b → (a , b) ⊞ ΔBA×B.FunctionChange.apply (_,_′′ a da) b (nil b))
+      (λ b → (a , b) ⊞ ΔBA×B.apply (_,_′′ a da) b (nil b))
     --ext (λ b → cong (λ □ →  (a , b) ⊞ □) (update-nil {{?}} b))
     ≡⟨ {!!} ⟩
-      (λ b → (a , b) ⊞ ΔBA×B.FunctionChange.apply (_,_′′ a da) b (nil b))
+      (λ b → (a , b) ⊞ ΔBA×B.apply (_,_′′ a da) b (nil b))
     ≡⟨ sym {!ΔA→B→A×B.incrementalization _,_ _,_′′′ a da!} ⟩
   --FunctionChanges.incrementalization A (B → A × B) {{CA}} {{{!B→A×B!}}} _,_ {!!} {!!} {!!}
        _,_ (a ⊞ da)
