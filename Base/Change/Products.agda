@@ -126,7 +126,7 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
         (a , b) ⊞ (_,_′ a da) b db
       ∎
     }
-
+{-
   _,_′′′ : Δ {{A→B→A×B}} _,_
   _,_′′′ = record
     { apply = _,_′′
@@ -158,6 +158,7 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
 -}
   open import Postulate.Extensionality
 
+
   _,_′Derivative :
     Derivative {{CA}} {{B→A×B}} _,_  _,_′′
   _,_′Derivative a da =
@@ -172,3 +173,4 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
   --FunctionChanges.incrementalization A (B → A × B) {{CA}} {{{!B→A×B!}}} _,_ {!!} {!!} {!!}
        _,_ (a ⊞ da)
     ∎
+-}
