@@ -112,8 +112,6 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
   _,_′-real-Derivative =
     FunctionChanges.nil-is-derivative A (B → A × B) {{CA}} {{B→A×B}} _,_
 
-  {-
-
   _,_′′ :  (a : A) → Δ a →
       Δ {{B→A×B}} (λ b → (a , b))
   _,_′′ a da = record
@@ -174,9 +172,3 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
   --FunctionChanges.incrementalization A (B → A × B) {{CA}} {{{!B→A×B!}}} _,_ {!!} {!!} {!!}
        _,_ (a ⊞ da)
     ∎
-    where
-      --open FunctionChanges B (A × B) {{CB}} {{changeAlgebra}}
-      module ΔBA×B = FunctionChanges B (A × B) {{CB}} {{changeAlgebra}}
-      module ΔA→B→A×B = FunctionChanges A (B → A × B) {{CA}} {{B→A×B}}
-
-  -}
