@@ -3,7 +3,7 @@
 --
 -- Features:
 --   * total derivatives
---   * changes and derivatives are unified (following Cai)
+--   * changes and derivatives are unified
 --   * multiple calculi
 --
 -- All library modules, along with (optional) short descriptions

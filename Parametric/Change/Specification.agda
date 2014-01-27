@@ -29,7 +29,7 @@ open Validity.Structure ⟦_⟧Base validity-structure
 open import Base.Denotation.Notation
 open import Relation.Binary.PropositionalEquality
 -- open import Data.Integer
--- open import Theorem.Groups-Popl14
+-- open import Theorem.Groups-Nehemiah
 open import Theorem.CongApp
 open import Postulate.Extensionality
 
