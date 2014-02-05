@@ -40,7 +40,8 @@ module README where
 -- has some bugs with serialization of code using some recent syntactic sugar
 -- which we use (https://code.google.com/p/agda/issues/detail?id=756), so it
 -- might work or not. When it does not, removing Agda caches (.agdai files)
--- appears to often help.
+-- appears to often help. You can use "find . -name '*.agdai' | xargs rm" to do
+-- that.
 
 import Postulate.Extensionality
 
