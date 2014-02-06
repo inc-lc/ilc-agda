@@ -1,9 +1,39 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Change Structures.
+--
+-- This module defines the notion of change structures,
+-- as well as change structures for groups, functions and lists.
+--
+-- This module corresponds to Section 2 of the PLDI paper.
+------------------------------------------------------------------------
+
 module Base.Change.Algebra where
 
 open import Relation.Binary.PropositionalEquality
 open import Level
 
 -- Change Algebras
+-- ===============
+--
+-- In the paper, change algebras are called "change structures"
+-- and they are described in Section 2.1. We follow the design of
+-- the Agda standard library and define change algebras as two
+-- records, so Definition 2.1 from the PLDI paper maps to the
+-- records IsChangeAlgebra and ChangeAlgebra.
+--
+-- A value of type (IsChangeAlgebra Change update diff) proves that
+-- Change, update and diff together form a change algebra.
+--
+-- A value of type (ChangeAlgebra Carrier) contains the necessary
+-- ingredients to create a change algebra for a carrier set.
+--
+-- In the paper, Carrier is called V (Def. 2.1a),
+-- Change is called Δ (Def. 2.1b),
+-- update is written as infix ⊕ (Def. 2.1c),
+-- diff is written as infix ⊝ (Def. 2.1d),
+-- and update-diff is specified in Def. 2.1e.
 
 record IsChangeAlgebra
     {c} {d}
@@ -14,9 +44,11 @@ record IsChangeAlgebra
   field
     update-diff : ∀ u v → update v (diff u v) ≡ u
 
+  -- In the paper, this is Def. 2.2.
   nil : ∀ v → Change v
   nil v = diff v v
 
+  -- In the paper, this is Lemma 2.3.
   update-nil : ∀ v → update v (nil v) ≡ v
   update-nil v = update-diff v v
 
@@ -41,6 +73,10 @@ record ChangeAlgebra {c} ℓ
 
   open IsChangeAlgebra isChangeAlgebra public
 
+-- The following open ... public statement lets us use infix ⊞
+-- and ⊟ for update and diff. In the paper, we use infix ⊕ and
+-- ⊝.
+
 open ChangeAlgebra {{...}} public
   using
     ( update-diff
@@ -55,7 +91,19 @@ open ChangeAlgebra {{...}} public
     ; diff to _⊟_
     )
 
--- Families of change algebras
+-- Families of Change Algebras
+-- ===========================
+--
+-- This is some Agda machinery to allow subscripting change
+-- algebra operations to avoid ambiguity. In the paper,
+-- we simply write (in the paragraph after Def. 2.1):
+--
+--   We overload operators ∆, ⊝ and ⊕ to refer to the
+--   corresponding operations of different change structures; we
+--   will subscript these symbols when needed to prevent
+--   ambiguity.
+--
+-- The following definitions implement this idea formally.
 
 record ChangeAlgebraFamily {a p} ℓ {A : Set a} (P : A → Set p): Set (suc ℓ ⊔ p ⊔ a) where
   constructor
@@ -91,6 +139,9 @@ diff′ = Family.diff
 syntax diff′ x u v = u ⊟₍ x ₎ v
 
 -- Derivatives
+-- ===========
+--
+-- This corresponds to Def. 2.4 in the paper.
 
 Derivative : ∀ {a b c d} {A : Set a} {B : Set b} →
   {{CA : ChangeAlgebra c A}} →
@@ -100,6 +151,7 @@ Derivative : ∀ {a b c d} {A : Set a} {B : Set b} →
   Set (a ⊔ b ⊔ c)
 Derivative f df = ∀ a da → f a ⊞ df a da ≡ f (a ⊞ da)
 
+-- This is a variant of Derivative for change algebra families.
 Derivative₍_,_₎ : ∀ {a b p q c d} {A : Set a} {B : Set b} {P : A → Set p} {Q : B → Set q} →
   {{CP : ChangeAlgebraFamily c P}} →
   {{CQ : ChangeAlgebraFamily d Q}} →
@@ -112,7 +164,17 @@ Derivative₍ x , y ₎ f df = Derivative f df where
   CPx = change-algebra₍ x ₎
   CQy = change-algebra₍ y ₎
 
--- Abelian groups induce change algebras
+-- Abelian Groups Induce Change Algebras
+-- =====================================
+--
+-- In the paper, as the first example for change structures after
+-- Def. 2.1, we mention that "each abelian group ... induces a
+-- change structure". This is the formalization of this result.
+--
+-- The module GroupChanges below takes a proof that A forms an
+-- abelian group and provides a changeAlgebra for A. The proof of
+-- Def 2.1e is by equational reasoning using the group axioms, in
+-- the definition of changeAlgebra.isChangeAlgebra.update-diff.
 
 open import Algebra.Structures
 open import Data.Product
@@ -156,17 +218,30 @@ module GroupChanges
         }
       }
 
--- Function changes
+-- Function Changes
+-- ================
+--
+-- This is one of our most important results: Change structures
+-- can be lifted to function spaces. We formalize this as a module
+-- FunctionChanges that takes the change algebras for A and B as
+-- arguments, and provides a changeAlgebra for (A → B). The proofs
+-- are by equational reasoning using 2.1e for A and B.
 
 module FunctionChanges
     {a} {b} {c} {d} (A : Set a) (B : Set b) {{CA : ChangeAlgebra c A}} {{CB : ChangeAlgebra d B}}
   where
+    -- This corresponds to Definition 2.5 in the paper.
     record FunctionChange (f : A → B) : Set (a ⊔ b ⊔ c ⊔ d) where
       constructor
         cons
       field
+        -- Definition 2.5a
         apply : (a : A) (da : Δ a) →
           Δ (f a)
+
+        -- Definition 2.5b.
+        -- (for some reason, the version in the paper has the arguments of ≡
+        -- flipped. Since ≡ is symmetric, this doesn't matter).
         correct : (a : A) (da : Δ a) →
           f (a ⊞ da) ⊞ apply (a ⊞ da) (nil (a ⊞ da)) ≡ f a ⊞ apply a da
 
@@ -177,9 +252,12 @@ module FunctionChanges
     changeAlgebra : ChangeAlgebra (a ⊔ b ⊔ c ⊔ d) (A → B)
     changeAlgebra = record
       { Change = FunctionChange
+        -- in the paper, update and diff below are in Def. 2.6
       ; update = λ f df a → f a ⊞ apply df a (nil a)
       ; diff = λ g f → record
         { apply = λ a da → g (a ⊞ da) ⊟ f a
+          -- the proof of correct is the first half of what we
+          -- have to prove for Theorem 2.7.
         ; correct = λ a da →
           begin
             f (a ⊞ da) ⊞ (g ((a ⊞ da) ⊞ nil (a ⊞ da)) ⊟ f (a ⊞ da))
@@ -193,6 +271,8 @@ module FunctionChanges
           ∎
         }
       ; isChangeAlgebra = record
+          -- the proof of update-diff is the second half of what
+          -- we have to prove for Theorem 2.7.
         { update-diff = λ g f → ext (λ a →
           begin
             f a ⊞ (g (a ⊞ nil a) ⊟ f a)
@@ -204,10 +284,12 @@ module FunctionChanges
         }
       }
 
+    -- This is Lemma 2.8 in the paper.
     incrementalization : ∀ (f : A → B) df a da →
       (f ⊞ df) (a ⊞ da) ≡ f a ⊞ apply df a da
     incrementalization f df a da = correct df a da
 
+    -- This is Theorem 2.9 in the paper.
     nil-is-derivative : ∀ (f : A → B) →
       Derivative f (apply (nil f))
     nil-is-derivative f a da =
@@ -220,7 +302,16 @@ module FunctionChanges
         f (a ⊞ da)
       ∎
 
--- List changes
+-- List (== Environment) Changes
+-- =============================
+--
+-- Here, we define a change structure on environments, given a
+-- change structure on the values in the environments. In the
+-- paper, we describe this in Definition 3.5. But note that this
+-- Agda formalization uses de Bruijn indices instead of names, so
+-- environments are just lists. Therefore, when we use Definition
+-- 3.5 in the paper, in this formalization, we use the list-like
+-- change structure defined here.
 
 open import Data.List
 open import Data.List.All
