@@ -8,7 +8,6 @@
 --
 -- This module is parametric in the syntax of types, so it
 -- can be reused for different calculi.
---
 ------------------------------------------------------------------------
 
 module Base.Syntax.Context
@@ -18,9 +17,8 @@ module Base.Syntax.Context
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality
 
--- TYPING CONTEXTS
-
--- Syntax
+-- Typing Contexts
+-- ===============
 
 import Data.List as List
 open List public
@@ -33,17 +31,24 @@ open List public
 Context : Set
 Context = List.List Type
 
--- VARIABLES
-
--- Syntax
-
+-- Variables
+-- =========
+--
+-- Here it is clear that we are using de Bruijn indices,
+-- encoded as natural numbers, more or less.
 data Var : Context → Type → Set where
   this : ∀ {Γ τ} → Var (τ • Γ) τ
   that : ∀ {Γ σ τ} → (x : Var Γ τ) → Var (σ • Γ) τ
 
--- WEAKENING
+-- Weakening
+-- =========
+--
+-- We provide two approaches for weakening: context prefixes and
+-- and subcontext relationship. In this formalization, we mostly
+-- (maybe exclusively?) use the latter.
 
--- CONTEXT PREFIXES
+-- Context Prefixes
+-- ----------------
 --
 -- Useful for making lemmas strong enough to prove by induction.
 --
@@ -100,7 +105,8 @@ module Prefixes where
   lift {τ • Γ₁} {Γ₂} this = this
   lift {τ • Γ₁} {Γ₂} (that x) = that (lift {Γ₁} {Γ₂} x)
 
--- SUBCONTEXTS
+-- Subcontexts
+-- -----------
 --
 -- Useful as a reified weakening operation,
 -- and for making theorems strong enough to prove by induction.
