@@ -1,9 +1,13 @@
-module Base.Denotation.Notation where
-
--- OVERLOADING ⟦_⟧ NOTATION
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Overloading ⟦_⟧ notation
 --
 -- This module defines a general mechanism for overloading the
 -- ⟦_⟧ notation, using Agda’s instance arguments.
+------------------------------------------------------------------------
+
+module Base.Denotation.Notation where
 
 open import Level
 
