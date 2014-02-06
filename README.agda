@@ -122,3 +122,7 @@ import Nehemiah.Change.Validity
 import Nehemiah.Change.Specification
 import Nehemiah.Change.Implementation
 import Nehemiah.Change.Correctness
+
+-- Import everything else. This ensures that typechecking README.agda typechecks
+-- the entire codebase, because Everything.agda is auto-generated.
+import Everything
