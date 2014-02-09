@@ -1,32 +1,84 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Machine-checked formalization of the theoretical results presented
+-- in the paper:
+--
+--   Yufei Cai, Paolo G. Giarrusso, Tillmann Rendel, Klaus Ostermann.
+--   A Theory of Changes for Higher-Order Languages:
+--   Incrementalizing λ-Calculi by Static Differentiation.
+--   To appear at PLDI, ACM 2014.
+--
+------------------------------------------------------------------------
+
 module README where
 
-----------------------------
--- INCREMENTAL λ-CALCULUS --
-----------------------------
+-- We know two good ways to read this code base. You can either
+-- use Emacs with agda2-mode to interact with the source files,
+-- or you can use a web browser to view the pretty-printed and
+-- hyperlinked source files. For Agda power users, we also
+-- include basic setup information for your own machine.
+
+
+-- IF YOU WANT TO USE A BROWSER
+-- ============================
 --
+-- Start with *HTML* version of this readme. On the AEC
+-- submission website (online or inside the VM), follow the link
+-- "view the Agda code in their browser" to the file
+-- agda/README.html.
 --
--- IMPORTANT FILES
+-- The source code is syntax highlighted and hyperlinked. You can
+-- click on module names to open the corresponding files, or you
+-- can click on identifiers to jump to their definition. In
+-- general, a Agda file with name `Foo/Bar/Baz.agda` contains a
+-- module `Foo.Bar.Baz` and is shown in an HTML file
+-- `Foo.Bar.Baz.html`.
 --
--- modules.pdf
---   The graph of dependencies between Agda modules.
+-- Note that we also include the HTML files generated for our
+-- transitive dependencies from the Agda standard library. This
+-- allows you to follow hyperlinks to the Agda standard
+-- library. It is the default behavior of `agda --html` which we
+-- used to generate the HTML.
 --
--- README.agda
---   This file. A coarse-grained introduction to the Agda formalization.
+-- To get started, continue below on "Where to start reading?".
+
+
+
+-- IF YOU WANT TO USE EMACS
+-- ========================
 --
--- PLDI14-List-of-Theorems.agda
---   For each theorem, lemma or definition in the PLDI 2014 submission,
---   it points to the corresponding Agda object.
+-- Open this file in Emacs with agda2-mode installed. See below
+-- for which Agda version you need to install. On the VM image,
+-- everything is setup for you and you can just open this file in
+-- Emacs.
 --
+--   C-c C-l   Load code. Type checks and syntax highlights. Use
+--             this if the code is not syntax highlighted, or
+--             after you changed something that you want to type
+--             check.
 --
--- LOCATION OF AGDA MODULES
+--   M-.       Jump to definition of identifier at the point.
+--   M-*       Jump back.
 --
--- To find the file containing an Agda module, replace the dots in its
--- full name by directory separators. The result is the file's path relative
--- to this directory. For example, Parametric.Syntax.Type is defined in
--- Parametric/Syntax/Type.agda.
+-- Note that README.agda imports Everything.agda which imports
+-- every Agda file in our formalization. So if README.agda type
+-- checks successfully, everything does. If you want to type
+-- check everything from scratch, delete the *.agdai files to
+-- disable separate compilation. You can use "find . -name
+-- '*.agdai' | xargs rm" to do that.
 --
+-- More information on the Agda mode is available on the Agda wiki:
 --
--- HOW TO TYPE CHECK EVERYTHING
+-- http://wiki.portal.chalmers.se/agda/pmwiki.php?n=Main.QuickGuideToEditingTypeCheckingAndCompilingAgdaCode
+-- http://wiki.portal.chalmers.se/agda/pmwiki.php?n=Docs.EmacsModeKeyCombinations
+--
+-- To get started, continue below on "Where to start reading?".
+
+
+
+-- IF YOU WANT TO USE YOUR OWN SETUP
+-- =================================
 --
 -- To typecheck this formalization, you need to install the appropriate version
 -- of Agda, the Agda standard library (version 0.7), generate Everything.agda
@@ -42,6 +94,49 @@ module README where
 -- might work or not. When it does not, removing Agda caches (.agdai files)
 -- appears to often help. You can use "find . -name '*.agdai' | xargs rm" to do
 -- that.
+--
+-- If you're not an Agda power user, it is probably easier to use
+-- the VM image or look at the pretty-printed and hyperlinked
+-- HTML files, see above.
+
+
+
+-- WHERE TO START READING?
+-- =======================
+--
+-- modules.pdf
+--   The graph of dependencies between Agda modules.
+--   Good if you want to get a broad overview.
+--
+-- README.agda
+--   This file. A coarse-grained introduction to the Agda
+--   formalization.  Good if you want to begin at the beginning
+--   and understand the structure of our code.
+--
+-- PLDI14-List-of-Theorems.agda
+--   Pointers to the Agda formalizations of all theorems, lemmas
+--   or definitions in the PLDI paper. Good if you want to read
+--   the paper and the Agda code side by side.
+--
+--   Here is an import of this file, so you can jump to it
+--   directly (use M-. in Emacs or click the module name in the
+--   Browser):
+
+import PLDI14-List-of-Theorems
+
+-- Everything.agda
+--   Imports every Agda module in our formalization. Good if you
+--   want to make sure you don't miss anything.
+--
+--   Again, here's is an import of this file so you can navigate
+--   there:
+
+import Everything
+
+
+
+-- THE AGDA CODE
+-- =============
 
 import Postulate.Extensionality
 
@@ -122,7 +217,3 @@ import Nehemiah.Change.Validity
 import Nehemiah.Change.Specification
 import Nehemiah.Change.Implementation
 import Nehemiah.Change.Correctness
-
--- Import everything else. This ensures that typechecking README.agda typechecks
--- the entire codebase, because Everything.agda is auto-generated.
-import Everything
