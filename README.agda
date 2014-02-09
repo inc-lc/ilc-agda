@@ -12,8 +12,9 @@
 -- We claim that this formalization
 --
 --   (1) proves every lemma and theorem in Sec. 2 and 3 of the paper,
---   (2) and formally specifies the interface between our incrementalization
---       framework and potential plugins.
+--   (2) formally specifies the interface between our incrementalization
+--       framework and potential plugins, and
+--   (3) shows that the plugin interface can be instantiated.
 --
 -- The first claim is the main reason for a machine-checked
 -- proof: We want to be sure that we got the proofs right.
@@ -21,6 +22,10 @@
 -- The second claim is about reusability and applicability: Only
 -- a clearly defined interface allows other researchers to
 -- provide plugins for our framework.
+--
+-- The third claim is to show that the plugin interface is
+-- consistent: An inconsistent plugin interface would allow to
+-- prove arbitrary results in the framework.
 ------------------------------------------------------------------------
 
 module README where
