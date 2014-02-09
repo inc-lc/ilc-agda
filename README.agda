@@ -133,6 +133,10 @@ import PLDI14-List-of-Theorems
 
 import Everything
 
+-- (This import is also important to ensure that if we typecheck
+-- README.agda, we also typecheck every other file of our
+-- formalization).
+
 
 
 -- THE AGDA CODE
