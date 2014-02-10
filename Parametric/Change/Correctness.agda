@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Correctness of differentiation (Lemma 3.10 and Theorem 3.11).
+------------------------------------------------------------------------
+
 import Parametric.Syntax.Type as Type
 import Parametric.Syntax.Term as Term
 import Parametric.Denotation.Value as Value
@@ -63,6 +69,9 @@ open import Base.Denotation.Notation
 open import Relation.Binary.PropositionalEquality
 open import Postulate.Extensionality
 
+-- Extension point: A proof that change evaluation for a fully
+-- applied primitive is related to the value of incrementalizing
+-- this primitive, if their arguments are so related.
 Structure : Set
 Structure = ∀ {Σ Γ τ} (c : Const Σ τ) (ts : Terms Γ Σ)
   (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
@@ -76,7 +85,7 @@ module Structure (derive-const-correct : Structure) where
   deriveVar-correct this (v • ρ) (dv • dρ) (dv′ • dρ′) (dv≈dv′ • dρ≈dρ′) = dv≈dv′
   deriveVar-correct (that x) (v • ρ) (dv • dρ) (dv′ • dρ′) (dv≈dv′ • dρ≈dρ′) = deriveVar-correct x ρ dρ dρ′ dρ≈dρ′
 
-  -- That `derive t` implements ⟦ t ⟧Δ
+  -- We provide: A variant of Lemma 3.10 for arbitrary contexts.
   derive-correct : ∀ {τ Γ} (t : Term Γ τ)
     (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
     ⟦ t ⟧Δ ρ dρ ≈₍ τ ₎ ⟦ derive t ⟧ (alternate ρ ρ′)
@@ -108,6 +117,7 @@ module Structure (derive-const-correct : Structure) where
 
   derive-correct-closed t = derive-correct t ∅ ∅ ∅ ∅
 
+  -- And we proof Theorem 3.11, finally.
   main-theorem : ∀ {σ τ}
     {f : Term ∅ (σ ⇒ τ)} {s : Term ∅ σ} {ds : Term ∅ (ΔType σ)} →
     {dv : Δ₍ σ ₎ (⟦ s ⟧ ∅)} {erasure : dv ≈₍ σ ₎ (⟦ ds ⟧ ∅)} →
