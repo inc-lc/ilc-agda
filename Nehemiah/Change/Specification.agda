@@ -1,12 +1,10 @@
-module Nehemiah.Change.Specification where
-
--- Denotation-as-specification for Calculus Nehemiah
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
 --
--- Contents
--- - ⟦_⟧Δ : binding-time-shifted derive
--- - Validity and correctness lemmas for ⟦_⟧Δ
--- - `corollary`: ⟦_⟧Δ reacts to both environment and arguments
--- - `corollary-closed`: binding-time-shifted main theorem
+-- Change evaluation with the Nehemiah plugin.
+------------------------------------------------------------------------
+
+module Nehemiah.Change.Specification where
 
 open import Nehemiah.Syntax.Type
 open import Nehemiah.Syntax.Term

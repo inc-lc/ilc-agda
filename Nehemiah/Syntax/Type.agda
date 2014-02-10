@@ -1,6 +1,10 @@
-module Nehemiah.Syntax.Type where
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- The syntax of types with the Nehemiah plugin.
+------------------------------------------------------------------------
 
--- Types of Calculus Nehemiah
+module Nehemiah.Syntax.Type where
 
 import Parametric.Syntax.Type as Type
 

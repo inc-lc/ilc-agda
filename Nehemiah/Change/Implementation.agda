@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Logical relation for erasure with the Nehemiah plugin.
+------------------------------------------------------------------------
+
 module Nehemiah.Change.Implementation where
 
 open import Nehemiah.Syntax.Type
@@ -9,9 +15,6 @@ open import Nehemiah.Change.Specification
 open import Nehemiah.Change.Type
 open import Nehemiah.Change.Value
 open import Nehemiah.Change.Derive
-
--- Notions of programs being implementations of specifications
--- for Calculus Nehemiah
 
 open import Relation.Binary.PropositionalEquality
 open import Data.Unit

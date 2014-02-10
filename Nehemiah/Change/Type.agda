@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Simply-typed changes with the Nehemiah plugin.
+------------------------------------------------------------------------
+
 module Nehemiah.Change.Type where
 
 open import Nehemiah.Syntax.Type

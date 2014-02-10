@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- The values of terms in Nehemiah.Change.Term.
+------------------------------------------------------------------------
+
 module Nehemiah.Change.Value where
 
 open import Nehemiah.Syntax.Type

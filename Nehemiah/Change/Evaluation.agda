@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Connecting Nehemiah.Change.Term and Nehemiah.Change.Value.
+------------------------------------------------------------------------
+
 module Nehemiah.Change.Evaluation where
 
 open import Nehemiah.Syntax.Type

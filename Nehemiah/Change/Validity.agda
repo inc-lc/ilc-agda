@@ -1,11 +1,15 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Dependently typed changes with the Nehemiah plugin.
+------------------------------------------------------------------------
+
 module Nehemiah.Change.Validity where
 
 open import Nehemiah.Syntax.Type
 open import Nehemiah.Denotation.Value
 
 import Parametric.Change.Validity ⟦_⟧Base as Validity
-
--- Changes for Calculus Nehemiah
 
 open import Nehemiah.Change.Type 
 open import Nehemiah.Change.Value

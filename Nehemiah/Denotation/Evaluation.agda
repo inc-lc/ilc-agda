@@ -1,6 +1,10 @@
-module Nehemiah.Denotation.Evaluation where
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Standard evaluation with the Nehemiah plugin.
+------------------------------------------------------------------------
 
--- Evaluating terms of Calculus Nehemiah into Agda values
+module Nehemiah.Denotation.Evaluation where
 
 open import Nehemiah.Syntax.Type
 open import Nehemiah.Syntax.Term

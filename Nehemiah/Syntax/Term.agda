@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- The syntax of terms with the Nehemiah plugin.
+------------------------------------------------------------------------
+
 module Nehemiah.Syntax.Term where
 
 open import Nehemiah.Syntax.Type

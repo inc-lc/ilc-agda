@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Incrementalization as term-to-term transformation with the Nehemiah plugin.
+------------------------------------------------------------------------
+
 module Nehemiah.Change.Derive where
 
 open import Nehemiah.Syntax.Type

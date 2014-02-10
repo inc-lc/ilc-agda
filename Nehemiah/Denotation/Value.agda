@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Values for standard evaluation with the Nehemiah plugin.
+------------------------------------------------------------------------
+
 module Nehemiah.Denotation.Value where
 
 open import Nehemiah.Syntax.Type public
@@ -6,12 +12,6 @@ open import Base.Denotation.Notation public
 
 open import Structure.Bag.Nehemiah
 open import Data.Integer
-
--- Values of Calculus Nehemiah
---
--- Contents
--- - Domains associated with types
--- - `diff` and `apply` in semantic domains
 
 import Parametric.Denotation.Value Base as Value
 

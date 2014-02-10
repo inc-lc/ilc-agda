@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Correctness of differentiation with the Nehemiah plugin.
+------------------------------------------------------------------------
+
 module Nehemiah.Change.Correctness where
 
 -- The denotational properties of the `derive` transformation

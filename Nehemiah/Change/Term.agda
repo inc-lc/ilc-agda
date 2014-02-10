@@ -1,12 +1,10 @@
-module Nehemiah.Change.Term where
-
--- Terms Calculus Nehemiah
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
 --
--- Contents
--- - Term constructors
--- - Weakening on terms
--- - `fit`: weaken a term to its ΔContext
--- - diff-term, apply-term and their syntactic sugars
+-- Terms that operate on changes with the Nehemiah plugin.
+------------------------------------------------------------------------
+
+module Nehemiah.Change.Term where
 
 open import Data.Integer
 
