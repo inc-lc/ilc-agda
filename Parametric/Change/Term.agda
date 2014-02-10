@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Terms that operate on changes (Fig. 3).
+------------------------------------------------------------------------
+
 import Parametric.Syntax.Type as Type
 import Parametric.Syntax.Term as Term
 import Parametric.Change.Type as ChangeType
@@ -16,9 +22,11 @@ open ChangeType.Structure Base ΔBase
 
 open import Data.Product
 
+-- Extension point 1: A term for ⊝ on base types.
 DiffStructure : Set
 DiffStructure = ∀ {ι Γ} → Term Γ (base ι ⇒ base ι ⇒ base (ΔBase ι))
 
+-- Extension point 2: A term for ⊕ on base types.
 ApplyStructure : Set
 ApplyStructure = ∀ {ι Γ} → Term Γ (ΔType (base ι) ⇒ base ι ⇒ base ι)
 
@@ -30,6 +38,7 @@ module Structure
   -- g ⊝ f  = λ x . λ Δx . g (x ⊕ Δx) ⊝ f x
   -- f ⊕ Δf = λ x . f x ⊕ Δf x (x ⊝ x)
 
+  -- We provide: terms for ⊕ and ⊝ on arbitrary types.
   diff-term : ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ ΔType τ)
   apply-term : ∀ {τ Γ} → Term Γ (ΔType τ ⇒ τ ⇒ τ)
 
