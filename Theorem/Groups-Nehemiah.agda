@@ -1,7 +1,10 @@
-module Theorem.Groups-Nehemiah where
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- About the group structure of integers and bags for Nehemiah plugin.
+------------------------------------------------------------------------
 
--- Theorems regarding the group structure of integers and bags
--- as needed by Calculus Nehemiah
+module Theorem.Groups-Nehemiah where
 
 open import Structure.Bag.Nehemiah public
 

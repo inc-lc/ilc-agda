@@ -1,9 +1,13 @@
-module Structure.Bag.Nehemiah where
-
--- Bags of integers, version Nehemiah
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Bags of integers, for Nehemiah plugin.
 --
 -- This module imports postulates about bags of integers
 -- with negative multiplicities as a group under additive union.
+------------------------------------------------------------------------
+
+module Structure.Bag.Nehemiah where
 
 open import Postulate.Bag-Nehemiah public
 

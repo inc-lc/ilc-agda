@@ -1,11 +1,9 @@
-module Structure.Tuples where
-
--- Tuples with a uniform constructor `cons`
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
 --
--- Contents
--- - Pair
--- - Triple
--- - Quadruple
+-- Tuples with a uniform constructor `cons`.
+------------------------------------------------------------------------
+module Structure.Tuples where
 
 record Pair
   (A : Set) (B : A → Set) : Set where
