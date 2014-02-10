@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Connecting Parametric.Change.Term and Parametric.Change.Value.
+------------------------------------------------------------------------
+
 import Parametric.Syntax.Type as Type
 import Parametric.Syntax.Term as Term
 import Parametric.Denotation.Value as Value
@@ -30,13 +36,13 @@ open import Relation.Binary.PropositionalEquality
 open import Base.Denotation.Notation
 open import Postulate.Extensionality
 
--- Relating `diff` with `diff-term`, `apply` with `apply-term`
-
+-- Extension point 1: Relating ⊝ and its value on base types
 ApplyStructure : Set
 ApplyStructure = ∀ ι {Γ} →
   {t : Term Γ (base ι)} {Δt : Term Γ (ΔType (base ι))} {ρ : ⟦ Γ ⟧} →
   ⟦ t ⟧ ρ ⟦⊕₍ base ι ₎⟧ ⟦ Δt ⟧ ρ ≡ ⟦ t ⊕₍ base ι ₎ Δt ⟧ ρ
 
+-- Extension point 2: Relating ⊕ and its value on base types
 DiffStructure : Set
 DiffStructure = ∀ ι {Γ} →
   {s : Term Γ (base ι)} {t : Term Γ (base ι)} {ρ : ⟦ Γ ⟧} →
@@ -55,6 +61,7 @@ module Structure
       _⋆_ : Type → Context → Context
       _⋆_ = _•_
 
+  -- We provide: Relating ⊕ and ⊝ and their values on arbitrary types.
   meaning-⊕ : ∀ {τ Γ}
     {t : Term Γ τ} {Δt : Term Γ (ΔType τ)} {ρ : ⟦ Γ ⟧} →
     ⟦ t ⟧ ρ ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ ≡ ⟦ t ⊕₍ τ ₎ Δt ⟧ ρ
