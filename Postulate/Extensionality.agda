@@ -1,9 +1,14 @@
-module Postulate.Extensionality where
-
--- POSTULATE EXTENSIONALITY
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Postulate extensionality of functions.
 --
 -- Justification on Agda mailing list:
 -- http://permalink.gmane.org/gmane.comp.lang.agda/2343
+------------------------------------------------------------------------
+
+module Postulate.Extensionality where
+
 
 open import Relation.Binary.PropositionalEquality
 
