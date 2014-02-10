@@ -1,3 +1,15 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Bags with negative multiplicities, for Nehemiah.
+--
+-- Instead of implementing bags (with negative multiplicities,
+-- like in the paper) in Agda, we postulate that a group of such
+-- bags exist. Note that integer bags with integer multiplicities
+-- are actually the free group given a singleton operation
+-- `Integer -> Bag`, so this should be easy to formalize in
+-- principle.
+------------------------------------------------------------------------
 module Postulate.Bag-Nehemiah where
 
 -- Postulates about bags of integers, version Nehemiah
@@ -10,7 +22,6 @@ open import Algebra.Structures
 open import Data.Integer
 
 -- postulate Bag as an abelion group
--- [Argue that no inconsistency can be introduced]
 postulate Bag : Set
 -- singleton
 postulate singletonBag : ℤ → Bag
