@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Change evaluation (Def 3.6 and Fig. 4h).
+------------------------------------------------------------------------
+
 import Parametric.Syntax.Type as Type
 import Parametric.Syntax.Term as Term
 import Parametric.Denotation.Value as Value
@@ -18,20 +24,13 @@ open Value.Structure Base ⟦_⟧Base
 open Evaluation.Structure Const ⟦_⟧Base ⟦_⟧Const
 open Validity.Structure ⟦_⟧Base validity-structure
 
--- Denotation-as-specification
---
--- Contents
--- - ⟦_⟧Δ : binding-time-shifted derive
--- - Validity and correctness lemmas for ⟦_⟧Δ
--- - `corollary`: ⟦_⟧Δ reacts to both environment and arguments
--- - `corollary-closed`: binding-time-shifted main theorem
-
 open import Base.Denotation.Notation
 open import Relation.Binary.PropositionalEquality
--- open import Data.Integer
--- open import Theorem.Groups-Nehemiah
 open import Theorem.CongApp
 open import Postulate.Extensionality
+
+-- This module defines two extension points, so to avoid some of
+-- the boilerplate, we use record notation.
 
 record Structure : Set₁ where
   ----------------
@@ -39,8 +38,10 @@ record Structure : Set₁ where
   ----------------
 
   field
+    -- Extension point 1: Derivatives of constants.
     ⟦_⟧ΔConst : ∀ {Σ τ} → (c  : Const Σ τ) (ρ : ⟦ Σ ⟧) → Δ₍ Σ ₎ ρ → Δ₍ τ ₎ (⟦ c ⟧Const ρ)
 
+    -- Extension point 2: Correctness of the instantiation of extension point 1.
     correctness-const : ∀ {Σ τ} (c : Const Σ τ) →
       Derivative₍ Σ , τ ₎ ⟦ c ⟧Const ⟦ c ⟧ΔConst
 
@@ -48,9 +49,11 @@ record Structure : Set₁ where
   -- Interface --
   ---------------
 
+  -- We provide: Derivatives of terms and lists of terms.
   ⟦_⟧Δ : ∀ {τ Γ} → (t : Term Γ τ) (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) → Δ₍ τ ₎ (⟦ t ⟧ ρ)
   ⟦_⟧ΔTerms : ∀ {Σ Γ} → (ts : Terms Γ Σ) (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) → Δ₍ Σ ₎ (⟦ ts ⟧Terms ρ)
 
+  -- And we provide correctness proofs about the derivatives.
   correctness : ∀ {τ Γ} (t : Term Γ τ) →
     Derivative₍ Γ , τ ₎ ⟦ t ⟧ ⟦ t ⟧Δ
 
