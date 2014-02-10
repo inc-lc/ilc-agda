@@ -1,7 +1,5 @@
 module PLDI14-List-of-Theorems where
 
-open import Function
-
 -- List of theorems in PLDI submission
 --
 -- For hints about installation and execution, please refer
@@ -54,58 +52,37 @@ open Base.Change.Algebra.FunctionChanges using (incrementalization)
 -- Theorem 2.9 (Nil changes are derivatives)
 open Base.Change.Algebra.FunctionChanges using (nil-is-derivative)
 
--- For each plugin requirement, we include its definition and
--- a concrete instantiation called "Nehemiah" with integers and
--- bags of integers as base types.
-
--- Plugin Requirement 3.1 (Domains of base types)
-open import Parametric.Denotation.Value using (Structure)
-open import     Nehemiah.Denotation.Value using (⟦_⟧Base)
-
--- Definition 3.2 (Domains)
+-- Definition 3.1 (Domains)
+import Parametric.Denotation.Value
 open Parametric.Denotation.Value.Structure using (⟦_⟧Type)
 
--- Plugin Requirement 3.3 (Evaluation of constants)
-open import Parametric.Denotation.Evaluation using (Structure)
-open import     Nehemiah.Denotation.Evaluation using (⟦_⟧Const)
-
--- Definition 3.4 (Environments)
+-- Definition 3.2 (Environments)
 open import Base.Denotation.Environment using (⟦_⟧Context)
 
--- Definition 3.5 (Evaluation)
+-- Definition 3.3 (Evaluation)
+import Parametric.Denotation.Evaluation
 open Parametric.Denotation.Evaluation.Structure using (⟦_⟧Term)
 
--- Plugin Requirement 3.6 (Changes on base types)
-open import Parametric.Change.Validity using (Structure)
-open import     Nehemiah.Change.Validity using (change-algebra-base-family)
-
--- Definition 3.7 (Changes)
+-- Definition 3.4 (Changes)
+-- Definition 3.5 (Change environments)
+import Parametric.Change.Validity
 open Parametric.Change.Validity.Structure using (change-algebra)
-
--- Definition 3.8 (Change environments)
 open Parametric.Change.Validity.Structure using (environment-changes)
 
--- Plugin Requirement 3.9 (Change semantics for constants)
-open import Parametric.Change.Specification using (Structure)
-open import     Nehemiah.Change.Specification using (specification-structure)
-
--- Definition 3.10 (Change semantics)
+-- Definition 3.6 (Change semantics)
+-- Lemma 3.7 (Change semantics is the derivative of semantics)
+import Parametric.Change.Specification
 open Parametric.Change.Specification.Structure using (⟦_⟧Δ)
-
--- Lemma 3.11 (Change semantics is the derivative of semantics)
 open Parametric.Change.Specification.Structure using (correctness)
 
--- Definition 3.12 (Erasure)
+-- Definition 3.8 (Erasure)
+-- Lemma 3.9 (The erased version of a change is almost the same)
 import Parametric.Change.Implementation
 open Parametric.Change.Implementation.Structure using (_≈_)
-open import Nehemiah.Change.Implementation using (implements-base)
-
--- Lemma 3.13 (The erased version of a change is almost the same)
 open Parametric.Change.Implementation.Structure using (carry-over)
 
--- Lemma 3.14 (⟦ t ⟧Δ erases to Derive(t))
+-- Lemma 3.10 (⟦ t ⟧Δ erases to Derive(t))
+-- Theorem 3.11 (Correctness of differentiation)
 import Parametric.Change.Correctness
 open Parametric.Change.Correctness.Structure using (derive-correct-closed)
-
--- Theorem 3.15 (Correctness of differentiation)
 open Parametric.Change.Correctness.Structure using (main-theorem)
