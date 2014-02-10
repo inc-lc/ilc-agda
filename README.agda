@@ -158,83 +158,199 @@ import Everything
 
 -- THE AGDA CODE
 -- =============
-
-import Postulate.Extensionality
-
-import Base.Data.DependentList
-
--- Variables and contexts
-import Base.Syntax.Context
-
--- Sets of variables
-import Base.Syntax.Vars
-
-import Base.Denotation.Notation
-
--- Environments
-import Base.Denotation.Environment
-
--- Change contexts
-import Base.Change.Context
-
--- # Base, parametric proof.
 --
--- This is for a parametric calculus where:
--- types are parametric in base types
--- terms are parametric in constants
+-- The formalization has four parts:
 --
+--   1. A formalization of change structures. This lives in
+--   Base.Change.Algebra. (What we call "change structure" in the
+--   paper, we call "change algebra" in the Agda code. We changed
+--   the name when writing the paper, and never got around to
+--   updating the name in the Agda code).
 --
--- Modules are ordered and grouped according to what they represent.
-
--- ## Definitions
-
-import Parametric.Syntax.Type
-import Parametric.Syntax.Term
-
-import Parametric.Denotation.Value
-import Parametric.Denotation.Evaluation
-
-import Parametric.Change.Type
-import Parametric.Change.Term
-
-import Parametric.Change.Derive
-
-import Parametric.Change.Value
-import Parametric.Change.Evaluation
-
--- ## Proofs
-
-import Parametric.Change.Validity
-import Parametric.Change.Specification
-import Parametric.Change.Implementation
-import Parametric.Change.Correctness
-
--- # Nehemiah plugin
+--   2. Incrementalization framework for first-class functions,
+--   with extension points for plugging in data types and their
+--   incrementalization. This lives in the Parametric.*
+--   hierarchy.
 --
--- The structure is the same as the parametric proof (down to the
--- order and the grouping of modules), except for the postulate module.
+--   3. An example plugin that provides integers and bags
+--   with negative multiplicity. This lives in the Nehemiah.*
+--   hierarchy. (For some reason, we choose to call this
+--   particular incarnation of the plugin Nehemiah).
+--
+--   4. Other material that is unrelated to the framework/plugin
+--   distinction. This is all other files.
 
--- Postulate an abstract data type for integer Bags.
+
+
+-- FORMALIZATION OF CHANGE STRUCTURES
+-- ==================================
+--
+-- Section 2 of the paper, and Base.Change.Algebra in Agda.
+
+import Base.Change.Algebra
+
+
+
+-- INCREMENTALIZATION FRAMEWORK
+-- ============================
+--
+-- Section 3 of the paper, and Parametric.* hierarchy in Agda.
+--
+-- The extension points are implemented as module parameters. See
+-- detailed explanation in Parametric.Syntax.Type and
+-- Parametric.Syntax.Term. Some extension points are for types,
+-- some for values, and some for proof fragments. In Agda, these
+-- three kinds of entities are unified anyway, so we can encode
+-- all of them as module parameters.
+--
+-- Every module in the Parametric.* hierarchy adds at least one
+-- extension point, so the module hierarchy of a plugin will
+-- typically mirror the Parametric.* hierarchy, defining the
+-- values for these extension points.
+--
+-- Firstly, we have the syntax of types and terms, the erased
+-- change structure for function types and incrementalization as
+-- a term-to-term transformation. The contents of these modules
+-- formalizes Sec. 3.1 and 3.2 of the paper, except for the
+-- second and third line of Figure 3, which is formalized further
+-- below.
+
+import Parametric.Syntax.Type   -- syntax of types
+import Parametric.Syntax.Term   -- syntax of terms
+import Parametric.Change.Type   -- simply-typed changes
+import Parametric.Change.Derive -- incrementalization
+
+-- Secondly, we define the usual denotational semantics of the
+-- simply-typed lambda calculus in terms of total functions, and
+-- the change semantics in terms of a change structure on total
+-- functions. The contents of these modules formalize Sec. 3.3,
+-- 3.4 and 3.5 of the paper.
+
+import Parametric.Denotation.Value      -- standard values
+import Parametric.Denotation.Evaluation -- standard evaluation
+import Parametric.Change.Validity       -- dependently-typed changes
+import Parametric.Change.Specification  -- change evaluation
+
+-- Thirdly, we define terms that operate on simply-typed changes,
+-- and connect them to their values. The concents of these
+-- modules formalize the second and third line of Figure 3, as
+-- well as the semantics of these lines.
+
+import Parametric.Change.Term        -- terms that operate on simply-typed changes
+import Parametric.Change.Value       -- the values of these terms
+import Parametric.Change.Evaluation  -- connecting the terms and their values
+
+-- Finally, we prove correctness by connecting the (syntactic)
+-- incrementalization to the (semantic) change evaluation by a
+-- logical relation, and a proof that the values of terms
+-- produced by the incrementalization transformation are related
+-- to the change values of the original terms. The contents of
+-- these modules formalize Sec. 3.6.
+
+import Parametric.Change.Implementation -- logical relation
+import Parametric.Change.Correctness    -- main correctness proof
+
+
+
+-- EXAMPLE PLUGIN
+-- ==============
+--
+-- Sec. 3.7 in the paper, and the Nehemiah.* hierarchy in Agda.
+--
+-- The module structure of the plugin follows the structure of
+-- the Parametric.* hierarchy.  For example, the extension point
+-- defined in Parametric.Syntax.Term is instantiated in
+-- Nehemiah.Syntax.Term.
+--
+-- As discussed in Sec. 3.7 of the paper, the point of this
+-- plugin is not to speed up any real programs, but to show "that
+-- the interface for proof plugins can be implemented". As a
+-- first step towards proving correctness of the more complicated
+-- plugin with integers, bags and finite maps we implement in
+-- Scala, we choose to define plugin with integers and bags in
+-- Agda. Instead of implementing bags (with negative
+-- multiplicities, like in the paper) in Agda, though, we
+-- postulate that a group of such bags exist. Note that integer
+-- bags with integer multiplicities are actually the free group
+-- given a singleton operation `Integer -> Bag`, so this should
+-- be easy to formalize in principle.
+
+-- Before we start with the plugin, we postulate an abstract data
+-- type for integer bags.
 import Postulate.Bag-Nehemiah
 
--- ## Definitions
+-- Firstly, we extend the syntax of types and terms, the erased
+-- change structure for function types, and incrementalization as
+-- a term-to-term transformation to account for the data types of
+-- the Nehemiah language. The contents of these modules
+-- instantiate the extension points in Sec. 3.1 and 3.2 of the
+-- paper, except for the second and third line of Figure 3, which
+-- is instantiated further below.
+
 import Nehemiah.Syntax.Type
 import Nehemiah.Syntax.Term
+import Nehemiah.Change.Type
+import Nehemiah.Change.Derive
+
+-- Secondly, we extend the usual denotational semantics and the
+-- change semantics to account for the data types of the Nehemiah
+-- language. The contents of these modules instantiate the
+-- extension points in Sec. 3.3, 3.4 and 3.5 of the paper.
 
 import Nehemiah.Denotation.Value
 import Nehemiah.Denotation.Evaluation
+import Nehemiah.Change.Validity
+import Nehemiah.Change.Specification
+
+-- Thirdly, we extend the terms that operate on simply-typed
+-- changes, and the connection to their values to account for the
+-- data types of the Nehemiah language. The concents of these
+-- modules instantiate the extension points in the second and
+-- third line of Figure 3.
 
 import Nehemiah.Change.Term
-import Nehemiah.Change.Type
-
-import Nehemiah.Change.Derive
-
 import Nehemiah.Change.Value
 import Nehemiah.Change.Evaluation
 
--- ## Proofs
+-- Finally, we extend the logical relation and the main
+-- correctness proof to account for the data types in the
+-- Nehemiah language. The contents of these modules instantiate
+-- the extension points defined in Sec. 3.6.
 
-import Nehemiah.Change.Validity
-import Nehemiah.Change.Specification
 import Nehemiah.Change.Implementation
 import Nehemiah.Change.Correctness
+
+
+
+-- OTHER MATERIAL
+-- ==============
+--
+-- We postulate extensionality of Agda functions. This postulate
+-- is well known to be compatible with Agda's type theory.
+
+import Postulate.Extensionality
+
+-- For historical reasons, we reexport Data.List.All from the
+-- standard library under the name DependentList.
+
+import Base.Data.DependentList
+
+-- This module supports overloading the ⟦_⟧ notation based on
+-- Agda's instance arguments.
+
+import Base.Denotation.Notation
+
+-- These modules implement contexts including typed de Bruijn
+-- indices to represent bound variables, sets of bound variables,
+-- and environments. These modules are parametric in the set of
+-- types (that are stored in contexts) and the set of values
+-- (that are stored in environments). So these modules are even
+-- more parametric than the Parametric.* hierarchy.
+
+import Base.Syntax.Context
+import Base.Syntax.Vars
+import Base.Denotation.Environment
+
+-- This module contains some helper definitions to merge a
+-- context of values and a context of changes.
+import Base.Change.Context
