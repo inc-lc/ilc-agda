@@ -1,21 +1,59 @@
 ------------------------------------------------------------------------
 -- INCREMENTAL λ-CALCULUS
 --
--- Terms of languages described in Plotkin style
+-- The syntax of terms (Fig. 1a and 1b).
 ------------------------------------------------------------------------
 
+-- The syntax of terms depends on the syntax of simple types
+-- (because terms are indexed by types in order to rule out
+-- ill-typed terms). But we are in the Parametric.* hierarchy, so
+-- we don't know the full syntax of types, only how to lift the
+-- syntax of base types into the syntax of simple types. This
+-- means that we have to be parametric in the syntax of base
+-- types, too.
+--
+-- In such parametric modules that depend on other parametric
+-- modules, we first import our dependencies under a more
+-- convenient name.
+
 import Parametric.Syntax.Type as Type
+
+-- Then we start the module proper, with parameters for all
+-- extension points of our dependencies. Note that here, the
+-- "Structure" naming convenion makes some sense, because we can
+-- say that we need some "Type.Structure" in order to define the
+-- "Term.Structure".
 
 module Parametric.Syntax.Term
     (Base : Type.Structure)
   where
+
+-- Now inside the module, we can open our dependencies with the
+-- parameters for their extension points. Again, here the name
+-- "Structure" makes some sense, because we can say that we want
+-- to access the "Type.Structure" that is induced by Base.
+
+open Type.Structure Base
+
+-- At this point, we have dealt with the extension points of our
+-- dependencies, and we have all the definitions about simple
+-- types, contexts, variables, and variable sets in scope that we
+-- provided in Parametric.Syntax.Type. Now we can proceed to
+-- define our own extension point, following the pattern
+-- explained in Parametric.Syntax.Type.
 
 open import Relation.Binary.PropositionalEquality
 open import Function using (_∘_)
 open import Data.Unit
 open import Data.Sum
 
-open Type.Structure Base
+-- Our extension point is a set of primitives, indexed by the
+-- types of their arguments and their return type. In general, if
+-- you're confused about what an extension point means, you might
+-- want to open the corresponding module in the Nehemiah
+-- hierarchy to see how it is implemented in the example
+-- plugin. In this case, that would be the Nehemiah.Syntax.Term
+-- module.
 
 Structure : Set₁
 Structure = Context → Type → Set
@@ -25,7 +63,14 @@ module Structure (Const : Structure) where
   open DependentList public using (∅ ; _•_)
   open DependentList
 
-  -- Declarations of Term and Terms to enable mutual recursion
+  -- Declarations of Term and Terms to enable mutual recursion.
+  --
+  -- Note that terms are indexed by contexts and types. In the
+  -- paper, we define the abstract syntax of terms in Fig 1a and
+  -- then define a type system in Fig 1b. All lemmas and theorems
+  -- then explicitly specify that they only hold for well-typed
+  -- terms. Here, we use the indices to define a type that can
+  -- only hold well-typed terms in the first place.
   data Term
     (Γ : Context) :
     (τ : Type) → Set
@@ -38,6 +83,7 @@ module Structure (Const : Structure) where
   -- (Term Γ τ) represents a term of type τ
   -- with free variables bound in Γ.
   data Term Γ where
+    -- constants aka. primitives can only occur fully applied.
     const : ∀ {Σ τ} →
       (c : Const Σ τ) →
       (args : Terms Γ Σ) →
@@ -49,6 +95,7 @@ module Structure (Const : Structure) where
       (s : Term Γ (σ ⇒ τ)) →
       (t : Term Γ σ) →
       Term Γ τ
+    -- we use de Bruijn indicies, so we don't need binding occurrences.
     abs : ∀ {σ τ}
       (t : Term (σ • Γ) τ) →
       Term Γ (σ ⇒ τ)
