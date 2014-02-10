@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------
 -- INCREMENTAL λ-CALCULUS
 --
--- Evaluation for languages described in Plotkin style
+-- Standard evaluation (Def. 3.3 and Fig. 4i)
 ------------------------------------------------------------------------
 
 import Parametric.Syntax.Type as Type
@@ -24,6 +24,7 @@ open import Relation.Binary.PropositionalEquality
 open import Theorem.CongApp
 open import Postulate.Extensionality
 
+-- Extension Point: Evaluation of fully applied constants.
 Structure : Set
 Structure = ∀ {Σ τ} → Const Σ τ → ⟦ Σ ⟧ → ⟦ τ ⟧
 
@@ -32,6 +33,7 @@ module Structure (⟦_⟧Const : Structure) where
 
   ⟦_⟧Terms : ∀ {Γ Σ} → Terms Γ Σ → ⟦ Γ ⟧ → ⟦ Σ ⟧
 
+  -- We provide: Evaluation of arbitrary terms.
   ⟦ const c args ⟧Term ρ = ⟦ c ⟧Const (⟦ args ⟧Terms ρ)
   ⟦ var x ⟧Term ρ = ⟦ x ⟧ ρ
   ⟦ app s t ⟧Term ρ = (⟦ s ⟧Term ρ) (⟦ t ⟧Term ρ)
