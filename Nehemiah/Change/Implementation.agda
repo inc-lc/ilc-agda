@@ -20,7 +20,6 @@ open import Relation.Binary.PropositionalEquality
 open import Data.Unit
 open import Data.Product
 open import Data.Integer
-open import Structure.Tuples
 open import Structure.Bag.Nehemiah
 
 import Parametric.Change.Implementation
