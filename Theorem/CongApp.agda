@@ -1,7 +1,12 @@
-module Theorem.CongApp where
-
--- Theorem CongApp.
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Congruence of application.
+--
 -- If f ≡ g and x ≡ y, then (f x) ≡ (g y).
+------------------------------------------------------------------------
+
+module Theorem.CongApp where
 
 open import Relation.Binary.PropositionalEquality public
 
