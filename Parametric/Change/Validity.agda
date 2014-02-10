@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Dependently typed changes (Def 3.4 and 3.5, Fig. 4b and 4e)
+------------------------------------------------------------------------
+
 import Parametric.Syntax.Type as Type
 import Parametric.Denotation.Value as Value
 
@@ -16,6 +22,7 @@ open import Base.Change.Algebra as CA
   using (ChangeAlgebraFamily)
 open import Level
 
+-- Extension Point: Change algebras for base types
 Structure : Set₁
 Structure = ChangeAlgebraFamily zero ⟦_⟧Base
 
@@ -27,8 +34,7 @@ module Structure (change-algebra-base : Structure) where
     ; _∷_ to _•_
     )
 
-  -- change algebra for every type
-
+  -- We provide: change algebra for every type
   change-algebra : ∀ τ → ChangeAlgebra zero ⟦ τ ⟧Type
   change-algebra (base ι) = change-algebra₍ ι ₎
   change-algebra (τ₁ ⇒ τ₂) = CA.FunctionChanges.changeAlgebra _ _ {{change-algebra τ₁}} {{change-algebra τ₂}}
@@ -46,7 +52,7 @@ module Structure (change-algebra-base : Structure) where
         ; apply to call-change
         )
 
-  -- environment changes
+  -- We also provide: change environments (aka. environment changes).
 
   open ListChanges ⟦_⟧Type {{change-algebra-family}} public using () renaming
     ( changeAlgebra to environment-changes
