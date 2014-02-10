@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- The values of terms in Parametric.Change.Term.
+------------------------------------------------------------------------
+
 import Parametric.Syntax.Type as Type
 import Parametric.Syntax.Term as Term
 import Parametric.Denotation.Value as Value
@@ -17,11 +23,11 @@ open ChangeType.Structure Base ΔBase
 
 open import Base.Denotation.Notation
 
--- `diff` and `apply`, without validity proofs
-
+-- Extension point 1: The value of ⊕ for base types.
 ApplyStructure : Set
 ApplyStructure = ∀ ι → ⟦ ι ⟧Base → ⟦ ΔBase ι ⟧Base → ⟦ ι ⟧Base
 
+-- Extension point 2: The value of ⊝ for base types.
 DiffStructure : Set
 DiffStructure = ∀ ι → ⟦ ι ⟧Base → ⟦ ι ⟧Base → ⟦ ΔBase ι ⟧Base
 
@@ -30,6 +36,7 @@ module Structure
     (⟦diff-base⟧ : DiffStructure)
   where
 
+  -- We provide: The value of ⊕ and ⊝ for arbitrary types.
   ⟦apply⟧ : ∀ τ → ⟦ τ ⟧ → ⟦ ΔType τ ⟧ → ⟦ τ ⟧
   ⟦diff⟧ : ∀ τ → ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ ΔType τ ⟧
 
