@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- INCREMENTAL λ-CALCULUS
+--
+-- Logical relation for erasure (Def. 3.8 and Lemma 3.9)
+------------------------------------------------------------------------
+
 import Parametric.Syntax.Type as Type
 import Parametric.Syntax.Term as Term
 import Parametric.Denotation.Value as Value
@@ -35,8 +41,6 @@ open Derive.Structure Const ΔBase derive-const
 
 open import Base.Denotation.Notation
 
--- Notions of programs being implementations of specifications
-
 open import Relation.Binary.PropositionalEquality
 open import Postulate.Extensionality
 
@@ -47,9 +51,19 @@ record Structure : Set₁ where
   ----------------
 
   field
+    -- Extension point 1: Logical relation on base types.
+    --
+    -- In the paper, we assume that the logical relation is equality on base types
+    -- (see Def. 3.8a). Here, we only require that plugins define what the logical
+    -- relation is on base types, and provide proofs for the two extension points
+    -- below.
     implements-base : ∀ ι {v : ⟦ ι ⟧Base} → Δ₍ ι ₎ v → ⟦ ΔBase ι ⟧Base → Set
+
+    -- Extension point 2: Differences on base types are logically related.
     u⊟v≈u⊝v-base : ∀ ι {u v : ⟦ ι ⟧Base} →
       implements-base ι (u ⊟₍ ι ₎ v) (⟦diff-base⟧ ι u v)
+
+    -- Extension point 3: Lemma 3.1 for base types.
     carry-over-base : ∀ {ι}
       {v : ⟦ ι ⟧Base}
       (Δv : Δ₍ ι ₎ v)
@@ -85,8 +99,7 @@ record Structure : Set₁ where
   -- carry-over --
   ----------------
 
-  -- If a program implements a specification, then certain things
-  -- proven about the specification carry over to the programs.
+  -- This is lemma 3.10.
   carry-over : ∀ {τ}
     {v : ⟦ τ ⟧}
     (Δv : Δ₍ τ ₎ v)
