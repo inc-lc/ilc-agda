@@ -3,16 +3,7 @@
 --
 -- Delta-observational equivalence
 ------------------------------------------------------------------------
-import Parametric.Syntax.Type as Type
-import Parametric.Denotation.Value as Value
-
-module Parametric.Change.Equivalence
-    {Base : Type.Structure}
-    (⟦_⟧Base : Value.Structure Base)
-  where
-
-open Type.Structure Base
-open Value.Structure Base ⟦_⟧Base
+module Parametric.Change.Equivalence where
 
 open import Base.Denotation.Notation public
 
