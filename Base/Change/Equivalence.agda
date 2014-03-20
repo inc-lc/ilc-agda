@@ -3,7 +3,7 @@
 --
 -- Delta-observational equivalence
 ------------------------------------------------------------------------
-module Parametric.Change.Equivalence where
+module Base.Change.Equivalence where
 
 open import Relation.Binary.PropositionalEquality
 open import Base.Change.Algebra
