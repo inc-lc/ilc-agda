@@ -5,8 +5,6 @@
 ------------------------------------------------------------------------
 module Parametric.Change.Equivalence where
 
-open import Base.Denotation.Notation public
-
 open import Relation.Binary.PropositionalEquality
 open import Base.Change.Algebra
 open import Level
