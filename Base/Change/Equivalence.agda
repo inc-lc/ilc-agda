@@ -43,7 +43,9 @@ module Structure (unused : Structure) where
     -- * Moreover, d.o.e. should be respected by contexts [ ] x dx and df x [ ];
     --   this is proved below on both contexts at once by fun-change-respects.
     --
-    -- * Finally, change algebra operations should respect d.o.e.
+    -- * Finally, change algebra operations should respect d.o.e. But ⊞ respects
+    --   it by definition, and ⊟ doesn't take change arguments - we will only
+    --   need a proof for compose, when we define it.
     --
     -- Stating the general result, though, seems hard, we should
     -- rather have lemmas proving that certain classes of functions respect this
