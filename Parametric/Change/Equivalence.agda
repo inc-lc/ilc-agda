@@ -19,10 +19,10 @@ Structure = Unit
 
 module Structure (unused : Structure) where
 
-  module _ {ℓ} {A} {{ca : ChangeAlgebra ℓ A}} {x : A} where
+  module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
     -- Delta-observational equivalence: these asserts that two changes
     -- give the same result when applied to a base value.
-    _≙_ : ∀ dx dy → Set
+    _≙_ : ∀ dx dy → Set a
     dx ≙ dy = x ⊞ dx ≡ x ⊞ dy
 
     -- _≙_ is indeed an equivalence relation:
