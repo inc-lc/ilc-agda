@@ -10,12 +10,7 @@ open import Base.Change.Algebra
 open import Level
 open import Data.Unit
 
--- Extension Point: None (currently). Do we need to allow plugins to customize
--- this concept?
-Structure : Set
-Structure = Unit
-
-module Structure (unused : Structure) where
+module Structure where
 
   module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
     -- Delta-observational equivalence: these asserts that two changes
@@ -63,7 +58,6 @@ module Structure (unused : Structure) where
     fun-change-respects {x} {dx₁} {dx₂} {f} {df₁} {df₂} df₁≙df₂ dx₁≙dx₂ = lemma
       where
         open ≡-Reasoning
-        open import Postulate.Extensionality
         -- This type signature just expands the goal manually a bit.
         lemma : f x ⊞ apply df₁ x dx₁ ≡ f x ⊞ apply df₂ x dx₂
         -- Informally: use incrementalization on both sides and then apply
