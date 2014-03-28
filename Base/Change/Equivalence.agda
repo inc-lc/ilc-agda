@@ -72,3 +72,18 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
         ≡⟨ incrementalization f df₂ x dx₂ ⟩
           f x ⊞ apply df₂ x dx₂
         ∎
+
+  -- An extensionality principle for delta-observational equivalence: if
+  -- applying two function changes to the same base value and input change gives
+  -- a d.o.e. result, then the two function changes are d.o.e. themselves.
+
+  delta-ext : ∀ {f : A → B} → ∀ {df dg : FC.FunctionChange f} → (∀ x dx → apply df x dx ≙ apply dg x dx) → df ≙ dg
+  delta-ext {f} {df} {dg} dfxdx≙dgxdx = lemma₂
+    where
+      open ≡-Reasoning
+      open import Postulate.Extensionality
+      -- This type signature just expands the goal manually a bit.
+      lemma₁ : ∀ x dx → f x ⊞ apply df x dx ≡ f x ⊞ apply dg x dx
+      lemma₁ = dfxdx≙dgxdx
+      lemma₂ : f ⊞ df ≡ f ⊞ dg
+      lemma₂ = ext (λ x → lemma₁ x (nil x))
