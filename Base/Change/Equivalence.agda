@@ -16,6 +16,8 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
   _≙_ : ∀ dx dy → Set a
   dx ≙ dy = x ⊞ dx ≡ x ⊞ dy
 
+  open import Relation.Binary
+
   -- _≙_ is indeed an equivalence relation:
   ≙-refl : ∀ {dx} → dx ≙ dx
   ≙-refl = refl
@@ -25,6 +27,35 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
 
   ≙-trans : ∀ {dx dy dz} → dx ≙ dy → dy ≙ dz → dx ≙ dz
   ≙-trans ≙₁ ≙₂ = trans ≙₁ ≙₂
+
+  ≙-isEquivalence : IsEquivalence (_≙_)
+  ≙-isEquivalence = record
+    { refl  = ≙-refl
+    ; sym   = ≙-symm
+    ; trans = ≙-trans
+    }
+
+  ≙-setoid : Setoid ℓ a
+  ≙-setoid = record
+    { Carrier       = Δ x
+    ; _≈_           = _≙_
+    ; isEquivalence = ≙-isEquivalence
+    }
+
+
+  ------------------------------------------------------------------------
+  -- Convenient syntax for equational reasoning
+
+  import Relation.Binary.EqReasoning as EqR
+
+  -- Relation.Binary.EqReasoning is more convenient to use with _≡_ if
+  -- the combinators take the type argument (a) as a hidden argument,
+  -- instead of being locked to a fixed type at module instantiation
+  -- time.
+
+  module ≙-Reasoning where
+    open EqR ≙-setoid public
+      renaming (_≈⟨_⟩_ to _≙⟨_⟩_)
 
   -- By update-nil, if dx = nil x, then x ⊞ dx ≡ x.
   -- As a consequence, if dx ≙ nil x, then x ⊞ dx ≡ x
@@ -147,16 +178,21 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
   derivative-unique : ∀ {f : A → B} {df dg : Δ f} → Derivative f (apply df) → Derivative f (apply dg) → df ≙ dg
   derivative-unique {f} {df} {dg} fdf fdg =
     begin
-      f ⊞ df
-    ≡⟨ derivative-is-nil df fdf ⟩
-      f ⊞ nil f
-    ≡⟨ sym (derivative-is-nil dg fdg) ⟩
-      f ⊞ dg
+      df
+    ≙⟨ derivative-is-nil df fdf ⟩
+      nil f
+    ≙⟨ sym (derivative-is-nil dg fdg) ⟩
+      dg
     ∎
     where
-      open ≡-Reasoning
+      open ≙-Reasoning
+{-
+      lemma : nil f ≙ dg
+      -- Goes through
+      --lemma = sym (derivative-is-nil dg fdg)
+      -- Generates tons of crazy yellow ambiguities of equality type. Apparently, unifying against ≙ does not work so well.
+      lemma = ≙-symm {{changeAlgebra}} {f} {dg} {nil f} (derivative-is-nil dg fdg)
+-}
+
   -- We could also use derivative-is-⊞-unit, but the proof above matches better
   -- with the text above.
-  --
-  -- Small TODO: It could be even more elegant to define a setoid for ≙ and
-  -- use equational reasoning on it directly.
