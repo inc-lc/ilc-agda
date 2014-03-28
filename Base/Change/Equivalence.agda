@@ -77,7 +77,7 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
   -- applying two function changes to the same base value and input change gives
   -- a d.o.e. result, then the two function changes are d.o.e. themselves.
 
-  delta-ext : ∀ {f : A → B} → ∀ {df dg : FC.FunctionChange f} → (∀ x dx → apply df x dx ≙ apply dg x dx) → df ≙ dg
+  delta-ext : ∀ {f : A → B} → ∀ {df dg : Δ f} → (∀ x dx → apply df x dx ≙ apply dg x dx) → df ≙ dg
   delta-ext {f} {df} {dg} dfxdx≙dgxdx = lemma₂
     where
       open ≡-Reasoning
