@@ -51,11 +51,6 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
 
   import Relation.Binary.EqReasoning as EqR
 
-  -- Relation.Binary.EqReasoning is more convenient to use with _≡_ if
-  -- the combinators take the type argument (a) as a hidden argument,
-  -- instead of being locked to a fixed type at module instantiation
-  -- time.
-
   module ≙-Reasoning where
     open EqR ≙-setoid public
       renaming (_≈⟨_⟩_ to _≙⟨_⟩_)
