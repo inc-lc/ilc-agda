@@ -16,6 +16,9 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
   _≙_ : ∀ dx dy → Set a
   dx ≙ dy = x ⊞ dx ≡ x ⊞ dy
 
+  -- Same priority as ≡
+  infix 4 _≙_
+
   open import Relation.Binary
 
   -- _≙_ is indeed an equivalence relation:
@@ -101,6 +104,13 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
   -- Stating the general result, though, seems hard, we should
   -- rather have lemmas proving that certain classes of functions respect this
   -- equivalence.
+
+  -- This results pairs with update-diff.
+  diff-update : ∀ {dx} → (x ⊞ dx) ⊟ x ≙ dx
+  diff-update {dx} = lemma
+    where
+      lemma : x ⊞ (x ⊞ dx ⊟ x) ≡ x ⊞ dx
+      lemma = update-diff (x ⊞ dx) x
 
 module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
   {{CA : ChangeAlgebra c A}} {{CB : ChangeAlgebra d B}} where
