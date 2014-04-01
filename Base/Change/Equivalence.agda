@@ -204,6 +204,3 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
     ∎
     where
       open ≙-Reasoning
-      -- Unused, but just to test that inference works.
-      lemma : nil f ≙ dg
-      lemma = ≙-sym (derivative-is-nil dg fdg)
