@@ -59,15 +59,17 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
     }
 
 
+module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
   ------------------------------------------------------------------------
   -- Convenient syntax for equational reasoning
 
   import Relation.Binary.EqReasoning as EqR
 
   module ≙-Reasoning where
-    open EqR ≙-setoid public
+    open EqR (≙-setoid {x = x}) public
       renaming (_≈⟨_⟩_ to _≙⟨_⟩_)
 
+module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
   -- By update-nil, if dx = nil x, then x ⊞ dx ≡ x.
   -- As a consequence, if dx ≙ nil x, then x ⊞ dx ≡ x
   nil-is-⊞-unit : ∀ dx → dx ≙ nil x → x ⊞ dx ≡ x
