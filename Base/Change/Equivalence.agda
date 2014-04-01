@@ -9,12 +9,20 @@ open import Relation.Binary.PropositionalEquality
 open import Base.Change.Algebra
 open import Level
 open import Data.Unit
+open import Function
 
 module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
   -- Delta-observational equivalence: these asserts that two changes
   -- give the same result when applied to a base value.
-  _≙_ : ∀ dx dy → Set a
-  dx ≙ dy = x ⊞ dx ≡ x ⊞ dy
+
+  -- To avoid unification problems, use a one-field record.
+  record _≙_ dx dy : Set a where
+    -- doe = Delta-Observational Equivalence.
+    constructor doe
+    field
+      proof : x ⊞ dx ≡ x ⊞ dy
+
+  open _≙_ public
 
   -- Same priority as ≡
   infix 4 _≙_
@@ -23,13 +31,13 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
 
   -- _≙_ is indeed an equivalence relation:
   ≙-refl : ∀ {dx} → dx ≙ dx
-  ≙-refl = refl
+  ≙-refl = doe refl
 
   ≙-symm : ∀ {dx dy} → dx ≙ dy → dy ≙ dx
-  ≙-symm ≙ = sym ≙
+  ≙-symm ≙ = doe $ sym $ proof ≙
 
   ≙-trans : ∀ {dx dy dz} → dx ≙ dy → dy ≙ dz → dx ≙ dz
-  ≙-trans ≙₁ ≙₂ = trans ≙₁ ≙₂
+  ≙-trans ≙₁ ≙₂ = doe $ trans (proof ≙₁) (proof ≙₂)
 
   ≙-isEquivalence : IsEquivalence (_≙_)
   ≙-isEquivalence = record
@@ -61,7 +69,7 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
   nil-is-⊞-unit dx dx≙nil-x =
     begin
       x ⊞ dx
-    ≡⟨ dx≙nil-x ⟩
+    ≡⟨ proof dx≙nil-x ⟩
       x ⊞ (nil x)
     ≡⟨ update-nil x ⟩
       x
@@ -71,7 +79,7 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
 
   -- Here we prove the inverse:
   ⊞-unit-is-nil : ∀ dx → x ⊞ dx ≡ x → dx ≙ nil x
-  ⊞-unit-is-nil dx x⊞dx≡x =
+  ⊞-unit-is-nil dx x⊞dx≡x = doe $
     begin
       x ⊞ dx
     ≡⟨ x⊞dx≡x ⟩
@@ -102,7 +110,7 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
 
   -- This results pairs with update-diff.
   diff-update : ∀ {dx} → (x ⊞ dx) ⊟ x ≙ dx
-  diff-update {dx} = lemma
+  diff-update {dx} = doe lemma
     where
       lemma : x ⊞ (x ⊞ dx ⊟ x) ≡ x ⊞ dx
       lemma = update-diff (x ⊞ dx) x
@@ -116,7 +124,7 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
 
   fun-change-respects : ∀ {x : A} {dx₁ dx₂ : Δ x} {f : A → B} {df₁ df₂} →
     df₁ ≙ df₂ → dx₁ ≙ dx₂ → apply df₁ x dx₁ ≙ apply df₂ x dx₂
-  fun-change-respects {x} {dx₁} {dx₂} {f} {df₁} {df₂} df₁≙df₂ dx₁≙dx₂ = lemma
+  fun-change-respects {x} {dx₁} {dx₂} {f} {df₁} {df₂} df₁≙df₂ dx₁≙dx₂ = doe lemma
     where
       open ≡-Reasoning
       -- This type signature just expands the goal manually a bit.
@@ -128,9 +136,9 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
           f x ⊞ apply df₁ x dx₁
         ≡⟨ sym (incrementalization f df₁ x dx₁) ⟩
           (f ⊞ df₁) (x ⊞ dx₁)
-        ≡⟨ cong (f ⊞ df₁) dx₁≙dx₂ ⟩
+        ≡⟨ cong (f ⊞ df₁) $ proof dx₁≙dx₂ ⟩
           (f ⊞ df₁) (x ⊞ dx₂)
-        ≡⟨ cong (λ f → f (x ⊞ dx₂)) df₁≙df₂ ⟩
+        ≡⟨ cong (λ f → f (x ⊞ dx₂)) $ proof df₁≙df₂ ⟩
           (f ⊞ df₂) (x ⊞ dx₂)
         ≡⟨ incrementalization f df₂ x dx₂ ⟩
           f x ⊞ apply df₂ x dx₂
@@ -143,12 +151,12 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
   -- a d.o.e. result, then the two function changes are d.o.e. themselves.
 
   delta-ext : ∀ {f : A → B} → ∀ {df dg : Δ f} → (∀ x dx → apply df x dx ≙ apply dg x dx) → df ≙ dg
-  delta-ext {f} {df} {dg} df-x-dx≙dg-x-dx = lemma₂
+  delta-ext {f} {df} {dg} df-x-dx≙dg-x-dx = doe lemma₂
     where
       open ≡-Reasoning
       -- This type signature just expands the goal manually a bit.
       lemma₁ : ∀ x dx → f x ⊞ apply df x dx ≡ f x ⊞ apply dg x dx
-      lemma₁ = df-x-dx≙dg-x-dx
+      lemma₁ x dx = proof $ df-x-dx≙dg-x-dx x dx
       lemma₂ : f ⊞ df ≡ f ⊞ dg
       lemma₂ = ext (λ x → lemma₁ x (nil x))
 
@@ -186,18 +194,11 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
       df
     ≙⟨ derivative-is-nil df fdf ⟩
       nil f
-    ≙⟨ sym (derivative-is-nil dg fdg) ⟩
+    ≙⟨ ≙-symm (derivative-is-nil dg fdg) ⟩
       dg
     ∎
     where
       open ≙-Reasoning
-{-
+      -- Unused, but just to test that inference works.
       lemma : nil f ≙ dg
-      -- Goes through
-      --lemma = sym (derivative-is-nil dg fdg)
-      -- Generates tons of crazy yellow ambiguities of equality type. Apparently, unifying against ≙ does not work so well.
-      lemma = ≙-symm {{changeAlgebra}} {f} {dg} {nil f} (derivative-is-nil dg fdg)
--}
-
-  -- We could also use derivative-is-⊞-unit, but the proof above matches better
-  -- with the text above.
+      lemma = ≙-symm (derivative-is-nil dg fdg)
