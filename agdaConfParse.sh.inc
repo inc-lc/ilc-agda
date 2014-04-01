@@ -44,7 +44,7 @@ generator=GenerateEverythingIlc
 
 if which "${generator}" > /dev/null; then
   logRunning "${generator}"
-  ${generator} && { echo; logDone; } || logFailed "${generator}"
+  ${generator} && { echo; logDone; } || { logFailed "${generator}"; exit 1; }
 else
   echo "\`${generator}\` is not installed (consider running \`cabal install\` to fix that)."
   logRunning "cabal run"
