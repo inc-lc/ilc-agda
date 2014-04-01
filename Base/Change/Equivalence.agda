@@ -39,6 +39,11 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
   ≙-trans : ∀ {dx dy dz} → dx ≙ dy → dy ≙ dz → dx ≙ dz
   ≙-trans ≙₁ ≙₂ = doe $ trans (proof ≙₁) (proof ≙₂)
 
+  -- That's standard congruence applied to ≙
+  ≙-cong  : ∀ {b} {B : Set b}
+       (f : A → B) {dx dy} → dx ≙ dy → f (x ⊞ dx) ≡ f (x ⊞ dy)
+  ≙-cong f da≙db = cong f $ proof da≙db
+
   ≙-isEquivalence : IsEquivalence (_≙_)
   ≙-isEquivalence = record
     { refl  = ≙-refl
@@ -136,9 +141,9 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
           f x ⊞ apply df₁ x dx₁
         ≡⟨ sym (incrementalization f df₁ x dx₁) ⟩
           (f ⊞ df₁) (x ⊞ dx₁)
-        ≡⟨ cong (f ⊞ df₁) $ proof dx₁≙dx₂ ⟩
+        ≡⟨ ≙-cong (f ⊞ df₁) dx₁≙dx₂ ⟩
           (f ⊞ df₁) (x ⊞ dx₂)
-        ≡⟨ cong (λ f → f (x ⊞ dx₂)) $ proof df₁≙df₂ ⟩
+        ≡⟨ ≙-cong (λ f → f (x ⊞ dx₂)) df₁≙df₂ ⟩
           (f ⊞ df₂) (x ⊞ dx₂)
         ≡⟨ incrementalization f df₂ x dx₂ ⟩
           f x ⊞ apply df₂ x dx₂
