@@ -33,8 +33,8 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
   ≙-refl : ∀ {dx} → dx ≙ dx
   ≙-refl = doe refl
 
-  ≙-symm : ∀ {dx dy} → dx ≙ dy → dy ≙ dx
-  ≙-symm ≙ = doe $ sym $ proof ≙
+  ≙-sym : ∀ {dx dy} → dx ≙ dy → dy ≙ dx
+  ≙-sym ≙ = doe $ sym $ proof ≙
 
   ≙-trans : ∀ {dx dy dz} → dx ≙ dy → dy ≙ dz → dx ≙ dz
   ≙-trans ≙₁ ≙₂ = doe $ trans (proof ≙₁) (proof ≙₂)
@@ -42,7 +42,7 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
   ≙-isEquivalence : IsEquivalence (_≙_)
   ≙-isEquivalence = record
     { refl  = ≙-refl
-    ; sym   = ≙-symm
+    ; sym   = ≙-sym
     ; trans = ≙-trans
     }
 
@@ -194,11 +194,11 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
       df
     ≙⟨ derivative-is-nil df fdf ⟩
       nil f
-    ≙⟨ ≙-symm (derivative-is-nil dg fdg) ⟩
+    ≙⟨ ≙-sym (derivative-is-nil dg fdg) ⟩
       dg
     ∎
     where
       open ≙-Reasoning
       -- Unused, but just to test that inference works.
       lemma : nil f ≙ dg
-      lemma = ≙-symm (derivative-is-nil dg fdg)
+      lemma = ≙-sym (derivative-is-nil dg fdg)
