@@ -72,19 +72,15 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
   -- As a consequence, if dx ≙ nil x, then x ⊞ dx ≡ x
   nil-is-⊞-unit : ∀ dx → dx ≙ nil x → x ⊞ dx ≡ x
   nil-is-⊞-unit dx dx≙nil-x =
-    trans
-      (proof (let open ≙-Reasoning in
-        begin
-          dx
-        ≙⟨ dx≙nil-x ⟩
-          nil x
-        ∎))
-      (let open ≡-Reasoning in
-        begin
-          x ⊞ (nil x)
-        ≡⟨ update-nil x ⟩
-          x
-        ∎)
+    begin
+      x ⊞ dx
+    ≡⟨ proof dx≙nil-x ⟩
+      x ⊞ (nil x)
+    ≡⟨ update-nil x ⟩
+      x
+    ∎
+    where
+      open ≡-Reasoning
 
   -- Here we prove the inverse:
   ⊞-unit-is-nil : ∀ dx → x ⊞ dx ≡ x → dx ≙ nil x
