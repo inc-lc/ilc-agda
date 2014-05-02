@@ -245,7 +245,7 @@ module FunctionChanges
         correct : (a : A) (da : Δ a) →
           f (a ⊞ da) ⊞ apply (a ⊞ da) (nil (a ⊞ da)) ≡ f a ⊞ apply a da
 
-    open FunctionChange
+    open FunctionChange public
     open ≡-Reasoning
     open import Postulate.Extensionality
 
