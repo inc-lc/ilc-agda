@@ -15,7 +15,8 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
   -- Delta-observational equivalence: these asserts that two changes
   -- give the same result when applied to a base value.
 
-  -- To avoid unification problems, use a one-field record.
+  -- To avoid unification problems, use a one-field record (a Haskell "newtype")
+  -- instead of a "type synonym".
   record _≙_ dx dy : Set a where
     -- doe = Delta-Observational Equivalence.
     constructor doe
