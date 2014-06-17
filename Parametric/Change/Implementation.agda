@@ -110,13 +110,11 @@ record Structure : Set₁ where
     u ⊟₍ τ ₎ v ≈₍ τ ₎ u ⟦⊝₍ τ ₎⟧ v
 
   u⊟v≈u⊝v {base ι} {u} {v} = u⊟v≈u⊝v-base ι {u} {v}
-  u⊟v≈u⊝v {σ ⇒ τ} {g} {f} = result where
-    result : (w : ⟦ σ ⟧) (Δw : Δ₍ σ ₎ w) →
-      (Δw′ : ⟦ ΔType σ ⟧) → Δw ≈₍ σ ₎ Δw′ →
-        (g (after₍ σ ₎ Δw) ⊟₍ τ ₎ f (before₍ σ ₎ Δw)) ≈₍ τ ₎ g (before₍ σ ₎ Δw ⟦⊕₍ σ ₎⟧ Δw′) ⟦⊝₍ τ ₎⟧ f (before₍ σ ₎ Δw)
-    result w Δw Δw′ Δw≈Δw′
-      rewrite carry-over {σ} Δw Δw≈Δw′ =
-      u⊟v≈u⊝v {τ} {g (before₍ σ ₎ Δw ⟦⊕₍ σ ₎⟧ Δw′)} {f (before₍ σ ₎ Δw)}
+  u⊟v≈u⊝v {σ ⇒ τ} {g} {f} w Δw Δw′ Δw≈Δw′ =
+    subst
+      (λ □ → (g □ ⊟₍ τ ₎ f (before₍ σ ₎ Δw)) ≈₍ τ ₎ g (before₍ σ ₎ Δw ⟦⊕₍ σ ₎⟧ Δw′) ⟦⊝₍ τ ₎⟧ f (before₍ σ ₎ Δw))
+      (sym (carry-over {σ} Δw Δw≈Δw′))
+      (u⊟v≈u⊝v {τ} {g (before₍ σ ₎ Δw ⟦⊕₍ σ ₎⟧ Δw′)} {f (before₍ σ ₎ Δw)})
 
   carry-over {base ι} Δv Δv≈Δv′ = carry-over-base Δv Δv≈Δv′
   carry-over {σ ⇒ τ} {f} Δf {Δf′} Δf≈Δf′ =
