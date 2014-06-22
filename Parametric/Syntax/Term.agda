@@ -248,11 +248,11 @@ module Structure (Const : Structure) where
     -}
     --What I have to write instead:
 
-    absN : {n : ℕ} → (τs : Vec _ (suc n)) → absNType τs
-    absN {zero}  (τ₁ ∷ []) = absNBase
-    absN {suc n} (τ₁ ∷ τ₂ ∷ τs) f =
+    absN : {n : ℕ} → (τs : Vec _ n) → absNType τs
+    absN {zero}  [] f = f {Γ≼Γ′ = ≼-refl}
+    absN {suc n} (τ₁ ∷ τs) f =
       absNBase (λ {_} {Γ≼Γ′} x₁ →
-        absN {n} (τ₂ ∷ τs) (λ {Γ′₁} {Γ′≼Γ′₁} →
+        absN {n} (τs) (λ {Γ′₁} {Γ′≼Γ′₁} →
           f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
 
     -- Using a similar trick, we can declare absV which takes the N implicit
@@ -265,10 +265,9 @@ module Structure (Const : Structure) where
     absVType 0       τs = absNType τs
     absVType (suc n) τs = {τᵢ : Type} → absVType n (τᵢ ∷ τs)
 
-    -- XXX
-    absVAux : ∀ {m} → (τs : Vec Type m) → ∀ n → absVType (suc n) τs
-    absVAux τs zero    {τᵢ} = absN (τᵢ ∷ τs)
-    absVAux τs (suc n) {τᵢ} = absVAux (τᵢ ∷ τs) n
+    absVAux : ∀ {m} → (τs : Vec Type m) → ∀ n → absVType n τs
+    absVAux τs zero    = absN τs
+    absVAux τs (suc n) = λ {τᵢ} → absVAux (τᵢ ∷ τs) n
 
     absV = absVAux []
 
@@ -279,23 +278,24 @@ module Structure (Const : Structure) where
   -- synthesize τs by unification.
   -- Implicit arguments are reversed when assembling the list, but that's no real problem.
 
-  abs₁ = absV 0
-  abs₂ = absV 1
-  abs₃ = absV 2
-  abs₄ = absV 3
-  abs₅ = absV 4
-  abs₆ = absV 5
+  abs₁ = absV 1
+  abs₂ = absV 2
+  abs₃ = absV 3
+  abs₄ = absV 4
+  abs₅ = absV 5
+  abs₆ = absV 6
 
-{-
-abs₁
-Have: {τ₁ : Type} {Γ : Context} {τ : Type} →
-      ({Γ′ : Context} {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ) →
-      Term Γ (τ₁ Type.Structure.⇒ τ)
+  {-
+  Example types:
+  abs₁:
+    {τ₁ : Type} {Γ : Context} {τ : Type} →
+        ({Γ′ : Context} {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ) →
+        Term Γ (τ₁ Type.Structure.⇒ τ)
 
-abs₂
-Have: {τ₁ : Type} {τ₁ = τ₂ : Type} {Γ : Context} {τ : Type} →
-      ({Γ′ : Context} {Γ≼Γ′ : Γ ≼ Γ′} →
-       Term Γ′ τ₂ → Term Γ′ τ₁ → Term Γ′ τ) →
-      Term Γ (τ₂ Type.Structure.⇒ τ₁ Type.Structure.⇒ τ)
+  abs₂:
+    {τ₁ : Type} {τ₁ = τ₂ : Type} {Γ : Context} {τ : Type} →
+        ({Γ′ : Context} {Γ≼Γ′ : Γ ≼ Γ′} →
+         Term Γ′ τ₂ → Term Γ′ τ₁ → Term Γ′ τ) →
+        Term Γ (τ₂ Type.Structure.⇒ τ₁ Type.Structure.⇒ τ)
 
--}
+  -}
