@@ -42,7 +42,7 @@ open Type.Structure Base
 -- define our own extension point, following the pattern
 -- explained in Parametric.Syntax.Type.
 
-open import Relation.Binary.PropositionalEquality
+open import Relation.Binary.PropositionalEquality hiding ([_])
 open import Function using (_∘_)
 open import Data.Unit
 open import Data.Sum
@@ -209,7 +209,7 @@ module Structure (Const : Structure) where
   -- this cannot be used inside abs₂, ..., abs₆.
 
   -- Now, let's write other variants with a loop!
-  open import Data.Vec using (_∷_; []; Vec; foldr)
+  open import Data.Vec using (_∷_; []; Vec; foldr; [_])
   open import Data.Nat
   module AbsNHelpers where
     open import Function
@@ -232,58 +232,70 @@ module Structure (Const : Structure) where
     -- XXX See "how to keep your neighbours in order" for tricks.
 
     -- Please the termination checker by keeping this case separate.
-    absNBase : ∀ {τ₁} → absNType (τ₁ ∷ [])
+    absNBase : ∀ {τ₁} → absNType [ τ₁ ]
     absNBase {τ₁} f = abs (f {Γ≼Γ′ = drop τ₁ • ≼-refl} (var this))
     -- Otherwise, the recursive step of absN would invoke absN twice, and the
     -- termination checker does not figure out that the calls are in fact
     -- terminating.
 
-  open AbsNHelpers using (absNType; absNBase)
+    -- What I'd like to write, avoiding the need for absNBase, but can't because of the termination checker.
+    {-
+    absN {zero}  (τ₁ ∷ []) f = abs (f {Γ≼Γ′ = drop τ₁ • ≼-refl} (var this))
+    absN {suc n} (τ₁ ∷ τ₂ ∷ τs) f =
+      absN (τ₁ ∷ []) (λ {_} {Γ≼Γ′} x₁ →
+        absN {n} (τ₂ ∷ τs) (λ {Γ′₁} {Γ′≼Γ′₁} →
+          f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
+    -}
+    --What I have to write instead:
 
-  -- XXX: could we be using the same trick as above to take the N implicit
-  -- arguments individually, rather than in a vector? I can't figure out how,
-  -- at least not without trying it. But it seems that's what's shown in Agda 2.4.0 release notes!
-  absN : {n : ℕ} → (τs : Vec _ (suc n)) → absNType τs
-  absN {zero}  (τ₁ ∷ []) = absNBase
-  absN {suc n} (τ₁ ∷ τ₂ ∷ τs) f =
-    absNBase (λ {_} {Γ≼Γ′} x₁ →
-      absN {n} (τ₂ ∷ τs) (λ {Γ′₁} {Γ′≼Γ′₁} →
-        f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
+    absN : {n : ℕ} → (τs : Vec _ (suc n)) → absNType τs
+    absN {zero}  (τ₁ ∷ []) = absNBase
+    absN {suc n} (τ₁ ∷ τ₂ ∷ τs) f =
+      absNBase (λ {_} {Γ≼Γ′} x₁ →
+        absN {n} (τ₂ ∷ τs) (λ {Γ′₁} {Γ′≼Γ′₁} →
+          f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
 
-  -- What I'd like to write, avoiding the need for absNBase, but can't because of the termination checker.
-  {-
-  absN {zero}  (τ₁ ∷ []) f = abs (f {Γ≼Γ′ = drop τ₁ • ≼-refl} (var this))
-  absN {suc n} (τ₁ ∷ τ₂ ∷ τs) f =
-    absN (τ₁ ∷ []) (λ {_} {Γ≼Γ′} x₁ →
-      absN {n} (τ₂ ∷ τs) (λ {Γ′₁} {Γ′≼Γ′₁} →
-        f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
-  -}
+    -- Using a similar trick, we can declare absV which takes the N implicit
+    -- type arguments individually, collects them and passes them on to absN.
+    -- This is inspired by what's shown in the Agda 2.4.0 release notes, and
+    -- relies critically on support for varying arity. To collect them, we need
+    -- to use an accumulator argument.
+
+    absVType : ∀ n {m} (τs : Vec Type m) → Set
+    absVType 0       τs = absNType τs
+    absVType (suc n) τs = {τᵢ : Type} → absVType n (τᵢ ∷ τs)
+
+    -- XXX
+    absVAux : ∀ {m} → (τs : Vec Type m) → ∀ n → absVType (suc n) τs
+    absVAux τs zero    {τᵢ} = absN (τᵢ ∷ τs)
+    absVAux τs (suc n) {τᵢ} = absVAux (τᵢ ∷ τs) n
+
+    absV = absVAux []
+
+  open AbsNHelpers using (absV) public
 
   -- Declare abs₁ .. abs₆ wrappers for more convenient use, allowing implicit
   -- type arguments to be synthesized. Somehow, Agda does not manage to
   -- synthesize τs by unification.
   -- Implicit arguments are reversed when assembling the list, but that's no real problem.
-  module _ {τ₁ : Type} where
-    τs₁ =  τ₁ ∷ []
-    abs₁ : absNType τs₁
-    abs₁ = absN τs₁
-    module _ {τ₂ : Type} where
-      τs₂ = τ₂ ∷ τs₁
-      abs₂ : absNType τs₂
-      abs₂ = absN τs₂
-      module _ {τ₃ : Type} where
-        τs₃ = τ₃ ∷ τs₂
-        abs₃ : absNType τs₃
-        abs₃ = absN τs₃
-        module _ {τ₄ : Type} where
-          τs₄ = τ₄ ∷ τs₃
-          abs₄ : absNType τs₄
-          abs₄ = absN τs₄
-          module _ {τ₅ : Type} where
-            τs₅ = τ₅ ∷ τs₄
-            abs₅ : absNType τs₅
-            abs₅ = absN τs₅
-            module _ {τ₆ : Type} where
-              τs₆ = τ₆ ∷ τs₅
-              abs₆ : absNType τs₆
-              abs₆ = absN τs₆
+
+  abs₁ = absV 0
+  abs₂ = absV 1
+  abs₃ = absV 2
+  abs₄ = absV 3
+  abs₅ = absV 4
+  abs₆ = absV 5
+
+{-
+abs₁
+Have: {τ₁ : Type} {Γ : Context} {τ : Type} →
+      ({Γ′ : Context} {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ) →
+      Term Γ (τ₁ Type.Structure.⇒ τ)
+
+abs₂
+Have: {τ₁ : Type} {τ₁ = τ₂ : Type} {Γ : Context} {τ : Type} →
+      ({Γ′ : Context} {Γ≼Γ′ : Γ ≼ Γ′} →
+       Term Γ′ τ₂ → Term Γ′ τ₁ → Term Γ′ τ) →
+      Term Γ (τ₂ Type.Structure.⇒ τ₁ Type.Structure.⇒ τ)
+
+-}
