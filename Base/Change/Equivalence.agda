@@ -151,3 +151,22 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
     ∎
     where
       open ≙-Reasoning
+
+  -- This is Lemma 2.5 in the paper. Note that the statement in the paper uses
+  -- (incorrectly) normal equality instead of delta-observational equivalence.
+  deriv-zero :
+    (f : A → B) → (df : (a : A) (da : Δ a) → Δ (f a)) → Derivative f df →
+    ∀ v → df v (nil v) ≙ nil (f v)
+  deriv-zero f df proof v = doe lemma
+    where
+      open ≡-Reasoning
+      lemma : f v ⊞ df v (nil v) ≡ f v ⊞ nil (f v)
+      lemma =
+        begin
+          f v ⊞ df v (v ⊟ v)
+        ≡⟨ proof v (v ⊟ v) ⟩
+          f (v ⊞ (v ⊟ v))
+        ≡⟨ cong f (update-nil v) ⟩
+          f v
+        ≡⟨ sym (update-nil (f v)) ⟩
+          f v ⊞ nil (f v) ∎

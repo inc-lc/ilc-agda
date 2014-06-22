@@ -52,7 +52,7 @@ record IsChangeAlgebra
   update-nil : ∀ v → update v (nil v) ≡ v
   update-nil v = update-diff v v
 
-  -- abbrevitations
+  -- abbreviations
   before : ∀ {v} → Change v → Carrier
   before {v} _ = v
 
@@ -164,6 +164,8 @@ Derivative₍ x , y ₎ f df = Derivative f df where
   CPx = change-algebra₍ x ₎
   CQy = change-algebra₍ y ₎
 
+-- Lemma 2.5 appears in Base.Change.Equivalence.
+
 -- Abelian Groups Induce Change Algebras
 -- =====================================
 --
@@ -230,16 +232,16 @@ module GroupChanges
 module FunctionChanges
     {a} {b} {c} {d} (A : Set a) (B : Set b) {{CA : ChangeAlgebra c A}} {{CB : ChangeAlgebra d B}}
   where
-    -- This corresponds to Definition 2.5 in the paper.
+    -- This corresponds to Definition 2.6 in the paper.
     record FunctionChange (f : A → B) : Set (a ⊔ b ⊔ c ⊔ d) where
       constructor
         cons
       field
-        -- Definition 2.5a
+        -- Definition 2.6a
         apply : (a : A) (da : Δ a) →
           Δ (f a)
 
-        -- Definition 2.5b.
+        -- Definition 2.6b.
         -- (for some reason, the version in the paper has the arguments of ≡
         -- flipped. Since ≡ is symmetric, this doesn't matter).
         correct : (a : A) (da : Δ a) →
@@ -252,7 +254,7 @@ module FunctionChanges
     changeAlgebra : ChangeAlgebra (a ⊔ b ⊔ c ⊔ d) (A → B)
     changeAlgebra = record
       { Change = FunctionChange
-        -- in the paper, update and diff below are in Def. 2.6
+        -- in the paper, update and diff below are in Def. 2.7
       ; update = λ f df a → f a ⊞ apply df a (nil a)
       ; diff = λ g f → record
         { apply = λ a da → g (a ⊞ da) ⊟ f a
@@ -272,7 +274,7 @@ module FunctionChanges
         }
       ; isChangeAlgebra = record
           -- the proof of update-diff is the second half of what
-          -- we have to prove for Theorem 2.7.
+          -- we have to prove for Theorem 2.8.
         { update-diff = λ g f → ext (λ a →
           begin
             f a ⊞ (g (a ⊞ nil a) ⊟ f a)
@@ -284,12 +286,12 @@ module FunctionChanges
         }
       }
 
-    -- This is Lemma 2.8 in the paper.
+    -- This is Theorem 2.9 in the paper.
     incrementalization : ∀ (f : A → B) df a da →
       (f ⊞ df) (a ⊞ da) ≡ f a ⊞ apply df a da
     incrementalization f df a da = correct df a da
 
-    -- This is Theorem 2.9 in the paper.
+    -- This is Theorem 2.10 in the paper.
     nil-is-derivative : ∀ (f : A → B) →
       Derivative f (apply (nil f))
     nil-is-derivative f a da =
