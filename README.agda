@@ -98,19 +98,13 @@ module README where
 -- =================================
 --
 -- To typecheck this formalization, you need to install the appropriate version
--- of Agda, the Agda standard library (version 0.7), generate Everything.agda
--- with the attached Haskell helper, and finally run Agda on this file.
+-- of Agda (2.4.0), the Agda standard library (version 0.8), generate
+-- Everything.agda with the attached Haskell helper, and finally run Agda on
+-- this file.
 --
 -- Given a Unix-like environment (including Cygwin), running the ./agdaCheck.sh
 -- script and following instructions given on output will eventually generate
 -- Everything.agda and proceed to type check everything on command line.
---
--- We use Agda HEAD from September 2013; Agda 2.3.2.1 might happen to work, but
--- has some bugs with serialization of code using some recent syntactic sugar
--- which we use (https://code.google.com/p/agda/issues/detail?id=756), so it
--- might work or not. When it does not, removing Agda caches (.agdai files)
--- appears to often help. You can use "find . -name '*.agdai' | xargs rm" to do
--- that.
 --
 -- If you're not an Agda power user, it is probably easier to use
 -- the VM image or look at the pretty-printed and hyperlinked
