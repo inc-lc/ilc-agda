@@ -164,6 +164,8 @@ Derivative₍ x , y ₎ f df = Derivative f df where
   CPx = change-algebra₍ x ₎
   CQy = change-algebra₍ y ₎
 
+-- Lemma 2.5 appears in Base.Change.Equivalence.
+
 -- Abelian Groups Induce Change Algebras
 -- =====================================
 --
