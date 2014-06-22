@@ -227,33 +227,17 @@ module Structure (Const : Structure) where
       (f : ∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → hoasArgType Γ′ τ τs) →
       Term Γ (hoasResType τ τs)
 
-    -- A better type for absN but a mess to use due to the proofs (which aren't synthesized, even though maybe they should be?)
-    -- absN : (n : ℕ) → {_ : n > 0} → absNType n
-    -- XXX See "how to keep your neighbours in order" for tricks.
-
-    -- Please the termination checker by keeping this case separate.
-    absNBase : ∀ {τ₁} → absNType [ τ₁ ]
-    absNBase {τ₁} f = abs (f {Γ≼Γ′ = drop τ₁ • ≼-refl} (var this))
-    -- Otherwise, the recursive step of absN would invoke absN twice, and the
-    -- termination checker does not figure out that the calls are in fact
-    -- terminating.
-
-    -- What I'd like to write, avoiding the need for absNBase, but can't because of the termination checker.
-    {-
-    absN {zero}  (τ₁ ∷ []) f = abs (f {Γ≼Γ′ = drop τ₁ • ≼-refl} (var this))
-    absN {suc n} (τ₁ ∷ τ₂ ∷ τs) f =
-      absN (τ₁ ∷ []) (λ {_} {Γ≼Γ′} x₁ →
-        absN {n} (τ₂ ∷ τs) (λ {Γ′₁} {Γ′≼Γ′₁} →
-          f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
-    -}
-    --What I have to write instead:
+    drop-≼-l : ∀ {Γ Γ′ τ} → (τ • Γ ≼ Γ′) → Γ ≼ Γ′
+    drop-≼-l Γ′≼Γ′₁ = ≼-trans (drop _ • ≼-refl) Γ′≼Γ′₁
 
     absN : {n : ℕ} → (τs : Vec _ n) → absNType τs
-    absN {zero}  [] f = f {Γ≼Γ′ = ≼-refl}
-    absN {suc n} (τ₁ ∷ τs) f =
-      absNBase (λ {_} {Γ≼Γ′} x₁ →
-        absN {n} (τs) (λ {Γ′₁} {Γ′≼Γ′₁} →
-          f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
+    absN []        f = f {Γ≼Γ′ = ≼-refl}
+    absN (τ₁ ∷ τs) f =
+      abs (absN τs
+        (λ {_} {Γ′≼Γ′₁} →
+          f
+            {Γ≼Γ′ = drop-≼-l Γ′≼Γ′₁}
+            (weaken Γ′≼Γ′₁ (var this))))
 
     -- Using a similar trick, we can declare absV which takes the N implicit
     -- type arguments individually, collects them and passes them on to absN.
