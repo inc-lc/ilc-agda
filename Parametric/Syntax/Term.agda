@@ -209,23 +209,23 @@ module Structure (Const : Structure) where
   -- this cannot be used inside abs₂, ..., abs₆.
 
   -- Now, let's write other variants with a loop!
-  open import Data.Vec using (_∷_; []; Vec; foldr; [_])
+  open import Data.Vec using (_∷_; []; Vec; foldr; [_]; reverse)
   open import Data.Nat
   module AbsNHelpers where
     open import Function
     hoasArgType : ∀ {n} → Context → Type → Vec Type n → Set
-    hoasArgType Γ τ = foldr _ (λ a b → a → b) (Term Γ τ) ∘ Data.Vec.map (Term Γ)
+    hoasArgType Γ τres = foldr _ (λ a b → a → b) (Term Γ τres) ∘ Data.Vec.map (Term Γ)
     -- That is,
-    --hoasArgType Γ τ [] = Term Γ τ
-    --hoasArgType Γ τ (τ₀ ∷ τs) = Term Γ τ₀ → hoasArgType Γ τ τs
+    --hoasArgType Γ τres [] = Term Γ τres
+    --hoasArgType Γ τres (τ₀ ∷ τs) = Term Γ τ₀ → hoasArgType Γ τres τs
 
     hoasResType : ∀ {n} → Type → Vec Type n → Type
-    hoasResType τ = foldr _ _⇒_ τ
+    hoasResType τres = foldr _ _⇒_ τres
 
     absNType : {n : ℕ} → Vec _ n → Set
-    absNType τs = ∀ {Γ τ} →
-      (f : ∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → hoasArgType Γ′ τ τs) →
-      Term Γ (hoasResType τ τs)
+    absNType τs = ∀ {Γ τres} →
+      (f : ∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → hoasArgType Γ′ τres τs) →
+      Term Γ (hoasResType τres τs)
 
     drop-≼-l : ∀ {Γ Γ′ τ} → (τ • Γ ≼ Γ′) → Γ ≼ Γ′
     drop-≼-l Γ′≼Γ′₁ = ≼-trans (drop _ • ≼-refl) Γ′≼Γ′₁
@@ -239,28 +239,31 @@ module Structure (Const : Structure) where
             {Γ≼Γ′ = drop-≼-l Γ′≼Γ′₁}
             (weaken Γ′≼Γ′₁ (var this))))
 
-    -- Using a similar trick, we can declare absV which takes the N implicit
-    -- type arguments individually, collects them and passes them on to absN.
-    -- This is inspired by what's shown in the Agda 2.4.0 release notes, and
-    -- relies critically on support for varying arity. To collect them, we need
+    -- Using a similar trick, we can declare absV (where V stands for variadic),
+    -- which takes the N implicit type arguments individually, collects them and
+    -- passes them on to absN. This is inspired by the example in the Agda 2.4.0
+    -- release notes about support for varying arity. To collect them, we need
     -- to use an accumulator argument.
 
     absVType : ∀ n {m} (τs : Vec Type m) → Set
-    absVType 0       τs = absNType τs
-    absVType (suc n) τs = {τᵢ : Type} → absVType n (τᵢ ∷ τs)
+    absVType zero       τs = absNType (reverse τs)
+    absVType (suc n) τs = {τ₁ : Type} → absVType n (τ₁ ∷ τs)
 
     absVAux : ∀ {m} → (τs : Vec Type m) → ∀ n → absVType n τs
-    absVAux τs zero    = absN τs
-    absVAux τs (suc n) = λ {τᵢ} → absVAux (τᵢ ∷ τs) n
+    absVAux τs zero    = absN (reverse τs)
+    -- (Support for varying arity does not work here, so {τ₁} must be bound in
+    -- the right-hand side).
+    absVAux τs (suc n) = λ {τ₁} → absVAux (τ₁ ∷ τs) n
 
+    -- "Initialize" accumulator to the empty list.
     absV = absVAux []
+    -- We could maybe define absV directly, without going through absN, by
+    -- making hoasArgType and hoasResType also variadic, but I don't see a clear
+    -- advantage.
 
   open AbsNHelpers using (absV) public
 
-  -- Declare abs₁ .. abs₆ wrappers for more convenient use, allowing implicit
-  -- type arguments to be synthesized. Somehow, Agda does not manage to
-  -- synthesize τs by unification.
-  -- Implicit arguments are reversed when assembling the list, but that's no real problem.
+  -- Declare abs₁ .. abs₆ wrappers for compatibility.
 
   abs₁ = absV 1
   abs₂ = absV 2
@@ -272,14 +275,14 @@ module Structure (Const : Structure) where
   {-
   Example types:
   abs₁:
-    {τ₁ : Type} {Γ : Context} {τ : Type} →
-        ({Γ′ : Context} {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ) →
-        Term Γ (τ₁ Type.Structure.⇒ τ)
+    {τ₁ : Type} {Γ : Context} {τres : Type} →
+      ({Γ′ : Context} {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τres) →
+      Term Γ (τ₁ ⇒ τres)
 
   abs₂:
-    {τ₁ : Type} {τ₁ = τ₂ : Type} {Γ : Context} {τ : Type} →
-        ({Γ′ : Context} {Γ≼Γ′ : Γ ≼ Γ′} →
-         Term Γ′ τ₂ → Term Γ′ τ₁ → Term Γ′ τ) →
-        Term Γ (τ₂ Type.Structure.⇒ τ₁ Type.Structure.⇒ τ)
+    {τ₁ : Type} {τ₁ = τ₂ : Type} {Γ : Context} {τres : Type} →
+      ({Γ′ : Context} {Γ≼Γ′ : Γ ≼ Γ′} →
+       Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τres) →
+      Term Γ (τ₁ ⇒ τ₂ ⇒ τres)
 
   -}
