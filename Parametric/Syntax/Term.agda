@@ -197,53 +197,93 @@ module Structure (Const : Structure) where
 
   -- HOAS-like smart constructors for lambdas, for different arities.
 
-  abs₁ :
-    ∀ {Γ τ₁ τ} →
-      (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → (x : Term Γ′ τ₁) → Term Γ′ τ) →
-      (Term Γ (τ₁ ⇒ τ))
-  abs₁ {Γ} {τ₁} =  λ f → abs (f {Γ≼Γ′ = drop τ₁ • ≼-refl} (var this))
+  -- We could also write this:
+  module NamespaceForBadAbs₁ where
+    abs₁′ :
+      ∀ {Γ τ₁ τ} →
+        (Term (τ₁ • Γ) τ₁ → Term (τ₁ • Γ) τ) →
+        (Term Γ (τ₁ ⇒ τ))
+    abs₁′ {Γ} {τ₁} = λ f → abs (f (var this))
 
-  abs₂ :
-    ∀ {Γ τ₁ τ₂ τ} →
-      (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τ) →
-      (Term Γ (τ₁ ⇒ τ₂ ⇒ τ))
-  abs₂ f =
-    abs₁ (λ {_} {Γ≼Γ′} x₁ →
-      abs₁ (λ {_} {Γ′≼Γ′₁} →
+  -- However, this is less general, and it is harder to reuse. In particular,
+  -- this cannot be used inside abs₂, ..., abs₆.
+
+  -- Now, let's write other variants with a loop!
+  open import Data.Vec using (_∷_; []; Vec; foldr)
+  open import Data.Nat
+  module AbsNHelpers where
+    open import Function
+    hoasArgType : ∀ {n} → Context → Type → Vec Type n → Set
+    hoasArgType Γ τ = foldr _ (λ a b → a → b) (Term Γ τ) ∘ Data.Vec.map (Term Γ)
+    -- That is,
+    --hoasArgType Γ τ [] = Term Γ τ
+    --hoasArgType Γ τ (τ₀ ∷ τs) = Term Γ τ₀ → hoasArgType Γ τ τs
+
+    hoasResType : ∀ {n} → Type → Vec Type n → Type
+    hoasResType τ = foldr _ _⇒_ τ
+
+    absNType : {n : ℕ} → Vec _ n → Set
+    absNType τs = ∀ {Γ τ} →
+      (f : ∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → hoasArgType Γ′ τ τs) →
+      Term Γ (hoasResType τ τs)
+
+    -- A better type for absN but a mess to use due to the proofs (which aren't synthesized, even though maybe they should be?)
+    -- absN : (n : ℕ) → {_ : n > 0} → absNType n
+    -- XXX See "how to keep your neighbours in order" for tricks.
+
+    -- Please the termination checker by keeping this case separate.
+    absNBase : ∀ {τ₁} → absNType (τ₁ ∷ [])
+    absNBase {τ₁} f = abs (f {Γ≼Γ′ = drop τ₁ • ≼-refl} (var this))
+    -- Otherwise, the recursive step of absN would invoke absN twice, and the
+    -- termination checker does not figure out that the calls are in fact
+    -- terminating.
+
+  open AbsNHelpers using (absNType; absNBase)
+
+  -- XXX: could we be using the same trick as above to take the N implicit
+  -- arguments individually, rather than in a vector? I can't figure out how,
+  -- at least not without trying it. But it seems that's what's shown in Agda 2.4.0 release notes!
+  absN : {n : ℕ} → (τs : Vec _ (suc n)) → absNType τs
+  absN {zero}  (τ₁ ∷ []) = absNBase
+  absN {suc n} (τ₁ ∷ τ₂ ∷ τs) f =
+    absNBase (λ {_} {Γ≼Γ′} x₁ →
+      absN {n} (τ₂ ∷ τs) (λ {Γ′₁} {Γ′≼Γ′₁} →
         f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
 
-  abs₃ :
-    ∀ {Γ τ₁ τ₂ τ₃ τ} →
-      (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τ₃ → Term Γ′ τ) →
-      (Term Γ (τ₁ ⇒ τ₂ ⇒ τ₃ ⇒ τ))
-  abs₃ f =
-    abs₁ (λ {_} {Γ≼Γ′} x₁ →
-      abs₂ (λ {_} {Γ′≼Γ′₁} →
+  -- What I'd like to write, avoiding the need for absNBase, but can't because of the termination checker.
+  {-
+  absN {zero}  (τ₁ ∷ []) f = abs (f {Γ≼Γ′ = drop τ₁ • ≼-refl} (var this))
+  absN {suc n} (τ₁ ∷ τ₂ ∷ τs) f =
+    absN (τ₁ ∷ []) (λ {_} {Γ≼Γ′} x₁ →
+      absN {n} (τ₂ ∷ τs) (λ {Γ′₁} {Γ′≼Γ′₁} →
         f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
+  -}
 
-  abs₄ :
-    ∀ {Γ τ₁ τ₂ τ₃ τ₄ τ} →
-      (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τ₃ → Term Γ′ τ₄ → Term Γ′ τ) →
-      (Term Γ (τ₁ ⇒ τ₂ ⇒ τ₃ ⇒ τ₄ ⇒ τ))
-  abs₄ f =
-    abs₁ (λ {_} {Γ≼Γ′} x₁ →
-      abs₃ (λ {_} {Γ′≼Γ′₁} →
-        f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
-
-  abs₅ :
-    ∀ {Γ τ₁ τ₂ τ₃ τ₄ τ₅ τ} →
-      (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τ₃ → Term Γ′ τ₄ → Term Γ′ τ₅ → Term Γ′ τ) →
-      (Term Γ (τ₁ ⇒ τ₂ ⇒ τ₃ ⇒ τ₄ ⇒ τ₅ ⇒ τ))
-  abs₅ f =
-    abs₁ (λ {_} {Γ≼Γ′} x₁ →
-      abs₄ (λ {_} {Γ′≼Γ′₁} →
-        f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
-
-  abs₆ :
-    ∀ {Γ τ₁ τ₂ τ₃ τ₄ τ₅ τ₆ τ} →
-      (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τ₃ → Term Γ′ τ₄ → Term Γ′ τ₅ → Term Γ′ τ₆ → Term Γ′ τ) →
-      (Term Γ (τ₁ ⇒ τ₂ ⇒ τ₃ ⇒ τ₄ ⇒ τ₅ ⇒ τ₆ ⇒ τ))
-  abs₆ f =
-    abs₁ (λ {_} {Γ≼Γ′} x₁ →
-      abs₅ (λ {_} {Γ′≼Γ′₁} →
-        f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
+  -- Declare abs₁ .. abs₆ wrappers for more convenient use, allowing implicit
+  -- type arguments to be synthesized. Somehow, Agda does not manage to
+  -- synthesize τs by unification.
+  -- Implicit arguments are reversed when assembling the list, but that's no real problem.
+  module _ {τ₁ : Type} where
+    τs₁ =  τ₁ ∷ []
+    abs₁ : absNType τs₁
+    abs₁ = absN τs₁
+    module _ {τ₂ : Type} where
+      τs₂ = τ₂ ∷ τs₁
+      abs₂ : absNType τs₂
+      abs₂ = absN τs₂
+      module _ {τ₃ : Type} where
+        τs₃ = τ₃ ∷ τs₂
+        abs₃ : absNType τs₃
+        abs₃ = absN τs₃
+        module _ {τ₄ : Type} where
+          τs₄ = τ₄ ∷ τs₃
+          abs₄ : absNType τs₄
+          abs₄ = absN τs₄
+          module _ {τ₅ : Type} where
+            τs₅ = τ₅ ∷ τs₄
+            abs₅ : absNType τs₅
+            abs₅ = absN τs₅
+            module _ {τ₆ : Type} where
+              τs₆ = τ₆ ∷ τs₅
+              abs₆ : absNType τs₆
+              abs₆ = absN τs₆
