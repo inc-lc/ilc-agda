@@ -263,23 +263,14 @@ module Structure (Const : Structure) where
 
   open AbsNHelpers using (absV) public
 
-  -- Declare abs₁ .. abs₆ wrappers for compatibility.
-
-  abs₁ = absV 1
-  abs₂ = absV 2
-  abs₃ = absV 3
-  abs₄ = absV 4
-  abs₅ = absV 5
-  abs₆ = absV 6
-
   {-
   Example types:
-  abs₁:
+  absV 1:
     {τ₁ : Type} {Γ : Context} {τres : Type} →
       ({Γ′ : Context} {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τres) →
       Term Γ (τ₁ ⇒ τres)
 
-  abs₂:
+  absV 2:
     {τ₁ : Type} {τ₁ = τ₂ : Type} {Γ : Context} {τres : Type} →
       ({Γ′ : Context} {Γ≼Γ′ : Γ ≼ Γ′} →
        Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τres) →
