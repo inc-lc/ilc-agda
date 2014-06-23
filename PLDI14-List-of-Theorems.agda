@@ -29,27 +29,30 @@ open Base.Change.Algebra using (IsChangeAlgebra)
 -- IsChangeAlgebra.update-nil
 open Base.Change.Algebra using (IsChangeAlgebra)
 
+-- Lemma 2.5 (Behavior of derivatives on nil)
+open import Base.Change.Equivalence using (deriv-zero)
+
 -- Definition 2.4 (Derivatives)
 open Base.Change.Algebra using (Derivative)
 
--- Definition 2.5 (Carrier set of function changes)
+-- Definition 2.6 (Carrier set of function changes)
 open Base.Change.Algebra.FunctionChanges
 
--- Definition 2.6 (Operations on function changes)
+-- Definition 2.7 (Operations on function changes)
 -- ChangeAlgebra.update FunctionChanges.changeAlgebra
 -- ChangeAlgebra.diff   FunctionChanges.changeAlgebra
 open Base.Change.Algebra.FunctionChanges using (changeAlgebra)
 
--- Theorem 2.7 (Function changes form a change structure)
--- (In Agda, the proof of Theorem 2.7 has to be included in the
+-- Theorem 2.8 (Function changes form a change structure)
+-- (In Agda, the proof of Theorem 2.8 has to be included in the
 -- definition of function changes, here
 -- FunctionChanges.changeAlgebra.)
 open Base.Change.Algebra.FunctionChanges using (changeAlgebra)
 
--- Lemma 2.8 (Incrementalization)
+-- Theorem 2.9 (Incrementalization)
 open Base.Change.Algebra.FunctionChanges using (incrementalization)
 
--- Theorem 2.9 (Nil changes are derivatives)
+-- Theorem 2.10 (Nil changes are derivatives)
 open Base.Change.Algebra.FunctionChanges using (nil-is-derivative)
 
 -- Definition 3.1 (Domains)
