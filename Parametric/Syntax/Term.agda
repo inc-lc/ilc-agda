@@ -42,7 +42,7 @@ open Type.Structure Base
 -- define our own extension point, following the pattern
 -- explained in Parametric.Syntax.Type.
 
-open import Relation.Binary.PropositionalEquality
+open import Relation.Binary.PropositionalEquality hiding ([_])
 open import Function using (_∘_)
 open import Data.Unit
 open import Data.Sum
@@ -197,53 +197,83 @@ module Structure (Const : Structure) where
 
   -- HOAS-like smart constructors for lambdas, for different arities.
 
-  abs₁ :
-    ∀ {Γ τ₁ τ} →
-      (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → (x : Term Γ′ τ₁) → Term Γ′ τ) →
-      (Term Γ (τ₁ ⇒ τ))
-  abs₁ {Γ} {τ₁} =  λ f → abs (f {Γ≼Γ′ = drop τ₁ • ≼-refl} (var this))
+  -- We could also write this:
+  module NamespaceForBadAbs₁ where
+    abs₁′ :
+      ∀ {Γ τ₁ τ} →
+        (Term (τ₁ • Γ) τ₁ → Term (τ₁ • Γ) τ) →
+        (Term Γ (τ₁ ⇒ τ))
+    abs₁′ {Γ} {τ₁} = λ f → abs (f (var this))
 
-  abs₂ :
-    ∀ {Γ τ₁ τ₂ τ} →
-      (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τ) →
-      (Term Γ (τ₁ ⇒ τ₂ ⇒ τ))
-  abs₂ f =
-    abs₁ (λ {_} {Γ≼Γ′} x₁ →
-      abs₁ (λ {_} {Γ′≼Γ′₁} →
-        f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
+  -- However, this is less general, and it is harder to reuse. In particular,
+  -- this cannot be used inside abs₂, ..., abs₆.
 
-  abs₃ :
-    ∀ {Γ τ₁ τ₂ τ₃ τ} →
-      (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τ₃ → Term Γ′ τ) →
-      (Term Γ (τ₁ ⇒ τ₂ ⇒ τ₃ ⇒ τ))
-  abs₃ f =
-    abs₁ (λ {_} {Γ≼Γ′} x₁ →
-      abs₂ (λ {_} {Γ′≼Γ′₁} →
-        f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
+  -- Now, let's write other variants with a loop!
+  open import Data.Vec using (_∷_; []; Vec; foldr; [_]; reverse)
+  open import Data.Nat
+  module AbsNHelpers where
+    open import Function
+    hoasArgType : ∀ {n} → Context → Type → Vec Type n → Set
+    hoasArgType Γ τres = foldr _ (λ a b → a → b) (Term Γ τres) ∘ Data.Vec.map (Term Γ)
+    -- That is,
+    --hoasArgType Γ τres [] = Term Γ τres
+    --hoasArgType Γ τres (τ₀ ∷ τs) = Term Γ τ₀ → hoasArgType Γ τres τs
 
-  abs₄ :
-    ∀ {Γ τ₁ τ₂ τ₃ τ₄ τ} →
-      (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τ₃ → Term Γ′ τ₄ → Term Γ′ τ) →
-      (Term Γ (τ₁ ⇒ τ₂ ⇒ τ₃ ⇒ τ₄ ⇒ τ))
-  abs₄ f =
-    abs₁ (λ {_} {Γ≼Γ′} x₁ →
-      abs₃ (λ {_} {Γ′≼Γ′₁} →
-        f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
+    hoasResType : ∀ {n} → Type → Vec Type n → Type
+    hoasResType τres = foldr _ _⇒_ τres
 
-  abs₅ :
-    ∀ {Γ τ₁ τ₂ τ₃ τ₄ τ₅ τ} →
-      (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τ₃ → Term Γ′ τ₄ → Term Γ′ τ₅ → Term Γ′ τ) →
-      (Term Γ (τ₁ ⇒ τ₂ ⇒ τ₃ ⇒ τ₄ ⇒ τ₅ ⇒ τ))
-  abs₅ f =
-    abs₁ (λ {_} {Γ≼Γ′} x₁ →
-      abs₄ (λ {_} {Γ′≼Γ′₁} →
-        f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
+    absNType : {n : ℕ} → Vec _ n → Set
+    absNType τs = ∀ {Γ τres} →
+      (f : ∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → hoasArgType Γ′ τres τs) →
+      Term Γ (hoasResType τres τs)
 
-  abs₆ :
-    ∀ {Γ τ₁ τ₂ τ₃ τ₄ τ₅ τ₆ τ} →
-      (∀ {Γ′} → {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τ₃ → Term Γ′ τ₄ → Term Γ′ τ₅ → Term Γ′ τ₆ → Term Γ′ τ) →
-      (Term Γ (τ₁ ⇒ τ₂ ⇒ τ₃ ⇒ τ₄ ⇒ τ₅ ⇒ τ₆ ⇒ τ))
-  abs₆ f =
-    abs₁ (λ {_} {Γ≼Γ′} x₁ →
-      abs₅ (λ {_} {Γ′≼Γ′₁} →
-        f {Γ≼Γ′ = ≼-trans Γ≼Γ′ Γ′≼Γ′₁} (weaken Γ′≼Γ′₁ x₁)))
+    drop-≼-l : ∀ {Γ Γ′ τ} → (τ • Γ ≼ Γ′) → Γ ≼ Γ′
+    drop-≼-l Γ′≼Γ′₁ = ≼-trans (drop _ • ≼-refl) Γ′≼Γ′₁
+
+    absN : {n : ℕ} → (τs : Vec _ n) → absNType τs
+    absN []        f = f {Γ≼Γ′ = ≼-refl}
+    absN (τ₁ ∷ τs) f =
+      abs (absN τs
+        (λ {_} {Γ′≼Γ′₁} →
+          f
+            {Γ≼Γ′ = drop-≼-l Γ′≼Γ′₁}
+            (weaken Γ′≼Γ′₁ (var this))))
+
+    -- Using a similar trick, we can declare absV (where V stands for variadic),
+    -- which takes the N implicit type arguments individually, collects them and
+    -- passes them on to absN. This is inspired by the example in the Agda 2.4.0
+    -- release notes about support for varying arity. To collect them, we need
+    -- to use an accumulator argument.
+
+    absVType : ∀ n {m} (τs : Vec Type m) → Set
+    absVType zero       τs = absNType (reverse τs)
+    absVType (suc n) τs = {τ₁ : Type} → absVType n (τ₁ ∷ τs)
+
+    absVAux : ∀ {m} → (τs : Vec Type m) → ∀ n → absVType n τs
+    absVAux τs zero    = absN (reverse τs)
+    -- (Support for varying arity does not work here, so {τ₁} must be bound in
+    -- the right-hand side).
+    absVAux τs (suc n) = λ {τ₁} → absVAux (τ₁ ∷ τs) n
+
+    -- "Initialize" accumulator to the empty list.
+    absV = absVAux []
+    -- We could maybe define absV directly, without going through absN, by
+    -- making hoasArgType and hoasResType also variadic, but I don't see a clear
+    -- advantage.
+
+  open AbsNHelpers using (absV) public
+
+  {-
+  Example types:
+  absV 1:
+    {τ₁ : Type} {Γ : Context} {τres : Type} →
+      ({Γ′ : Context} {Γ≼Γ′ : Γ ≼ Γ′} → Term Γ′ τ₁ → Term Γ′ τres) →
+      Term Γ (τ₁ ⇒ τres)
+
+  absV 2:
+    {τ₁ : Type} {τ₁ = τ₂ : Type} {Γ : Context} {τres : Type} →
+      ({Γ′ : Context} {Γ≼Γ′ : Γ ≼ Γ′} →
+       Term Γ′ τ₁ → Term Γ′ τ₂ → Term Γ′ τres) →
+      Term Γ (τ₁ ⇒ τ₂ ⇒ τres)
+
+  -}
