@@ -81,4 +81,4 @@ module Structure
   _⊕_ : ∀ {τ Γ} →
     Term Γ (ΔType τ) → Term Γ τ →
     Term Γ τ
-  _⊕_ {τ} = app₂ apply-term
+  _⊕_ {τ} = apply τ
