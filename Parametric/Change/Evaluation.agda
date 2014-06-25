@@ -36,13 +36,13 @@ open import Relation.Binary.PropositionalEquality
 open import Base.Denotation.Notation
 open import Postulate.Extensionality
 
--- Extension point 1: Relating ⊝ and its value on base types
+-- Extension point 1: Relating ⊕ and its value on base types
 ApplyStructure : Set
 ApplyStructure = ∀ ι {Γ} →
   {t : Term Γ (base ι)} {Δt : Term Γ (ΔType (base ι))} {ρ : ⟦ Γ ⟧} →
   ⟦ t ⟧ ρ ⟦⊕₍ base ι ₎⟧ ⟦ Δt ⟧ ρ ≡ ⟦ t ⊕₍ base ι ₎ Δt ⟧ ρ
 
--- Extension point 2: Relating ⊕ and its value on base types
+-- Extension point 2: Relating ⊝ and its value on base types
 DiffStructure : Set
 DiffStructure = ∀ ι {Γ} →
   {s : Term Γ (base ι)} {t : Term Γ (base ι)} {ρ : ⟦ Γ ⟧} →
