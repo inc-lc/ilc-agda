@@ -44,19 +44,19 @@ module Structure
 
   apply-term {base ι} = apply-base
   apply-term {σ ⇒ τ} =
-    (let
+    let
        _⊝σ_ = λ {Γ} s t  → app₂ (diff-term {σ} {Γ}) s t
        _⊕τ_ = λ {Γ} t Δt → app₂ (apply-term {τ} {Γ}) Δt t
      in
-       absV 3 (λ Δh h y → app h y ⊕τ app (app Δh y) (y ⊝σ y)))
+       absV 3 (λ Δh h y → app h y ⊕τ app (app Δh y) (y ⊝σ y))
 
   diff-term {base ι} = diff-base
   diff-term {σ ⇒ τ} =
-    (let
+    let
        _⊝τ_ = λ {Γ} s t  → app₂ (diff-term {τ} {Γ}) s t
        _⊕σ_ = λ {Γ} t Δt → app₂ (apply-term {σ} {Γ}) Δt t
      in
-       absV 4 (λ g f x Δx → app g (x ⊕σ Δx) ⊝τ app f x))
+       absV 4 (λ g f x Δx → app g (x ⊕σ Δx) ⊝τ app f x)
 
   apply : ∀ τ {Γ} →
     Term Γ (ΔType τ) → Term Γ τ →
