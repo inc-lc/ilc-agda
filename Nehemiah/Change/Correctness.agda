@@ -66,7 +66,7 @@ derive-const-correct flatmap-const (s • t • ∅) ρ dρ ρ′ dρ≈ρ′ (s
       (ext (λ v →
         cong₂ _++_
           (cong (λ hole → hole v) (⟦fit⟧ s ρ ρ′))
-            (s-correct v (nil₍ int ₎ v) (v - v) refl)))
+            (s-correct v (nil₍ int ₎ v) (+ 0) refl)))
       (cong₂ _++_
         (⟦fit⟧ t ρ ρ′)
        t-correct))

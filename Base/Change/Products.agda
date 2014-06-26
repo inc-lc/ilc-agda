@@ -28,6 +28,9 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
   _⊝_ : A × B → (v : A × B) → PChange v
   _⊝_ (aNew , bNew) (a , b) = aNew ⊟ a , bNew ⊟ b
 
+  p-nil : (v : A × B) → PChange v
+  p-nil (a , b) = (nil a , nil b)
+
   p-update-diff : (u v : A × B) → v ⊕ (u ⊝ v) ≡ u
   p-update-diff (ua , ub) (va , vb) =
     let u = (ua , ub)
@@ -44,13 +47,29 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
         u
       ∎
 
+  p-update-nil : (v : A × B) → v ⊕ (p-nil v) ≡ v
+  p-update-nil (a , b) =
+    let v = (a , b)
+    in
+      begin
+        v ⊕ (p-nil v)
+      ≡⟨⟩
+        (a ⊞ nil a , b ⊞ nil b)
+      ≡⟨ cong₂ _,_ (update-nil a) (update-nil b)⟩
+         (a , b)
+      ≡⟨⟩
+        v
+      ∎
+
   changeAlgebra : ChangeAlgebra ℓ (A × B)
   changeAlgebra = record
     { Change = PChange
     ; update = _⊕_
     ; diff = _⊝_
+    ; nil = p-nil
     ; isChangeAlgebra = record
       { update-diff = p-update-diff
+      ; update-nil = p-update-nil
       }
     }
 
