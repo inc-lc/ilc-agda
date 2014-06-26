@@ -23,8 +23,8 @@ module Parametric.Change.Correctness
     (⟦_⟧Base : Value.Structure Base)
     (⟦_⟧Const : Evaluation.Structure Const ⟦_⟧Base)
     (ΔBase : ChangeType.Structure Base)
-    (diff-base : ChangeTerm.DiffStructure Const ΔBase)
     (apply-base : ChangeTerm.ApplyStructure Const ΔBase)
+    (diff-base : ChangeTerm.DiffStructure Const ΔBase)
     (⟦apply-base⟧ : ChangeValue.ApplyStructure Const ⟦_⟧Base ΔBase)
     (⟦diff-base⟧ : ChangeValue.DiffStructure Const ⟦_⟧Base ΔBase)
     (meaning-⊕-base : ChangeEvaluation.ApplyStructure
@@ -49,7 +49,7 @@ open Validity.Structure ⟦_⟧Base validity-structure
 open Specification.Structure
   Const ⟦_⟧Base ⟦_⟧Const validity-structure specification-structure
 open ChangeType.Structure Base ΔBase
-open ChangeTerm.Structure Const ΔBase diff-base apply-base
+open ChangeTerm.Structure Const ΔBase apply-base diff-base
 open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧
 open ChangeEvaluation.Structure
   ⟦_⟧Base ⟦_⟧Const ΔBase

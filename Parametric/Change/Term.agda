@@ -31,24 +31,16 @@ ApplyStructure : Set
 ApplyStructure = ∀ {ι Γ} → Term Γ (ΔType (base ι) ⇒ base ι ⇒ base ι)
 
 module Structure
-    (diff-base : DiffStructure)
     (apply-base : ApplyStructure)
+    (diff-base  : DiffStructure)
   where
 
   -- g ⊝ f  = λ x . λ Δx . g (x ⊕ Δx) ⊝ f x
   -- f ⊕ Δf = λ x . f x ⊕ Δf x (x ⊝ x)
 
   -- We provide: terms for ⊕ and ⊝ on arbitrary types.
-  diff-term : ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ ΔType τ)
   apply-term : ∀ {τ Γ} → Term Γ (ΔType τ ⇒ τ ⇒ τ)
-
-  diff-term {base ι} = diff-base
-  diff-term {σ ⇒ τ} =
-    (let
-       _⊝τ_ = λ {Γ} s t  → app₂ (diff-term {τ} {Γ}) s t
-       _⊕σ_ = λ {Γ} t Δt → app₂ (apply-term {σ} {Γ}) Δt t
-     in
-       absV 4 (λ g f x Δx → app g (x ⊕σ Δx) ⊝τ app f x))
+  diff-term : ∀ {τ Γ} → Term Γ (τ ⇒ τ ⇒ ΔType τ)
 
   apply-term {base ι} = apply-base
   apply-term {σ ⇒ τ} =
@@ -58,27 +50,37 @@ module Structure
      in
        absV 3 (λ Δh h y → app h y ⊕τ app (app Δh y) (y ⊝σ y)))
 
-  diff : ∀ τ {Γ} →
-    Term Γ τ → Term Γ τ →
-    Term Γ (ΔType τ)
-  diff _ = app₂ diff-term
+  diff-term {base ι} = diff-base
+  diff-term {σ ⇒ τ} =
+    (let
+       _⊝τ_ = λ {Γ} s t  → app₂ (diff-term {τ} {Γ}) s t
+       _⊕σ_ = λ {Γ} t Δt → app₂ (apply-term {σ} {Γ}) Δt t
+     in
+       absV 4 (λ g f x Δx → app g (x ⊕σ Δx) ⊝τ app f x))
 
   apply : ∀ τ {Γ} →
     Term Γ (ΔType τ) → Term Γ τ →
     Term Γ τ
   apply _ = app₂ apply-term
 
+  diff : ∀ τ {Γ} →
+    Term Γ τ → Term Γ τ →
+    Term Γ (ΔType τ)
+  diff _ = app₂ diff-term
+
   infixl 6 apply diff
+
   syntax apply τ x Δx = Δx ⊕₍ τ ₎ x
   syntax diff τ x y = x ⊝₍ τ ₎ y
 
   infixl 6 _⊕_ _⊝_
-  _⊝_ : ∀ {τ Γ} →
-    Term Γ τ → Term Γ τ →
-    Term Γ (ΔType τ)
-  _⊝_ {τ} = diff τ
 
   _⊕_ : ∀ {τ Γ} →
     Term Γ (ΔType τ) → Term Γ τ →
     Term Γ τ
   _⊕_ {τ} = apply τ
+
+  _⊝_ : ∀ {τ Γ} →
+    Term Γ τ → Term Γ τ →
+    Term Γ (ΔType τ)
+  _⊝_ {τ} = diff τ

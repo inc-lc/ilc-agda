@@ -31,7 +31,7 @@ open import Postulate.Extensionality
 
 import Parametric.Change.Correctness
   Const ⟦_⟧Base ⟦_⟧Const ΔBase
-  diff-base apply-base
+  apply-base diff-base
   ⟦apply-base⟧ ⟦diff-base⟧
   meaning-⊕-base meaning-⊝-base
   change-algebra-base-family specification-structure

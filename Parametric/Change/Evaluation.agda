@@ -29,7 +29,7 @@ open Term.Structure Base Const
 open Value.Structure Base ⟦_⟧Base
 open Evaluation.Structure Const ⟦_⟧Base ⟦_⟧Const
 open ChangeType.Structure Base ΔBase
-open ChangeTerm.Structure Const ΔBase diff-base apply-base
+open ChangeTerm.Structure Const ΔBase apply-base diff-base
 open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧
 
 open import Relation.Binary.PropositionalEquality
