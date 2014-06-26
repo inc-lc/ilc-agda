@@ -64,6 +64,8 @@ record Structure : Set₁ where
     u⊟v≈u⊝v-base : ∀ ι {u v : ⟦ ι ⟧Base} →
       implements-base ι (u ⊟₍ ι ₎ v) (⟦diff-base⟧ ι u v)
 
+    nil-v≈⟦nil⟧-v-base : ∀ ι {v : ⟦ ι ⟧Base} →
+      implements-base ι (nil₍ ι ₎ v) (⟦nil-base⟧ ι v)
     -- Extension point 3: Lemma 3.1 for base types.
     carry-over-base : ∀ {ι}
       {v : ⟦ ι ⟧Base}

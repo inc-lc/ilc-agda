@@ -65,7 +65,19 @@ module Structure
        absV 4 (λ g f x Δx → app g (x ⊕σ Δx) ⊝τ app f x)
 
   nil-term {base ι} = nil-base
-  nil-term {σ ⇒ τ} = absV 1 (λ f → app₂ diff-term f f)
+  nil-term {σ ⇒ τ} =
+    -- What I'd usually write:
+    --absV 1 (λ f → app₂ diff-term f f)
+    -- What I wrote in fact:
+    let
+       _⊝τ_ = λ {Γ} s t  → app₂ (diff-term {τ} {Γ}) s t
+       _⊕σ_ = λ {Γ} t Δt → app₂ (apply-term {σ} {Γ}) Δt t
+     in
+       absV 1 (λ ff → app (absV 3 (λ f x Δx → app f (x ⊕σ Δx) ⊝τ app f x)) ff)
+    -- This simplified a lot proving meaning-nilt by reusing meaning-⊝.
+    --
+    -- The reason is that the extra lambda-abstraction ensures that f is pushed
+    -- twice in the environment.
 
   apply : ∀ τ {Γ} →
     Term Γ (ΔType τ) → Term Γ τ →

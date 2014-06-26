@@ -50,9 +50,16 @@ DiffStructure = ∀ ι {Γ} →
   {s : Term Γ (base ι)} {t : Term Γ (base ι)} {ρ : ⟦ Γ ⟧} →
   ⟦ s ⟧ ρ ⟦⊝₍ base ι ₎⟧ ⟦ t ⟧ ρ ≡ ⟦ s ⊝₍ base ι ₎ t ⟧ ρ
 
+-- Extension point 3: Relating nil-term and its value on base types
+NilStructure : Set
+NilStructure = ∀ ι {Γ} →
+  {t : Term Γ (base ι)} {ρ : ⟦ Γ ⟧} →
+  ⟦nil₍ base ι ₎⟧ (⟦ t ⟧ ρ) ≡ ⟦ nilt₍ base ι ₎ t ⟧ ρ
+
 module Structure
-    (meaning-⊕-base : ApplyStructure)
-    (meaning-⊝-base : DiffStructure)
+    (meaning-⊕-base    : ApplyStructure)
+    (meaning-⊝-base    : DiffStructure)
+    (meaning-nilt-base : NilStructure)
   where
 
   -- unique names with unambiguous types
@@ -71,6 +78,10 @@ module Structure
   meaning-⊝ : ∀ {τ Γ}
     {s : Term Γ τ} {t : Term Γ τ} {ρ : ⟦ Γ ⟧} →
     ⟦ s ⟧ ρ ⟦⊝₍ τ ₎⟧ ⟦ t ⟧ ρ ≡ ⟦ s ⊝₍ τ ₎ t ⟧ ρ
+
+  meaning-nilt : ∀ {τ Γ}
+    {t : Term Γ τ} {ρ : ⟦ Γ ⟧} →
+    ⟦nil₍ τ ₎⟧ (⟦ t ⟧ ρ) ≡ ⟦ nilt₍ τ ₎ t ⟧ ρ
 
   meaning-⊕ {base ι} {Γ} {τ} {Δt} {ρ} = meaning-⊕-base ι {Γ} {τ} {Δt} {ρ}
   meaning-⊕ {σ ⇒ τ} {Γ} {t} {Δt} {ρ} = ext (λ v →
@@ -128,3 +139,11 @@ module Structure
     where
       open ≡-Reasoning
       open Disambiguation
+
+  meaning-nilt {base ι} {Γ} {t} {ρ} = meaning-nilt-base ι {Γ} {t} {ρ}
+  meaning-nilt {σ ⇒ τ} {Γ} {t} {ρ} = meaning-⊝ {σ ⇒ τ} {Γ} {t} {t} {ρ}
+  -- Ideally, this proof should simply be:
+  -- meaning-⊝ {σ ⇒ τ} {Γ} {t} {t} {ρ}
+  --
+  -- However, the types of the results don't match because using nilt constructs
+  -- different environments.

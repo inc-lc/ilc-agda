@@ -33,7 +33,7 @@ import Parametric.Change.Correctness
   Const ⟦_⟧Base ⟦_⟧Const ΔBase
   apply-base diff-base nil-base
   ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
-  meaning-⊕-base meaning-⊝-base
+  meaning-⊕-base meaning-⊝-base meaning-nilt-base
   change-algebra-base-family specification-structure
   deriveConst implementation-structure as Correctness
 

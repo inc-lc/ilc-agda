@@ -29,4 +29,8 @@ meaning-⊝-base : ChangeEvaluation.DiffStructure
 meaning-⊝-base base-int = refl
 meaning-⊝-base base-bag = refl
 
-open ChangeEvaluation.Structure meaning-⊕-base meaning-⊝-base public
+meaning-nilt-base : ChangeEvaluation.NilStructure
+meaning-nilt-base base-int = refl
+meaning-nilt-base base-bag = refl
+
+open ChangeEvaluation.Structure meaning-⊕-base meaning-⊝-base meaning-nilt-base public
