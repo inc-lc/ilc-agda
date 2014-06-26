@@ -96,13 +96,13 @@ module Structure
       Δf : Term Γ′ (ΔType (σ ⇒ τ))
       Δf = var (that (that this))
       y  = app f x
-      Δy = app (app Δf x) (x ⊝ x)
+      Δy = app (app Δf x) (nilt x)
     in
       begin
-        ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v (v ⟦⊝₍ σ ₎⟧ v)
+        ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v (⟦nil₍ σ ₎⟧ v)
       ≡⟨ cong (λ hole → ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v hole)
-           (meaning-⊝ {s = x} {x} {ρ′}) ⟩
-        ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v (⟦ x ⊝ x ⟧ ρ′)
+           (meaning-nilt {t = x} {ρ′}) ⟩
+        ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v (⟦ nilt x ⟧ ρ′)
       ≡⟨ meaning-⊕ {t = y} {Δt = Δy} {ρ′} ⟩
         ⟦ y ⊕₍ τ ₎ Δy ⟧ ρ′
       ∎)

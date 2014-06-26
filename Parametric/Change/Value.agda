@@ -50,7 +50,7 @@ module Structure
   syntax ⟦diff⟧ τ u v = u ⟦⊝₍ τ ₎⟧ v
 
   v ⟦⊕₍ base ι ₎⟧ Δv = ⟦apply-base⟧ ι v Δv
-  f ⟦⊕₍ σ ⇒ τ ₎⟧ Δf = λ v → f v ⟦⊕₍ τ ₎⟧ Δf v (v ⟦⊝₍ σ ₎⟧ v)
+  f ⟦⊕₍ σ ⇒ τ ₎⟧ Δf = λ v → f v ⟦⊕₍ τ ₎⟧ Δf v (⟦nil₍ σ ₎⟧ v)
 
   u ⟦⊝₍ base ι ₎⟧ v = ⟦diff-base⟧ ι u v
   g ⟦⊝₍ σ ⇒ τ ₎⟧ f = λ v Δv → (g (v ⟦⊕₍ σ ₎⟧ Δv)) ⟦⊝₍ τ ₎⟧ (f v)

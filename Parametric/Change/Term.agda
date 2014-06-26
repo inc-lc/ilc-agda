@@ -51,10 +51,10 @@ module Structure
   apply-term {base ι} = apply-base
   apply-term {σ ⇒ τ} =
     let
-       _⊝σ_ = λ {Γ} s t  → app₂ (diff-term {σ} {Γ}) s t
        _⊕τ_ = λ {Γ} t Δt → app₂ (apply-term {τ} {Γ}) Δt t
+       nil-σ = λ {Γ} t → app (nil-term {σ} {Γ}) t
      in
-       absV 3 (λ Δh h y → app h y ⊕τ app (app Δh y) (y ⊝σ y))
+       absV 3 (λ Δh h y → app h y ⊕τ app (app Δh y) (nil-σ y))
 
   diff-term {base ι} = diff-base
   diff-term {σ ⇒ τ} =
