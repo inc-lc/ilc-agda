@@ -20,8 +20,10 @@ module Parametric.Change.Evaluation
     (ΔBase : ChangeType.Structure Base)
     (apply-base : ChangeTerm.ApplyStructure Const ΔBase)
     (diff-base : ChangeTerm.DiffStructure Const ΔBase)
+    (nil-base : ChangeTerm.NilStructure Const ΔBase)
     (⟦apply-base⟧ : ChangeValue.ApplyStructure Const ⟦_⟧Base ΔBase)
     (⟦diff-base⟧ : ChangeValue.DiffStructure Const ⟦_⟧Base ΔBase)
+    (⟦nil-base⟧ : ChangeValue.NilStructure Const ⟦_⟧Base ΔBase)
   where
 
 open Type.Structure Base
@@ -29,8 +31,8 @@ open Term.Structure Base Const
 open Value.Structure Base ⟦_⟧Base
 open Evaluation.Structure Const ⟦_⟧Base ⟦_⟧Const
 open ChangeType.Structure Base ΔBase
-open ChangeTerm.Structure Const ΔBase apply-base diff-base
-open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧
+open ChangeTerm.Structure Const ΔBase apply-base diff-base nil-base
+open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
 
 open import Relation.Binary.PropositionalEquality
 open import Base.Denotation.Notation

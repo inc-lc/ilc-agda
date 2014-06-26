@@ -31,14 +31,19 @@ ApplyStructure = ∀ ι → ⟦ ι ⟧Base → ⟦ ΔBase ι ⟧Base → ⟦ ι 
 DiffStructure : Set
 DiffStructure = ∀ ι → ⟦ ι ⟧Base → ⟦ ι ⟧Base → ⟦ ΔBase ι ⟧Base
 
+NilStructure : Set
+NilStructure = ∀ ι → ⟦ ι ⟧Base → ⟦ ΔBase ι ⟧Base
+
 module Structure
     (⟦apply-base⟧ : ApplyStructure)
     (⟦diff-base⟧ : DiffStructure)
+    (⟦nil-base⟧ : NilStructure)
   where
 
   -- We provide: The value of ⊕ and ⊝ for arbitrary types.
   ⟦apply⟧ : ∀ τ → ⟦ τ ⟧ → ⟦ ΔType τ ⟧ → ⟦ τ ⟧
   ⟦diff⟧ : ∀ τ → ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ ΔType τ ⟧
+  ⟦nil₍_₎⟧ : ∀ τ → ⟦ τ ⟧ → ⟦ ΔType τ ⟧
 
   infixl 6 ⟦apply⟧ ⟦diff⟧
   syntax ⟦apply⟧ τ v dv = v ⟦⊕₍ τ ₎⟧ dv
@@ -50,11 +55,17 @@ module Structure
   u ⟦⊝₍ base ι ₎⟧ v = ⟦diff-base⟧ ι u v
   g ⟦⊝₍ σ ⇒ τ ₎⟧ f = λ v Δv → (g (v ⟦⊕₍ σ ₎⟧ Δv)) ⟦⊝₍ τ ₎⟧ (f v)
 
+  ⟦nil₍ base ι ₎⟧ v = ⟦nil-base⟧ ι v
+  ⟦nil₍ σ ⇒ τ ₎⟧ f = f ⟦⊝₍ σ ⇒ τ ₎⟧ f
+
   _⟦⊕⟧_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ ΔType τ ⟧ → ⟦ τ ⟧
   _⟦⊕⟧_ {τ} = ⟦apply⟧ τ
 
   _⟦⊝⟧_ : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧ → ⟦ ΔType τ ⟧
   _⟦⊝⟧_ {τ} = ⟦diff⟧ τ
+
+  ⟦nil⟧ : ∀ {τ} → ⟦ τ ⟧ → ⟦ ΔType τ ⟧
+  ⟦nil⟧ {τ} = ⟦nil₍ τ ₎⟧
 
   alternate : ∀ {Γ} → ⟦ Γ ⟧ → ⟦ mapContext ΔType Γ ⟧ → ⟦ ΔContext Γ ⟧
   alternate {∅} ∅ ∅ = ∅

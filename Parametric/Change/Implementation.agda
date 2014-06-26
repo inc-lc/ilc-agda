@@ -25,6 +25,7 @@ module Parametric.Change.Implementation
        Const ⟦_⟧Base ⟦_⟧Const validity-structure)
     (⟦apply-base⟧ : ChangeValue.ApplyStructure Const ⟦_⟧Base ΔBase)
     (⟦diff-base⟧ : ChangeValue.DiffStructure Const ⟦_⟧Base ΔBase)
+    (⟦nil-base⟧ : ChangeValue.NilStructure Const ⟦_⟧Base ΔBase)
     (derive-const : Derive.Structure Const ΔBase)
   where
 
@@ -36,7 +37,7 @@ open Validity.Structure ⟦_⟧Base validity-structure
 open Specification.Structure
   Const ⟦_⟧Base ⟦_⟧Const validity-structure specification-structure
 open ChangeType.Structure Base ΔBase
-open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧
+open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
 open Derive.Structure Const ΔBase derive-const
 
 open import Base.Denotation.Notation

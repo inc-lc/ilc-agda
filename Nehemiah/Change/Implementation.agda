@@ -25,7 +25,7 @@ open import Structure.Bag.Nehemiah
 import Parametric.Change.Implementation
     Const ⟦_⟧Base ⟦_⟧Const ΔBase
     change-algebra-base-family specification-structure
-    ⟦apply-base⟧ ⟦diff-base⟧ deriveConst as Implementation
+    ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧ deriveConst as Implementation
 
 private
   implements-base : ∀ ι {v : ⟦ ι ⟧Base} → Δ₍ ι ₎ v → ⟦ ΔBase ι ⟧Base → Set

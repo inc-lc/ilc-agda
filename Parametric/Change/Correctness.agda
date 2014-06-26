@@ -25,12 +25,14 @@ module Parametric.Change.Correctness
     (ΔBase : ChangeType.Structure Base)
     (apply-base : ChangeTerm.ApplyStructure Const ΔBase)
     (diff-base : ChangeTerm.DiffStructure Const ΔBase)
+    (nil-base : ChangeTerm.NilStructure Const ΔBase)
     (⟦apply-base⟧ : ChangeValue.ApplyStructure Const ⟦_⟧Base ΔBase)
     (⟦diff-base⟧ : ChangeValue.DiffStructure Const ⟦_⟧Base ΔBase)
+    (⟦nil-base⟧ : ChangeValue.NilStructure Const ⟦_⟧Base ΔBase)
     (meaning-⊕-base : ChangeEvaluation.ApplyStructure
-      ⟦_⟧Base ⟦_⟧Const ΔBase apply-base diff-base ⟦apply-base⟧ ⟦diff-base⟧)
+      ⟦_⟧Base ⟦_⟧Const ΔBase apply-base diff-base nil-base ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧)
     (meaning-⊝-base : ChangeEvaluation.DiffStructure
-      ⟦_⟧Base ⟦_⟧Const ΔBase apply-base diff-base ⟦apply-base⟧ ⟦diff-base⟧)
+      ⟦_⟧Base ⟦_⟧Const ΔBase apply-base diff-base nil-base ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧)
     (validity-structure : Validity.Structure ⟦_⟧Base)
     (specification-structure : Specification.Structure
       Const ⟦_⟧Base ⟦_⟧Const validity-structure)
@@ -38,7 +40,7 @@ module Parametric.Change.Correctness
     (implementation-structure : Implementation.Structure
       Const ⟦_⟧Base ⟦_⟧Const ΔBase
       validity-structure specification-structure
-      ⟦apply-base⟧ ⟦diff-base⟧ derive-const)
+      ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧ derive-const)
   where
 
 open Type.Structure Base
@@ -49,17 +51,17 @@ open Validity.Structure ⟦_⟧Base validity-structure
 open Specification.Structure
   Const ⟦_⟧Base ⟦_⟧Const validity-structure specification-structure
 open ChangeType.Structure Base ΔBase
-open ChangeTerm.Structure Const ΔBase apply-base diff-base
-open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧
+open ChangeTerm.Structure Const ΔBase apply-base diff-base nil-base
+open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
 open ChangeEvaluation.Structure
   ⟦_⟧Base ⟦_⟧Const ΔBase
-  apply-base diff-base
-  ⟦apply-base⟧ ⟦diff-base⟧
+  apply-base diff-base nil-base
+  ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
   meaning-⊕-base meaning-⊝-base
 open Derive.Structure Const ΔBase derive-const
 open Implementation.Structure
   Const ⟦_⟧Base ⟦_⟧Const ΔBase validity-structure specification-structure
-  ⟦apply-base⟧ ⟦diff-base⟧ derive-const implementation-structure
+  ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧ derive-const implementation-structure
 
 -- The denotational properties of the `derive` transformation.
 -- In particular, the main theorem about it producing the correct
