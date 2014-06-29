@@ -25,7 +25,7 @@ open import Structure.Bag.Nehemiah
 import Parametric.Change.Implementation
     Const ⟦_⟧Base ⟦_⟧Const ΔBase
     change-algebra-base-family specification-structure
-    ⟦apply-base⟧ ⟦diff-base⟧ deriveConst as Implementation
+    ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧ deriveConst as Implementation
 
 private
   implements-base : ∀ ι {v : ⟦ ι ⟧Base} → Δ₍ ι ₎ v → ⟦ ΔBase ι ⟧Base → Set
@@ -36,6 +36,11 @@ private
       implements-base ι {v} (u ⊟₍ ι ₎ v) (⟦diff-base⟧ ι u v)
   u⊟v≈u⊝v-base base-int = refl
   u⊟v≈u⊝v-base base-bag = refl
+
+  nil-v≈⟦nil⟧-v-base : ∀ ι {v : ⟦ ι ⟧Base} →
+    implements-base ι (nil₍ ι ₎ v) (⟦nil-base⟧ ι v)
+  nil-v≈⟦nil⟧-v-base base-int = refl
+  nil-v≈⟦nil⟧-v-base base-bag = refl
 
   carry-over-base : ∀ {ι}
     {v : ⟦ ι ⟧Base}
@@ -49,6 +54,7 @@ implementation-structure : Implementation.Structure
 implementation-structure = record
     { implements-base = implements-base
     ; u⊟v≈u⊝v-base = u⊟v≈u⊝v-base
+    ; nil-v≈⟦nil⟧-v-base = nil-v≈⟦nil⟧-v-base
     ; carry-over-base = carry-over-base
     }
 

@@ -20,8 +20,10 @@ module Parametric.Change.Evaluation
     (ΔBase : ChangeType.Structure Base)
     (apply-base : ChangeTerm.ApplyStructure Const ΔBase)
     (diff-base : ChangeTerm.DiffStructure Const ΔBase)
+    (nil-base : ChangeTerm.NilStructure Const ΔBase)
     (⟦apply-base⟧ : ChangeValue.ApplyStructure Const ⟦_⟧Base ΔBase)
     (⟦diff-base⟧ : ChangeValue.DiffStructure Const ⟦_⟧Base ΔBase)
+    (⟦nil-base⟧ : ChangeValue.NilStructure Const ⟦_⟧Base ΔBase)
   where
 
 open Type.Structure Base
@@ -29,8 +31,8 @@ open Term.Structure Base Const
 open Value.Structure Base ⟦_⟧Base
 open Evaluation.Structure Const ⟦_⟧Base ⟦_⟧Const
 open ChangeType.Structure Base ΔBase
-open ChangeTerm.Structure Const ΔBase apply-base diff-base
-open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧
+open ChangeTerm.Structure Const ΔBase apply-base diff-base nil-base
+open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
 
 open import Relation.Binary.PropositionalEquality
 open import Base.Denotation.Notation
@@ -48,9 +50,16 @@ DiffStructure = ∀ ι {Γ} →
   {s : Term Γ (base ι)} {t : Term Γ (base ι)} {ρ : ⟦ Γ ⟧} →
   ⟦ s ⟧ ρ ⟦⊝₍ base ι ₎⟧ ⟦ t ⟧ ρ ≡ ⟦ s ⊝₍ base ι ₎ t ⟧ ρ
 
+-- Extension point 3: Relating nil-term and its value on base types
+NilStructure : Set
+NilStructure = ∀ ι {Γ} →
+  {t : Term Γ (base ι)} {ρ : ⟦ Γ ⟧} →
+  ⟦nil₍ base ι ₎⟧ (⟦ t ⟧ ρ) ≡ ⟦ onil₍ base ι ₎ t ⟧ ρ
+
 module Structure
-    (meaning-⊕-base : ApplyStructure)
-    (meaning-⊝-base : DiffStructure)
+    (meaning-⊕-base    : ApplyStructure)
+    (meaning-⊝-base    : DiffStructure)
+    (meaning-onil-base : NilStructure)
   where
 
   -- unique names with unambiguous types
@@ -70,6 +79,10 @@ module Structure
     {s : Term Γ τ} {t : Term Γ τ} {ρ : ⟦ Γ ⟧} →
     ⟦ s ⟧ ρ ⟦⊝₍ τ ₎⟧ ⟦ t ⟧ ρ ≡ ⟦ s ⊝₍ τ ₎ t ⟧ ρ
 
+  meaning-onil : ∀ {τ Γ}
+    {t : Term Γ τ} {ρ : ⟦ Γ ⟧} →
+    ⟦nil₍ τ ₎⟧ (⟦ t ⟧ ρ) ≡ ⟦ onil₍ τ ₎ t ⟧ ρ
+
   meaning-⊕ {base ι} {Γ} {τ} {Δt} {ρ} = meaning-⊕-base ι {Γ} {τ} {Δt} {ρ}
   meaning-⊕ {σ ⇒ τ} {Γ} {t} {Δt} {ρ} = ext (λ v →
     let
@@ -83,13 +96,13 @@ module Structure
       Δf : Term Γ′ (ΔType (σ ⇒ τ))
       Δf = var (that (that this))
       y  = app f x
-      Δy = app (app Δf x) (x ⊝ x)
+      Δy = app (app Δf x) (onil x)
     in
       begin
-        ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v (v ⟦⊝₍ σ ₎⟧ v)
+        ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v (⟦nil₍ σ ₎⟧ v)
       ≡⟨ cong (λ hole → ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v hole)
-           (meaning-⊝ {s = x} {x} {ρ′}) ⟩
-        ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v (⟦ x ⊝ x ⟧ ρ′)
+           (meaning-onil {t = x} {ρ′}) ⟩
+        ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v (⟦ onil x ⟧ ρ′)
       ≡⟨ meaning-⊕ {t = y} {Δt = Δy} {ρ′} ⟩
         ⟦ y ⊕₍ τ ₎ Δy ⟧ ρ′
       ∎)
@@ -126,3 +139,11 @@ module Structure
     where
       open ≡-Reasoning
       open Disambiguation
+
+  meaning-onil {base ι} {Γ} {t} {ρ} = meaning-onil-base ι {Γ} {t} {ρ}
+  meaning-onil {σ ⇒ τ} {Γ} {t} {ρ} = meaning-⊝ {σ ⇒ τ} {Γ} {t} {t} {ρ}
+  -- Ideally, this proof should simply be:
+  -- meaning-⊝ {σ ⇒ τ} {Γ} {t} {t} {ρ}
+  --
+  -- However, the types of the results don't match because using onil constructs
+  -- different environments.

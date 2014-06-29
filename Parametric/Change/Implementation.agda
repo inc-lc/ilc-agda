@@ -25,6 +25,7 @@ module Parametric.Change.Implementation
        Const ⟦_⟧Base ⟦_⟧Const validity-structure)
     (⟦apply-base⟧ : ChangeValue.ApplyStructure Const ⟦_⟧Base ΔBase)
     (⟦diff-base⟧ : ChangeValue.DiffStructure Const ⟦_⟧Base ΔBase)
+    (⟦nil-base⟧ : ChangeValue.NilStructure Const ⟦_⟧Base ΔBase)
     (derive-const : Derive.Structure Const ΔBase)
   where
 
@@ -36,7 +37,7 @@ open Validity.Structure ⟦_⟧Base validity-structure
 open Specification.Structure
   Const ⟦_⟧Base ⟦_⟧Const validity-structure specification-structure
 open ChangeType.Structure Base ΔBase
-open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧
+open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
 open Derive.Structure Const ΔBase derive-const
 
 open import Base.Denotation.Notation
@@ -63,6 +64,8 @@ record Structure : Set₁ where
     u⊟v≈u⊝v-base : ∀ ι {u v : ⟦ ι ⟧Base} →
       implements-base ι (u ⊟₍ ι ₎ v) (⟦diff-base⟧ ι u v)
 
+    nil-v≈⟦nil⟧-v-base : ∀ ι {v : ⟦ ι ⟧Base} →
+      implements-base ι (nil₍ ι ₎ v) (⟦nil-base⟧ ι v)
     -- Extension point 3: Lemma 3.1 for base types.
     carry-over-base : ∀ {ι}
       {v : ⟦ ι ⟧Base}
@@ -116,12 +119,17 @@ record Structure : Set₁ where
       (sym (carry-over {σ} Δw Δw≈Δw′))
       (u⊟v≈u⊝v {τ} {g (before₍ σ ₎ Δw ⟦⊕₍ σ ₎⟧ Δw′)} {f (before₍ σ ₎ Δw)})
 
+  nil-v≈⟦nil⟧-v : ∀ {τ : Type} {v : ⟦ τ ⟧} →
+    nil₍ τ ₎ v ≈₍ τ ₎ (⟦nil₍ τ ₎⟧ v)
+  nil-v≈⟦nil⟧-v {base ι} = nil-v≈⟦nil⟧-v-base ι
+  nil-v≈⟦nil⟧-v {σ ⇒ τ} {f} = u⊟v≈u⊝v {σ ⇒ τ} {f} {f}
+
   carry-over {base ι} Δv Δv≈Δv′ = carry-over-base Δv Δv≈Δv′
   carry-over {σ ⇒ τ} {f} Δf {Δf′} Δf≈Δf′ =
     ext (λ v →
       carry-over {τ} {f v} (call-change {σ} {τ} Δf v (nil₍ σ ₎ v))
-        {Δf′ v (v ⟦⊝₍ σ ₎⟧ v)}
-        (Δf≈Δf′ v (nil₍ σ ₎ v) (v ⟦⊝₍ σ ₎⟧ v) ( u⊟v≈u⊝v {σ} {v} {v})))
+        {Δf′ v (⟦nil₍ σ ₎⟧ v)}
+        (Δf≈Δf′ v (nil₍ σ ₎ v) (⟦nil₍ σ ₎⟧ v) (nil-v≈⟦nil⟧-v {σ} {v})))
 
   -- A property relating `alternate` and the subcontext relation Γ≼ΔΓ
   ⟦Γ≼ΔΓ⟧ : ∀ {Γ} (ρ : ⟦ Γ ⟧) (dρ : ⟦ mapContext ΔType Γ ⟧) →

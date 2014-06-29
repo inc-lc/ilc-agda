@@ -31,9 +31,9 @@ open import Postulate.Extensionality
 
 import Parametric.Change.Correctness
   Const ⟦_⟧Base ⟦_⟧Const ΔBase
-  apply-base diff-base
-  ⟦apply-base⟧ ⟦diff-base⟧
-  meaning-⊕-base meaning-⊝-base
+  apply-base diff-base nil-base
+  ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
+  meaning-⊕-base meaning-⊝-base meaning-onil-base
   change-algebra-base-family specification-structure
   deriveConst implementation-structure as Correctness
 
@@ -66,7 +66,7 @@ derive-const-correct flatmap-const (s • t • ∅) ρ dρ ρ′ dρ≈ρ′ (s
       (ext (λ v →
         cong₂ _++_
           (cong (λ hole → hole v) (⟦fit⟧ s ρ ρ′))
-            (s-correct v (nil₍ int ₎ v) (v - v) refl)))
+            (s-correct v (nil₍ int ₎ v) (+ 0) refl)))
       (cong₂ _++_
         (⟦fit⟧ t ρ ρ′)
        t-correct))

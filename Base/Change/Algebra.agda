@@ -40,17 +40,12 @@ record IsChangeAlgebra
     {Carrier : Set c}
     (Change : Carrier → Set d)
     (update : (v : Carrier) (dv : Change v) → Carrier)
-    (diff : (u v : Carrier) → Change v) : Set (c ⊔ d) where
+    (diff : (u v : Carrier) → Change v)
+    (nil : (u : Carrier) → Change u) : Set (c ⊔ d) where
   field
     update-diff : ∀ u v → update v (diff u v) ≡ u
-
-  -- In the paper, this is Def. 2.2.
-  nil : ∀ v → Change v
-  nil v = diff v v
-
-  -- In the paper, this is Lemma 2.3.
-  update-nil : ∀ v → update v (nil v) ≡ v
-  update-nil v = update-diff v v
+    -- This corresponds to Lemma 2.3 from the paper.
+    update-nil : ∀ v → update v (nil v) ≡ v
 
   -- abbreviations
   before : ∀ {v} → Change v → Carrier
@@ -66,7 +61,10 @@ record ChangeAlgebra {c} ℓ
     update : (v : Carrier) (dv : Change v) → Carrier
     diff : (u v : Carrier) → Change v
 
-    isChangeAlgebra : IsChangeAlgebra Change update diff
+    -- This generalizes Def. 2.2. from the paper.
+    nil : (u : Carrier) → Change u
+
+    isChangeAlgebra : IsChangeAlgebra Change update diff nil
 
 
   infixl 6 update diff
@@ -202,6 +200,7 @@ module GroupChanges
       { Change = const A
       ; update = _⊕_
       ; diff = _⊝_
+      ; nil = const ε
       ; isChangeAlgebra = record
         { update-diff = λ u v →
             begin
@@ -217,6 +216,7 @@ module GroupChanges
             ≡⟨  proj₂ identity u ⟩
               u
             ∎
+        ; update-nil = proj₂ identity
         }
       }
 
@@ -251,12 +251,8 @@ module FunctionChanges
     open ≡-Reasoning
     open import Postulate.Extensionality
 
-    changeAlgebra : ChangeAlgebra (a ⊔ b ⊔ c ⊔ d) (A → B)
-    changeAlgebra = record
-      { Change = FunctionChange
-        -- in the paper, update and diff below are in Def. 2.7
-      ; update = λ f df a → f a ⊞ apply df a (nil a)
-      ; diff = λ g f → record
+    funDiff : (g f : A → B) → FunctionChange f
+    funDiff = λ g f → record
         { apply = λ a da → g (a ⊞ da) ⊟ f a
           -- the proof of correct is the first half of what we
           -- have to prove for Theorem 2.7.
@@ -272,19 +268,38 @@ module FunctionChanges
             f a ⊞ (g (a ⊞ da) ⊟ f a)
           ∎
         }
-      ; isChangeAlgebra = record
-          -- the proof of update-diff is the second half of what
-          -- we have to prove for Theorem 2.8.
-        { update-diff = λ g f → ext (λ a →
-          begin
-            f a ⊞ (g (a ⊞ nil a) ⊟ f a)
-          ≡⟨ cong (λ □ → f a ⊞ (g □ ⊟ f a)) (update-nil a) ⟩
-            f a ⊞ (g a ⊟ f a)
-          ≡⟨ update-diff (g a) (f a) ⟩
-            g a
-          ∎)
+    funUpdate : ∀ (f : A → B) (df : FunctionChange f) → A → B
+    funUpdate = λ f df a → f a ⊞ apply df a (nil a)
+    funNil = λ f → funDiff f f
+
+    mutual
+      -- I have to write the type of funUpdateDiff without using changeAlgebra,
+      -- so I just use the underlying implementations.
+      funUpdateDiff : ∀ u v → funUpdate v (funDiff u v) ≡ u
+      changeAlgebra : ChangeAlgebra (a ⊔ b ⊔ c ⊔ d) (A → B)
+
+      changeAlgebra = record
+        { Change = FunctionChange
+          -- in the paper, update and diff below are in Def. 2.7
+        ; update = funUpdate
+        ; diff = funDiff
+        ; nil = funNil
+        ; isChangeAlgebra = record
+            -- the proof of update-diff is the second half of what
+            -- we have to prove for Theorem 2.8.
+          { update-diff = funUpdateDiff
+          ; update-nil = λ v → funUpdateDiff v v
+          }
         }
-      }
+      -- XXX remove mutual recursion by inlining the algebra in here?
+      funUpdateDiff = λ g f → ext (λ a →
+        begin
+          f a ⊞ (g (a ⊞ nil a) ⊟ f a)
+        ≡⟨ cong (λ □ → f a ⊞ (g □ ⊟ f a)) (update-nil a) ⟩
+          f a ⊞ (g a ⊟ f a)
+        ≡⟨ update-diff (g a) (f a) ⟩
+          g a
+        ∎)
 
     -- This is Theorem 2.9 in the paper.
     incrementalization : ∀ (f : A → B) df a da →
@@ -346,8 +361,10 @@ module ListChanges
         { Change = All′ Δ₍ _ ₎
         ; update = update-all
         ; diff = diff-all
+        ; nil = λ xs → diff-all xs xs
         ; isChangeAlgebra = record
           { update-diff = update-diff-all
+          ; update-nil = λ xs₁ → update-diff-all xs₁ xs₁
           }
         }
       }

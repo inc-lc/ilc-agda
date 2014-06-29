@@ -22,4 +22,8 @@ diff-base : ChangeTerm.DiffStructure
 diff-base {base-int} = absV 2 (λ x y → add x (minus y))
 diff-base {base-bag} = absV 2 (λ x y → union x (negate y))
 
-open ChangeTerm.Structure apply-base diff-base public
+nil-base : ChangeTerm.NilStructure
+nil-base {base-int} = absV 1 (λ x → intlit (+ 0))
+nil-base {base-bag} = absV 1 (λ x → empty)
+
+open ChangeTerm.Structure apply-base diff-base nil-base public

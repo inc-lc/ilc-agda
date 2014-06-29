@@ -18,7 +18,7 @@ open import Relation.Binary.PropositionalEquality
 open import Base.Denotation.Notation
 
 import Parametric.Change.Evaluation
-    ⟦_⟧Base ⟦_⟧Const ΔBase apply-base diff-base ⟦apply-base⟧ ⟦diff-base⟧
+    ⟦_⟧Base ⟦_⟧Const ΔBase apply-base diff-base nil-base ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
   as ChangeEvaluation
 
 meaning-⊕-base : ChangeEvaluation.ApplyStructure
@@ -29,4 +29,8 @@ meaning-⊝-base : ChangeEvaluation.DiffStructure
 meaning-⊝-base base-int = refl
 meaning-⊝-base base-bag = refl
 
-open ChangeEvaluation.Structure meaning-⊕-base meaning-⊝-base public
+meaning-onil-base : ChangeEvaluation.NilStructure
+meaning-onil-base base-int = refl
+meaning-onil-base base-bag = refl
+
+open ChangeEvaluation.Structure meaning-⊕-base meaning-⊝-base meaning-onil-base public

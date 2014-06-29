@@ -23,4 +23,8 @@ import Parametric.Change.Value Const ⟦_⟧Base ΔBase as ChangeValue
 ⟦diff-base⟧ base-int m n = m -  n
 ⟦diff-base⟧ base-bag a b = a \\ b
 
-open ChangeValue.Structure ⟦apply-base⟧ ⟦diff-base⟧ public
+⟦nil-base⟧ : ChangeValue.NilStructure
+⟦nil-base⟧ base-int n = + 0
+⟦nil-base⟧ base-bag b = emptyBag
+
+open ChangeValue.Structure ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧ public

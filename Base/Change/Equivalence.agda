@@ -42,6 +42,10 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
     where
       open ≡-Reasoning
 
+  -- Let's show that nil x is d.o.e. to x ⊟ x
+  nil-x-is-x⊟x : nil x ≙ x ⊟ x
+  nil-x-is-x⊟x = ≙-sym (⊞-unit-is-nil (x ⊟ x) (update-diff x x))
+
   -- TODO: we want to show that all functions of interest respect
   -- delta-observational equivalence, so that two d.o.e. changes can be
   -- substituted for each other freely.
@@ -163,9 +167,9 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
       lemma : f v ⊞ df v (nil v) ≡ f v ⊞ nil (f v)
       lemma =
         begin
-          f v ⊞ df v (v ⊟ v)
-        ≡⟨ proof v (v ⊟ v) ⟩
-          f (v ⊞ (v ⊟ v))
+          f v ⊞ df v (nil v)
+        ≡⟨ proof v (nil v) ⟩
+          f (v ⊞ (nil v))
         ≡⟨ cong f (update-nil v) ⟩
           f v
         ≡⟨ sym (update-nil (f v)) ⟩
