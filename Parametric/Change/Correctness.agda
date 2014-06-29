@@ -33,7 +33,7 @@ module Parametric.Change.Correctness
       ⟦_⟧Base ⟦_⟧Const ΔBase apply-base diff-base nil-base ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧)
     (meaning-⊝-base : ChangeEvaluation.DiffStructure
       ⟦_⟧Base ⟦_⟧Const ΔBase apply-base diff-base nil-base ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧)
-    (meaning-nilt-base : ChangeEvaluation.NilStructure
+    (meaning-onil-base : ChangeEvaluation.NilStructure
       ⟦_⟧Base ⟦_⟧Const ΔBase apply-base diff-base nil-base ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧)
     (validity-structure : Validity.Structure ⟦_⟧Base)
     (specification-structure : Specification.Structure
@@ -59,7 +59,7 @@ open ChangeEvaluation.Structure
   ⟦_⟧Base ⟦_⟧Const ΔBase
   apply-base diff-base nil-base
   ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
-  meaning-⊕-base meaning-⊝-base meaning-nilt-base
+  meaning-⊕-base meaning-⊝-base meaning-onil-base
 open Derive.Structure Const ΔBase derive-const
 open Implementation.Structure
   Const ⟦_⟧Base ⟦_⟧Const ΔBase validity-structure specification-structure

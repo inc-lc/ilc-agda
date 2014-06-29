@@ -74,7 +74,7 @@ module Structure
        _⊕σ_ = λ {Γ} t Δt → app₂ (apply-term {σ} {Γ}) Δt t
      in
        absV 1 (λ ff → app (absV 3 (λ f x Δx → app f (x ⊕σ Δx) ⊝τ app f x)) ff)
-    -- This simplified a lot proving meaning-nilt by reusing meaning-⊝.
+    -- This simplified a lot proving meaning-onil by reusing meaning-⊝.
     --
     -- The reason is that the extra lambda-abstraction ensures that f is pushed
     -- twice in the environment.
@@ -89,10 +89,10 @@ module Structure
     Term Γ (ΔType τ)
   diff _ = app₂ diff-term
 
-  nilt₍_₎ : ∀ τ {Γ} →
+  onil₍_₎ : ∀ τ {Γ} →
     Term Γ τ →
     Term Γ (ΔType τ)
-  nilt₍ _ ₎ = app nil-term
+  onil₍ _ ₎ = app nil-term
 
   infixl 6 apply diff
 
@@ -111,7 +111,7 @@ module Structure
     Term Γ (ΔType τ)
   _⊝_ {τ} = diff τ
 
-  nilt : ∀ {τ Γ} →
+  onil : ∀ {τ Γ} →
     Term Γ τ →
     Term Γ (ΔType τ)
-  nilt {τ} = nilt₍ τ ₎
+  onil {τ} = onil₍ τ ₎

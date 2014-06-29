@@ -54,12 +54,12 @@ DiffStructure = ∀ ι {Γ} →
 NilStructure : Set
 NilStructure = ∀ ι {Γ} →
   {t : Term Γ (base ι)} {ρ : ⟦ Γ ⟧} →
-  ⟦nil₍ base ι ₎⟧ (⟦ t ⟧ ρ) ≡ ⟦ nilt₍ base ι ₎ t ⟧ ρ
+  ⟦nil₍ base ι ₎⟧ (⟦ t ⟧ ρ) ≡ ⟦ onil₍ base ι ₎ t ⟧ ρ
 
 module Structure
     (meaning-⊕-base    : ApplyStructure)
     (meaning-⊝-base    : DiffStructure)
-    (meaning-nilt-base : NilStructure)
+    (meaning-onil-base : NilStructure)
   where
 
   -- unique names with unambiguous types
@@ -79,9 +79,9 @@ module Structure
     {s : Term Γ τ} {t : Term Γ τ} {ρ : ⟦ Γ ⟧} →
     ⟦ s ⟧ ρ ⟦⊝₍ τ ₎⟧ ⟦ t ⟧ ρ ≡ ⟦ s ⊝₍ τ ₎ t ⟧ ρ
 
-  meaning-nilt : ∀ {τ Γ}
+  meaning-onil : ∀ {τ Γ}
     {t : Term Γ τ} {ρ : ⟦ Γ ⟧} →
-    ⟦nil₍ τ ₎⟧ (⟦ t ⟧ ρ) ≡ ⟦ nilt₍ τ ₎ t ⟧ ρ
+    ⟦nil₍ τ ₎⟧ (⟦ t ⟧ ρ) ≡ ⟦ onil₍ τ ₎ t ⟧ ρ
 
   meaning-⊕ {base ι} {Γ} {τ} {Δt} {ρ} = meaning-⊕-base ι {Γ} {τ} {Δt} {ρ}
   meaning-⊕ {σ ⇒ τ} {Γ} {t} {Δt} {ρ} = ext (λ v →
@@ -96,13 +96,13 @@ module Structure
       Δf : Term Γ′ (ΔType (σ ⇒ τ))
       Δf = var (that (that this))
       y  = app f x
-      Δy = app (app Δf x) (nilt x)
+      Δy = app (app Δf x) (onil x)
     in
       begin
         ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v (⟦nil₍ σ ₎⟧ v)
       ≡⟨ cong (λ hole → ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v hole)
-           (meaning-nilt {t = x} {ρ′}) ⟩
-        ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v (⟦ nilt x ⟧ ρ′)
+           (meaning-onil {t = x} {ρ′}) ⟩
+        ⟦ t ⟧ ρ v ⟦⊕₍ τ ₎⟧ ⟦ Δt ⟧ ρ v (⟦ onil x ⟧ ρ′)
       ≡⟨ meaning-⊕ {t = y} {Δt = Δy} {ρ′} ⟩
         ⟦ y ⊕₍ τ ₎ Δy ⟧ ρ′
       ∎)
@@ -140,10 +140,10 @@ module Structure
       open ≡-Reasoning
       open Disambiguation
 
-  meaning-nilt {base ι} {Γ} {t} {ρ} = meaning-nilt-base ι {Γ} {t} {ρ}
-  meaning-nilt {σ ⇒ τ} {Γ} {t} {ρ} = meaning-⊝ {σ ⇒ τ} {Γ} {t} {t} {ρ}
+  meaning-onil {base ι} {Γ} {t} {ρ} = meaning-onil-base ι {Γ} {t} {ρ}
+  meaning-onil {σ ⇒ τ} {Γ} {t} {ρ} = meaning-⊝ {σ ⇒ τ} {Γ} {t} {t} {ρ}
   -- Ideally, this proof should simply be:
   -- meaning-⊝ {σ ⇒ τ} {Γ} {t} {t} {ρ}
   --
-  -- However, the types of the results don't match because using nilt constructs
+  -- However, the types of the results don't match because using onil constructs
   -- different environments.
