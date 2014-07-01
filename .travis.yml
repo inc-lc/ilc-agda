@@ -8,5 +8,5 @@ script:
   - cabal install agda-2.4.0
   - (mkdir -p ../stdlib; cd ../stdlib; curl -L https://github.com/agda/agda-stdlib/archive/v0.8.tar.gz|tar xz)
 
-  - echo "AGDA_LIB=$(dirname $PWD)/stdlib/agda-stdlib-0.8" > agdaCheck.sh.conf
+  - echo "AGDA_LIB=$(dirname $PWD)/stdlib/agda-stdlib-0.8/src" > agdaCheck.sh.conf
   - ./agdaCheck.sh
