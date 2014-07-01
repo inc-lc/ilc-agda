@@ -1,12 +1,12 @@
 language: haskell
-haskell: 7.6
+ghc: 7.6
 cache:
   directories:
   - $HOME/.cabal
 script:
-  echo $PWD
-  cabal install agda-2.4.0
-  (mkdir -p ../stdlib; cd ../stdlib; curl -L https://github.com/agda/agda-stdlib/archive/v0.8.tar.gz|tar x)
+  - echo $PWD
+  - cabal install agda-2.4.0
+  - (mkdir -p ../stdlib; cd ../stdlib; curl -L https://github.com/agda/agda-stdlib/archive/v0.8.tar.gz|tar x)
 
-  echo "AGDA_LIB=$(dirname $PWD)/stdlib/agda-stdlib-0.8" > agdaCheck.sh.conf
-  ./agdaCheck.sh
+  - echo "AGDA_LIB=$(dirname $PWD)/stdlib/agda-stdlib-0.8" > agdaCheck.sh.conf
+  - ./agdaCheck.sh
