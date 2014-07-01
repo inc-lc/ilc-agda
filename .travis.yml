@@ -5,6 +5,8 @@ cache:
   - $HOME/.cabal
 script:
   - echo $PWD
+  - echo $HOME
+  - ls $HOME/.cabal
   - cabal install -v agda-2.4.0
   - (mkdir -p ../stdlib; cd ../stdlib; curl -L https://github.com/agda/agda-stdlib/archive/v0.8.tar.gz|tar xz)
 
