@@ -3,6 +3,7 @@ ghc: 7.6
 cache:
   directories:
   - $HOME/.cabal
+  - $HOME/.ghc
 script:
   - echo $PWD
   - echo $HOME
