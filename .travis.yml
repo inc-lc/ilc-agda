@@ -2,6 +2,7 @@ language: haskell
 ghc: 7.6
 script:
   - cabal install happy --preference 'happy >=1.19.3 && <2'
+  - cabal install alex --preference 'alex >= 3.1.0 && < 3.2'
   - cabal install Agda --preference 'Agda == 2.4.0.*'
   - (mkdir -p ../stdlib; cd ../stdlib; curl -L https://github.com/agda/agda-stdlib/archive/v0.8.tar.gz|tar xz)
 
