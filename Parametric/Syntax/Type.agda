@@ -61,7 +61,7 @@ module Structure (Base : Structure) where
       B : Base → ValType
       Unit : ValType
       _×_ : ValType → ValType → ValType
-      _+_ : ValType → ValType → ValType
+      _⊹_ : ValType → ValType → ValType
 
     data CompType : Set where
       F : ValType → CompType
