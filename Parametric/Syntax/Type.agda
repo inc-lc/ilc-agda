@@ -98,6 +98,11 @@ module Structure (Base : Structure) where
   fromCBVCtx : Context → ValContext
   fromCBVCtx Γ = mapValCtx cbvToValType Γ
 
+  open import Data.List
+  open Data.List using (List) public
+  fromCBVToCompList : Context → List CompType
+  fromCBVToCompList Γ = mapValCtx cbvToCompType Γ
+
   fromVar : ∀ {Γ τ} → (f : Type → ValType) → Var Γ τ → ValVar (mapValCtx f Γ) (f τ)
   fromVar {x • Γ} f this = vThis
   fromVar {x • Γ} f (that v) = vThat (fromVar f v)
