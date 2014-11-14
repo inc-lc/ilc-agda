@@ -10,9 +10,9 @@ module Structure (Base : Type.Structure) where
     data ValType : Set where
       U : CompType → ValType
       B : Base → ValType
-      Unit : ValType
-      _×_ : ValType → ValType → ValType
-      _⊹_ : ValType → ValType → ValType
+      vUnit : ValType
+      _v×_ : ValType → ValType → ValType
+      _v+_ : ValType → ValType → ValType
 
     data CompType : Set where
       F : ValType → CompType
