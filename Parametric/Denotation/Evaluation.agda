@@ -77,6 +77,7 @@ module Structure (⟦_⟧Const : Structure) where
   -- and *existentials*).
   -}
   open import Data.Product hiding (map)
+  open import Data.Sum hiding (map)
   open import Data.Unit
 
   -- A semantics for empty caching semantics
@@ -144,16 +145,82 @@ module Structure (⟦_⟧Const : Structure) where
   ⟦ base ι ⟧TypeHidCache = Lift ⟦ base ι ⟧
   ⟦ σ ⇒ τ ⟧TypeHidCache = ⟦ σ ⟧TypeHidCache → (Σ[ τ₁ ∈ Set ] ⟦ τ ⟧TypeHidCache × τ₁ )
 
+  open import Parametric.Syntax.CBPVType as CBPVType
+  open CBPVType.Structure Base
+  open import Parametric.Syntax.CBPVTerm as CBPVTerm
+  open CBPVTerm.Structure Const
+
+  open import Function hiding (const)
+
+  ⟦_⟧ValType : (τ : ValType) → Set
+  ⟦_⟧CompType : (τ : CompType) → Set
+
+  ⟦ U c ⟧ValType = ⟦ c ⟧CompType
+  ⟦ B ι ⟧ValType = ⟦ base ι ⟧
+  ⟦ vUnit ⟧ValType = Lift Unit
+  ⟦ τ₁ v× τ₂ ⟧ValType = ⟦ τ₁ ⟧ValType × ⟦ τ₂ ⟧ValType
+  ⟦ τ₁ v+ τ₂ ⟧ValType = ⟦ τ₁ ⟧ValType ⊎ ⟦ τ₂ ⟧ValType
+
+  ⟦ F τ ⟧CompType = ⟦ τ ⟧ValType
+  ⟦ σ ⇛ τ ⟧CompType = ⟦ σ ⟧ValType → ⟦ τ ⟧CompType
+  ⟦ τ₁ Π τ₂ ⟧CompType = ⟦ τ₁ ⟧CompType × ⟦ τ₂ ⟧CompType
+
+  -- XXX: below we need to override just a few cases. Inheritance would handle
+  -- this precisely; without inheritance, we might want to use one of the
+  -- standard encodings of related features (delegation?).
+
+  ⟦_⟧ValTypeHidCacheWrong : (τ : ValType) → Set₁
+  ⟦_⟧CompTypeHidCacheWrong : (τ : CompType) → Set₁
+
+  -- This line is the only change, up to now, for the caching semantics starting from CBPV.>
+  ⟦ F τ ⟧CompTypeHidCacheWrong = (Σ[ τ₁ ∈ Set ] ⟦ τ ⟧ValTypeHidCacheWrong × τ₁ )
+  -- Delegation upward.
+  ⟦ τ ⟧CompTypeHidCacheWrong = Lift ⟦ τ ⟧CompType
+  ⟦_⟧ValTypeHidCacheWrong = Lift ∘ ⟦_⟧ValType
+  -- The above does not override what happens in recursive occurrences.
+
+  ⟦_⟧ValTypeHidCache : (τ : ValType) → Set₁
+  ⟦_⟧CompTypeHidCache : (τ : CompType) → Set₁
+
+  ⟦ U c ⟧ValTypeHidCache = ⟦ c ⟧CompTypeHidCache
+  ⟦ B ι ⟧ValTypeHidCache = Lift ⟦ base ι ⟧
+  ⟦ vUnit ⟧ValTypeHidCache = Lift Unit
+  ⟦ τ₁ v× τ₂ ⟧ValTypeHidCache = ⟦ τ₁ ⟧ValTypeHidCache × ⟦ τ₂ ⟧ValTypeHidCache
+  ⟦ τ₁ v+ τ₂ ⟧ValTypeHidCache = ⟦ τ₁ ⟧ValTypeHidCache ⊎ ⟦ τ₂ ⟧ValTypeHidCache
+
+  -- This line is the only change, up to now, for the caching semantics.
+  ⟦ F τ ⟧CompTypeHidCache = (Σ[ τ₁ ∈ Set ] ⟦ τ ⟧ValTypeHidCache × τ₁ )
+  ⟦ σ ⇛ τ ⟧CompTypeHidCache = ⟦ σ ⟧ValTypeHidCache → ⟦ τ ⟧CompTypeHidCache
+  ⟦ τ₁ Π τ₂ ⟧CompTypeHidCache = ⟦ τ₁ ⟧CompTypeHidCache × ⟦ τ₂ ⟧CompTypeHidCache
+
   ⟦_⟧CtxHidCache : (Γ : Context) → Set₁
   ⟦_⟧CtxHidCache = DependentList ⟦_⟧TypeHidCache
+
+  ⟦_⟧ValCtxHidCache : (Γ : ValContext) → Set₁
+  ⟦_⟧ValCtxHidCache = DependentList ⟦_⟧ValTypeHidCache
+
+  {-
+  ⟦_⟧CompCtxHidCache : (Γ : CompContext) → Set₁
+  ⟦_⟧CompCtxHidCache = DependentList ⟦_⟧CompTypeHidCache
+  -}
 
   -- It's questionable that this is not polymorphic enough.
   ⟦_⟧VarHidCache : ∀ {Γ τ} → Var Γ τ → ⟦ Γ ⟧CtxHidCache → ⟦ τ ⟧TypeHidCache
   ⟦ this ⟧VarHidCache (v • ρ) = v
   ⟦ that x ⟧VarHidCache (v • ρ) = ⟦ x ⟧VarHidCache ρ
 
+  -- Now, let us define a caching semantics for terms.
 
-  -- The mutual recursion looks like a fold on exponentials, where you need to define the function and the inverse at the same time.
+  -- This proves to be hard, because we need to insert and remove caches where
+  -- we apply constants.
+
+  -- Indeed, our plugin interface is not satisfactory for adding caching. CBPV can help us.
+
+  --
+  -- Inserting and removing caches --
+  --
+
+  -- Implementation note: The mutual recursion looks like a fold on exponentials, where you need to define the function and the inverse at the same time.
   -- Indeed, both functions seem structurally recursive on τ.
   dropCache : ∀ {τ} → ⟦ τ ⟧TypeHidCache → ⟦ τ ⟧
   extend : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧TypeHidCache
@@ -162,7 +229,7 @@ module Structure (⟦_⟧Const : Structure) where
   dropCache {σ ⇒ τ} v x = dropCache (proj₁ (proj₂ (v (extend x))))
 
   extend {base ι} v = lift v
-  extend {σ ⇒ τ} v = λ x → ⊤ , (extend (v (dropCache x)) , tt)
+  extend {σ ⇒ τ} v = λ x → , (extend (v (dropCache x)) , tt)
 
   -- OK, this version is syntax-directed, luckily enough, except on primitives
   -- (as expected). This reveals a bug of ours on higher-order primitives.
