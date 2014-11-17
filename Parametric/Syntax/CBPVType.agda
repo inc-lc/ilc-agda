@@ -8,11 +8,11 @@ module Structure (Base : Type.Structure) where
   mutual
     --  CBPV
     data ValType : Set where
-      U : CompType → ValType
-      B : Base → ValType
+      U : (c : CompType) → ValType
+      B : (ι : Base) → ValType
       vUnit : ValType
-      _v×_ : ValType → ValType → ValType
-      _v+_ : ValType → ValType → ValType
+      _v×_ : (τ₁ : ValType) → (τ₂ : ValType) → ValType
+      _v+_ : (τ₁ : ValType) → (τ₂ : ValType) → ValType
 
     data CompType : Set where
       F : ValType → CompType
