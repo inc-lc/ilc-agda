@@ -55,6 +55,14 @@ module Structure where
         (e₁ : Comp Γ (F σ)) →
         (e₂ : Comp (σ •• Γ) τ) →
         Comp Γ τ
+      -- XXX: _into2_ does not belong to CBPV, but it is better for the caching
+      -- transformation. We certainly want to forbid general uses of _into_. In
+      -- our context, this is rather ad-hoc, but maybe with System L we can
+      -- express some restriction which is more natural.
+      _into2_ : ∀ {σ τ} →
+        (e₁ : Comp Γ (F σ)) →
+        (e₂ : Comp (σ •• Γ) (F τ)) →
+        Comp Γ (F τ)
       cAbs : ∀ {σ τ} →
         (t : Comp (σ •• Γ) τ) →
         Comp Γ (σ ⇛ τ)
