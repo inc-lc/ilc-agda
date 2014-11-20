@@ -241,6 +241,117 @@ module Structure (⟦_⟧Const : Structure) where
   ⟦_⟧TermCache2 : ∀ {τ Γ} → Term Γ τ → ⟦ Γ ⟧CtxHidCache → ⟦ τ ⟧TypeHidCache
   ⟦_⟧TermCache2 (const c args) ρ = extend (⟦ const c args ⟧ (map dropCache ρ))
   ⟦_⟧TermCache2 (var x) ρ = ⟦ x ⟧VarHidCache ρ
+
+  -- It seems odd (a probable bug?) that the result of t needn't be stripped of
+  -- its cache.
   ⟦_⟧TermCache2 (app s t) ρ = proj₁ (proj₂ ((⟦ s ⟧TermCache2 ρ) (⟦ t ⟧TermCache2 ρ)))
+
   -- Provide an empty cache!
-  ⟦_⟧TermCache2 (abs t) ρ x = ⊤ , (⟦ t ⟧TermCache2 (x • ρ) , tt)
+  ⟦_⟧TermCache2 (abs t) ρ x = , (⟦ t ⟧TermCache2 (x • ρ) , tt)
+
+  -- The solution is to distinguish among different kinds of constants. Some are
+  -- value constructors (and thus do not return caches), while others are
+  -- computation constructors (and thus should return caches). For products, I
+  -- believe we will only use the products which are values, not computations
+  -- (XXX check CBPV paper for the name).
+  ⟦_⟧CompTermCache : ∀ {τ Γ} → Comp Γ τ → ⟦ Γ ⟧ValCtxHidCache → ⟦ τ ⟧CompTypeHidCache
+  ⟦_⟧ValTermCache : ∀ {τ Γ} → Val Γ τ → ⟦ Γ ⟧ValCtxHidCache → ⟦ τ ⟧ValTypeHidCache
+
+  open import Base.Denotation.Environment ValType ⟦_⟧ValTypeHidCache public
+    using ()
+    renaming (⟦_⟧Var to ⟦_⟧ValVar)
+
+  -- This says that the environment does not contain caches... sounds wrong!
+  -- Either we add extra variables for the caches, or we store computations in
+  -- the environment (but that does not make sense), or we store caches in
+  -- values, by acting not on F but on something else (U?).
+
+  -- I suspect the plan was to use extra variables; that's annoying to model in
+  -- Agda but easier in implementations.
+
+  ⟦ vVar   x ⟧ValTermCache ρ = ⟦ x ⟧ValVar ρ
+  ⟦ vThunk x ⟧ValTermCache ρ = ⟦ x ⟧CompTermCache ρ
+
+  -- The real deal, finally.
+
+  -- XXX constants are still a slight mess because I'm abusing CBPV...
+  -- (Actually, I just forgot the difference, and believe I had too little clue
+  -- when I wrote these constructors... but some of them did make sense).
+  ⟦_⟧CompTermCache (cConst c args) ρ = {!!}
+  ⟦_⟧CompTermCache (cConstV c args) ρ = {!!}
+  ⟦_⟧CompTermCache (cConstV2 c args) ρ = {!!}
+
+  -- Also, where are introduction forms for pairs and sums among values? With
+  -- them, we should see that we can interpret them without adding a cache.
+
+  -- Thunks keep seeming noops.
+  ⟦_⟧CompTermCache (cForce x) ρ = ⟦ x ⟧ValTermCache ρ
+
+  -- Here, in an actual implementation, we would return the actual cache with
+  -- all variables.
+  --
+  -- The effect of F is a writer monad of cached values (where the monoid is
+  -- (isomorphic to) the free monoid over (∃ τ . τ), but we push the
+  -- existentials up when pairing things)!
+
+  -- That's what we're interpreting computations in. XXX maybe consider using
+  -- monads directly. But that doesn't deal with arity.
+  ⟦_⟧CompTermCache (cProduce v) ρ = , (⟦ v ⟧ValTermCache ρ , tt)
+
+  -- For this to be enough, a lambda needs to return a produce, not to forward
+  -- the underlying one (unless there are no intermediate results). The correct
+  -- requirements can maybe be enforced through a linear typing discipline.
+
+  ⟦_⟧CompTermCache (v₁ into v₂) ρ =
+  -- Sequence commands and combine their caches.
+  {-
+    let (_ , (r₁ , c₁)) = ⟦ v₁ ⟧CompTermCache ρ
+        (_ , (r₂ , c₂)) = ⟦ v₂ ⟧CompTermCache (r₁ • ρ)
+    in , (r₂ , (c₁ ,′ c₂))
+  -}
+
+  -- The code above does not work, because we only guarantee that v₂ is
+  -- a computation, not that it's an F-computation - v₂ could also be function
+  -- type or a computation product.
+
+  -- We need a restricted CBPV, where these two possibilities are forbidden. If
+  -- you want to save something between different lambdas, you need to add an F
+  -- U to reflect that. (Double-check the papers which show how to encode arity
+  -- using CBPV, it seems that they should find the same problem --- XXX they
+  -- don't).
+
+  -- Instead, just drop the first cache (XXX WRONG).
+    ⟦ v₂ ⟧CompTermCache (proj₁ (proj₂ (⟦ v₁ ⟧CompTermCache ρ)) • ρ)
+
+  -- But if we alter _into_ as described above, composing the caches works!
+
+  ⟦_⟧CompTermCache (v₁ into2 v₂) ρ =
+    let (τ₁ , (r₁ , c₁)) = ⟦ v₁ ⟧CompTermCache ρ
+        (τ₂ , (r₂ , c₂)) = ⟦ v₂ ⟧CompTermCache (r₁ • ρ)
+    in , (r₂ , (c₁ ,′ c₂))
+
+  -- Note the compositionality and luck: we don't need to do anything at the
+  -- cProduce time, we just need the nested into2 to do their job, because as I
+  -- said intermediate results are a a writer monad. But then, do we still need
+  -- to do all the other stuff? IOW, do we still need to forbid (λ x . y <- f
+  -- args; g args') and replace it with (λ x . y <- f args; z <- g args'; z)?
+  -- Maybe not: if we use a monad, which respects left and right identity, the
+  -- two above forms are equivalent. But what about associativity? We don't have
+  -- associativity with nested tuples in the middle. That's why the monad uses
+  -- lists! We can also use nested tuple, as long as we don't do (a, b) but
+  -- append a b (ahem, where?).
+
+  -- In abstractions, we should start collecting all variables...
+
+  -- Here, unlike in ⟦_⟧TermCache2, we don't need to invent an empty cache,
+  -- that's moved into the handling of cProduce. This makes *the* difference for
+  -- nested lambdas, where we don't need to create caches multiple times!
+
+  ⟦_⟧CompTermCache (cAbs v) ρ x = ⟦ v ⟧CompTermCache (x • ρ)
+
+  -- Here we see that we are in a sort of A-normal form, because the argument is
+  -- a value (not quite ANF though, since values can be thunks - that is,
+  -- computations which haven't been run yet, I guess. Do we have an use for
+  -- that? That allows passing lambdas as arguments directly - which is fine,
+  -- because producing a closure indeed does not have intermediate results!).
+  ⟦_⟧CompTermCache (cApp t v) ρ = ⟦ t ⟧CompTermCache ρ (⟦ v ⟧ValTermCache ρ)
