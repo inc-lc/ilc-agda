@@ -166,14 +166,16 @@ module Structure (Base : Type.Structure) where
   ⇓ : ∀ {Ξ Γ N} → CTerm Ξ Γ N → VTerm Ξ Γ (↓ N)
   ⇓ t = μ⇑ ⟨ cast-invC t ∣ lvar ⟩
 
+  open import UNDEFINED
+
   -- from paper
   force : ∀ {Ξ Γ N} → VTerm Ξ Γ (↓ N) → CTerm Ξ Γ N
-  force t = {! μ ⟨ ⇑ lvar ∣ t ⟩ !}
+  force t = reveal UNDEFINED -- {! μ ⟨ ⇑ lvar ∣ t ⟩ !}
 
   -- XXX Here we "just" need to reorder variables in contexts. OMG, I screwed up
   -- (which is bad), or they use implicit exchange (which would be worse).
   η-μ⇑ : ∀ {Ξ Γ N} → VTerm Ξ Γ (↓ N) → VTerm Ξ Γ (↓ N)
-  η-μ⇑ t = μ⇑ {! ⟨ ⇑ lvar ∣ t ⟩ !}
+  η-μ⇑ t = μ⇑ (reveal UNDEFINED) -- {! ⟨ ⇑ lvar ∣ t ⟩ !}
 
   n-μ, : ∀ {Ξ Γ N M} → CTerm Ξ Γ (N ⅋ M) → CTerm Ξ Γ (N ⅋ M)
   n-μ, t = μ, ⟨ cast-invC t ∣ lvar , lvar ⟩ -- The two lvars are in different contexts, so they have different types!
@@ -182,7 +184,7 @@ module Structure (Base : Type.Structure) where
   η-μ⟨⟩ t = μ⟨⟩ ⟨ t ∣ ⟨⟩ ⟩
 
   η-μ⦃⦄ : ∀ {Ξ Γ N} → CTerm Ξ Γ (¿ N) → CTerm Ξ Γ (¿ N)
-  η-μ⦃⦄ t = μ⦃⦄ ⟨  cast-invC {!weaken t!} ∣ ⦃⦄ (vvar vThis) ⟩
+  η-μ⦃⦄ t = μ⦃⦄ ⟨  cast-invC (reveal UNDEFINED) {- weaken t -} ∣ ⦃⦄ (vvar vThis) ⟩
 
   β-expand-μ⟨⟩ : ∀ {Ξ Γ} → Cmd Ξ Γ → Cmd Ξ Γ
   β-expand-μ⟨⟩ c = ⟨ μ⟨⟩ c ∣ ⟨⟩ ⟩
