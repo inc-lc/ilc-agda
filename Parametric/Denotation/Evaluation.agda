@@ -273,13 +273,13 @@ module Structure (⟦_⟧Const : Structure) where
   ⟦ vThunk x ⟧ValTermCache ρ = ⟦ x ⟧CompTermCache ρ
 
   -- The real deal, finally.
-
+  open import UNDEFINED
   -- XXX constants are still a slight mess because I'm abusing CBPV...
   -- (Actually, I just forgot the difference, and believe I had too little clue
   -- when I wrote these constructors... but some of them did make sense).
-  ⟦_⟧CompTermCache (cConst c args) ρ = {!!}
-  ⟦_⟧CompTermCache (cConstV c args) ρ = {!!}
-  ⟦_⟧CompTermCache (cConstV2 c args) ρ = {!!}
+  ⟦_⟧CompTermCache (cConst c args) ρ = reveal UNDEFINED
+  ⟦_⟧CompTermCache (cConstV c args) ρ = reveal UNDEFINED
+  ⟦_⟧CompTermCache (cConstV2 c args) ρ = reveal UNDEFINED
 
   -- Also, where are introduction forms for pairs and sums among values? With
   -- them, we should see that we can interpret them without adding a cache.
