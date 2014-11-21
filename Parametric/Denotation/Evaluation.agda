@@ -332,14 +332,23 @@ module Structure (⟦_⟧Const : Structure) where
 
   -- Note the compositionality and luck: we don't need to do anything at the
   -- cProduce time, we just need the nested into2 to do their job, because as I
-  -- said intermediate results are a a writer monad. But then, do we still need
-  -- to do all the other stuff? IOW, do we still need to forbid (λ x . y <- f
-  -- args; g args') and replace it with (λ x . y <- f args; z <- g args'; z)?
+  -- said intermediate results are a a writer monad.
+  --
+  -- Q: But then, do we still need to do all the other stuff? IOW, do we still
+  -- need to forbid (λ x . y <- f args; g args') and replace it with (λ x . y <-
+  -- f args; z <- g args'; z)?
+  --
+  -- A: One thing we still need is using into2 for the same reasons - which makes
+  -- sense, since it has the type of monadic bind.
+  --
   -- Maybe not: if we use a monad, which respects left and right identity, the
   -- two above forms are equivalent. But what about associativity? We don't have
   -- associativity with nested tuples in the middle. That's why the monad uses
-  -- lists! We can also use nested tuple, as long as we don't do (a, b) but
-  -- append a b (ahem, where?).
+  -- lists! We can also use nested tuple, as long as in the into2 case we don't
+  -- do (a, b) but append a b (ahem, where?), which decomposes the first list
+  -- and prepends it to the second. To this end, we need to know the type of the
+  -- first element, or to ensure it's always a pair. Maybe we just want to reuse
+  -- an HList.
 
   -- In abstractions, we should start collecting all variables...
 
