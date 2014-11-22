@@ -42,7 +42,7 @@ module Structure (⟦_⟧Const : Structure) where
   -- this is what we'd like to write.
   -- unfortunately termination checker complains.
   --
-  --   ⟦ terms ⟧Terms ρ = map-IVT (λ t → ⟦ t ⟧Term ρ) terms
+  --   ⟦ terms ⟧Terms ρ = map (λ t → ⟦ t ⟧Term ρ) terms
   --
   -- so we do explicit pattern matching instead.
   ⟦ ∅ ⟧Terms ρ = ∅
