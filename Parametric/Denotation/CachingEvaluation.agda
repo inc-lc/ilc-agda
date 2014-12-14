@@ -246,9 +246,9 @@ module Structure where
   -- Here, in an actual implementation, we would return the actual cache with
   -- all variables.
   --
-  -- The effect of F is a writer monad of cached values (where the monoid is
+  -- The effect of F is a writer monad of cached values, where the monoid is
   -- (isomorphic to) the free monoid over (∃ τ . τ), but we push the
-  -- existentials up when pairing things)!
+  -- existentials up when pairing things!
 
   -- That's what we're interpreting computations in. XXX maybe consider using
   -- monads directly. But that doesn't deal with arity.
@@ -285,12 +285,19 @@ module Structure where
   -}
 
   -- But if we alter _into_ as described above, composing the caches works!
-
-  -- XXX: here we do have intermediate results, so we should save them.
-  ⟦_⟧CompTermCache (v₁ into v₂) ρ =
+  -- However, we should not forget we also need to save the new intermediate
+  -- result, that is the one produced by the first part of the let.
+  ⟦_⟧CompTermCache (_into_ {σ} {τ} v₁ v₂) ρ =
     let (τ₁ , (r₁ , c₁)) = ⟦ v₁ ⟧CompTermCache ρ
         (τ₂ , (r₂ , c₂)) = ⟦ v₂ ⟧CompTermCache (r₁ • ρ)
-    in , (r₂ , (c₁ ,′ c₂))
+    in  ({! ⟦ σ ⟧ValTypeHidCache !} × τ₁ × τ₂) , (r₂ ,′ ({! r₁ !} ,′ c₁ ,′ c₂))
+
+  -- Wow, I hit a serious stratification problem! Result values can be of type U
+  -- (F ...), in which case their denotational semantics (which is not affected
+  -- by thunking) contains a (large) existential hiding a Set, which is then in
+  -- Set₁. However, now I need to insert such a value in another cache... It
+  -- looks like I need to switch to a universe construction. Which shouldn't
+  -- even be so hard, because I have codes to begin with.
 
   -- Note the compositionality and luck: we don't need to do anything at the
   -- cReturn time, we just need the nested into to do their job, because as I
