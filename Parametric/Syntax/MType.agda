@@ -14,6 +14,9 @@ module Structure (Base : Type.Structure) where
       _v×_ : (τ₁ : ValType) → (τ₂ : ValType) → ValType
       _v+_ : (τ₁ : ValType) → (τ₂ : ValType) → ValType
 
+    -- Same associativity as the standard _×_
+    infixr 2 _v×_
+
     data CompType : Set where
       F : ValType → CompType
       _⇛_ : ValType → CompType → CompType
