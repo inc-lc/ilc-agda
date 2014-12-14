@@ -286,6 +286,7 @@ module Structure where
 
   -- But if we alter _into_ as described above, composing the caches works!
 
+  -- XXX: here we do have intermediate results, so we should save them.
   ⟦_⟧CompTermCache (v₁ into v₂) ρ =
     let (τ₁ , (r₁ , c₁)) = ⟦ v₁ ⟧CompTermCache ρ
         (τ₂ , (r₂ , c₂)) = ⟦ v₂ ⟧CompTermCache (r₁ • ρ)
