@@ -115,7 +115,7 @@ module Structure where
 
   ⟦ U c ⟧ValType = ⟦ c ⟧CompType
   ⟦ B ι ⟧ValType = ⟦ base ι ⟧
-  ⟦ vUnit ⟧ValType = Lift Unit
+  ⟦ vUnit ⟧ValType = ⊤
   ⟦ τ₁ v× τ₂ ⟧ValType = ⟦ τ₁ ⟧ValType × ⟦ τ₂ ⟧ValType
   ⟦ τ₁ v+ τ₂ ⟧ValType = ⟦ τ₁ ⟧ValType ⊎ ⟦ τ₂ ⟧ValType
 
@@ -136,23 +136,36 @@ module Structure where
   ⟦_⟧ValTypeHidCacheWrong = Lift ∘ ⟦_⟧ValType
   -- The above does not override what happens in recursive occurrences.
 
-  ⟦_⟧ValTypeHidCache : (τ : ValType) → Set₁
-  ⟦_⟧CompTypeHidCache : (τ : CompType) → Set₁
+  {-# NO_TERMINATION_CHECK #-}
+  ⟦_⟧ValTypeHidCache : (τ : ValType) → Set
+  ⟦_⟧CompTypeHidCache : (τ : CompType) → Set
 
   ⟦ U c ⟧ValTypeHidCache = ⟦ c ⟧CompTypeHidCache
-  ⟦ B ι ⟧ValTypeHidCache = Lift ⟦ base ι ⟧
-  ⟦ vUnit ⟧ValTypeHidCache = Lift Unit
+  ⟦ B ι ⟧ValTypeHidCache = ⟦ base ι ⟧
+  ⟦ vUnit ⟧ValTypeHidCache = ⊤
   ⟦ τ₁ v× τ₂ ⟧ValTypeHidCache = ⟦ τ₁ ⟧ValTypeHidCache × ⟦ τ₂ ⟧ValTypeHidCache
   ⟦ τ₁ v+ τ₂ ⟧ValTypeHidCache = ⟦ τ₁ ⟧ValTypeHidCache ⊎ ⟦ τ₂ ⟧ValTypeHidCache
 
   -- This line is the only change, up to now, for the caching semantics.
-  ⟦ F τ ⟧CompTypeHidCache = (Σ[ τ₁ ∈ Set ] ⟦ τ ⟧ValTypeHidCache × τ₁ )
+  --
+  -- XXX The termination checker isn't happy with it, and it may be right ─ if
+  -- you keep substituting τ₁ = U (F τ), you can make the cache arbitrarily big.
+  -- I think we don't do that unless we are caching a non-terminating
+  -- computation to begin with, but I'm not entirely sure.
+  --
+  -- However, the termination checker can't prove that the function is
+  -- terminating because it's not structurally recursive, but one call of the
+  -- function will produce another call of the function stuck on a neutral term:
+  -- So the computation will have terminated, just in an unusual way!
+  --
+  -- Anyway, I need not mechanize this part of the proof for my goals.
+  ⟦ F τ ⟧CompTypeHidCache = (Σ[ τ₁ ∈ ValType ] ⟦ τ ⟧ValTypeHidCache × ⟦ τ₁ ⟧ValTypeHidCache )
   ⟦ σ ⇛ τ ⟧CompTypeHidCache = ⟦ σ ⟧ValTypeHidCache → ⟦ τ ⟧CompTypeHidCache
 
   ⟦_⟧CtxHidCache : (Γ : Context) → Set₁
   ⟦_⟧CtxHidCache = DependentList ⟦_⟧TypeHidCache
 
-  ⟦_⟧ValCtxHidCache : (Γ : ValContext) → Set₁
+  ⟦_⟧ValCtxHidCache : (Γ : ValContext) → Set
   ⟦_⟧ValCtxHidCache = DependentList ⟦_⟧ValTypeHidCache
 
   {-
@@ -252,7 +265,7 @@ module Structure where
 
   -- That's what we're interpreting computations in. XXX maybe consider using
   -- monads directly. But that doesn't deal with arity.
-  ⟦_⟧CompTermCache (cReturn v) ρ = , (⟦ v ⟧ValTermCache ρ , tt)
+  ⟦_⟧CompTermCache (cReturn v) ρ = vUnit , (⟦ v ⟧ValTermCache ρ , tt)
 
   -- For this to be enough, a lambda needs to return a produce, not to forward
   -- the underlying one (unless there are no intermediate results). The correct
@@ -290,14 +303,7 @@ module Structure where
   ⟦_⟧CompTermCache (_into_ {σ} {τ} v₁ v₂) ρ =
     let (τ₁ , (r₁ , c₁)) = ⟦ v₁ ⟧CompTermCache ρ
         (τ₂ , (r₂ , c₂)) = ⟦ v₂ ⟧CompTermCache (r₁ • ρ)
-    in  ({! ⟦ σ ⟧ValTypeHidCache !} × τ₁ × τ₂) , (r₂ ,′ ({! r₁ !} ,′ c₁ ,′ c₂))
-
-  -- Wow, I hit a serious stratification problem! Result values can be of type U
-  -- (F ...), in which case their denotational semantics (which is not affected
-  -- by thunking) contains a (large) existential hiding a Set, which is then in
-  -- Set₁. However, now I need to insert such a value in another cache... It
-  -- looks like I need to switch to a universe construction. Which shouldn't
-  -- even be so hard, because I have codes to begin with.
+    in  (σ v× τ₁ v× τ₂) , (r₂ ,′ ( r₁  ,′ c₁ ,′ c₂))
 
   -- Note the compositionality and luck: we don't need to do anything at the
   -- cReturn time, we just need the nested into to do their job, because as I
