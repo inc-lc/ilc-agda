@@ -103,10 +103,10 @@ module Structure where
   ⟦ base ι ⟧TypeHidCache = Lift ⟦ base ι ⟧
   ⟦ σ ⇒ τ ⟧TypeHidCache = ⟦ σ ⟧TypeHidCache → (Σ[ τ₁ ∈ Set ] ⟦ τ ⟧TypeHidCache × τ₁ )
 
-  open import Parametric.Syntax.CBPVType as CBPVType
-  open CBPVType.Structure Base
-  open import Parametric.Syntax.CBPVTerm as CBPVTerm
-  open CBPVTerm.Structure Const
+  open import Parametric.Syntax.MType as MType
+  open MType.Structure Base
+  open import Parametric.Syntax.MTerm as MTerm
+  open MTerm.Structure Const
 
   open import Function hiding (const)
 
@@ -121,7 +121,6 @@ module Structure where
 
   ⟦ F τ ⟧CompType = ⟦ τ ⟧ValType
   ⟦ σ ⇛ τ ⟧CompType = ⟦ σ ⟧ValType → ⟦ τ ⟧CompType
-  ⟦ τ₁ Π τ₂ ⟧CompType = ⟦ τ₁ ⟧CompType × ⟦ τ₂ ⟧CompType
 
   -- XXX: below we need to override just a few cases. Inheritance would handle
   -- this precisely; without inheritance, we might want to use one of the
@@ -130,7 +129,7 @@ module Structure where
   ⟦_⟧ValTypeHidCacheWrong : (τ : ValType) → Set₁
   ⟦_⟧CompTypeHidCacheWrong : (τ : CompType) → Set₁
 
-  -- This line is the only change, up to now, for the caching semantics starting from CBPV.>
+  -- This line is the only change, up to now, for the caching semantics starting from CBPV.
   ⟦ F τ ⟧CompTypeHidCacheWrong = (Σ[ τ₁ ∈ Set ] ⟦ τ ⟧ValTypeHidCacheWrong × τ₁ )
   -- Delegation upward.
   ⟦ τ ⟧CompTypeHidCacheWrong = Lift ⟦ τ ⟧CompType
@@ -149,7 +148,6 @@ module Structure where
   -- This line is the only change, up to now, for the caching semantics.
   ⟦ F τ ⟧CompTypeHidCache = (Σ[ τ₁ ∈ Set ] ⟦ τ ⟧ValTypeHidCache × τ₁ )
   ⟦ σ ⇛ τ ⟧CompTypeHidCache = ⟦ σ ⟧ValTypeHidCache → ⟦ τ ⟧CompTypeHidCache
-  ⟦ τ₁ Π τ₂ ⟧CompTypeHidCache = ⟦ τ₁ ⟧CompTypeHidCache × ⟦ τ₂ ⟧CompTypeHidCache
 
   ⟦_⟧CtxHidCache : (Γ : Context) → Set₁
   ⟦_⟧CtxHidCache = DependentList ⟦_⟧TypeHidCache
@@ -254,11 +252,15 @@ module Structure where
 
   -- That's what we're interpreting computations in. XXX maybe consider using
   -- monads directly. But that doesn't deal with arity.
-  ⟦_⟧CompTermCache (cProduce v) ρ = , (⟦ v ⟧ValTermCache ρ , tt)
+  ⟦_⟧CompTermCache (cReturn v) ρ = , (⟦ v ⟧ValTermCache ρ , tt)
 
   -- For this to be enough, a lambda needs to return a produce, not to forward
   -- the underlying one (unless there are no intermediate results). The correct
   -- requirements can maybe be enforced through a linear typing discipline.
+
+  {-
+  -- Here we'd have a problem with the original into from CBPV, because it does
+  -- not require converting expressions to the "CBPV A-normal form".
 
   ⟦_⟧CompTermCache (v₁ into v₂) ρ =
   -- Sequence commands and combine their caches.
@@ -280,29 +282,30 @@ module Structure where
 
   -- Instead, just drop the first cache (XXX WRONG).
     ⟦ v₂ ⟧CompTermCache (proj₁ (proj₂ (⟦ v₁ ⟧CompTermCache ρ)) • ρ)
+  -}
 
   -- But if we alter _into_ as described above, composing the caches works!
 
-  ⟦_⟧CompTermCache (v₁ into2 v₂) ρ =
+  ⟦_⟧CompTermCache (v₁ into v₂) ρ =
     let (τ₁ , (r₁ , c₁)) = ⟦ v₁ ⟧CompTermCache ρ
         (τ₂ , (r₂ , c₂)) = ⟦ v₂ ⟧CompTermCache (r₁ • ρ)
     in , (r₂ , (c₁ ,′ c₂))
 
   -- Note the compositionality and luck: we don't need to do anything at the
-  -- cProduce time, we just need the nested into2 to do their job, because as I
-  -- said intermediate results are a a writer monad.
+  -- cReturn time, we just need the nested into to do their job, because as I
+  -- said intermediate results are a writer monad.
   --
   -- Q: But then, do we still need to do all the other stuff? IOW, do we still
   -- need to forbid (λ x . y <- f args; g args') and replace it with (λ x . y <-
   -- f args; z <- g args'; z)?
   --
-  -- A: One thing we still need is using into2 for the same reasons - which makes
-  -- sense, since it has the type of monadic bind.
+  -- A: One thing we still need is using the monadic version of into for the
+  -- same reasons - which makes sense, since it has the type of monadic bind.
   --
   -- Maybe not: if we use a monad, which respects left and right identity, the
   -- two above forms are equivalent. But what about associativity? We don't have
   -- associativity with nested tuples in the middle. That's why the monad uses
-  -- lists! We can also use nested tuple, as long as in the into2 case we don't
+  -- lists! We can also use nested tuple, as long as in the into case we don't
   -- do (a, b) but append a b (ahem, where?), which decomposes the first list
   -- and prepends it to the second. To this end, we need to know the type of the
   -- first element, or to ensure it's always a pair. Maybe we just want to reuse
@@ -311,7 +314,7 @@ module Structure where
   -- In abstractions, we should start collecting all variables...
 
   -- Here, unlike in ⟦_⟧TermCache2, we don't need to invent an empty cache,
-  -- that's moved into the handling of cProduce. This makes *the* difference for
+  -- that's moved into the handling of cReturn. This makes *the* difference for
   -- nested lambdas, where we don't need to create caches multiple times!
 
   ⟦_⟧CompTermCache (cAbs v) ρ x = ⟦ v ⟧CompTermCache (x • ρ)
