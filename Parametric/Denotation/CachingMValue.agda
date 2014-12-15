@@ -28,21 +28,6 @@ open import Level
 open import Function hiding (const)
 
 module Structure where
-  -- XXX: below we need to override just a few cases. Inheritance would handle
-  -- this precisely; without inheritance, we might want to use one of the
-  -- standard encodings of related features (delegation?).
-
-  ⟦_⟧ValTypeHidCacheWrong : (τ : ValType) → Set₁
-  ⟦_⟧CompTypeHidCacheWrong : (τ : CompType) → Set₁
-
-  -- This line is the only change, up to now, for the caching semantics starting from CBPV.
-  ⟦ F τ ⟧CompTypeHidCacheWrong = (Σ[ τ₁ ∈ ValType ] ⟦ τ ⟧ValTypeHidCacheWrong × ⟦ τ₁ ⟧ValTypeHidCacheWrong )
-  -- Delegation upward.
-  ⟦ τ ⟧CompTypeHidCacheWrong = Lift ⟦ τ ⟧CompType
-  ⟦_⟧ValTypeHidCacheWrong = Lift ∘ ⟦_⟧ValType
-  -- The above does not override what happens in recursive occurrences.
-
-
   {-# NO_TERMINATION_CHECK #-}
   ⟦_⟧ValTypeHidCache : (τ : ValType) → Set
   ⟦_⟧CompTypeHidCache : (τ : CompType) → Set
@@ -53,7 +38,6 @@ module Structure where
   ⟦ τ₁ v× τ₂ ⟧ValTypeHidCache = ⟦ τ₁ ⟧ValTypeHidCache × ⟦ τ₂ ⟧ValTypeHidCache
   ⟦ τ₁ v+ τ₂ ⟧ValTypeHidCache = ⟦ τ₁ ⟧ValTypeHidCache ⊎ ⟦ τ₂ ⟧ValTypeHidCache
 
-  -- This line is the only change, up to now, for the caching semantics.
   --
   -- XXX The termination checker isn't happy with it, and it may be right ─ if
   -- you keep substituting τ₁ = U (F τ), you can make the cache arbitrarily big.
@@ -66,6 +50,11 @@ module Structure where
   -- So the computation will have terminated, just in an unusual way!
   --
   -- Anyway, I need not mechanize this part of the proof for my goals.
+  --
+  -- XXX: This line is the only change, up to now, for the caching semantics,
+  -- the rest is copied. Inheritance would handle this precisely; without
+  -- inheritance, we might want to use one of the standard encodings of related
+  -- features (delegation?).
   ⟦ F τ ⟧CompTypeHidCache = (Σ[ τ₁ ∈ ValType ] ⟦ τ ⟧ValTypeHidCache × ⟦ τ₁ ⟧ValTypeHidCache )
   ⟦ σ ⇛ τ ⟧CompTypeHidCache = ⟦ σ ⟧ValTypeHidCache → ⟦ τ ⟧CompTypeHidCache
 
