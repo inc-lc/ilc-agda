@@ -29,10 +29,12 @@ module Structure where
   {-
   -- Prototype here the type-correctness of a simple non-standard semantics.
   -- This describes a simplified version of the transformation by Liu and
-  -- Tanenbaum, PEPM 1995 - but instead of producing object language terms, we
-  -- produce host language terms to take advantage of the richer type system of
-  -- the host language (in particular, here we need the unit type, product types
-  -- and *existentials*).
+  -- Tanenbaum, PEPM 1995 - but for now, instead of producing object language
+  -- terms, we produce host language terms to take advantage of the richer type
+  -- system of the host language (in particular, here we need the unit type,
+  -- product types and *existentials*).
+  --
+  -- As usual, we'll later switch to a real term transformation.
   -}
   open import Data.Product hiding (map)
   open import Data.Sum hiding (map)
