@@ -42,9 +42,18 @@ open MEvaluation.Structure Const ⟦_⟧Base ValConst CompConst ⟦_⟧ValBase �
 
 open import Base.Denotation.Notation
 
-open import Relation.Binary.PropositionalEquality
+-- Extension Point: Evaluation of fully applied constants.
+ValStructure : Set
+ValStructure = ∀ {Σ τ} → ValConst Σ τ → ⟦ Σ ⟧ValCtxHidCache → ⟦ τ ⟧ValTypeHidCache
 
-module Structure where
+CompStructure : Set
+CompStructure = ∀ {Σ τ} → CompConst Σ τ → ⟦ Σ ⟧ValCtxHidCache → ⟦ τ ⟧CompTypeHidCache
+
+module Structure
+       (⟦_⟧ValBaseTermCache  : ValStructure)
+       (⟦_⟧CompBaseTermCache : CompStructure)
+    where
+
   {-
   -- Prototype here the type-correctness of a simple non-standard semantics.
   -- This describes a simplified version of the transformation by Liu and
@@ -92,16 +101,13 @@ module Structure where
 
   ⟦ vVar   x ⟧ValTermCache ρ = ⟦ x ⟧ValVarHidCache ρ
   ⟦ vThunk x ⟧ValTermCache ρ = ⟦ x ⟧CompTermCache ρ
-  -- TODO No caching. Uh??? What about the intermediate results of the
-  -- arguments? Ah, they're values, so they aren't interesting (or they're
-  -- already cached). Yu-uh!
+  -- No caching, because the arguments are values, so evaluating them does not
+  -- produce intermediate results.
+  ⟦ vConst c args ⟧ValTermCache ρ = ⟦ c ⟧ValBaseTermCache (⟦ args ⟧ValsTermCache ρ)
 
-  -- XXX We need a caching ValBase, so the caching type semantics needs to move.
-  ⟦ vConst c args ⟧ValTermCache ρ = reveal UNDEFINED -- {!⟦ c ⟧ValBase !}
-
-  -- The real deal, finally.
-  -- TODO Do caching. No! Delegate to caching version of the base semantics!
-  ⟦_⟧CompTermCache (cConst c args) ρ = reveal UNDEFINED -- {!⟦ c ⟧CompBase (⟦ args ⟧Vals ?)!}
+  -- The only caching is done by the interpretation of the constant (because the
+  -- arguments are values so need no caching).
+  ⟦_⟧CompTermCache (cConst c args) ρ = ⟦ c ⟧CompBaseTermCache (⟦ args ⟧ValsTermCache ρ)
 
   -- XXX constants are still a slight mess because I'm abusing CBPV...
   -- (Actually, I just forgot the difference, and believe I had too little clue
