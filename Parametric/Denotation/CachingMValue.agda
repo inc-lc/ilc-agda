@@ -60,8 +60,3 @@ module Structure where
 
   ⟦_⟧ValCtxHidCache : (Γ : ValContext) → Set
   ⟦_⟧ValCtxHidCache = DependentList ⟦_⟧ValTypeHidCache
-
-  {-
-  ⟦_⟧CompCtxHidCache : (Γ : CompContext) → Set₁
-  ⟦_⟧CompCtxHidCache = DependentList ⟦_⟧CompTypeHidCache
-  -}
