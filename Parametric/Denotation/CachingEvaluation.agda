@@ -141,9 +141,9 @@ module Structure where
   -- XXX constants are still a slight mess because I'm abusing CBPV...
   -- (Actually, I just forgot the difference, and believe I had too little clue
   -- when I wrote these constructors... but some of them did make sense).
-  ⟦_⟧CompTermCache (cConst c args) ρ = reveal UNDEFINED
-  ⟦_⟧CompTermCache (cConstV c args) ρ = reveal UNDEFINED
-  ⟦_⟧CompTermCache (cConstV2 c args) ρ = reveal UNDEFINED
+  ⟦_⟧CompTermCache (cConstB c args) ρ = reveal UNDEFINED
+  ⟦_⟧CompTermCache (cConstVB c args) ρ = reveal UNDEFINED
+  ⟦_⟧CompTermCache (cConstVB2 c args) ρ = reveal UNDEFINED
 
   -- Also, where are introduction forms for pairs and sums among values? With
   -- them, we should see that we can interpret them without adding a cache.
