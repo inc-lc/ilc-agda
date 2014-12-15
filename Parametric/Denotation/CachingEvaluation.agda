@@ -6,20 +6,37 @@
 
 import Parametric.Syntax.Type as Type
 import Parametric.Syntax.Term as Term
+
+import Parametric.Syntax.MType as MType
+import Parametric.Syntax.MTerm as MTerm
+
 import Parametric.Denotation.Value as Value
 import Parametric.Denotation.Evaluation as Evaluation
+import Parametric.Denotation.MValue as MValue
+import Parametric.Denotation.MEvaluation as MEvaluation
 
 module Parametric.Denotation.CachingEvaluation
     {Base : Type.Structure}
     (Const : Term.Structure Base)
     (⟦_⟧Base : Value.Structure Base)
     (⟦_⟧Const : Evaluation.Structure Const ⟦_⟧Base)
+    (ValConst : MTerm.ValConstStructure Const)
+    (CompConst : MTerm.CompConstStructure Const)
+    -- I should really switch to records - can it get sillier than this?
+    (⟦_⟧ValBase : MEvaluation.ValStructure Const ⟦_⟧Base ValConst CompConst)
+    (⟦_⟧CompBase : MEvaluation.CompStructure Const ⟦_⟧Base ValConst CompConst)
   where
 
 open Type.Structure Base
 open Term.Structure Base Const
+
+open MType.Structure Base
+open MTerm.Structure Const ValConst CompConst
+
 open Value.Structure Base ⟦_⟧Base
 open Evaluation.Structure Const ⟦_⟧Base ⟦_⟧Const
+open MValue.Structure Base ⟦_⟧Base
+open MEvaluation.Structure Const ⟦_⟧Base ValConst CompConst ⟦_⟧ValBase ⟦_⟧CompBase
 
 open import Base.Denotation.Notation
 
@@ -46,24 +63,7 @@ module Structure where
 
   -- Indeed, our plugin interface is not satisfactory for adding caching. CBPV can help us.
 
-  open import Parametric.Syntax.MType as MType
-  open MType.Structure Base
-  open import Parametric.Syntax.MTerm as MTerm
-  open MTerm.Structure Const
-
   open import Function hiding (const)
-
-  ⟦_⟧ValType : (τ : ValType) → Set
-  ⟦_⟧CompType : (τ : CompType) → Set
-
-  ⟦ U c ⟧ValType = ⟦ c ⟧CompType
-  ⟦ B ι ⟧ValType = ⟦ base ι ⟧
-  ⟦ vUnit ⟧ValType = ⊤
-  ⟦ τ₁ v× τ₂ ⟧ValType = ⟦ τ₁ ⟧ValType × ⟦ τ₂ ⟧ValType
-  ⟦ τ₁ v+ τ₂ ⟧ValType = ⟦ τ₁ ⟧ValType ⊎ ⟦ τ₂ ⟧ValType
-
-  ⟦ F τ ⟧CompType = ⟦ τ ⟧ValType
-  ⟦ σ ⇛ τ ⟧CompType = ⟦ σ ⟧ValType → ⟦ τ ⟧CompType
 
   -- XXX: below we need to override just a few cases. Inheritance would handle
   -- this precisely; without inheritance, we might want to use one of the
@@ -120,24 +120,39 @@ module Structure where
   -- (XXX check CBPV paper for the name).
   ⟦_⟧CompTermCache : ∀ {τ Γ} → Comp Γ τ → ⟦ Γ ⟧ValCtxHidCache → ⟦ τ ⟧CompTypeHidCache
   ⟦_⟧ValTermCache : ∀ {τ Γ} → Val Γ τ → ⟦ Γ ⟧ValCtxHidCache → ⟦ τ ⟧ValTypeHidCache
+  ⟦_⟧ValsTermCache : ∀ {Γ Σ} → Vals Γ Σ → ⟦ Γ ⟧ValCtxHidCache → ⟦ Σ ⟧ValCtxHidCache
 
   open import Base.Denotation.Environment ValType ⟦_⟧ValTypeHidCache public
     using ()
-    renaming (⟦_⟧Var to ⟦_⟧ValVar)
+    renaming (⟦_⟧Var to ⟦_⟧ValVarHidCache)
 
   -- This says that the environment does not contain caches... sounds wrong!
   -- Either we add extra variables for the caches, or we store computations in
   -- the environment (but that does not make sense), or we store caches in
   -- values, by acting not on F but on something else (U?).
 
+  open import UNDEFINED
+
+  -- Copy of ⟦_⟧Vals
+  ⟦ ∅ ⟧ValsTermCache ρ = ∅
+  ⟦ vt • valtms ⟧ValsTermCache ρ = ⟦ vt ⟧ValTermCache ρ • ⟦ valtms ⟧ValsTermCache ρ
+
   -- I suspect the plan was to use extra variables; that's annoying to model in
   -- Agda but easier in implementations.
 
-  ⟦ vVar   x ⟧ValTermCache ρ = ⟦ x ⟧ValVar ρ
+  ⟦ vVar   x ⟧ValTermCache ρ = ⟦ x ⟧ValVarHidCache ρ
   ⟦ vThunk x ⟧ValTermCache ρ = ⟦ x ⟧CompTermCache ρ
+  -- TODO No caching. Uh??? What about the intermediate results of the
+  -- arguments? Ah, they're values, so they aren't interesting (or they're
+  -- already cached). Yu-uh!
+
+  -- XXX We need a caching ValBase, so the caching type semantics needs to move.
+  ⟦ vConst c args ⟧ValTermCache ρ = reveal UNDEFINED -- {!⟦ c ⟧ValBase !}
 
   -- The real deal, finally.
-  open import UNDEFINED
+  -- TODO Do caching. No! Delegate to caching version of the base semantics!
+  ⟦_⟧CompTermCache (cConst c args) ρ = reveal UNDEFINED -- {!⟦ c ⟧CompBase (⟦ args ⟧Vals ?)!}
+
   -- XXX constants are still a slight mess because I'm abusing CBPV...
   -- (Actually, I just forgot the difference, and believe I had too little clue
   -- when I wrote these constructors... but some of them did make sense).
@@ -226,7 +241,7 @@ module Structure where
   -- that's moved into the handling of cReturn. This makes *the* difference for
   -- nested lambdas, where we don't need to create caches multiple times!
 
-  ⟦_⟧CompTermCache (cAbs v) ρ x = ⟦ v ⟧CompTermCache (x • ρ)
+  ⟦_⟧CompTermCache (cAbs v) ρ = λ x → ⟦ v ⟧CompTermCache (x • ρ)
 
   -- Here we see that we are in a sort of A-normal form, because the argument is
   -- a value (not quite ANF though, since values can be thunks - that is,
