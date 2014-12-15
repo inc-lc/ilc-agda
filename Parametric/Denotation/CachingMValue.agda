@@ -36,7 +36,7 @@ module Structure where
   ⟦_⟧CompTypeHidCacheWrong : (τ : CompType) → Set₁
 
   -- This line is the only change, up to now, for the caching semantics starting from CBPV.
-  ⟦ F τ ⟧CompTypeHidCacheWrong = (Σ[ τ₁ ∈ Set ] ⟦ τ ⟧ValTypeHidCacheWrong × τ₁ )
+  ⟦ F τ ⟧CompTypeHidCacheWrong = (Σ[ τ₁ ∈ ValType ] ⟦ τ ⟧ValTypeHidCacheWrong × ⟦ τ₁ ⟧ValTypeHidCacheWrong )
   -- Delegation upward.
   ⟦ τ ⟧CompTypeHidCacheWrong = Lift ⟦ τ ⟧CompType
   ⟦_⟧ValTypeHidCacheWrong = Lift ∘ ⟦_⟧ValType
