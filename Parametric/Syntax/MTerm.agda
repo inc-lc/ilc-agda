@@ -11,7 +11,20 @@ open Type.Structure Base
 open MType.Structure Base
 open Term.Structure Base Const
 
-module Structure where
+-- Our extension points are sets of primitives, indexed by the
+-- types of their arguments and their return type.
+
+-- We want different types of constants; some produce values, some produce
+-- computations. In all cases, arguments are assumed to be values (though
+-- individual primitives might require thunks).
+
+ValConstStructure : Set₁
+ValConstStructure = ValContext → ValType → Set
+
+CompConstStructure : Set₁
+CompConstStructure = ValContext → CompType → Set
+
+module Structure (ValConst : ValConstStructure) (CompConst : CompConstStructure) where
   mutual
     -- Analogues of Terms
     Vals : ValContext → ValContext → Set
@@ -23,10 +36,19 @@ module Structure where
     data Val Γ : (τ : ValType) → Set where
       vVar : ∀ {τ} (x : ValVar Γ τ) → Val Γ τ
       -- XXX Do we need thunks? The draft in the paper doesn't have them.
+      -- However, they will start being useful if we deal with CBN source
+      -- languages.
       vThunk : ∀ {τ} → Comp Γ τ → Val Γ (U τ)
+      vConst : ∀ {Σ τ} →
+        (c : ValConst Σ τ) →
+        (args : Vals Γ Σ) →
+        Val Γ τ
 
     data Comp Γ : (τ : CompType) → Set where
-      -- We probably want different types of constants; some produce values, some produce computations.
+      cConst : ∀ {Σ τ} →
+        (c : CompConst Σ τ) →
+        (args : Vals Γ Σ) →
+        Comp Γ τ
 
       -- Treating all constants as computations is a hack (think of constant values) but they can always be thunked.
       -- Using cbnToCompType is an even bigger hack.
