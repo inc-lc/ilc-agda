@@ -46,6 +46,55 @@ module Structure where
   ⟦ base ι ⟧TypeHidCache = Lift ⟦ base ι ⟧
   ⟦ σ ⇒ τ ⟧TypeHidCache = ⟦ σ ⟧TypeHidCache → (Σ[ τ₁ ∈ Set ] ⟦ τ ⟧TypeHidCache × τ₁ )
 
+
+  -- Now, let us define a caching semantics for terms.
+
+  -- This proves to be hard, because we need to insert and remove caches where
+  -- we apply constants.
+
+  -- Indeed, our plugin interface is not satisfactory for adding caching. CBPV can help us.
+
+  --
+  -- Inserting and removing caches --
+  --
+
+  -- Implementation note: The mutual recursion looks like a fold on exponentials, where you need to define the function and the inverse at the same time.
+  -- Indeed, both functions seem structurally recursive on τ.
+  dropCache : ∀ {τ} → ⟦ τ ⟧TypeHidCache → ⟦ τ ⟧
+  extend : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧TypeHidCache
+
+  dropCache {base ι} v = lower v
+  dropCache {σ ⇒ τ} v x = dropCache (proj₁ (proj₂ (v (extend x))))
+
+  extend {base ι} v = lift v
+  extend {σ ⇒ τ} v = λ x → , (extend (v (dropCache x)) , tt)
+
+  ⟦_⟧CtxHidCache : (Γ : Context) → Set₁
+  ⟦_⟧CtxHidCache = DependentList ⟦_⟧TypeHidCache
+
+  -- It's questionable that this is not polymorphic enough.
+  ⟦_⟧VarHidCache : ∀ {Γ τ} → Var Γ τ → ⟦ Γ ⟧CtxHidCache → ⟦ τ ⟧TypeHidCache
+  ⟦ this ⟧VarHidCache (v • ρ) = v
+  ⟦ that x ⟧VarHidCache (v • ρ) = ⟦ x ⟧VarHidCache ρ
+
+  -- OK, this version is syntax-directed, luckily enough, except on primitives
+  -- (as expected). This reveals a bug of ours on higher-order primitives.
+  --
+  -- Moreover, we can somewhat safely assume that each call to extend and to
+  -- dropCache is bad: then we see that the handling of constants is bad. That's
+  -- correct, because constants will not return intermediate results in this
+  -- schema :-(.
+  ⟦_⟧TermCache : ∀ {τ Γ} → Term Γ τ → ⟦ Γ ⟧CtxHidCache → ⟦ τ ⟧TypeHidCache
+  ⟦_⟧TermCache (const c args) ρ = extend (⟦ const c args ⟧ (map dropCache ρ))
+  ⟦_⟧TermCache (var x) ρ = ⟦ x ⟧VarHidCache ρ
+
+  -- It seems odd (a probable bug?) that the result of t needn't be stripped of
+  -- its cache.
+  ⟦_⟧TermCache (app s t) ρ = proj₁ (proj₂ ((⟦ s ⟧TermCache ρ) (⟦ t ⟧TermCache ρ)))
+
+  -- Provide an empty cache!
+  ⟦_⟧TermCache (abs t) ρ x = , (⟦ t ⟧TermCache (x • ρ) , tt)
+
   open import Parametric.Syntax.MType as MType
   open MType.Structure Base
   open import Parametric.Syntax.MTerm as MTerm
@@ -105,9 +154,6 @@ module Structure where
   ⟦ F τ ⟧CompTypeHidCache = (Σ[ τ₁ ∈ ValType ] ⟦ τ ⟧ValTypeHidCache × ⟦ τ₁ ⟧ValTypeHidCache )
   ⟦ σ ⇛ τ ⟧CompTypeHidCache = ⟦ σ ⟧ValTypeHidCache → ⟦ τ ⟧CompTypeHidCache
 
-  ⟦_⟧CtxHidCache : (Γ : Context) → Set₁
-  ⟦_⟧CtxHidCache = DependentList ⟦_⟧TypeHidCache
-
   ⟦_⟧ValCtxHidCache : (Γ : ValContext) → Set
   ⟦_⟧ValCtxHidCache = DependentList ⟦_⟧ValTypeHidCache
 
@@ -115,51 +161,6 @@ module Structure where
   ⟦_⟧CompCtxHidCache : (Γ : CompContext) → Set₁
   ⟦_⟧CompCtxHidCache = DependentList ⟦_⟧CompTypeHidCache
   -}
-
-  -- It's questionable that this is not polymorphic enough.
-  ⟦_⟧VarHidCache : ∀ {Γ τ} → Var Γ τ → ⟦ Γ ⟧CtxHidCache → ⟦ τ ⟧TypeHidCache
-  ⟦ this ⟧VarHidCache (v • ρ) = v
-  ⟦ that x ⟧VarHidCache (v • ρ) = ⟦ x ⟧VarHidCache ρ
-
-  -- Now, let us define a caching semantics for terms.
-
-  -- This proves to be hard, because we need to insert and remove caches where
-  -- we apply constants.
-
-  -- Indeed, our plugin interface is not satisfactory for adding caching. CBPV can help us.
-
-  --
-  -- Inserting and removing caches --
-  --
-
-  -- Implementation note: The mutual recursion looks like a fold on exponentials, where you need to define the function and the inverse at the same time.
-  -- Indeed, both functions seem structurally recursive on τ.
-  dropCache : ∀ {τ} → ⟦ τ ⟧TypeHidCache → ⟦ τ ⟧
-  extend : ∀ {τ} → ⟦ τ ⟧ → ⟦ τ ⟧TypeHidCache
-
-  dropCache {base ι} v = lower v
-  dropCache {σ ⇒ τ} v x = dropCache (proj₁ (proj₂ (v (extend x))))
-
-  extend {base ι} v = lift v
-  extend {σ ⇒ τ} v = λ x → , (extend (v (dropCache x)) , tt)
-
-  -- OK, this version is syntax-directed, luckily enough, except on primitives
-  -- (as expected). This reveals a bug of ours on higher-order primitives.
-  --
-  -- Moreover, we can somewhat safely assume that each call to extend and to
-  -- dropCache is bad: then we see that the handling of constants is bad. That's
-  -- correct, because constants will not return intermediate results in this
-  -- schema :-(.
-  ⟦_⟧TermCache : ∀ {τ Γ} → Term Γ τ → ⟦ Γ ⟧CtxHidCache → ⟦ τ ⟧TypeHidCache
-  ⟦_⟧TermCache (const c args) ρ = extend (⟦ const c args ⟧ (map dropCache ρ))
-  ⟦_⟧TermCache (var x) ρ = ⟦ x ⟧VarHidCache ρ
-
-  -- It seems odd (a probable bug?) that the result of t needn't be stripped of
-  -- its cache.
-  ⟦_⟧TermCache (app s t) ρ = proj₁ (proj₂ ((⟦ s ⟧TermCache ρ) (⟦ t ⟧TermCache ρ)))
-
-  -- Provide an empty cache!
-  ⟦_⟧TermCache (abs t) ρ x = , (⟦ t ⟧TermCache (x • ρ) , tt)
 
   -- The solution is to distinguish among different kinds of constants. Some are
   -- value constructors (and thus do not return caches), while others are
