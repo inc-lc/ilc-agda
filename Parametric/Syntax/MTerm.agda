@@ -30,18 +30,19 @@ module Structure where
 
       -- Treating all constants as computations is a hack (think of constant values) but they can always be thunked.
       -- Using cbnToCompType is an even bigger hack.
-      cConst : ∀ {Σ τ} →
+      -- So I add the suffix 'B' for 'Bad'.
+      cConstB : ∀ {Σ τ} →
         (c : Const Σ τ) →
         (args : Vals Γ (fromCBNCtx Σ)) →
         Comp Γ (cbnToCompType τ)
       -- So let's try adding another kind of constant for CBV.
-      cConstV : ∀ {Σ τ} →
+      cConstVB : ∀ {Σ τ} →
         (c : Const Σ τ) →
         (args : Vals Γ (fromCBVCtx Σ)) →
         Comp Γ (cbvToCompType τ)
       -- In fact, converting to cConstV c is rather hard.
       -- Let's make the job simpler for now.
-      cConstV2 : ∀ {Σ τ} →
+      cConstVB2 : ∀ {Σ τ} →
         (c : Const Σ τ) →
         (args : Comps Γ (fromCBVToCompList Σ)) →
         Comp Γ (cbvToCompType τ)
@@ -80,7 +81,7 @@ module Structure where
   fromCBNTerms ∅ = ∅
   fromCBNTerms (px • ts) = vThunk (fromCBN px) • fromCBNTerms ts
 
-  fromCBN (const c args) = cConst c (fromCBNTerms args)
+  fromCBN (const c args) = cConstB c (fromCBNTerms args)
   fromCBN (var x) = cForce (vVar (fromVar cbnToValType x))
   fromCBN (app s t) = cApp (fromCBN s) (vThunk (fromCBN t))
   fromCBN (abs t) = cAbs (fromCBN t)
@@ -145,7 +146,7 @@ module Structure where
   fromCBVConst c ts = cConstV2 c (cbvTermsToComps ts)
   -}
 
-  fromCBV (const c args) = cConstV2 c (cbvTermsToComps args)
+  fromCBV (const c args) = cConstVB2 c (cbvTermsToComps args)
     --fromCBVConst c args
   fromCBV (app s t) =
     (fromCBV s) into
