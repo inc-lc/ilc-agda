@@ -150,16 +150,16 @@ module Structure where
   -- dropCache is bad: then we see that the handling of constants is bad. That's
   -- correct, because constants will not return intermediate results in this
   -- schema :-(.
-  ⟦_⟧TermCache2 : ∀ {τ Γ} → Term Γ τ → ⟦ Γ ⟧CtxHidCache → ⟦ τ ⟧TypeHidCache
-  ⟦_⟧TermCache2 (const c args) ρ = extend (⟦ const c args ⟧ (map dropCache ρ))
-  ⟦_⟧TermCache2 (var x) ρ = ⟦ x ⟧VarHidCache ρ
+  ⟦_⟧TermCache : ∀ {τ Γ} → Term Γ τ → ⟦ Γ ⟧CtxHidCache → ⟦ τ ⟧TypeHidCache
+  ⟦_⟧TermCache (const c args) ρ = extend (⟦ const c args ⟧ (map dropCache ρ))
+  ⟦_⟧TermCache (var x) ρ = ⟦ x ⟧VarHidCache ρ
 
   -- It seems odd (a probable bug?) that the result of t needn't be stripped of
   -- its cache.
-  ⟦_⟧TermCache2 (app s t) ρ = proj₁ (proj₂ ((⟦ s ⟧TermCache2 ρ) (⟦ t ⟧TermCache2 ρ)))
+  ⟦_⟧TermCache (app s t) ρ = proj₁ (proj₂ ((⟦ s ⟧TermCache ρ) (⟦ t ⟧TermCache ρ)))
 
   -- Provide an empty cache!
-  ⟦_⟧TermCache2 (abs t) ρ x = , (⟦ t ⟧TermCache2 (x • ρ) , tt)
+  ⟦_⟧TermCache (abs t) ρ x = , (⟦ t ⟧TermCache (x • ρ) , tt)
 
   -- The solution is to distinguish among different kinds of constants. Some are
   -- value constructors (and thus do not return caches), while others are
@@ -270,7 +270,7 @@ module Structure where
 
   -- In abstractions, we should start collecting all variables...
 
-  -- Here, unlike in ⟦_⟧TermCache2, we don't need to invent an empty cache,
+  -- Here, unlike in ⟦_⟧TermCache, we don't need to invent an empty cache,
   -- that's moved into the handling of cReturn. This makes *the* difference for
   -- nested lambdas, where we don't need to create caches multiple times!
 
