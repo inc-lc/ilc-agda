@@ -59,10 +59,6 @@ module Structure
 
   open import UNDEFINED
 
-  ⟦_⟧Comp (cConstB c args) ρ = reveal UNDEFINED
-  ⟦_⟧Comp (cConstVB c args) ρ = reveal UNDEFINED
-  ⟦_⟧Comp (cConstVB2 c args) ρ = reveal UNDEFINED
-
   ⟦ cConst c args ⟧Comp ρ = ⟦ c ⟧CompBase (⟦ args ⟧Vals ρ)
   ⟦ cForce x      ⟧Comp ρ = ⟦ x ⟧Val ρ
   ⟦ cReturn v     ⟧Comp ρ = ⟦ v ⟧Val ρ
