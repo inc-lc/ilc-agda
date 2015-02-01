@@ -39,7 +39,13 @@ module Structure (Base : Type.Structure) where
       ; mapContext to mapValCtx
       ; Var to ValVar
       ; Context to ValContext
-      ; this to vThis; that to vThat)
+      ; this to vThis; that to vThat
+      ; _≼_ to _≼≼_
+      ; weaken-var to weaken-val-var
+      ; keep_•_ to keep_••_
+      ; drop_•_ to drop_••_
+      ; ≼-refl to ≼≼-refl
+      ; ≼-trans to ≼≼-trans)
 
   cbnToValType : Type → ValType
   cbnToValType τ = U (cbnToCompType τ)
