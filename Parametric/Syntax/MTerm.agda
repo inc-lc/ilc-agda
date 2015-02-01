@@ -171,7 +171,7 @@ module Structure (ValConst : ValConstStructure) (CompConst : CompConstStructure)
   fromCBV (const c args) = fromCBVConstCPSRoot c args
   fromCBV (app s t) =
     (fromCBV s) into
-      ((fromCBV (weaken (drop _ • ≼-refl) t)) into
+      (fromCBV (weaken (drop _ • ≼-refl) t) into
         cApp (cForce (vVar (vThat vThis))) (vVar vThis))
   -- Values
   fromCBV (var x) = cReturn (vVar (fromVar cbvToValType x))
