@@ -50,32 +50,6 @@ module Structure (ValConst : ValConstStructure) (CompConst : CompConstStructure)
         (args : Vals Γ Σ) →
         Comp Γ τ
 
-      {-
-      -- Treating all constants as computations is a hack (think of constant values) but they can always be thunked.
-      -- Using cbnToCompType is an even bigger hack.
-      -- So I add the suffix 'B' for 'Bad'.
-      cConstB : ∀ {Σ τ} →
-        (c : Const Σ τ) →
-        (args : Vals Γ (fromCBNCtx Σ)) →
-        Comp Γ (cbnToCompType τ)
-      -- So let's try adding another kind of constant for CBV.
-      cConstVB : ∀ {Σ τ} →
-        (c : Const Σ τ) →
-        (args : Vals Γ (fromCBVCtx Σ)) →
-        Comp Γ (cbvToCompType τ)
-      -- In fact, converting to cConstV c is rather hard.
-      -- Let's make the job simpler for now.
-      cConstVB2 : ∀ {Σ τ} →
-        (c : Const Σ τ) →
-        (args : Comps Γ (fromCBVToCompList Σ)) →
-        Comp Γ (cbvToCompType τ)
-      -}
-      -- This should be transformed to
-      --
-      --   arg1 to x1 in (arg2 to x2 in ... (argn to xn in (cConstV c (x1 :: x2 :: ... xn)))).
-      --
-      -- But it's not trivial to write the recursive functions needed for that. So let's punt for now.
-
       cForce : ∀ {τ} → Val Γ (U τ) → Comp Γ τ
       cReturn : ∀ {τ} (v : Val Γ τ) → Comp Γ (F τ)
       {-
@@ -130,7 +104,6 @@ module Structure (ValConst : ValConstStructure) (CompConst : CompConstStructure)
   fromCBN : ∀ {Γ τ} (t : Term Γ τ) → Comp (fromCBNCtx Γ) (cbnToCompType τ)
 
   fromCBNTerms : ∀ {Γ Σ} → Terms Γ Σ → Vals (fromCBNCtx Γ) (fromCBNCtx Σ)
-  --fromCBNTerms ts = DependentList.map (λ t → vThunk (fromCBN t)) ts -- map is not going to work, its type is too stupid.
   fromCBNTerms ∅ = ∅
   fromCBNTerms (px • ts) = vThunk (fromCBN px) • fromCBNTerms ts
 
@@ -139,7 +112,7 @@ module Structure (ValConst : ValConstStructure) (CompConst : CompConstStructure)
   cbnToCompConst : ∀ {Σ τ} → Const Σ τ → CompConst (fromCBNCtx Σ) (cbnToCompType τ)
   cbnToCompConst = reveal UNDEFINED
 
-  fromCBN (const c args) = cConst (cbnToCompConst c) (fromCBNTerms args) -- cConstB c (fromCBNTerms args)
+  fromCBN (const c args) = cConst (cbnToCompConst c) (fromCBNTerms args)
   fromCBN (var x) = cForce (vVar (fromVar cbnToValType x))
   fromCBN (app s t) = cApp (fromCBN s) (vThunk (fromCBN t))
   fromCBN (abs t) = cAbs (fromCBN t)
@@ -153,68 +126,12 @@ module Structure (ValConst : ValConstStructure) (CompConst : CompConstStructure)
   cbvToCompConst : ∀ {Σ τ} → Const Σ τ → CompConst (fromCBVCtx Σ) (cbvToCompType τ)
   cbvToCompConst = reveal UNDEFINED
 
-  {-
-  fromCBVTerms : ∀ {Γ Σ} → Terms Γ Σ → Vals (fromCBVCtx Γ) (fromCBVCtx Σ)
-  -- use explicit recursion, like for fromCBNTerms.
-  fromCBVTerms ∅ = ∅
-  fromCBVTerms (px • ts) = {! vThunk (fromCBV px) !} • fromCBVTerms ts
-  -- This idea does not work here: in CBV, we can't put thunks into the context. The above code does not typecheck, because the object type has an extra
-  -- U (F -)) around it.
-  -- That must eliminate F, so it can only use _into_! This algorithm is simply not going to work.
-  -- Aaaahh, we just A-normalize the term when converting *const*!
-  -}
-
   cbvTermsToComps : ∀ {Γ Σ} → Terms Γ Σ → Comps (fromCBVCtx Γ) (fromCBVToCompList Σ)
   cbvTermsToComps ∅ = ∅
   cbvTermsToComps (px • ts) = fromCBV px • cbvTermsToComps ts
 
   module _ where
-  {-
-    --simpler
-    myFold : ∀ {Σ Γ τ} →
-      Comps (fromCBVCtx Γ) (fromCBVToCompList Σ) →
-      Comp (fromCBVCtx Γ) {!!}
-    myFold {∅} ∅ = {!!}
-    myFold {x • Σ} (px • cs) = px into {!myFold cs!}
 
-    myFold2 : ∀ {Σ Γ τ} →
-      Comps (fromCBVCtx Γ) (fromCBVToCompList Σ) →
-      Comp (fromCBVCtx Γ) {!!}
-    myFold2 {∅} ∅ = {!!}
-    myFold2 {x • Σ} (px • cs) = px into {!myFold cs!}
-
-
-{-
-    fromCBVConst' : ∀ {Σ Γ τ} {Σ₁ Σ₂} →
--}
-
-    fromCBVConst'' : ∀ {Σ Σ′ Γ τ} →
-      Const Σ τ →
-      Comps (fromCBVCtx Γ) (fromCBVToCompList Σ′) →
-      Vals (fromCBVCtx Γ) (fromCBVCtx ) →
-      Comp (fromCBVCtx Γ) (cbvToCompType τ)
--}
-
-    open Prefixes
-    {-
-    fromCBVConst' : ∀ {Σ Γ τ} {Σ′ : Prefix Σ} →
-      Const Σ τ →
-      Comps (fromCBVCtx Γ) (fromCBVToCompList (drop Σ Σ′)) →
-      Vals (fromCBVCtx Γ) (fromCBVCtx (take Σ Σ′)) →
-      Comp (fromCBVCtx Γ) (cbvToCompType τ)
-    fromCBVConst' {∅}     {Σ′ = ∅} c comps vals = cConst (cbvToCompConst c) vals --cConstV c vals
-    fromCBVConst' {x • Σ} c comps vals = {!!}
-
---    fromCBVConst' {x • Σ} {Σ′ = ∅} c (px • comps) ∅ = {!!} -- px into (fromCBVConst' {c {! comps!} {!!})
--- cConst (cbvToCompConst c) {!!}
---    fromCBVConst' {x • Σ} {Σ′ = .x • Σ′} c comps vals = {!!} -- px into (fromCBVConst' c ? ?)
-    --cConst (cbvToCompConst c) {!!}
-    --fromCBVConst2 c ∅ = cConstV c ∅
-    --fromCBVConst2 c (px  ts) = {!px into _!}
-      --{!fromCBV px into ?!}
-    fromCBVConst3 : ∀ {Γ Σ τ} → Const Σ τ → Terms Γ Σ → Comp (fromCBVCtx Γ) (cbvToCompType τ)
-    fromCBVConst3 c ts = fromCBVConst' c (cbvTermsToComps ts) ∅
-    -}
     dequeValContexts : ValContext → ValContext → ValContext
     dequeValContexts ∅ Γ = Γ
     dequeValContexts (x • Σ) Γ = dequeValContexts Σ (x • Γ)
@@ -226,27 +143,17 @@ module Structure (ValConst : ValConstStructure) (CompConst : CompConstStructure)
     dequeContexts : Context → Context → ValContext
     dequeContexts Σ Γ = dequeValContexts (fromCBVCtx Σ) (fromCBVCtx Γ)
 
-    {-
-    lemma₀ : ∀ τΣ Σ′ Γ → revContext (τΣ • Σ′) ⋎ Γ ≡ revContext Σ′ ⋎ (τΣ • Γ)
-    lemma₀ τΣ Σ′ Γ = {!!}
-
-    lemma : ∀ {τΣ Σ′ Γ τ} →
-      Comp (fromCBVCtx (revContext (τΣ • Σ′) ⋎ Γ)) (cbvToCompType τ) →
-      Comp (fromCBVCtx (revContext Σ′ ⋎ (τΣ • Γ))) (cbvToCompType τ)
-    lemma {τΣ} {Σ′} {Γ} {τ} c = subst (λ x → Comp (fromCBVCtx x) (cbvToCompType τ)) (lemma₀ τΣ Σ′ Γ) c
-
-    fromCBVConstCPSDo : ∀ {Γ Σ τ} → Terms Γ Σ → (Vals (fromCBVCtx Γ) (fromCBVCtx Σ) → Comp (fromCBVCtx (dequeContexts Σ Γ)) (cbvToCompType τ)) → Comp (fromCBVCtx Γ) (cbvToCompType τ)
-
-    fromCBVConstCPSDo ∅ f = f ∅
-    --fromCBVConstCPSDo (px • ∅) f = (fromCBV px) into f (vVar vThis • ∅)
-    fromCBVConstCPSDo {Γ} {τΣ • Σ′} {τ} (px • ts) f = (fromCBV px) into {!!} -- (fromCBVConstCPSDo {τΣ • Γ} {Σ′} {τ} (map (weaken (drop_•_ τΣ ≼-refl)) ts) (λ vals → lemma {τΣ} {Σ′} {! f (vVar ? • {! weaken-vals (drop_••_ (cbvToValType τΣ) ≼≼-refl)!} vals!} )))
-    -}
     fromCBVArg : ∀ {σ Γ τ} → Term Γ τ → (Val (cbvToValType τ • fromCBVCtx Γ) (cbvToValType τ) → Comp (cbvToValType τ • fromCBVCtx Γ) (cbvToCompType σ)) → Comp (fromCBVCtx Γ) (cbvToCompType σ)
     fromCBVArg t k = (fromCBV t) into k (vVar vThis)
 
     fromCBVArgs : ∀ {Σ Γ τ} → Terms Γ Σ → (Vals (dequeContexts Σ Γ) (fromCBVCtx Σ) → Comp (dequeContexts Σ Γ) (cbvToCompType τ)) → Comp (fromCBVCtx Γ) (cbvToCompType τ)
     fromCBVArgs ∅ k = k ∅
     fromCBVArgs {σ • Σ} {Γ} (t • ts) k = fromCBVArg t (λ v → fromCBVArgs (weaken-terms (drop_•_ _ ≼-refl) ts) (λ vs → k (weaken-val (dequeValContexts≼≼ (fromCBVCtx Σ) _) v • vs)))
+
+    -- Transform a constant application into
+    --
+    --   arg1 to x1 in (arg2 to x2 in ... (argn to xn in (cConst (cbvToCompConst c) (x1 :: x2 :: ... xn)))).
+
     fromCBVConstCPSRoot : ∀ {Σ Γ τ} → Const Σ τ → Terms Γ Σ → Comp (fromCBVCtx Γ) (cbvToCompType τ)
     -- pass that as a closure to compose with (_•_ x) for each new variable.
     fromCBVConstCPSRoot c ts = fromCBVArgs ts (λ vs → cConst (cbvToCompConst c) vs) -- fromCBVConstCPSDo ts {!cConst (cbvToCompConst c)!}
@@ -261,13 +168,7 @@ module Structure (ValConst : ValConstStructure) (CompConst : CompConstStructure)
 
 -- - Σ = ∅.
 
-{-
-  fromCBVConst : ∀ {Γ Σ τ} → Const Σ τ → Terms Γ Σ → Comp (fromCBVCtx Γ) (cbvToCompType τ)
-  fromCBVConst c ts = cConstV2 c (cbvTermsToComps ts)
--}
-
-  fromCBV (const c args) = fromCBVConstCPSRoot c args -- cConst (cbvToCompConst c) {!cbvTermsToComps args!} -- cConstVB2 c (cbvTermsToComps args)
-    --fromCBVConst c args
+  fromCBV (const c args) = fromCBVConstCPSRoot c args
   fromCBV (app s t) =
     (fromCBV s) into
       ((fromCBV (weaken (drop _ • ≼-refl) t)) into
