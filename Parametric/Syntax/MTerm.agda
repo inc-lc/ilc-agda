@@ -138,7 +138,7 @@ module Structure (ValConst : ValConstStructure) (CompConst : CompConstStructure)
 
     dequeValContexts≼≼ : ∀ Σ Γ → Γ ≼≼ dequeValContexts Σ Γ
     dequeValContexts≼≼ ∅ Γ = ≼≼-refl
-    dequeValContexts≼≼ (x • Σ) Γ = ≼≼-trans (drop_••_ x ≼≼-refl) (dequeValContexts≼≼ Σ (x • Γ)) --
+    dequeValContexts≼≼ (x • Σ) Γ = ≼≼-trans (drop_••_ x ≼≼-refl) (dequeValContexts≼≼ Σ (x • Γ))
 
     dequeContexts : Context → Context → ValContext
     dequeContexts Σ Γ = dequeValContexts (fromCBVCtx Σ) (fromCBVCtx Γ)
@@ -156,17 +156,7 @@ module Structure (ValConst : ValConstStructure) (CompConst : CompConstStructure)
 
     fromCBVConstCPSRoot : ∀ {Σ Γ τ} → Const Σ τ → Terms Γ Σ → Comp (fromCBVCtx Γ) (cbvToCompType τ)
     -- pass that as a closure to compose with (_•_ x) for each new variable.
-    fromCBVConstCPSRoot c ts = fromCBVArgs ts (λ vs → cConst (cbvToCompConst c) vs) -- fromCBVConstCPSDo ts {!cConst (cbvToCompConst c)!}
-
--- In the beginning, we should get a function that expects a whole set of
--- arguments (Vals Γ Σ) for c, in the initial context Γ.
--- Later, each call should match:
-
--- -  Σ = τΣ • Σ′, then we recurse with Γ′ = τΣ • Γ and Σ′. Terms ought to be
---    weakened. The result of f (or the arguments) also ought to be weakened! So f should weaken
---    all arguments.
-
--- - Σ = ∅.
+    fromCBVConstCPSRoot c ts = fromCBVArgs ts (λ vs → cConst (cbvToCompConst c) vs)
 
   fromCBV (const c args) = fromCBVConstCPSRoot c args
   fromCBV (app s t) =
