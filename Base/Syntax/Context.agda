@@ -79,8 +79,7 @@ module Prefixes where
   infixr 10 _⋎_
 
   _⋎_ : (Γ₁ Γ₂ : Context) → Context
-  ∅ ⋎ Γ₂ = Γ₂
-  (τ • Γ₁) ⋎ Γ₂ = τ • (Γ₁ ⋎ Γ₂)
+  _⋎_ = List._++_
 
   take-drop : ∀ Γ Γ′ → take Γ Γ′ ⋎ drop Γ Γ′ ≡ Γ
   take-drop ∅ ∅ = refl
