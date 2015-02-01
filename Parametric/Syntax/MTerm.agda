@@ -130,33 +130,45 @@ module Structure (ValConst : ValConstStructure) (CompConst : CompConstStructure)
   cbvTermsToComps ∅ = ∅
   cbvTermsToComps (px • ts) = fromCBV px • cbvTermsToComps ts
 
-  module _ where
 
-    dequeValContexts : ValContext → ValContext → ValContext
-    dequeValContexts ∅ Γ = Γ
-    dequeValContexts (x • Σ) Γ = dequeValContexts Σ (x • Γ)
+  dequeValContexts : ValContext → ValContext → ValContext
+  dequeValContexts ∅ Γ = Γ
+  dequeValContexts (x • Σ) Γ = dequeValContexts Σ (x • Γ)
 
-    dequeValContexts≼≼ : ∀ Σ Γ → Γ ≼≼ dequeValContexts Σ Γ
-    dequeValContexts≼≼ ∅ Γ = ≼≼-refl
-    dequeValContexts≼≼ (x • Σ) Γ = ≼≼-trans (drop_••_ x ≼≼-refl) (dequeValContexts≼≼ Σ (x • Γ))
+  dequeValContexts≼≼ : ∀ Σ Γ → Γ ≼≼ dequeValContexts Σ Γ
+  dequeValContexts≼≼ ∅ Γ = ≼≼-refl
+  dequeValContexts≼≼ (x • Σ) Γ = ≼≼-trans (drop_••_ x ≼≼-refl) (dequeValContexts≼≼ Σ (x • Γ))
 
-    dequeContexts : Context → Context → ValContext
-    dequeContexts Σ Γ = dequeValContexts (fromCBVCtx Σ) (fromCBVCtx Γ)
+  dequeContexts : Context → Context → ValContext
+  dequeContexts Σ Γ = dequeValContexts (fromCBVCtx Σ) (fromCBVCtx Γ)
 
-    fromCBVArg : ∀ {σ Γ τ} → Term Γ τ → (Val (cbvToValType τ • fromCBVCtx Γ) (cbvToValType τ) → Comp (cbvToValType τ • fromCBVCtx Γ) (cbvToCompType σ)) → Comp (fromCBVCtx Γ) (cbvToCompType σ)
-    fromCBVArg t k = (fromCBV t) into k (vVar vThis)
+  fromCBVArg :
+    ∀ {σ Γ τ} → Term Γ τ →
+      (Val (cbvToValType τ • fromCBVCtx Γ) (cbvToValType τ) →
+        Comp (cbvToValType τ • fromCBVCtx Γ) (cbvToCompType σ)) →
+      Comp (fromCBVCtx Γ) (cbvToCompType σ)
+  fromCBVArg t k =
+    (fromCBV t) into
+      k (vVar vThis)
 
-    fromCBVArgs : ∀ {Σ Γ τ} → Terms Γ Σ → (Vals (dequeContexts Σ Γ) (fromCBVCtx Σ) → Comp (dequeContexts Σ Γ) (cbvToCompType τ)) → Comp (fromCBVCtx Γ) (cbvToCompType τ)
-    fromCBVArgs ∅ k = k ∅
-    fromCBVArgs {σ • Σ} {Γ} (t • ts) k = fromCBVArg t (λ v → fromCBVArgs (weaken-terms (drop_•_ _ ≼-refl) ts) (λ vs → k (weaken-val (dequeValContexts≼≼ (fromCBVCtx Σ) _) v • vs)))
+  fromCBVArgs :
+    ∀ {Σ Γ τ} → Terms Γ Σ →
+      (Vals (dequeContexts Σ Γ) (fromCBVCtx Σ) →
+        Comp (dequeContexts Σ Γ) (cbvToCompType τ)) →
+      Comp (fromCBVCtx Γ) (cbvToCompType τ)
+  fromCBVArgs ∅ k = k ∅
+  fromCBVArgs {σ • Σ} {Γ} (t • ts) k =
+    fromCBVArg t (λ v →
+      fromCBVArgs
+        (weaken-terms (drop_•_ _ ≼-refl) ts) (λ vs →
+          k (weaken-val (dequeValContexts≼≼ (fromCBVCtx Σ) _) v • vs)))
 
-    -- Transform a constant application into
-    --
-    --   arg1 to x1 in (arg2 to x2 in ... (argn to xn in (cConst (cbvToCompConst c) (x1 :: x2 :: ... xn)))).
+  -- Transform a constant application into
+  --
+  --   arg1 to x1 in (arg2 to x2 in ... (argn to xn in (cConst (cbvToCompConst c) (x1 :: x2 :: ... xn)))).
 
-    fromCBVConstCPSRoot : ∀ {Σ Γ τ} → Const Σ τ → Terms Γ Σ → Comp (fromCBVCtx Γ) (cbvToCompType τ)
-    -- pass that as a closure to compose with (_•_ x) for each new variable.
-    fromCBVConstCPSRoot c ts = fromCBVArgs ts (λ vs → cConst (cbvToCompConst c) vs)
+  fromCBVConstCPSRoot : ∀ {Σ Γ τ} → Const Σ τ → Terms Γ Σ → Comp (fromCBVCtx Γ) (cbvToCompType τ)
+  fromCBVConstCPSRoot c ts = fromCBVArgs ts (cConst (cbvToCompConst c))
 
   fromCBV (const c args) = fromCBVConstCPSRoot c args
   fromCBV (app s t) =
