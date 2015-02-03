@@ -57,8 +57,6 @@ module Structure
   ⟦ vThunk x      ⟧Val ρ = ⟦ x ⟧Comp ρ
   ⟦ vConst c args ⟧Val ρ = ⟦ c ⟧ValBase (⟦ args ⟧Vals ρ)
 
-  open import UNDEFINED
-
   ⟦ cConst c args ⟧Comp ρ = ⟦ c ⟧CompBase (⟦ args ⟧Vals ρ)
   ⟦ cForce x      ⟧Comp ρ = ⟦ x ⟧Val ρ
   ⟦ cReturn v     ⟧Comp ρ = ⟦ v ⟧Val ρ
