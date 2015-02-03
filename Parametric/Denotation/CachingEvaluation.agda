@@ -196,3 +196,6 @@ module Structure
   -- that? That allows passing lambdas as arguments directly - which is fine,
   -- because producing a closure indeed does not have intermediate results!).
   ⟦_⟧CompTermCache (cApp t v) ρ = ⟦ t ⟧CompTermCache ρ (⟦ v ⟧ValTermCache ρ)
+
+  ⟦_⟧TermCacheCBV : ∀ {τ Γ} → Term Γ τ → ⟦ fromCBVCtx Γ ⟧ValCtxHidCache → ⟦ cbvToCompType τ ⟧CompTypeHidCache
+  ⟦ t ⟧TermCacheCBV = ⟦ fromCBV t ⟧CompTermCache
