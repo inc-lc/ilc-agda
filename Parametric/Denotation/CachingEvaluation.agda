@@ -90,8 +90,6 @@ module Structure
   -- the environment (but that does not make sense), or we store caches in
   -- values, by acting not on F but on something else (U?).
 
-  open import UNDEFINED
-
   -- Copy of ⟦_⟧Vals
   ⟦ ∅ ⟧ValsTermCache ρ = ∅
   ⟦ vt • valtms ⟧ValsTermCache ρ = ⟦ vt ⟧ValTermCache ρ • ⟦ valtms ⟧ValsTermCache ρ
