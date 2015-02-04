@@ -113,9 +113,6 @@ module Structure
   -- Thunks keep seeming noops.
   ⟦_⟧CompTermCache (cForce x) ρ = ⟦ x ⟧ValTermCache ρ
 
-  -- Here, in an actual implementation, we would return the actual cache with
-  -- all variables.
-  --
   -- The effect of F is a writer monad of cached values, where the monoid is
   -- (isomorphic to) the free monoid over (∃ τ . τ), but we push the
   -- existentials up when pairing things!
