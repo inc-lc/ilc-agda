@@ -1,6 +1,16 @@
 language: haskell
-ghc: 7.6
+ghc: 7.8
+sudo: false
+
+cache:
+  directories:
+  - ~/.cabal
+  - ~/.ghc
 script:
+  - happy --version
+  - /usr/local/ghc/$(ghc_find 7.8)/bin/happy --version
+  - alex --version
+  - /usr/local/ghc/$(ghc_find 7.8)/bin/alex --version
   - cabal install happy --preference 'happy >=1.19.3 && <2'
   - cabal install alex --preference 'alex >= 3.1.0 && < 3.2'
   - cabal install Agda --preference 'Agda == 2.4.0.*'
