@@ -1,5 +1,11 @@
 language: haskell
 ghc: 7.6
+sudo: false
+cache:
+  directories:
+  - ~/.cabal
+  - ~/.ghc
+
 script:
   - cabal install happy --preference 'happy >=1.19.3 && <2'
   - cabal install alex --preference 'alex >= 3.1.0 && < 3.2'
