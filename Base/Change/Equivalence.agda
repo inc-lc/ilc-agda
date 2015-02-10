@@ -116,6 +116,13 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
       lemma₂ : f ⊞ df ≡ f ⊞ dg
       lemma₂ = ext (λ x → lemma₁ x (nil x))
 
+  -- You could think that the function should relate equivalent changes, but
+  -- that's a stronger hypothesis, which doesn't give you extra guarantees. But
+  -- here's the statement and proof, for completeness:
+
+  delta-ext₂ : ∀ {f : A → B} → ∀ {df dg : Δ f} → (∀ x dx₁ dx₂ → dx₁ ≙ dx₂ → apply df x dx₁ ≙ apply dg x dx₂) → df ≙ dg
+  delta-ext₂ {f} {df} {dg} df-x-dx≙dg-x-dx = delta-ext (λ x dx → df-x-dx≙dg-x-dx x dx dx ≙-refl)
+
   -- We know that Derivative f (apply (nil f)) (by nil-is-derivative).
   -- That is, df = nil f -> Derivative f (apply df).
   -- Now, we try to prove that if Derivative f (apply df) -> df = nil f.
