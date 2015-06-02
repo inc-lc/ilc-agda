@@ -25,12 +25,6 @@ open import Level
 open import Function hiding (const)
 
 module Structure where
-
-  -- Defining a caching semantics for Term proves to be hard, requiring to
-  -- insert and remove caches where we apply constants.
-
-  -- Indeed, our plugin interface is not satisfactory for adding caching. CBPV can help us.
-
   ⟦_⟧ValType : (τ : ValType) → Set
   ⟦_⟧CompType : (τ : CompType) → Set
 
