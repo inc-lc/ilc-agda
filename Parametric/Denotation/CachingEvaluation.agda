@@ -75,8 +75,8 @@ module Structure
   -- The solution is to distinguish among different kinds of constants. Some are
   -- value constructors (and thus do not return caches), while others are
   -- computation constructors (and thus should return caches). For products, I
-  -- believe we will only use the products which are values, not computations
-  -- (XXX check CBPV paper for the name).
+  -- believe we will only use positive/value products (i.e. pattern-match products),
+  -- not negative/computation products (i.e. projection products).
   ⟦_⟧CompTermCache : ∀ {τ Γ} → Comp Γ τ → ⟦ Γ ⟧ValCtxHidCache → ⟦ τ ⟧CompTypeHidCache
   ⟦_⟧ValTermCache : ∀ {τ Γ} → Val Γ τ → ⟦ Γ ⟧ValCtxHidCache → ⟦ τ ⟧ValTypeHidCache
   ⟦_⟧ValsTermCache : ∀ {Γ Σ} → Vals Γ Σ → ⟦ Γ ⟧ValCtxHidCache → ⟦ Σ ⟧ValCtxHidCache
@@ -117,17 +117,24 @@ module Structure
   -- (isomorphic to) the free monoid over (∃ τ . τ), but we push the
   -- existentials up when pairing things!
 
-  -- That's what we're interpreting computations in. XXX maybe consider using
-  -- monads directly. But that doesn't deal with arity.
+  -- That's what we're interpreting computations in. In fact, one could use
+  -- monads directly, but that does not deal with arity satisfactorily.
   ⟦_⟧CompTermCache (cReturn v) ρ = vUnit , (⟦ v ⟧ValTermCache ρ , tt)
 
-  -- For this to be enough, a lambda needs to return a produce, not to forward
-  -- the underlying one (unless there are no intermediate results). The correct
-  -- requirements can maybe be enforced through a linear typing discipline.
+  -- A function can invoke, in tail position, either a `cReturn` directly, or
+  -- invoke another function. In the latter case, we need to ensure that the
+  -- return value of the other function is not forwarded directly, but that
+  -- further intermediate results from the current function are also recorded.
+  --
+  -- At one time, `f1 into cReturn` did this correctly, but `f1` didn't, while
+  -- instead, they should be equivalent. In other words, we want `_into_` to
+  -- satisfy the monadic laws for bind.
 
   {-
-  -- Here we'd have a problem with the original into from CBPV, because it does
+  -- Here we'd have a problem with the original `_into_` constructor from CBPV, because it does
   -- not require converting expressions to the "CBPV A-normal form".
+  --
+  -- If we tried supporting it, we could try to write something like:
 
   ⟦_⟧CompTermCache (v₁ into v₂) ρ =
   -- Sequence commands and combine their caches.
@@ -137,18 +144,15 @@ module Structure
     in , (r₂ , (c₁ ,′ c₂))
   -}
 
-  -- The code above does not work, because we only guarantee that v₂ is
+  -- However, the code above does not work, because we only guarantee that v₂ is
   -- a computation, not that it's an F-computation - v₂ could also be function
   -- type or a computation product.
 
-  -- We need a restricted CBPV, where these two possibilities are forbidden. If
-  -- you want to save something between different lambdas, you need to add an F
-  -- U to reflect that. (Double-check the papers which show how to encode arity
-  -- using CBPV, it seems that they should find the same problem --- XXX they
-  -- don't).
-
-  -- Instead, just drop the first cache (XXX WRONG).
-    ⟦ v₂ ⟧CompTermCache (proj₁ (proj₂ (⟦ v₁ ⟧CompTermCache ρ)) • ρ)
+  -- Instead, we use a restricted CBPV, where these two possibilities are forbidden.
+  -- If you want to save something between different lambdas, you need to add an
+  -- F U to reflect that. (Double-check the papers which show how to encode
+  -- arity using CBPV, it seems that they should find the same problem ---
+  -- XXX they don't).
   -}
 
   -- But if we alter _into_ as described above, composing the caches works!
@@ -176,8 +180,8 @@ module Structure
   -- lists! We can also use nested tuple, as long as in the into case we don't
   -- do (a, b) but append a b (ahem, where?), which decomposes the first list
   -- and prepends it to the second. To this end, we need to know the type of the
-  -- first element, or to ensure it's always a pair. Maybe we just want to reuse
-  -- an HList.
+  -- first element, or to ensure it's always a pair. XXX: We should just reuse
+  -- HList.
 
   -- In abstractions, we should start collecting all variables...
 
