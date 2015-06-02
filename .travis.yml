@@ -7,9 +7,7 @@ cache:
   - ~/.cabal
   - ~/.ghc
 script:
-  - cabal install happy --preference 'happy >=1.19.3 && <2'
-  - cabal install alex --preference 'alex >= 3.1.0 && < 3.2'
-  - cabal install Agda --preference 'Agda == 2.4.0.*'
+  - cabal install happy alex Agda --preference 'alex >= 3.1.0 && < 3.2' --preference 'happy >=1.19.3 && <2' --preference 'Agda == 2.4.0.*'
   - (mkdir -p ../stdlib; cd ../stdlib; curl -L https://github.com/agda/agda-stdlib/archive/v0.8.tar.gz|tar xz)
 
   - echo "AGDA_LIB=$(dirname $PWD)/stdlib/agda-stdlib-0.8/src" > agdaCheck.sh.conf
