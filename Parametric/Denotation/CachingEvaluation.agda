@@ -157,7 +157,7 @@ module Structure
   ⟦_⟧CompTermCache (_into_ {σ} {τ} v₁ v₂) ρ =
     let (τ₁ , (r₁ , c₁)) = ⟦ v₁ ⟧CompTermCache ρ
         (τ₂ , (r₂ , c₂)) = ⟦ v₂ ⟧CompTermCache (r₁ • ρ)
-    in  (σ v× τ₁ v× τ₂) , (r₂ ,′ ( r₁  ,′ c₁ ,′ c₂))
+    in  (τ₁ v× τ₂ v× σ) , (r₂ ,′ (c₁ ,′ c₂  ,′ r₁))
 
   -- Note the compositionality and luck: we don't need to do anything at the
   -- cReturn time, we just need the nested into to do their job, because as I
