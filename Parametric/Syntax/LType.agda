@@ -2,6 +2,7 @@ import Parametric.Syntax.Type as Type
 
 {--
 -- Encoding types of polarized System L, as described in "A dissection of L".
+-- However, I formalized contexts in a wrong way, hence there are problems.
 --}
 
 module Parametric.Syntax.LType where

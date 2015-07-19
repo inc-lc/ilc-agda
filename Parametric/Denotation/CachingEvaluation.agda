@@ -23,7 +23,9 @@ module Parametric.Denotation.CachingEvaluation
     (⟦_⟧Const : Evaluation.Structure Const ⟦_⟧Base)
     (ValConst : MTerm.ValConstStructure Const)
     (CompConst : MTerm.CompConstStructure Const)
-    -- I should really switch to records - can it get sillier than this?
+    -- I should really switch to records - can it get sillier than this? More
+    -- precisely, this is the kind of thing ML functors are designed to replace.
+    -- They have also subtyping --- not sure whether that's good or bad.
     (⟦_⟧ValBase : MEvaluation.ValStructure Const ⟦_⟧Base ValConst CompConst)
     (⟦_⟧CompBase : MEvaluation.CompStructure Const ⟦_⟧Base ValConst CompConst)
   where
