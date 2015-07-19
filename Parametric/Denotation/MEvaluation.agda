@@ -19,12 +19,14 @@ module Parametric.Denotation.MEvaluation
     (⟦_⟧Base : Value.Structure Base)
     (ValConst : MTerm.ValConstStructure Const)
     (CompConst : MTerm.CompConstStructure Const)
+    (cbnToCompConst : MTerm.CbnToCompConstStructure Const CompConst)
+    (cbvToCompConst : MTerm.CbvToCompConstStructure Const CompConst)
   where
 
 open Type.Structure Base
 
 open MType.Structure Base
-open MTerm.Structure Const ValConst CompConst
+open MTerm.Structure Const ValConst CompConst cbnToCompConst cbvToCompConst
 open MValue.Structure Base ⟦_⟧Base
 
 open import Base.Denotation.Notation

@@ -24,7 +24,17 @@ ValConstStructure = ValContext → ValType → Set
 CompConstStructure : Set₁
 CompConstStructure = ValContext → CompType → Set
 
-module Structure (ValConst : ValConstStructure) (CompConst : CompConstStructure) where
+CbnToCompConstStructure : CompConstStructure → Set
+CbnToCompConstStructure CompConst = ∀ {Σ τ} → Const Σ τ → CompConst (fromCBNCtx Σ) (cbnToCompType τ)
+
+CbvToCompConstStructure : CompConstStructure → Set
+CbvToCompConstStructure CompConst = ∀ {Σ τ} → Const Σ τ → CompConst (fromCBVCtx Σ) (cbvToCompType τ)
+
+module
+  Structure
+    (ValConst : ValConstStructure) (CompConst : CompConstStructure)
+    (cbnToCompConst : CbnToCompConstStructure CompConst)
+    (cbvToCompConst : CbvToCompConstStructure CompConst) where
   mutual
     -- Analogues of Terms
     Vals : ValContext → ValContext → Set
@@ -107,11 +117,6 @@ module Structure (ValConst : ValConstStructure) (CompConst : CompConstStructure)
   fromCBNTerms ∅ = ∅
   fromCBNTerms (px • ts) = vThunk (fromCBN px) • fromCBNTerms ts
 
-  open import UNDEFINED
-  -- This is really supposed to be part of the plugin interface.
-  cbnToCompConst : ∀ {Σ τ} → Const Σ τ → CompConst (fromCBNCtx Σ) (cbnToCompType τ)
-  cbnToCompConst = reveal UNDEFINED
-
   fromCBN (const c args) = cConst (cbnToCompConst c) (fromCBNTerms args)
   fromCBN (var x) = cForce (vVar (fromVar cbnToValType x))
   fromCBN (app s t) = cApp (fromCBN s) (vThunk (fromCBN t))
@@ -121,10 +126,6 @@ module Structure (ValConst : ValConstStructure) (CompConst : CompConstStructure)
   -- But let's ignore that.
   {-# NO_TERMINATION_CHECK #-}
   fromCBV : ∀ {Γ τ} (t : Term Γ τ) → Comp (fromCBVCtx Γ) (cbvToCompType τ)
-
-  -- This is really supposed to be part of the plugin interface.
-  cbvToCompConst : ∀ {Σ τ} → Const Σ τ → CompConst (fromCBVCtx Σ) (cbvToCompType τ)
-  cbvToCompConst = reveal UNDEFINED
 
   cbvTermsToComps : ∀ {Γ Σ} → Terms Γ Σ → Comps (fromCBVCtx Γ) (fromCBVToCompList Σ)
   cbvTermsToComps ∅ = ∅

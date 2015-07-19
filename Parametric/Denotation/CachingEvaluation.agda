@@ -23,24 +23,26 @@ module Parametric.Denotation.CachingEvaluation
     (⟦_⟧Const : Evaluation.Structure Const ⟦_⟧Base)
     (ValConst : MTerm.ValConstStructure Const)
     (CompConst : MTerm.CompConstStructure Const)
+    (cbnToCompConst : MTerm.CbnToCompConstStructure Const CompConst)
+    (cbvToCompConst : MTerm.CbvToCompConstStructure Const CompConst)
     -- I should really switch to records - can it get sillier than this? More
     -- precisely, this is the kind of thing ML functors are designed to replace.
     -- They have also subtyping --- not sure whether that's good or bad.
-    (⟦_⟧ValBase : MEvaluation.ValStructure Const ⟦_⟧Base ValConst CompConst)
-    (⟦_⟧CompBase : MEvaluation.CompStructure Const ⟦_⟧Base ValConst CompConst)
+    (⟦_⟧ValBase : MEvaluation.ValStructure Const ⟦_⟧Base ValConst CompConst cbnToCompConst cbvToCompConst)
+    (⟦_⟧CompBase : MEvaluation.CompStructure Const ⟦_⟧Base ValConst CompConst cbnToCompConst cbvToCompConst)
   where
 
 open Type.Structure Base
 open Term.Structure Base Const
 
 open MType.Structure Base
-open MTerm.Structure Const ValConst CompConst
+open MTerm.Structure Const ValConst CompConst cbnToCompConst cbvToCompConst
 
 open Value.Structure Base ⟦_⟧Base
 open Evaluation.Structure Const ⟦_⟧Base ⟦_⟧Const
 open MValue.Structure Base ⟦_⟧Base
 open CachingMValue.Structure Base ⟦_⟧Base
-open MEvaluation.Structure Const ⟦_⟧Base ValConst CompConst ⟦_⟧ValBase ⟦_⟧CompBase
+open MEvaluation.Structure Const ⟦_⟧Base ValConst CompConst cbnToCompConst cbvToCompConst ⟦_⟧ValBase ⟦_⟧CompBase
 
 open import Base.Denotation.Notation
 
