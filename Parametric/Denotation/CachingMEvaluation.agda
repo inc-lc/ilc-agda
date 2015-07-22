@@ -16,7 +16,7 @@ import Parametric.Denotation.MValue as MValue
 import Parametric.Denotation.CachingMValue as CachingMValue
 import Parametric.Denotation.MEvaluation as MEvaluation
 
-module Parametric.Denotation.CachingEvaluation
+module Parametric.Denotation.CachingMEvaluation
     {Base : Type.Structure}
     (Const : Term.Structure Base)
     (⟦_⟧Base : Value.Structure Base)
