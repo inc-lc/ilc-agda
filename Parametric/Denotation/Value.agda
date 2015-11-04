@@ -20,7 +20,7 @@ Structure = Base → Set
 
 module Structure (⟦_⟧Base : Structure) where
   -- We provide: Values for arbitrary types.
-  ⟦_⟧Type : Type -> Set
+  ⟦_⟧Type : Type → Set
   ⟦ base ι ⟧Type = ⟦ ι ⟧Base
   ⟦ σ ⇒ τ ⟧Type = ⟦ σ ⟧Type → ⟦ τ ⟧Type
 
