@@ -25,14 +25,16 @@ open import Base.Denotation.Notation
 open import Base.Data.DependentList as DependentList
 
 private
-  meaningOfType : Meaning Type
-  meaningOfType = meaning ⟦_⟧Type
+  instance
+    meaningOfType : Meaning Type
+    meaningOfType = meaning ⟦_⟧Type
 
 ⟦_⟧Context : Context → Set ℓ
 ⟦_⟧Context = DependentList ⟦_⟧Type
 
-meaningOfContext : Meaning Context
-meaningOfContext = meaning ⟦_⟧Context
+instance
+  meaningOfContext : Meaning Context
+  meaningOfContext = meaning ⟦_⟧Context
 
 -- VARIABLES
 
@@ -42,8 +44,9 @@ meaningOfContext = meaning ⟦_⟧Context
 ⟦ this ⟧Var (v • ρ) = v
 ⟦ that x ⟧Var (v • ρ) = ⟦ x ⟧Var ρ
 
-meaningOfVar : ∀ {Γ τ} → Meaning (Var Γ τ)
-meaningOfVar = meaning ⟦_⟧Var
+instance
+  meaningOfVar : ∀ {Γ τ} → Meaning (Var Γ τ)
+  meaningOfVar = meaning ⟦_⟧Var
 
 -- WEAKENING
 
@@ -54,8 +57,9 @@ meaningOfVar = meaning ⟦_⟧Var
 ⟦ keep τ • Γ′ ⟧≼ (v • ρ) = v • ⟦ Γ′ ⟧≼ ρ
 ⟦ drop τ • Γ′ ⟧≼ (v • ρ) = ⟦ Γ′ ⟧≼ ρ
 
-meaningOf≼ : ∀ {Γ₁ Γ₂} → Meaning (Γ₁ ≼ Γ₂)
-meaningOf≼ = meaning ⟦_⟧≼
+instance
+  meaningOf≼ : ∀ {Γ₁ Γ₂} → Meaning (Γ₁ ≼ Γ₂)
+  meaningOf≼ = meaning ⟦_⟧≼
 
 -- Properties
 
