@@ -22,10 +22,7 @@ open import Relation.Binary.PropositionalEquality
 
 open import Base.Syntax.Context Type
 open import Base.Denotation.Notation
-import Base.Data.DependentList as DependentList
-
-open DependentList public using (∅ ; _•_)
-open DependentList
+open import Base.Data.DependentList as DependentList
 
 private
   meaningOfType : Meaning Type
