@@ -47,9 +47,10 @@ module Structure (⟦_⟧Const : Structure) where
   -- so we do explicit pattern matching instead.
   ⟦ ∅ ⟧Terms ρ = ∅
   ⟦ s • terms ⟧Terms ρ = ⟦ s ⟧Term ρ • ⟦ terms ⟧Terms ρ
-  
-  meaningOfTerm : ∀ {Γ τ} → Meaning (Term Γ τ)
-  meaningOfTerm = meaning ⟦_⟧Term
+
+  instance
+    meaningOfTerm : ∀ {Γ τ} → Meaning (Term Γ τ)
+    meaningOfTerm = meaning ⟦_⟧Term
 
   weaken-sound : ∀ {Γ₁ Γ₂ τ} {Γ₁≼Γ₂ : Γ₁ ≼ Γ₂}
     (t : Term Γ₁ τ) (ρ : ⟦ Γ₂ ⟧) → ⟦ weaken Γ₁≼Γ₂ t ⟧ ρ ≡ ⟦ t ⟧ (⟦ Γ₁≼Γ₂ ⟧ ρ)

@@ -24,9 +24,10 @@ module Structure (⟦_⟧Base : Structure) where
   ⟦ base ι ⟧Type = ⟦ ι ⟧Base
   ⟦ σ ⇒ τ ⟧Type = ⟦ σ ⟧Type → ⟦ τ ⟧Type
 
-  -- This means: Overload ⟦_⟧ to mean ⟦_⟧Type.
-  meaningOfType : Meaning Type
-  meaningOfType = meaning ⟦_⟧Type
+  instance
+    -- This means: Overload ⟦_⟧ to mean ⟦_⟧Type.
+    meaningOfType : Meaning Type
+    meaningOfType = meaning ⟦_⟧Type
 
   -- We also provide: Environments of such values.
   open import Base.Denotation.Environment Type ⟦_⟧Type public
