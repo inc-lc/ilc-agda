@@ -64,21 +64,21 @@ instance
 -- Properties
 
 ⟦⟧-≼-trans : ∀ {Γ₃ Γ₁ Γ₂} → (Γ′ : Γ₁ ≼ Γ₂) (Γ″ : Γ₂ ≼ Γ₃) →
-  ∀ (ρ : ⟦ Γ₃ ⟧) → ⟦ ≼-trans Γ′ Γ″ ⟧ ρ ≡ ⟦ Γ′ ⟧ (⟦ Γ″ ⟧ ρ)
+   ∀ (ρ : ⟦ Γ₃ ⟧) → ⟦_⟧ {{meaningOf≼}} (≼-trans Γ′ Γ″) ρ ≡ ⟦_⟧ {{meaningOf≼}} Γ′ (⟦_⟧ {{meaningOf≼}} Γ″ ρ)
 ⟦⟧-≼-trans Γ′ ∅ ∅ = refl
 ⟦⟧-≼-trans (keep τ • Γ′) (keep .τ • Γ″) (v • ρ) = cong₂ _•_ refl (⟦⟧-≼-trans Γ′ Γ″ ρ)
 ⟦⟧-≼-trans (drop τ • Γ′) (keep .τ • Γ″) (v • ρ) = ⟦⟧-≼-trans Γ′ Γ″ ρ
 ⟦⟧-≼-trans Γ′ (drop τ • Γ″) (v • ρ) = ⟦⟧-≼-trans Γ′ Γ″ ρ
 
 ⟦⟧-≼-refl : ∀ {Γ : Context} →
-  ∀ (ρ : ⟦ Γ ⟧) → ⟦ ≼-refl ⟧ ρ ≡ ρ
+  ∀ (ρ : ⟦ Γ ⟧) → ⟦_⟧ {{meaningOf≼}} ≼-refl ρ ≡ ρ
 ⟦⟧-≼-refl {∅} ∅ = refl
 ⟦⟧-≼-refl {τ • Γ} (v • ρ) = cong₂ _•_ refl (⟦⟧-≼-refl ρ)
 
 -- SOUNDNESS of variable lifting
 
 weaken-var-sound : ∀ {Γ₁ Γ₂ τ} (Γ′ : Γ₁ ≼ Γ₂) (x : Var Γ₁ τ) →
-  ∀ (ρ : ⟦ Γ₂ ⟧) → ⟦ weaken-var Γ′ x ⟧ ρ ≡ ⟦ x ⟧ (⟦ Γ′ ⟧ ρ)
+  ∀ (ρ : ⟦ Γ₂ ⟧) → ⟦_⟧ {{meaningOfVar}} (weaken-var Γ′ x) ρ ≡ ⟦_⟧ {{meaningOfVar}} x ( ⟦_⟧ {{meaningOf≼}} Γ′  ρ)
 weaken-var-sound ∅ () ρ
 weaken-var-sound (keep τ • Γ′) this (v • ρ) = refl
 weaken-var-sound (keep τ • Γ′) (that x) (v • ρ) = weaken-var-sound Γ′ x ρ
