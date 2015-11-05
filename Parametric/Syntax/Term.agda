@@ -61,7 +61,6 @@ Structure = Context → Type → Set
 module Structure (Const : Structure) where
   import Base.Data.DependentList as DependentList
   open DependentList public using (∅ ; _•_)
-  open DependentList
 
   -- Declarations of Term and Terms to enable mutual recursion.
   --
