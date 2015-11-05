@@ -109,6 +109,11 @@ record ChangeAlgebraFamily {a p} ℓ {A : Set a} (P : A → Set p): Set (suc ℓ
   field
     change-algebra : ∀ x → ChangeAlgebra ℓ (P x)
 
+  {-
+  instance
+    change-algebra-extractor : ∀ {x} → ChangeAlgebra ℓ (P x)
+    change-algebra-extractor {x} = change-algebra x
+  -}
   module _ x where
     open ChangeAlgebra (change-algebra x) public
 
@@ -127,6 +132,10 @@ open Family public
     ; before to before₍_₎
     ; after to after₍_₎
     )
+
+-- XXX not clear this is ever used
+instance
+  change-algebra-family-inst = change-algebra₍_₎
 
 infixl 6 update′ diff′
 
@@ -158,7 +167,7 @@ Derivative₍_,_₎ : ∀ {a b p q c d} {A : Set a} {B : Set b} {P : A → Set p
   (f : P x → Q y) →
   (df : (px : P x) (dpx : Δ₍ x ₎ px) → Δ₍ y ₎ (f px)) →
   Set (p ⊔ q ⊔ c)
-Derivative₍ x , y ₎ f df = Derivative f df where
+Derivative₍ x , y ₎ f df = Derivative {{change-algebra₍ _ ₎}} {{change-algebra₍ _ ₎}} f df where
   CPx = change-algebra₍ x ₎
   CQy = change-algebra₍ y ₎
 
@@ -276,7 +285,8 @@ module FunctionChanges
       -- I have to write the type of funUpdateDiff without using changeAlgebra,
       -- so I just use the underlying implementations.
       funUpdateDiff : ∀ u v → funUpdate v (funDiff u v) ≡ u
-      changeAlgebra : ChangeAlgebra (a ⊔ b ⊔ c ⊔ d) (A → B)
+      instance
+        changeAlgebra : ChangeAlgebra (a ⊔ b ⊔ c ⊔ d) (A → B)
 
       changeAlgebra = record
         { Change = FunctionChange
@@ -355,7 +365,9 @@ module ListChanges
     update-diff-all [] [] = refl
     update-diff-all (px′ ∷ pxs′) (px ∷ pxs) = cong₂ _∷_ (update-diff₍ _ ₎ px′ px) (update-diff-all pxs′ pxs)
 
-    changeAlgebra : ChangeAlgebraFamily (c ⊔ a) (All P)
+    instance
+      changeAlgebra : ChangeAlgebraFamily (c ⊔ a) (All P)
+
     changeAlgebra = record
       { change-algebra = λ xs → record
         { Change = All′ Δ₍ _ ₎
