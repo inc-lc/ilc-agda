@@ -6,6 +6,8 @@
 
 import Parametric.Syntax.Type as Type
 import Parametric.Denotation.Value as Value
+open import Base.Change.Algebra as CA
+  using (ChangeAlgebraFamily)
 
 module Parametric.Change.Validity
     {Base : Type.Structure}
@@ -18,8 +20,6 @@ open Value.Structure Base ⟦_⟧Base
 open import Base.Denotation.Notation public
 
 open import Relation.Binary.PropositionalEquality
-open import Base.Change.Algebra as CA
-  using (ChangeAlgebraFamily)
 open import Level
 
 -- Extension Point: Change algebras for base types
