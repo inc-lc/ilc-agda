@@ -21,7 +21,7 @@ open import Relation.Binary.PropositionalEquality
 -- ===============
 
 import Data.List as List
-open import Base.Data.ContextList public
+open import Base.Data.ContextList
 
 Context : Set
 Context = List.List Type

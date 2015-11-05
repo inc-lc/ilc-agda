@@ -59,9 +59,6 @@ Structure : Set₁
 Structure = Context → Type → Set
 
 module Structure (Const : Structure) where
-  import Base.Data.DependentList as DependentList
-  open DependentList public using (∅ ; _•_)
-  open DependentList
 
   -- Declarations of Term and Terms to enable mutual recursion.
   --
@@ -74,6 +71,8 @@ module Structure (Const : Structure) where
   data Term
     (Γ : Context) :
     (τ : Type) → Set
+
+  open import Base.Data.DependentList public
 
   -- (Terms Γ Σ) represents a list of terms with types from Σ
   -- with free variables bound in Γ.

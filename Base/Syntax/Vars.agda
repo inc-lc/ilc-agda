@@ -21,7 +21,7 @@ open import Data.Bool
 
 -- Sets of variables
 
-open import Base.Data.DependentList public
+open import Base.Data.DependentList
 
 Free : Type → Set
 Free _ = Bool
