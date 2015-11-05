@@ -35,9 +35,10 @@ module Structure (change-algebra-base : Structure) where
     )
 
   -- We provide: change algebra for every type
-  change-algebra : ∀ τ → ChangeAlgebra zero ⟦ τ ⟧Type
-  change-algebra (base ι) = change-algebra₍ ι ₎
-  change-algebra (τ₁ ⇒ τ₂) = CA.FunctionChanges.changeAlgebra _ _ {{change-algebra τ₁}} {{change-algebra τ₂}}
+  instance
+    change-algebra : ∀ τ → ChangeAlgebra zero ⟦ τ ⟧Type
+    change-algebra (base ι) = change-algebra₍_₎ {{change-algebra-base}} ι
+    change-algebra (τ₁ ⇒ τ₂) = CA.FunctionChanges.changeAlgebra _ _ {{change-algebra τ₁}} {{change-algebra τ₂}}
 
   change-algebra-family : ChangeAlgebraFamily zero ⟦_⟧Type
   change-algebra-family = family change-algebra
