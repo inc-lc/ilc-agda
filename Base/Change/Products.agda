@@ -17,11 +17,14 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
 
   -- The simplest possible definition of changes for products.
 
-  -- The following is probably bullshit:
-  -- Does not handle products of functions - more accurately, writing the
-  -- derivative of fst and snd for products of functions is hard: fst' p dp must return the change of fst p
   PChange : A × B → Set ℓ
   PChange (a , b) = Δ a × Δ b
+
+  -- An interesting alternative definition allows omitting the nil change of a
+  -- component when that nil change can be computed from the type. For instance, the nil change for integers is always the same.
+
+  -- However, the nil change for function isn't always the same (unless we
+  -- defunctionalize them first), so nil changes for functions can't be omitted.
 
   _⊕_ : (v : A × B) → PChange v → A × B
   _⊕_ (a , b) (da , db) = a ⊞ da , b ⊞ db
