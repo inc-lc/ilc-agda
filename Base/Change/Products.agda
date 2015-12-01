@@ -108,6 +108,7 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
 
   -- We should do the same for uncurry instead.
 
+  -- Morally, the following is a change:
   -- What one could wrongly expect to be the derivative of the constructor:
   _,_′ : (a : A) → (da : Δ a) → (b : B) → (db : Δ b) → Δ (a , b)
   _,_′ a da b db = da , db
@@ -115,23 +116,28 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
   -- That has the correct behavior, in a sense, and it would be in the
   -- subset-based formalization in the paper.
   --
-  -- But the above is not even a change, because it does not contain a proof of its own validity, and because after application it does not contain a proof
+  -- But the above is not even a change, because it does not contain a proof of its own validity, and because after application it does not contain a proof.
 
-  -- As a consequence, proving that's a derivative seems too insanely hard. We
-  -- might want to provide a proof schema for curried functions at once,
-  -- starting from the right correctness equation.
+  -- As a consequence, proving that's a derivative requires extra effort.
 
   B→A×B = FunctionChanges.changeAlgebra {c = ℓ} {d = ℓ} B (A × B)
   A→B→A×B = FunctionChanges.changeAlgebra {c = ℓ} {d = ℓ} A (B → A × B) {{CA}} {{B→A×B}}
   module ΔBA×B = FunctionChanges B (A × B) {{CB}} {{changeAlgebra}}
   module ΔA→B→A×B = FunctionChanges A (B → A × B) {{CA}} {{B→A×B}}
 
-
+  -- Give a trivial definition of the change of _,_.
+  -- This is simply _,_ ⊖ _,_, together with its generic proof of correctness.
   _,_′-real : Δ _,_
   _,_′-real = nil _,_
   _,_′-real-Derivative : Derivative {{CA}} {{B→A×B}} _,_ (ΔA→B→A×B.apply _,_′-real)
   _,_′-real-Derivative =
     FunctionChanges.nil-is-derivative A (B → A × B) {{CA}} {{B→A×B}} _,_
+
+  -- Formalizing a proof that _,_′ is morally a derivative of _,_ appears
+  -- instead unnecessarily hard, essentially, because this is a curried
+  -- function.
+
+  -- Let's now instead prove by hand that _,_′ a da is a change for _,_ a.
 
   _,_′′ :  (a : A) → Δ a →
       Δ {{B→A×B}} (λ b → (a , b))
@@ -148,6 +154,10 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
         (a , b) ⊞ (_,_′ a da) b db
       ∎
     }
+
+  -- We might want to provide a proof schema for curried functions at once,
+  -- starting from more reasonable correctness equation.
+
 {-
   _,_′′′ : Δ {{A→B→A×B}} _,_
   _,_′′′ = record
