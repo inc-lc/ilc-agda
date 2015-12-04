@@ -154,9 +154,9 @@ Derivative : ∀ {a b c d} {A : Set a} {B : Set b} →
   {{CA : ChangeAlgebra c A}} →
   {{CB : ChangeAlgebra d B}} →
   (f : A → B) →
-  (df : (a : A) (da : Δ a) → Δ (f a)) →
+  (df : (a : A) (da : Δ {{CA}} a) → Δ {{CB}} (f a)) →
   Set (a ⊔ b ⊔ c)
-Derivative f df = ∀ a da → f a ⊞ df a da ≡ f (a ⊞ da)
+Derivative {{CA}} {{CB}} f df = ∀ a da → f a ⊞ df a da ≡ f (a ⊞ da)
 
 -- This is a variant of Derivative for change algebra families.
 Derivative₍_,_₎ : ∀ {a b p q c d} {A : Set a} {B : Set b} {P : A → Set p} {Q : B → Set q} →
@@ -165,11 +165,11 @@ Derivative₍_,_₎ : ∀ {a b p q c d} {A : Set a} {B : Set b} {P : A → Set p
   (x : A) →
   (y : B) →
   (f : P x → Q y) →
-  (df : (px : P x) (dpx : Δ₍ x ₎ px) → Δ₍ y ₎ (f px)) →
+  (df : (px : P x) (dpx : Δ₍_₎ {{CP}} x px) → Δ₍_₎ {{CQ}} y (f px)) →
   Set (p ⊔ q ⊔ c)
-Derivative₍ x , y ₎ f df = Derivative {{change-algebra₍ _ ₎}} {{change-algebra₍ _ ₎}} f df where
-  CPx = change-algebra₍ x ₎
-  CQy = change-algebra₍ y ₎
+Derivative₍_,_₎ {P = P} {{CP}} {{CQ}} x y f df = Derivative {{change-algebra₍ _ ₎}} {{change-algebra₍ _ ₎}} f df where
+  CPx = change-algebra₍_₎ {{CP}} x
+  CQy = change-algebra₍_₎ {{CQ}} y
 
 -- Lemma 2.5 appears in Base.Change.Equivalence.
 
@@ -247,8 +247,8 @@ module FunctionChanges
         cons
       field
         -- Definition 2.6a
-        apply : (a : A) (da : Δ a) →
-          Δ (f a)
+        apply : (a : A) (da : Δ {{CA}} a) →
+          Δ {{CB}} (f a)
 
         -- Definition 2.6b.
         -- (for some reason, the version in the paper has the arguments of ≡
@@ -267,16 +267,17 @@ module FunctionChanges
           -- have to prove for Theorem 2.7.
         ; correct = λ a da →
           begin
-            f (a ⊞ da) ⊞ (g ((a ⊞ da) ⊞ nil (a ⊞ da)) ⊟ f (a ⊞ da))
-          ≡⟨ cong (λ □ → f (a ⊞ da) ⊞ (g □ ⊟ f (a ⊞ da)))
-               (update-nil (a ⊞ da)) ⟩
-            f (a ⊞ da) ⊞ (g (a ⊞ da) ⊟ f (a ⊞ da))
-          ≡⟨ update-diff (g (a ⊞ da)) (f (a ⊞ da)) ⟩
+            _⊞_ {{CB}} (f (_⊞_ {{CA}} a da)) (g (_⊞_ {{CA}} (a ⊞ da) (nil (a ⊞ da))) ⊟ f (a ⊞ da))
+          ≡⟨ cong (λ □ → _⊞_ {{CB}} (f (a ⊞ da)) (g □ ⊟ f (a ⊞ da)))
+               (update-nil {{CA}} (a ⊞ da)) ⟩
+            _⊞_ {{CB}} (f (a ⊞ da)) (g (a ⊞ da) ⊟ f (a ⊞ da))
+          ≡⟨ update-diff {{CB}} (g (a ⊞ da)) (f (a ⊞ da)) ⟩
             g (a ⊞ da)
-          ≡⟨ sym (update-diff (g (a ⊞ da)) (f a)) ⟩
-            f a ⊞ (g (a ⊞ da) ⊟ f a)
+          ≡⟨ sym (update-diff {{CB}} (g (a ⊞ da)) (f a)) ⟩
+            _⊞_ {{CB}} (f a) (g (a ⊞ da) ⊟ f a)
           ∎
         }
+
     funUpdate : ∀ (f : A → B) (df : FunctionChange f) → A → B
     funUpdate = λ f df a → f a ⊞ apply df a (nil a)
     funNil = λ f → funDiff f f
@@ -304,10 +305,10 @@ module FunctionChanges
       -- XXX remove mutual recursion by inlining the algebra in here?
       funUpdateDiff = λ g f → ext (λ a →
         begin
-          f a ⊞ (g (a ⊞ nil a) ⊟ f a)
-        ≡⟨ cong (λ □ → f a ⊞ (g □ ⊟ f a)) (update-nil a) ⟩
-          f a ⊞ (g a ⊟ f a)
-        ≡⟨ update-diff (g a) (f a) ⟩
+          _⊞_ {{CB}} (f a) (g (_⊞_ {{CA}} a (nil a)) ⊟ f a)
+        ≡⟨ cong (λ □ → _⊞_ {{CB}} (f a) (g □ ⊟ f a)) (update-nil {{CA}} a) ⟩
+          _⊞_ {{CB}} (f a) (g a ⊟ f a)
+        ≡⟨ update-diff {{CB}}  (g a) (f a) ⟩
           g a
         ∎)
 
@@ -323,9 +324,9 @@ module FunctionChanges
       begin
         f a ⊞ apply (nil f) a da
       ≡⟨ sym (incrementalization f (nil f) a da) ⟩
-        (f ⊞ nil f) (a ⊞ da)
+        (f ⊞ nil {{changeAlgebra}} f) (a ⊞ da)
       ≡⟨ cong (λ □ → □ (a ⊞ da))
-           (update-nil f) ⟩
+           (update-nil {{changeAlgebra}} f) ⟩
         f (a ⊞ da)
       ∎
 
@@ -353,24 +354,24 @@ data All′ {a p q} {A : Set a}
 module ListChanges
     {a} {c} {A : Set a} (P : A → Set) {{C : ChangeAlgebraFamily c P}}
   where
-    update-all : ∀ {xs} → (pxs : All P xs) → All′ (Δ₍ _ ₎) pxs → All P xs
+    update-all : ∀ {xs} → (pxs : All P xs) →  All′ (Δ₍_₎ {{C}} _) pxs  → All P xs
     update-all {[]} [] [] = []
     update-all {x ∷ xs} (px ∷ pxs) (dpx ∷ dpxs) = (px ⊞₍ x ₎ dpx) ∷ update-all pxs dpxs
 
-    diff-all : ∀ {xs} → (pxs′ pxs : All P xs) → All′ (Δ₍ _ ₎) pxs
+    diff-all : ∀ {xs} → (pxs′ pxs : All P xs) → All′ (Δ₍_₎ {{C}} _) pxs
     diff-all [] [] = []
     diff-all (px′ ∷ pxs′) (px ∷ pxs) = (px′ ⊟₍ _ ₎ px) ∷ diff-all pxs′ pxs
 
     update-diff-all : ∀ {xs} → (pxs′ pxs : All P xs) → update-all pxs (diff-all pxs′ pxs) ≡ pxs′
     update-diff-all [] [] = refl
-    update-diff-all (px′ ∷ pxs′) (px ∷ pxs) = cong₂ _∷_ (update-diff₍ _ ₎ px′ px) (update-diff-all pxs′ pxs)
+    update-diff-all (px′ ∷ pxs′) (px ∷ pxs) = cong₂ _∷_ (update-diff₍_₎ {{C}} _ px′ px) (update-diff-all pxs′ pxs)
 
     instance
       changeAlgebra : ChangeAlgebraFamily (c ⊔ a) (All P)
 
     changeAlgebra = record
       { change-algebra = λ xs → record
-        { Change = All′ Δ₍ _ ₎
+        { Change = All′ (Δ₍_₎ {{C}} _)
         ; update = update-all
         ; diff = diff-all
         ; nil = λ xs → diff-all xs xs
