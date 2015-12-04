@@ -55,11 +55,9 @@ module Structure (change-algebra-base : Structure) where
 
   -- We also provide: change environments (aka. environment changes).
 
-  {-
   open ListChanges ⟦_⟧Type {{change-algebra-family}} public using () renaming
     ( changeAlgebra to environment-changes
     )
 
-  after-env : ∀ {Γ : Context} → {ρ : ⟦ Γ ⟧} (dρ : Δ₍  Γ ₎ ρ) → ⟦ Γ ⟧
-  after-env {Γ} = after₍ Γ ₎
-  -}
+  after-env : ∀ {Γ : Context} → {ρ : ⟦ Γ ⟧} (dρ : Δ₍_₎ {{environment-changes}} Γ ρ) → ⟦ Γ ⟧
+  after-env {Γ} = after₍_₎ Γ
