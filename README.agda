@@ -98,7 +98,7 @@ module README where
 -- =================================
 --
 -- To typecheck this formalization, you need to install the appropriate version
--- of Agda (2.4.0), the Agda standard library (version 0.8), generate
+-- of Agda (2.4.0.*), the Agda standard library (version 0.8), generate
 -- Everything.agda with the attached Haskell helper, and finally run Agda on
 -- this file.
 --
