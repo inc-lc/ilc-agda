@@ -44,7 +44,6 @@ module Structure (change-algebra-base : Structure) where
 
   -- function changes
 
-  open FunctionChanges public using (cons)
   module _ {τ₁ τ₂ : Type} where
     open FunctionChanges.FunctionChange _ _ {{change-algebra τ₁}} {{change-algebra τ₂}} public
       renaming

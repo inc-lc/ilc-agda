@@ -72,9 +72,9 @@ record Structure : Set₁ where
   ⟦_⟧Δ (var x) ρ dρ = ⟦ x ⟧ΔVar ρ dρ
   ⟦_⟧Δ (app {σ} {τ} s t) ρ dρ =
        call-change {σ} {τ} (⟦ s ⟧Δ ρ dρ) (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ)
-  ⟦_⟧Δ (abs {σ} {τ} t) ρ dρ = cons
-    (λ v dv → ⟦ t ⟧Δ (v • ρ) (dv • dρ))
-    (λ v dv →
+  ⟦_⟧Δ (abs {σ} {τ} t) ρ dρ = record
+    { apply = λ v dv → ⟦ t ⟧Δ (v • ρ) (dv • dρ)
+    ; correct = λ v dv →
       begin
         ⟦ t ⟧ (v ⊞₍ σ ₎ dv • ρ)  ⊞₍ τ ₎
         ⟦ t ⟧Δ (v ⊞₍ σ ₎ dv • ρ) (nil₍ σ ₎ (v ⊞₍ σ ₎ dv) • dρ)
@@ -88,7 +88,8 @@ record Structure : Set₁ where
         ⟦ t ⟧ (after-env (dv • dρ))
       ≡⟨  sym (correctness t (v • ρ) (dv • dρ))  ⟩
         ⟦ t ⟧ (v • ρ)  ⊞₍ τ ₎  ⟦ t ⟧Δ (v • ρ) (dv • dρ)
-      ∎) where open ≡-Reasoning
+      ∎
+    } where open ≡-Reasoning
 
   ⟦ ∅ ⟧ΔTerms ρ dρ = ∅
   ⟦ t • ts ⟧ΔTerms ρ dρ = ⟦ t ⟧Δ ρ dρ • ⟦ ts ⟧ΔTerms ρ dρ

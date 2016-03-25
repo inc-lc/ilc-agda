@@ -234,8 +234,6 @@ module FunctionChanges
   where
     -- This corresponds to Definition 2.6 in the paper.
     record FunctionChange (f : A → B) : Set (a ⊔ b ⊔ c ⊔ d) where
-      constructor
-        cons
       field
         -- Definition 2.6a
         apply : (a : A) (da : Δ a) →
