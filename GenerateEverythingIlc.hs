@@ -39,7 +39,8 @@ descendIntoDir = fileName /=? "bugs"
 
 -- Do we want to exclude this source file
 wantedSourceFile =
-  fileName /=? "README.agda"
+  fileName /=? "README.agda" &&?
+  liftOp ((not .) . flip List.isInfixOf) filePath (".stack-work" ++ [pathSeparator])
 
 --------------------------------------------------------------------------------
 -- Logic to choose files to list - should be project-independent
