@@ -306,7 +306,10 @@ module FunctionChanges
       (f ⊞ df) (a ⊞ da) ≡ f a ⊞ apply df a da
     incrementalization f df a da = correct df a da
 
-    -- This is Theorem 2.10 in the paper.
+    -- This is Theorem 2.10 in the paper. However, the derivative of f is just
+    -- the apply component of `nil f`, not the full `nil f`, which also includes
+    -- a proof. This is not an issue in the paper, which is formulated in a
+    -- proof-irrelevant metalanguage.
     nil-is-derivative : ∀ (f : A → B) →
       Derivative f (apply (nil f))
     nil-is-derivative f a da =
@@ -318,6 +321,25 @@ module FunctionChanges
            (update-nil f) ⟩
         f (a ⊞ da)
       ∎
+
+    -- Show that any derivative is a valid function change.
+
+    -- In the paper, this is never actually stated. We just prove that nil
+    -- changes are derivatives; the paper keeps talking about "the derivative",
+    -- suggesting derivatives are unique. If derivatives were unique, we could
+    -- say that the nil change is *the* derivative, hence the derivative is the
+    -- nil change (hence also a change).
+    --
+    -- In fact, derivatives are only unique up to change equivalence.
+    --
+    Derivative-is-valid : ∀ {f : A → B} df (Derivative-f-df : Derivative f df) a da →
+      f (a ⊞ da) ⊞ (df (a ⊞ da) (nil (a ⊞ da))) ≡ f a ⊞ df a da
+    Derivative-is-valid {f} df Derivative-f-df a da rewrite Derivative-f-df (a ⊞ da) (nil (a ⊞ da)) | update-nil (a ⊞ da) = sym (Derivative-f-df a da)
+
+    DerivativeAsChange : ∀ {f : A → B} df (Derivative-f-df : Derivative f df) → Δ f
+    DerivativeAsChange df Derivative-f-df = record { apply = df ; correct = Derivative-is-valid df Derivative-f-df }
+    -- In Equivalence.agda, derivative-is-nil-alternative then proves that a derivative is also a nil change.
+
 
 -- List (== Environment) Changes
 -- =============================
