@@ -106,103 +106,148 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
   proj₂′Derivative : Derivative proj₂ proj₂′
   proj₂′Derivative v dv = refl
 
-  -- We should do the same for uncurry instead.
-
-  -- Morally, the following is a change:
-  -- What one could wrongly expect to be the derivative of the constructor:
-  _,_′ : (a : A) → (da : Δ a) → (b : B) → (db : Δ b) → Δ (a , b)
-  _,_′ a da b db = da , db
-
-  -- That has the correct behavior, in a sense, and it would be in the
-  -- subset-based formalization in the paper.
-  --
-  -- But the above is not even a change, because it does not contain a proof of its own validity, and because after application it does not contain a proof.
-
-  -- As a consequence, proving that's a derivative requires extra effort.
-
   B→A×B = FunctionChanges.changeAlgebra {c = ℓ} {d = ℓ} B (A × B)
   A→B→A×B = FunctionChanges.changeAlgebra {c = ℓ} {d = ℓ} A (B → A × B) {{CA}} {{B→A×B}}
   module ΔBA×B = FunctionChanges B (A × B) {{CB}} {{changeAlgebra}}
   module ΔA→B→A×B = FunctionChanges A (B → A × B) {{CA}} {{B→A×B}}
 
-  -- Give a trivial definition of the change of _,_.
-  -- This is simply _,_ ⊖ _,_, together with its generic proof of correctness.
-  _,_′-real : Δ _,_
-  _,_′-real = nil _,_
-  _,_′-real-Derivative : Derivative {{CA}} {{B→A×B}} _,_ (ΔA→B→A×B.apply _,_′-real)
-  _,_′-real-Derivative =
-    FunctionChanges.nil-is-derivative A (B → A × B) {{CA}} {{B→A×B}} _,_
+  -- Morally, the following is a change:
+  -- What one could wrongly expect to be the derivative of the constructor:
+  _,_′-realizer : (a : A) → (da : Δ a) → (b : B) → (db : Δ b) → Δ (a , b)
+  _,_′-realizer a da b db = da , db
 
-  -- Formalizing a proof that _,_′ is morally a derivative of _,_ appears
-  -- instead unnecessarily hard, essentially, because this is a curried
-  -- function.
+  -- That has the correct behavior, in a sense, and it would be in the
+  -- subset-based formalization in the paper.
+  --
+  -- But the above is not even a change, because it does not contain a proof of
+  -- its own validity, and because after application it does not contain a
+  -- proof.
+  --
+  -- However, the above is (morally) a "realizer" of the actual change, since it
+  -- only represents its computational behavior, not its proof manipulation.
 
-  -- Let's now instead prove by hand that _,_′ a da is a change for _,_ a.
+  -- Hence, we need to do some additional work.
 
-  _,_′′ :  (a : A) → Δ a →
-      Δ {{B→A×B}} (λ b → (a , b))
-  _,_′′ a da = record
-    { apply = _,_′ a da
-    ; correct = λ b db →
-      begin
-        (a , b ⊞ db) ⊞ (_,_′ a da) (b ⊞ db) (nil (b ⊞ db))
-      ≡⟨⟩
-        a ⊞ da , b ⊞ db ⊞ (nil (b ⊞ db))
-      ≡⟨ cong (λ □ →  a ⊞ da , □) (update-nil (b ⊞ db)) ⟩
-        a ⊞ da , b ⊞ db
-      ≡⟨⟩
-        (a , b) ⊞ (_,_′ a da) b db
-      ∎
-    }
+  _,_′-realizer-correct _,_′-realizer-correct-detailed :
+    (a : A) → (da : Δ a) → (b : B) → (db : Δ b) →
+      (a , b ⊞ db) ⊞ (_,_′-realizer a da (b ⊞ db) (nil (b ⊞ db))) ≡ (a , b) ⊞ (_,_′-realizer a da b db)
+  _,_′-realizer-correct a da b db rewrite update-nil (b ⊞ db) = refl
 
-  -- We might want to provide a proof schema for curried functions at once,
-  -- starting from more reasonable correctness equation.
-
-{-
-  _,_′′′ : Δ {{A→B→A×B}} _,_
-  _,_′′′ = record
-    { apply = _,_′′
-    ; correct = λ a da →
-      begin
-        update
-        (_,_ (a ⊞ da))
-        (_,_′′ (a ⊞ da) (nil (a ⊞ da)))
-      ≡⟨ {!!} ⟩
-        update (_,_ a) (_,_′′ a da)
-      ∎
-    }
-    where
-      -- This is needed to use update above.
-      -- Passing the change structure seems hard with the given operators; maybe I'm just using them wrongly.
-      open ChangeAlgebra B→A×B hiding (nil)
-{-
-  {!
-      begin
-        (_,_ (a ⊞ da)) ⊞ _,_′′ (a ⊞ da) (nil (a ⊞ da))
-      {- ≡⟨⟩
-        a ⊞ da , b ⊞ db ⊞ (nil (b ⊞ db)) -}
-      ≡⟨ ? ⟩
-        {-a ⊞ da , b ⊞ db
-      ≡⟨⟩-}
-       (_,_ a) ⊞ (_,_′′ a da)
-      ∎!}
-    }
--}
-  open import Postulate.Extensionality
-
-
-  _,_′Derivative :
-    Derivative {{CA}} {{B→A×B}} _,_  _,_′′
-  _,_′Derivative a da =
+  _,_′-realizer-correct-detailed a da b db =
     begin
-      _⊞_ {{B→A×B}} (_,_ a) (_,_′′ a da)
+      (a , b ⊞ db) ⊞ (_,_′-realizer a da) (b ⊞ db) (nil (b ⊞ db))
     ≡⟨⟩
-      (λ b → (a , b) ⊞ ΔBA×B.apply (_,_′′ a da) b (nil b))
-    --ext (λ b → cong (λ □ →  (a , b) ⊞ □) (update-nil {{?}} b))
-    ≡⟨ {!!} ⟩
-      (λ b → (a , b) ⊞ ΔBA×B.apply (_,_′′ a da) b (nil b))
-    ≡⟨ sym {!ΔA→B→A×B.incrementalization _,_ _,_′′′ a da!} ⟩
-  --FunctionChanges.incrementalization A (B → A × B) {{CA}} {{{!B→A×B!}}} _,_ {!!} {!!} {!!}
-       _,_ (a ⊞ da)
+      a ⊞ da , b ⊞ db ⊞ (nil (b ⊞ db))
+    ≡⟨ cong (λ □ →  a ⊞ da , □) (update-nil (b ⊞ db)) ⟩
+      a ⊞ da , b ⊞ db
+    ≡⟨⟩
+      (a , b) ⊞ (_,_′-realizer a da) b db
     ∎
--}
+
+  _,_′ : (a : A) → (da : Δ a) → Δ (_,_ a)
+  _,_′ a da = record { apply = _,_′-realizer a da ; correct = λ b db → _,_′-realizer-correct a da b db }
+
+  _,_′-Derivative : Derivative _,_ _,_′
+  _,_′-Derivative a da = ext (λ b → cong (_,_ (a ⊞ da)) (update-nil b))
+    where
+      open import Postulate.Extensionality
+
+  -- Define specialized variant of uncurry, and derive it.
+  uncurry₀ : ∀ {C : Set ℓ} → (A → B → C) → A × B → C
+  uncurry₀ f (a , b) = f a b
+
+  module _ {C : Set ℓ} {{CC : ChangeAlgebra ℓ C}} where
+    B→C : ChangeAlgebra ℓ (B → C)
+    B→C = FunctionChanges.changeAlgebra B C
+    A→B→C : ChangeAlgebra ℓ (A → B → C)
+    A→B→C = FunctionChanges.changeAlgebra A (B → C)
+    A×B→C : ChangeAlgebra ℓ (A × B → C)
+    A×B→C = FunctionChanges.changeAlgebra (A × B) C
+    module ΔB→C = FunctionChanges B C {{CB}} {{CC}}
+    module ΔA→B→C = FunctionChanges A (B → C) {{CA}} {{B→C}}
+    module ΔA×B→C = FunctionChanges (A × B) C {{changeAlgebra}} {{CC}}
+
+    uncurry₀′-realizer : (f : A → B → C) → Δ f → (p : A × B) → Δ p → Δ (uncurry₀ f p)
+    uncurry₀′-realizer f df (a , b) (da , db) = ΔB→C.apply (ΔA→B→C.apply df a da) b db
+
+    uncurry₀′-realizer-correct uncurry₀′-realizer-correct-detailed :
+      ∀ (f : A → B → C) (df : Δ f) (p : A × B) (dp : Δ p) →
+        uncurry₀ f (p ⊕ dp) ⊞ uncurry₀′-realizer f df (p ⊕ dp) (nil (p ⊞ dp)) ≡ uncurry₀ f p ⊞ uncurry₀′-realizer f df p dp
+
+    -- Hard to read
+    uncurry₀′-realizer-correct f df (a , b) (da , db)
+      rewrite sym (ΔB→C.incrementalization (f (a ⊞ da)) (ΔA→B→C.apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db) (nil (b ⊞ db)))
+      | update-nil (b ⊞ db)
+      | {- cong (λ □ → □ (b ⊞ db)) -} (sym (ΔA→B→C.incrementalization f df (a ⊞ da) (nil (a ⊞ da))))
+      | update-nil (a ⊞ da)
+      | cong (λ □ → □ (b ⊞ db)) (ΔA→B→C.incrementalization f df a da)
+      | ΔB→C.incrementalization (f a) (ΔA→B→C.apply df a da) b db
+      = refl
+
+    -- Verbose, but it shows all the intermediate steps.
+    uncurry₀′-realizer-correct-detailed f df (a , b) (da , db) =
+      begin
+        uncurry₀ f (a ⊞ da , b ⊞ db) ⊞ uncurry₀′-realizer f df (a ⊞ da , b ⊞ db) (nil (a ⊞ da , b ⊞ db))
+      ≡⟨⟩
+        f (a ⊞ da) (b ⊞ db) ⊞ ΔB→C.apply (ΔA→B→C.apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db) (nil (b ⊞ db))
+      ≡⟨ sym (ΔB→C.incrementalization (f (a ⊞ da)) (ΔA→B→C.apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db) (nil (b ⊞ db))) ⟩
+        (f (a ⊞ da) ⊞ ΔA→B→C.apply df (a ⊞ da) (nil (a ⊞ da))) ((b ⊞ db) ⊞ (nil (b ⊞ db)))
+      ≡⟨ cong-lem₀ ⟩
+        (f (a ⊞ da) ⊞ ΔA→B→C.apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db)
+      ≡⟨ sym cong-lem₂ ⟩
+        ((f ⊞ df) ((a ⊞ da) ⊞ (nil (a ⊞ da)))) (b ⊞ db)
+      ≡⟨ cong-lem₁ ⟩
+        (f ⊞ df) (a ⊞ da) (b ⊞ db)
+      ≡⟨ cong (λ □ → □ (b ⊞ db)) (ΔA→B→C.incrementalization f df a da) ⟩
+        (f a ⊞ ΔA→B→C.apply df a da) (b ⊞ db)
+      ≡⟨ ΔB→C.incrementalization (f a) (ΔA→B→C.apply df a da) b db ⟩
+        f a b ⊞ ΔB→C.apply (ΔA→B→C.apply df a da) b db
+      ≡⟨⟩
+        uncurry₀ f (a , b) ⊞ uncurry₀′-realizer f df (a , b) (da ,  db)
+      ∎
+      where
+        cong-lem₀ :
+            (f (a ⊞ da) ⊞ ΔA→B→C.apply df (a ⊞ da) (nil (a ⊞ da))) ((b ⊞ db) ⊞ (nil (b ⊞ db)))
+            ≡
+            (f (a ⊞ da) ⊞ ΔA→B→C.apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db)
+        cong-lem₀ rewrite update-nil (b ⊞ db) = refl
+
+        cong-lem₁ :
+                  ((f ⊞ df) ((a ⊞ da) ⊞ (nil (a ⊞ da)))) (b ⊞ db)
+                  ≡
+                  (f ⊞ df) (a ⊞ da) (b ⊞ db)
+        cong-lem₁ rewrite update-nil (a ⊞ da) = refl
+
+        cong-lem₂ :
+                  ((f ⊞ df) ((a ⊞ da) ⊞ (nil (a ⊞ da)))) (b ⊞ db)
+                  ≡
+                  (f (a ⊞ da) ⊞ ΔA→B→C.apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db)
+        cong-lem₂ = cong (λ □ → □ (b ⊞ db)) (ΔA→B→C.incrementalization f df (a ⊞ da) (nil (a ⊞ da)))
+
+    uncurry₀′ : (f : A → B → C) → Δ f → Δ (uncurry f)
+    uncurry₀′ f df = record
+      { apply = uncurry₀′-realizer f df
+      ; correct = uncurry₀′-realizer-correct f df }
+
+    -- Now proving that uncurry₀′ is a derivative is trivial!
+    uncurry₀′Derivative₀ : Derivative {{CB = A×B→C}} uncurry₀ uncurry₀′
+    uncurry₀′Derivative₀ f df = refl
+
+    -- If you wonder what's going on, here's the step-by-step proof, going purely by definitional equality.
+    uncurry₀′Derivative : Derivative {{CB = A×B→C}} uncurry₀ uncurry₀′
+    uncurry₀′Derivative f df =
+      begin
+        uncurry₀ f ⊞ uncurry₀′ f df
+      ≡⟨⟩
+        (λ {(a , b) → uncurry₀ f (a , b) ⊞ ΔA×B→C.apply (uncurry₀′ f df) (a , b) (nil (a , b))})
+      ≡⟨⟩
+        (λ {(a , b) → f a b ⊞ ΔB→C.apply (ΔA→B→C.apply df a (nil a)) b (nil b)})
+      ≡⟨⟩
+        (λ {(a , b) → (f a ⊞ ΔA→B→C.apply df a (nil a)) b})
+      ≡⟨⟩
+        (λ {(a , b) → (f ⊞ df) a b})
+      ≡⟨⟩
+        (λ {(a , b) → uncurry₀ (f ⊞ df) (a , b)})
+      ≡⟨⟩
+        uncurry₀ (f ⊞ df)
+      ∎
