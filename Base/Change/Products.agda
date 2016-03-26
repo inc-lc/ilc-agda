@@ -106,10 +106,8 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
   proj₂′Derivative : Derivative proj₂ proj₂′
   proj₂′Derivative v dv = refl
 
-  B→A×B = FunctionChanges.changeAlgebra {c = ℓ} {d = ℓ} B (A × B)
-  A→B→A×B = FunctionChanges.changeAlgebra {c = ℓ} {d = ℓ} A (B → A × B) {{CA}} {{B→A×B}}
-  module ΔBA×B = FunctionChanges B (A × B) {{CB}} {{changeAlgebra}}
-  module ΔA→B→A×B = FunctionChanges A (B → A × B) {{CA}} {{B→A×B}}
+  B→A×B = FunctionChanges.changeAlgebra B (A × B)
+  A→B→A×B = FunctionChanges.changeAlgebra A (B → A × B) {{CA}} {{B→A×B}}
 
   -- Morally, the following is a change:
   -- What one could wrongly expect to be the derivative of the constructor:
@@ -163,12 +161,10 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
     A→B→C = FunctionChanges.changeAlgebra A (B → C)
     A×B→C : ChangeAlgebra ℓ (A × B → C)
     A×B→C = FunctionChanges.changeAlgebra (A × B) C
-    module ΔB→C = FunctionChanges B C {{CB}} {{CC}}
-    module ΔA→B→C = FunctionChanges A (B → C) {{CA}} {{B→C}}
-    module ΔA×B→C = FunctionChanges (A × B) C {{changeAlgebra}} {{CC}}
+    open FunctionChanges using (apply; correct)
 
     uncurry₀′-realizer : (f : A → B → C) → Δ f → (p : A × B) → Δ p → Δ (uncurry₀ f p)
-    uncurry₀′-realizer f df (a , b) (da , db) = ΔB→C.apply (ΔA→B→C.apply df a da) b db
+    uncurry₀′-realizer f df (a , b) (da , db) = apply (apply df a da) b db
 
     uncurry₀′-realizer-correct uncurry₀′-realizer-correct-detailed :
       ∀ (f : A → B → C) (df : Δ f) (p : A × B) (dp : Δ p) →
@@ -176,12 +172,12 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
 
     -- Hard to read
     uncurry₀′-realizer-correct f df (a , b) (da , db)
-      rewrite sym (ΔB→C.incrementalization (f (a ⊞ da)) (ΔA→B→C.apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db) (nil (b ⊞ db)))
+      rewrite sym (correct (apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db) (nil (b ⊞ db)))
       | update-nil (b ⊞ db)
-      | {- cong (λ □ → □ (b ⊞ db)) -} (sym (ΔA→B→C.incrementalization f df (a ⊞ da) (nil (a ⊞ da))))
+      | {- cong (λ □ → □ (b ⊞ db)) -} (sym (correct df (a ⊞ da) (nil (a ⊞ da))))
       | update-nil (a ⊞ da)
-      | cong (λ □ → □ (b ⊞ db)) (ΔA→B→C.incrementalization f df a da)
-      | ΔB→C.incrementalization (f a) (ΔA→B→C.apply df a da) b db
+      | cong (λ □ → □ (b ⊞ db)) (correct df a da)
+      | correct (apply df a da) b db
       = refl
 
     -- Verbose, but it shows all the intermediate steps.
@@ -189,27 +185,27 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
       begin
         uncurry₀ f (a ⊞ da , b ⊞ db) ⊞ uncurry₀′-realizer f df (a ⊞ da , b ⊞ db) (nil (a ⊞ da , b ⊞ db))
       ≡⟨⟩
-        f (a ⊞ da) (b ⊞ db) ⊞ ΔB→C.apply (ΔA→B→C.apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db) (nil (b ⊞ db))
-      ≡⟨ sym (ΔB→C.incrementalization (f (a ⊞ da)) (ΔA→B→C.apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db) (nil (b ⊞ db))) ⟩
-        (f (a ⊞ da) ⊞ ΔA→B→C.apply df (a ⊞ da) (nil (a ⊞ da))) ((b ⊞ db) ⊞ (nil (b ⊞ db)))
+        f (a ⊞ da) (b ⊞ db) ⊞ apply (apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db) (nil (b ⊞ db))
+      ≡⟨ sym (correct (apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db) (nil (b ⊞ db))) ⟩
+        (f (a ⊞ da) ⊞ apply df (a ⊞ da) (nil (a ⊞ da))) ((b ⊞ db) ⊞ (nil (b ⊞ db)))
       ≡⟨ cong-lem₀ ⟩
-        (f (a ⊞ da) ⊞ ΔA→B→C.apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db)
+        (f (a ⊞ da) ⊞ apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db)
       ≡⟨ sym cong-lem₂ ⟩
         ((f ⊞ df) ((a ⊞ da) ⊞ (nil (a ⊞ da)))) (b ⊞ db)
       ≡⟨ cong-lem₁ ⟩
         (f ⊞ df) (a ⊞ da) (b ⊞ db)
-      ≡⟨ cong (λ □ → □ (b ⊞ db)) (ΔA→B→C.incrementalization f df a da) ⟩
-        (f a ⊞ ΔA→B→C.apply df a da) (b ⊞ db)
-      ≡⟨ ΔB→C.incrementalization (f a) (ΔA→B→C.apply df a da) b db ⟩
-        f a b ⊞ ΔB→C.apply (ΔA→B→C.apply df a da) b db
+      ≡⟨ cong (λ □ → □ (b ⊞ db)) (correct df a da) ⟩
+        (f a ⊞ apply df a da) (b ⊞ db)
+      ≡⟨ correct (apply df a da) b db ⟩
+        f a b ⊞ apply (apply df a da) b db
       ≡⟨⟩
         uncurry₀ f (a , b) ⊞ uncurry₀′-realizer f df (a , b) (da ,  db)
       ∎
       where
         cong-lem₀ :
-            (f (a ⊞ da) ⊞ ΔA→B→C.apply df (a ⊞ da) (nil (a ⊞ da))) ((b ⊞ db) ⊞ (nil (b ⊞ db)))
+            (f (a ⊞ da) ⊞ apply df (a ⊞ da) (nil (a ⊞ da))) ((b ⊞ db) ⊞ (nil (b ⊞ db)))
             ≡
-            (f (a ⊞ da) ⊞ ΔA→B→C.apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db)
+            (f (a ⊞ da) ⊞ apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db)
         cong-lem₀ rewrite update-nil (b ⊞ db) = refl
 
         cong-lem₁ :
@@ -221,8 +217,8 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
         cong-lem₂ :
                   ((f ⊞ df) ((a ⊞ da) ⊞ (nil (a ⊞ da)))) (b ⊞ db)
                   ≡
-                  (f (a ⊞ da) ⊞ ΔA→B→C.apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db)
-        cong-lem₂ = cong (λ □ → □ (b ⊞ db)) (ΔA→B→C.incrementalization f df (a ⊞ da) (nil (a ⊞ da)))
+                  (f (a ⊞ da) ⊞ apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db)
+        cong-lem₂ = cong (λ □ → □ (b ⊞ db)) (correct df (a ⊞ da) (nil (a ⊞ da)))
 
     uncurry₀′ : (f : A → B → C) → Δ f → Δ (uncurry f)
     uncurry₀′ f df = record
@@ -239,11 +235,11 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
       begin
         uncurry₀ f ⊞ uncurry₀′ f df
       ≡⟨⟩
-        (λ {(a , b) → uncurry₀ f (a , b) ⊞ ΔA×B→C.apply (uncurry₀′ f df) (a , b) (nil (a , b))})
+        (λ {(a , b) → uncurry₀ f (a , b) ⊞ apply (uncurry₀′ f df) (a , b) (nil (a , b))})
       ≡⟨⟩
-        (λ {(a , b) → f a b ⊞ ΔB→C.apply (ΔA→B→C.apply df a (nil a)) b (nil b)})
+        (λ {(a , b) → f a b ⊞ apply (apply df a (nil a)) b (nil b)})
       ≡⟨⟩
-        (λ {(a , b) → (f a ⊞ ΔA→B→C.apply df a (nil a)) b})
+        (λ {(a , b) → (f a ⊞ apply df a (nil a)) b})
       ≡⟨⟩
         (λ {(a , b) → (f ⊞ df) a b})
       ≡⟨⟩
