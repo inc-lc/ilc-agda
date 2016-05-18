@@ -1,16 +1,25 @@
-language: haskell
-ghc: 7.6
+# Based on http://docs.haskellstack.org/en/stable/travis_ci/ and
+# http://docs.haskellstack.org/en/stable/GUIDE/#travis-with-caching
+#
+# Choose a lightweight base image; we provide our own build tools.
 sudo: false
+language: c
+addons: {apt: {packages: [libgmp-dev]}}
+
 cache:
   directories:
-  - ~/.cabal
-  - ~/.ghc
+  - $HOME/.ghc
+  - $HOME/.cabal
+  - $HOME/.stack
 
-# If this breaks, move to `stack install Agda-2.4.0.2` with needed stack setup.
-# See http://docs.haskellstack.org/en/stable/travis_ci/ and
-# http://docs.haskellstack.org/en/stable/GUIDE/#travis-with-caching for that.
+before_install:
+# Download and unpack the stack executable
+- mkdir -p ~/.local/bin
+- export PATH=$HOME/.local/bin:$PATH
+- travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+
 script:
-  - cabal install happy alex Agda --constraint 'alex >= 3.1.0 && < 3.2' --constraint 'happy >=1.19.3 && <2' --constraint 'Agda == 2.4.0.*'
+  - stack --no-terminal --install-ghc install Agda ilc
   - (mkdir -p ../stdlib; cd ../stdlib; curl -L https://github.com/agda/agda-stdlib/archive/v0.8.tar.gz|tar xz)
 
   - echo "AGDA_LIB=$(dirname $PWD)/stdlib/agda-stdlib-0.8/src" > agdaCheck.sh.conf

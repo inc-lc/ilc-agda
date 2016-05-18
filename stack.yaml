@@ -9,6 +9,7 @@ packages:
 
 # Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
 extra-deps:
+- Agda-2.4.0.2
 - STMonadTrans-0.3.3
 - boxes-0.1.4
 - data-hash-0.2.0.0
@@ -29,11 +30,3 @@ compiler: ghc-7.8.4
 # Require a specific version of stack, using version ranges
 # require-stack-version: -any # Default
 # require-stack-version: >= 1.0.0
-
-# Override the architecture used by stack, especially useful on Windows
-# arch: i386
-# arch: x86_64
-
-# Extra directories used by stack for building
-# extra-include-dirs: [/path/to/dir]
-# extra-lib-dirs: [/path/to/dir]
