@@ -75,7 +75,7 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
   {{CA : ChangeAlgebra c A}} {{CB : ChangeAlgebra d B}} where
 
   module FC = FunctionChanges A B {{CA}} {{CB}}
-  open FC using (changeAlgebra; incrementalization)
+  open FC using (changeAlgebra; incrementalization; DerivativeAsChange)
   open FC.FunctionChange
 
   fun-change-respects : ∀ {x : A} {dx₁ dx₂ : Δ x} {f : A → B} {df₁ df₂} →
@@ -149,6 +149,10 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
   derivative-is-nil : ∀ {f : A → B} df →
     Derivative f (apply df) → df ≙ nil f
   derivative-is-nil df fdf = ⊞-unit-is-nil df (derivative-is-⊞-unit df fdf)
+
+  derivative-is-nil-alternative : ∀ {f : A → B} df →
+    (Derivative-f-df : Derivative f df) → DerivativeAsChange df Derivative-f-df ≙ nil f
+  derivative-is-nil-alternative df Derivative-f-df = derivative-is-nil (DerivativeAsChange df Derivative-f-df) Derivative-f-df
 
   -- If we have two derivatives, they're both nil, hence they're equal.
   derivative-unique : ∀ {f : A → B} {df dg : Δ f} → Derivative f (apply df) → Derivative f (apply dg) → df ≙ dg
