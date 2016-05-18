@@ -37,12 +37,13 @@ module Structure where
   ⟦ F τ ⟧CompType = ⟦ τ ⟧ValType
   ⟦ σ ⇛ τ ⟧CompType = ⟦ σ ⟧ValType → ⟦ τ ⟧CompType
 
-  -- This means: Overload ⟦_⟧ to mean ⟦_⟧ValType.
-  meaningOfValType : Meaning ValType
-  meaningOfValType = meaning ⟦_⟧ValType
+  instance
+    -- This means: Overload ⟦_⟧ to mean ⟦_⟧ValType.
+    meaningOfValType : Meaning ValType
+    meaningOfValType = meaning ⟦_⟧ValType
 
-  meaningOfCompType : Meaning CompType
-  meaningOfCompType = meaning ⟦_⟧CompType
+    meaningOfCompType : Meaning CompType
+    meaningOfCompType = meaning ⟦_⟧CompType
 
   -- We also provide: Environments of values (but not of computations).
   open import Base.Denotation.Environment ValType ⟦_⟧ValType public

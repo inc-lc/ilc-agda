@@ -52,7 +52,7 @@ right-identity : ∀ {A : Set} {f : A → A → A} {z neg} →
 right-identity abelian = proj₂ (IsMonoid.identity
   (IsGroup.isMonoid (IsAbelianGroup.isGroup abelian)))
 
-abelian-int : IsAbelianGroup _≡_ _+_ (+ 0) -_
+abelian-int : IsAbelianGroup _≡_ _+_ (+ 0) (-_)
 abelian-int =
   IsRing.+-isAbelianGroup
   (IsCommutativeRing.isRing

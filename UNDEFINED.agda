@@ -2,8 +2,8 @@
 
 module UNDEFINED where
 
-open import Data.Unit.Core using (Hidden)
-open import Data.Unit.Core public using (reveal)
+open import Data.Unit.NonEta using (Hidden)
+open import Data.Unit.NonEta public using (reveal)
 
 postulate
   -- If this postulate would produce a T, it could be used as instance argument, triggering many ambiguities.
