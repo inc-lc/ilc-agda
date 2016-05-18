@@ -24,42 +24,23 @@ fi
 # actually want the escape behavior.
 
 logDone() {
+  echo
   echo "Everything.agda regenerated."
   echo
 }
 logFailed() {
+  echo
   echo "Error: Running \`$1\` failed!"
 }
 logRunning() {
   echo "Generating Everything.agda by running \`$1\` in $(pwd):"
-}
-showCdIfNeeded() {
-  myPath="$(dirname "$0")"
-  if [ "${myPath}" != "." ]; then
-    echo "$ cd ${myPath}"
-  fi
+  echo
 }
 
 generator=GenerateEverythingIlc
-stackCmdName="stack exec --package ilc GenerateEverythingIlc"
+stackCmdName="stack exec --package ilc $generator"
 
-if which "${generator}" > /dev/null; then
-  logRunning "${generator}"
-  ${generator} && { echo; logDone; } || { logFailed "${generator}"; exit 1; }
-else
-  echo "\`${generator}\` is not installed (consider running \`cabal install\` to fix that)."
-  logRunning "$stackCmdName"
-  echo
-
-  eval $stackCmdName
-  ret=$?
-  echo
-  if [ "$ret" -ne 0 ]; then
-    logFailed "$stackCmdName"
-    exit 1
-  else
-    logDone
-  fi
-fi
+logRunning "$stackCmdName"
+eval $stackCmdName && logDone || { logFailed "$stackCmdName"; exit 1; }
 
 # vim: set ft=sh:
