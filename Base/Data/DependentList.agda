@@ -12,7 +12,6 @@
 
 module Base.Data.DependentList where
 
-open import Base.Data.ContextList public
 open import Data.List.All public
   using
     ( head
