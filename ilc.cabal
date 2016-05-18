@@ -7,6 +7,6 @@ description:     Helper program for ILC, adapted from the Agda standard library.
 executable GenerateEverythingIlc
   hs-source-dirs:   .
   main-is:          GenerateEverythingIlc.hs
-  build-depends:    base >= 4.2 && < 4.8,
+  build-depends:    base >= 4.2 && < 5,
                     filemanip == 0.3.*,
-                    filepath >= 1.1 && < 1.4
+                    filepath >= 1.1 && < 2
