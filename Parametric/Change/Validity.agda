@@ -46,7 +46,7 @@ module Structure (change-algebra-base : Structure) where
   -- function changes
 
   module _ {τ₁ τ₂ : Type} where
-    open FunctionChanges.FunctionChange _ _ {{change-algebra τ₁}} {{change-algebra τ₂}} public
+    open FunctionChanges.FunctionChange public
       renaming
         ( correct to is-valid
         ; apply to call-change
