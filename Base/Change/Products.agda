@@ -64,17 +64,18 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
         v
       ∎
 
-  changeAlgebra : ChangeAlgebra ℓ (A × B)
-  changeAlgebra = record
-    { Change = PChange
-    ; update = _⊕_
-    ; diff = _⊝_
-    ; nil = p-nil
-    ; isChangeAlgebra = record
-      { update-diff = p-update-diff
-      ; update-nil = p-update-nil
+  instance
+    changeAlgebra : ChangeAlgebra ℓ (A × B)
+    changeAlgebra = record
+      { Change = PChange
+      ; update = _⊕_
+      ; diff = _⊝_
+      ; nil = p-nil
+      ; isChangeAlgebra = record
+        { update-diff = p-update-diff
+        ; update-nil = p-update-nil
+        }
       }
-    }
 
   proj₁′ : (v : A × B) → Δ v → Δ (proj₁ v)
   proj₁′ (a , b) (da , db) = da
@@ -106,8 +107,9 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
   proj₂′Derivative : Derivative proj₂ proj₂′
   proj₂′Derivative v dv = refl
 
-  B→A×B = FunctionChanges.changeAlgebra B (A × B)
-  A→B→A×B = FunctionChanges.changeAlgebra A (B → A × B) {{CA}} {{B→A×B}}
+  instance
+    B→A×B = FunctionChanges.changeAlgebra {c = ℓ} {d = ℓ} B (A × B) {{CB}} {{changeAlgebra}}
+    A→B→A×B = FunctionChanges.changeAlgebra {d = ℓ} A (B → A × B) {{CA}} {{B→A×B}}
 
   -- Morally, the following is a change:
   -- What one could wrongly expect to be the derivative of the constructor:
@@ -155,12 +157,13 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
   uncurry₀ f (a , b) = f a b
 
   module _ {C : Set ℓ} {{CC : ChangeAlgebra ℓ C}} where
-    B→C : ChangeAlgebra ℓ (B → C)
-    B→C = FunctionChanges.changeAlgebra B C
-    A→B→C : ChangeAlgebra ℓ (A → B → C)
-    A→B→C = FunctionChanges.changeAlgebra A (B → C)
-    A×B→C : ChangeAlgebra ℓ (A × B → C)
-    A×B→C = FunctionChanges.changeAlgebra (A × B) C
+    instance
+      B→C : ChangeAlgebra ℓ (B → C)
+      B→C = FunctionChanges.changeAlgebra B C
+      A→B→C : ChangeAlgebra ℓ (A → B → C)
+      A→B→C = FunctionChanges.changeAlgebra A (B → C)
+      A×B→C : ChangeAlgebra ℓ (A × B → C)
+      A×B→C = FunctionChanges.changeAlgebra (A × B) C
     open FunctionChanges using (apply; correct)
 
     uncurry₀′-realizer : (f : A → B → C) → Δ f → (p : A × B) → Δ p → Δ (uncurry₀ f p)
