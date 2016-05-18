@@ -14,6 +14,7 @@ module Parametric.Denotation.CachingMValue
     (⟦_⟧Base : Value.Structure Base)
   where
 
+open import Base.Data.DependentList
 open import Base.Denotation.Notation
 
 open Type.Structure Base
