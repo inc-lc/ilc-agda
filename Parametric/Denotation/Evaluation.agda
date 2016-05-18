@@ -59,13 +59,10 @@ module Structure (⟦_⟧Const : Structure) where
     (terms : Terms Γ₁ Σ) (ρ : ⟦ Γ₂ ⟧) →
     ⟦ weaken-terms Γ₁≼Γ₂ terms ⟧Terms ρ ≡ ⟦ terms ⟧Terms (⟦ Γ₁≼Γ₂ ⟧ ρ)
 
-  weaken-terms-sound = {!!}
-  -- This is irrelevant for the crash
-  -- weaken-terms-sound ∅ ρ = refl
-  -- weaken-terms-sound (t • terms) ρ =
-  --   cong₂ _•_ (weaken-sound t ρ) (weaken-terms-sound terms ρ)
+  weaken-terms-sound ∅ ρ = refl
+  weaken-terms-sound (t • terms) ρ =
+    cong₂ _•_ (weaken-sound t ρ) (weaken-terms-sound terms ρ)
 
-  -- Agda crashes here:
   weaken-sound {Γ₁≼Γ₂ = Γ₁≼Γ₂} (var x) ρ = weaken-var-sound Γ₁≼Γ₂ x ρ
   weaken-sound (app s t) ρ = weaken-sound s ρ ⟨$⟩ weaken-sound t ρ
   weaken-sound (abs t) ρ = ext (λ v → weaken-sound t (v • ρ))
