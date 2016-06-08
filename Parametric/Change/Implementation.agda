@@ -20,7 +20,7 @@ module Parametric.Change.Implementation
     (⟦_⟧Base : Value.Structure Base)
     (⟦_⟧Const : Evaluation.Structure Const ⟦_⟧Base)
     (ΔBase : ChangeType.Structure Base)
-    (validity-structure : Validity.Structure ⟦_⟧Base)
+    {{validity-structure : Validity.Structure ⟦_⟧Base}}
     (specification-structure : Specification.Structure
        Const ⟦_⟧Base ⟦_⟧Const validity-structure)
     (⟦apply-base⟧ : ChangeValue.ApplyStructure Const ⟦_⟧Base ΔBase)
@@ -34,8 +34,7 @@ open Term.Structure Base Const
 open Value.Structure Base ⟦_⟧Base
 open Evaluation.Structure Const ⟦_⟧Base ⟦_⟧Const
 open Validity.Structure ⟦_⟧Base validity-structure
-open Specification.Structure
-  Const ⟦_⟧Base ⟦_⟧Const validity-structure specification-structure
+open Specification.Structure specification-structure
 open ChangeType.Structure Base ΔBase
 open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
 open Derive.Structure Const ΔBase derive-const
@@ -133,7 +132,7 @@ record Structure : Set₁ where
 
   -- A property relating `alternate` and the subcontext relation Γ≼ΔΓ
   ⟦Γ≼ΔΓ⟧ : ∀ {Γ} (ρ : ⟦ Γ ⟧) (dρ : ⟦ mapContext ΔType Γ ⟧) →
-    ρ ≡ ⟦ Γ≼ΔΓ ⟧ (alternate ρ dρ)
+    ρ ≡ ⟦ Γ≼ΔΓ ⟧≼ (alternate ρ dρ)
   ⟦Γ≼ΔΓ⟧ ∅ ∅ = refl
   ⟦Γ≼ΔΓ⟧ (v • ρ) (dv • dρ) = cong₂ _•_ refl (⟦Γ≼ΔΓ⟧ ρ dρ)
 

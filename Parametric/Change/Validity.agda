@@ -58,5 +58,5 @@ module Structure (change-algebra-base : Structure) where
     ( changeAlgebra to environment-changes
     )
 
-  after-env : ∀ {Γ : Context} → {ρ : ⟦ Γ ⟧} (dρ : Δ₍_₎ {{environment-changes}} Γ ρ) → ⟦ Γ ⟧
+  after-env : ∀ {Γ : Context} → {ρ : ⟦ Γ ⟧} (dρ : Δ₍ Γ ₎ ρ) → ⟦ Γ ⟧
   after-env {Γ} = after₍_₎ Γ
