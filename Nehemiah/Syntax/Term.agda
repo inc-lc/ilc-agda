@@ -26,14 +26,16 @@ data Const : Term.Structure where
   sum-const : Const (bag • ∅) (int)
 
 
---open Term.Structure --works
-open Term.Structure Const --fails, even with the rest disabled.
-{-
-An internal error has occurred. Please report this as a bug.
-Location of the error: src/full/Agda/TypeChecking/Substitute.hs:183
--}
+open Term.Structure Const public
 
-{-
+-- Import Base.Data.DependentList again here, as part of the workaround for
+-- agda/agda#1985; see Parametric.Syntax.Term for info.
+--
+-- XXX This import is needed to define the patterns in the right scope; if we
+-- don't, • gets bound to a different occurrence, and we notice that during
+-- typechecking, which happens at use site.
+open import Base.Data.DependentList public
+
 -- Shorthands of constants
 
 pattern intlit n = const (intlit-const n) ∅
@@ -45,4 +47,3 @@ pattern union s t = const union-const (s • t • ∅)
 pattern negate t = const negate-const (t • ∅)
 pattern flatmap s t = const flatmap-const (s • t • ∅)
 pattern sum t = const sum-const (t • ∅)
--}
