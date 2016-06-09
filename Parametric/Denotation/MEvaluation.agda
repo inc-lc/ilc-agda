@@ -29,6 +29,7 @@ open MType.Structure Base
 open MTerm.Structure Const ValConst CompConst cbnToCompConst cbvToCompConst
 open MValue.Structure Base ⟦_⟧Base
 
+open import Base.Data.DependentList
 open import Base.Denotation.Notation
 
 -- Extension Point: Evaluation of fully applied constants.

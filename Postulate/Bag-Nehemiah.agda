@@ -31,7 +31,8 @@ infixr 5 _++_
 -- negate = mapMultiplicities (λ z → - z)
 postulate negateBag : Bag → Bag
 postulate emptyBag : Bag
-postulate abelian-bag : IsAbelianGroup _≡_ _++_ emptyBag negateBag
+instance
+  postulate abelian-bag : IsAbelianGroup _≡_ _++_ emptyBag negateBag
 
 -- Naming convention follows Algebra.Morphism
 -- Homomorphic₁ : morphism preserves negation

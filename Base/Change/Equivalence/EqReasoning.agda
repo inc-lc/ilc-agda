@@ -20,5 +20,5 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
   import Relation.Binary.EqReasoning as EqR
 
   module ≙-Reasoning where
-    open EqR (≙-setoid {x = x}) public
+    open EqR (≙-setoid {{ca}} {x = x}) public
       renaming (_≈⟨_⟩_ to _≙⟨_⟩_)

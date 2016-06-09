@@ -6,6 +6,8 @@
 
 module Parametric.Syntax.Type where
 
+open import Base.Data.DependentList
+
 -- This is a module in the Parametric.* hierarchy, so it defines
 -- an extension point for plugins. In this case, the plugin can
 -- choose the syntax for data types. We always provide a binding

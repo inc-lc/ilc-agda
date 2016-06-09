@@ -17,34 +17,34 @@ open import Base.Change.Equivalence.EqReasoning public
 module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
   -- By update-nil, if dx = nil x, then x ⊞ dx ≡ x.
   -- As a consequence, if dx ≙ nil x, then x ⊞ dx ≡ x
-  nil-is-⊞-unit : ∀ dx → dx ≙ nil x → x ⊞ dx ≡ x
+  nil-is-⊞-unit : ∀ (dx : Δ {{ca}} x) → dx ≙ nil x → x ⊞ dx ≡ x
   nil-is-⊞-unit dx dx≙nil-x =
     begin
       x ⊞ dx
     ≡⟨ proof dx≙nil-x ⟩
-      x ⊞ (nil x)
-    ≡⟨ update-nil x ⟩
+      x ⊞ (nil {{ca}} x)
+    ≡⟨ update-nil {{ca}} x ⟩
       x
     ∎
     where
       open ≡-Reasoning
 
   -- Here we prove the inverse:
-  ⊞-unit-is-nil : ∀ dx → x ⊞ dx ≡ x → dx ≙ nil x
+  ⊞-unit-is-nil : ∀ (dx : Δ {{ca}} x) → x ⊞ dx ≡ x → _≙_ {{ca}} dx (nil {{ca}} x)
   ⊞-unit-is-nil dx x⊞dx≡x = doe $
     begin
       x ⊞ dx
     ≡⟨ x⊞dx≡x ⟩
       x
-    ≡⟨ sym (update-nil x) ⟩
-      x ⊞ nil x
+    ≡⟨ sym (update-nil {{ca}} x) ⟩
+      x ⊞ nil {{ca}} x
     ∎
     where
       open ≡-Reasoning
 
   -- Let's show that nil x is d.o.e. to x ⊟ x
   nil-x-is-x⊟x : nil x ≙ x ⊟ x
-  nil-x-is-x⊟x = ≙-sym (⊞-unit-is-nil (x ⊟ x) (update-diff x x))
+  nil-x-is-x⊟x = ≙-sym (⊞-unit-is-nil (x ⊟ x) (update-diff {{ca}} x x))
 
   -- TODO: we want to show that all functions of interest respect
   -- delta-observational equivalence, so that two d.o.e. changes can be
@@ -65,11 +65,11 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
   -- equivalence.
 
   -- This results pairs with update-diff.
-  diff-update : ∀ {dx} → (x ⊞ dx) ⊟ x ≙ dx
+  diff-update : ∀ {dx : Δ {{ca}} x} → (x ⊞ dx) ⊟ x ≙ dx
   diff-update {dx} = doe lemma
     where
-      lemma : x ⊞ (x ⊞ dx ⊟ x) ≡ x ⊞ dx
-      lemma = update-diff (x ⊞ dx) x
+      lemma : _⊞_ {{ca}} x (x ⊞ dx ⊟ x) ≡ x ⊞ dx
+      lemma = update-diff {{ca}} (x ⊞ dx) x
 
 module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
   {{CA : ChangeAlgebra c A}} {{CB : ChangeAlgebra d B}} where
@@ -79,7 +79,7 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
   open FC.FunctionChange
 
   fun-change-respects : ∀ {x : A} {dx₁ dx₂ : Δ x} {f : A → B} {df₁ df₂} →
-    df₁ ≙ df₂ → dx₁ ≙ dx₂ → apply df₁ x dx₁ ≙ apply df₂ x dx₂
+    _≙_ {{changeAlgebra}} df₁ df₂ → dx₁ ≙ dx₂ → apply df₁ x dx₁ ≙ apply df₂ x dx₂
   fun-change-respects {x} {dx₁} {dx₂} {f} {df₁} {df₂} df₁≙df₂ dx₁≙dx₂ = doe lemma
     where
       open ≡-Reasoning
@@ -120,7 +120,7 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
   -- that's a stronger hypothesis, which doesn't give you extra guarantees. But
   -- here's the statement and proof, for completeness:
 
-  delta-ext₂ : ∀ {f : A → B} → ∀ {df dg : Δ f} → (∀ x dx₁ dx₂ → dx₁ ≙ dx₂ → apply df x dx₁ ≙ apply dg x dx₂) → df ≙ dg
+  delta-ext₂ : ∀ {f : A → B} → ∀ {df dg : Δ f} → (∀ x dx₁ dx₂ → _≙_ {{CA}} dx₁ dx₂ → apply df x dx₁ ≙ apply dg x dx₂) → df ≙ dg
   delta-ext₂ {f} {df} {dg} df-x-dx≙dg-x-dx = delta-ext (λ x dx → df-x-dx≙dg-x-dx x dx dx ≙-refl)
 
   -- We know that Derivative f (apply (nil f)) (by nil-is-derivative).
@@ -135,8 +135,8 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
     ≡⟨⟩
       (λ x → f x ⊞ apply df x (nil x))
     ≡⟨ ext (λ x → fdf x (nil x)) ⟩
-      (λ x → f (x ⊞ nil x))
-    ≡⟨ ext (λ x → cong f (update-nil x)) ⟩
+      (λ x → f (x ⊞ nil {{CA}} x))
+    ≡⟨ ext (λ x → cong f (update-nil {{CA}} x)) ⟩
       (λ x → f x)
     ≡⟨⟩
       f
@@ -171,17 +171,18 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
   -- (incorrectly) normal equality instead of delta-observational equivalence.
   deriv-zero :
     (f : A → B) → (df : (a : A) (da : Δ a) → Δ (f a)) → Derivative f df →
-    ∀ v → df v (nil v) ≙ nil (f v)
+    ∀ v → df v (nil {{CA}} v) ≙ nil {{CB}} (f v)
   deriv-zero f df proof v = doe lemma
     where
       open ≡-Reasoning
-      lemma : f v ⊞ df v (nil v) ≡ f v ⊞ nil (f v)
+      lemma : f v ⊞ df v (nil v) ≡ f v ⊞ nil {{CB}} (f v)
       lemma =
         begin
-          f v ⊞ df v (nil v)
-        ≡⟨ proof v (nil v) ⟩
-          f (v ⊞ (nil v))
-        ≡⟨ cong f (update-nil v) ⟩
+          f v ⊞ df v (nil {{CA}} v)
+        ≡⟨ proof v (nil {{CA}} v) ⟩
+          f (v ⊞ (nil {{CA}} v))
+        ≡⟨ cong f (update-nil {{CA}} v) ⟩
           f v
-        ≡⟨ sym (update-nil (f v)) ⟩
-          f v ⊞ nil (f v) ∎
+        ≡⟨ sym (update-nil {{CB}} (f v)) ⟩
+          f v ⊞ nil {{CB}} (f v)
+        ∎

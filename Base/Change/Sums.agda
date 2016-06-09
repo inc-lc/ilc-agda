@@ -43,28 +43,29 @@ module SumChanges ℓ (X Y : Set ℓ) {{CX : ChangeAlgebra ℓ X}} {{CY : Change
   s-update-nil (inj₁ x) = cong inj₁ (update-nil x)
   s-update-nil (inj₂ y) = cong inj₂ (update-nil y)
 
-  changeAlgebra : ChangeAlgebra ℓ (X ⊎ Y)
-  changeAlgebra = record
-    { Change = SumChange
-    ; update = _⊕_
-    ; diff = _⊝_
-    ; nil = s-nil
-    ; isChangeAlgebra = record
-      { update-diff = s-update-diff
-      ; update-nil = s-update-nil
+  instance
+    changeAlgebra : ChangeAlgebra ℓ (X ⊎ Y)
+    changeAlgebra = record
+      { Change = SumChange
+      ; update = _⊕_
+      ; diff = _⊝_
+      ; nil = s-nil
+      ; isChangeAlgebra = record
+        { update-diff = s-update-diff
+        ; update-nil = s-update-nil
+        }
       }
-    }
 
-  inj₁′ : (x : X) → (dx : Δ x) → Δ (inj₁ x)
+  inj₁′ : (x : X) → (dx : Δ x) → Δ {{changeAlgebra}} (inj₁ x)
   inj₁′ x dx = ch₁ dx
 
-  inj₁′Derivative : Derivative inj₁ inj₁′
+  inj₁′Derivative : Derivative {{CX}} {{changeAlgebra}} inj₁ inj₁′
   inj₁′Derivative x dx = refl
 
-  inj₂′ : (y : Y) → (dy : Δ y) → Δ (inj₂ y)
+  inj₂′ : (y : Y) → (dy : Δ y) → Δ {{changeAlgebra}} (inj₂ y)
   inj₂′ y dy = ch₂ dy
 
-  inj₂′Derivative : Derivative inj₂ inj₂′
+  inj₂′Derivative : Derivative {{CY}} {{changeAlgebra}} inj₂ inj₂′
   inj₂′Derivative y dy = refl
 
   -- Elimination form for sums. This is a less dependently-typed version of
@@ -74,12 +75,13 @@ module SumChanges ℓ (X Y : Set ℓ) {{CX : ChangeAlgebra ℓ X}} {{CY : Change
   match f g (inj₂ y) = g y
 
   module _ {Z : Set ℓ} {{CZ : ChangeAlgebra ℓ Z}} where
-    X→Z = FunctionChanges.changeAlgebra X Z
-    --module ΔX→Z = FunctionChanges X Z {{CX}} {{CZ}}
-    Y→Z = FunctionChanges.changeAlgebra Y Z
-    --module ΔY→Z = FunctionChanges Y Z {{CY}} {{CZ}}
-    X⊎Y→Z = FunctionChanges.changeAlgebra (X ⊎ Y) Z
-    Y→Z→X⊎Y→Z = FunctionChanges.changeAlgebra (Y → Z) (X ⊎ Y → Z)
+    instance
+      X→Z = FunctionChanges.changeAlgebra X Z {{CX}} {{CZ}}
+      --module ΔX→Z = FunctionChanges X Z {{CX}} {{CZ}}
+      Y→Z = FunctionChanges.changeAlgebra Y Z {{CY}} {{CZ}}
+      --module ΔY→Z = FunctionChanges Y Z {{CY}} {{CZ}}
+      X⊎Y→Z = FunctionChanges.changeAlgebra (X ⊎ Y) Z {{changeAlgebra}} {{CZ}}
+      Y→Z→X⊎Y→Z = FunctionChanges.changeAlgebra (Y → Z) (X ⊎ Y → Z) {{Y→Z}} {{X⊎Y→Z}}
 
     open FunctionChanges using (apply; correct)
 

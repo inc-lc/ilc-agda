@@ -14,6 +14,7 @@ module Parametric.Denotation.CachingMValue
     (⟦_⟧Base : Value.Structure Base)
   where
 
+open import Base.Data.DependentList
 open import Base.Denotation.Notation
 
 open Type.Structure Base
@@ -28,7 +29,7 @@ open import Level
 open import Function hiding (const)
 
 module Structure where
-  {-# NO_TERMINATION_CHECK #-}
+  {-# TERMINATING #-}
   ⟦_⟧ValTypeHidCache : (τ : ValType) → Set
   ⟦_⟧CompTypeHidCache : (τ : CompType) → Set
 

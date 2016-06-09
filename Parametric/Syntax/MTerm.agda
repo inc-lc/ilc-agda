@@ -1,5 +1,6 @@
 import Parametric.Syntax.Type as Type
 import Parametric.Syntax.Term as Term
+open import Base.Data.DependentList
 import Parametric.Syntax.MType as MType
 
 module Parametric.Syntax.MTerm
@@ -124,7 +125,7 @@ module
 
   -- To satisfy termination checking, we'd need to inline fromCBV and weaken: fromCBV needs to produce a term in a bigger context.
   -- But let's ignore that.
-  {-# NO_TERMINATION_CHECK #-}
+  {-# TERMINATING #-}
   fromCBV : ∀ {Γ τ} (t : Term Γ τ) → Comp (fromCBVCtx Γ) (cbvToCompType τ)
 
   cbvTermsToComps : ∀ {Γ Σ} → Terms Γ Σ → Comps (fromCBVCtx Γ) (fromCBVToCompList Σ)

@@ -21,12 +21,7 @@ open import Relation.Binary.PropositionalEquality
 -- ===============
 
 import Data.List as List
-open List public
-  using ()
-  renaming
-    ( [] to ∅ ; _∷_ to _•_
-    ; map to mapContext
-    )
+open import Base.Data.ContextList public
 
 Context : Set
 Context = List.List Type

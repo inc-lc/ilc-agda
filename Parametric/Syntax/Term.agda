@@ -59,9 +59,6 @@ Structure : Set₁
 Structure = Context → Type → Set
 
 module Structure (Const : Structure) where
-  import Base.Data.DependentList as DependentList
-  open DependentList public using (∅ ; _•_)
-  open DependentList
 
   -- Declarations of Term and Terms to enable mutual recursion.
   --
@@ -74,6 +71,12 @@ module Structure (Const : Structure) where
   data Term
     (Γ : Context) :
     (τ : Type) → Set
+
+  --open import Base.Data.DependentList public -- No
+  --
+  -- Workaround https://github.com/agda/agda/issues/1985 by making this import
+  -- private; many clients will need to start importing this now.
+  open import Base.Data.DependentList
 
   -- (Terms Γ Σ) represents a list of terms with types from Σ
   -- with free variables bound in Γ.
@@ -253,7 +256,7 @@ module Structure (Const : Structure) where
     absVAux τs zero    = absN (reverse τs)
     -- (Support for varying arity does not work here, so {τ₁} must be bound in
     -- the right-hand side).
-    absVAux τs (suc n) = λ {τ₁} → absVAux (τ₁ ∷ τs) n
+    absVAux τs (suc n) {τ₁} = absVAux (τ₁ ∷ τs) n --λ {τ₁} → absVAux (τ₁ ∷ τs) n
 
     -- "Initialize" accumulator to the empty list.
     absV = absVAux []

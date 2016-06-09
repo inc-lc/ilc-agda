@@ -6,6 +6,8 @@
 
 import Parametric.Syntax.Type as Type
 import Parametric.Denotation.Value as Value
+open import Base.Change.Algebra as CA
+  using (ChangeAlgebraFamily)
 
 module Parametric.Change.Validity
     {Base : Type.Structure}
@@ -18,15 +20,13 @@ open Value.Structure Base ⟦_⟧Base
 open import Base.Denotation.Notation public
 
 open import Relation.Binary.PropositionalEquality
-open import Base.Change.Algebra as CA
-  using (ChangeAlgebraFamily)
 open import Level
 
 -- Extension Point: Change algebras for base types
 Structure : Set₁
 Structure = ChangeAlgebraFamily zero ⟦_⟧Base
 
-module Structure (change-algebra-base : Structure) where
+module Structure {{change-algebra-base : Structure}} where
   -- change algebras
 
   open CA public renaming
@@ -35,17 +35,18 @@ module Structure (change-algebra-base : Structure) where
     )
 
   -- We provide: change algebra for every type
-  change-algebra : ∀ τ → ChangeAlgebra zero ⟦ τ ⟧Type
-  change-algebra (base ι) = change-algebra₍ ι ₎
-  change-algebra (τ₁ ⇒ τ₂) = CA.FunctionChanges.changeAlgebra _ _ {{change-algebra τ₁}} {{change-algebra τ₂}}
+  instance
+    change-algebra : ∀ τ → ChangeAlgebra zero ⟦ τ ⟧Type
+    change-algebra (base ι) = change-algebra₍_₎ {{change-algebra-base}} ι
+    change-algebra (τ₁ ⇒ τ₂) = CA.FunctionChanges.changeAlgebra _ _ {{change-algebra τ₁}} {{change-algebra τ₂}}
 
-  change-algebra-family : ChangeAlgebraFamily zero ⟦_⟧Type
-  change-algebra-family = family change-algebra
+    change-algebra-family : ChangeAlgebraFamily zero ⟦_⟧Type
+    change-algebra-family = family change-algebra
 
   -- function changes
 
   module _ {τ₁ τ₂ : Type} where
-    open FunctionChanges.FunctionChange _ _ {{change-algebra τ₁}} {{change-algebra τ₂}} public
+    open FunctionChanges.FunctionChange {{change-algebra τ₁}} {{change-algebra τ₂}} public
       renaming
         ( correct to is-valid
         ; apply to call-change
@@ -57,5 +58,5 @@ module Structure (change-algebra-base : Structure) where
     ( changeAlgebra to environment-changes
     )
 
-  after-env : ∀ {Γ : Context} → {ρ : ⟦ Γ ⟧} (dρ : Δ₍  Γ ₎ ρ) → ⟦ Γ ⟧
-  after-env {Γ} = after₍ Γ ₎
+  after-env : ∀ {Γ : Context} → {ρ : ⟦ Γ ⟧} (dρ : Δ₍ Γ ₎ ρ) → ⟦ Γ ⟧
+  after-env {Γ} = after₍_₎ Γ

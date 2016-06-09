@@ -5,6 +5,7 @@
 ------------------------------------------------------------------------
 
 import Parametric.Syntax.Type as Type
+open import Base.Data.DependentList
 import Parametric.Syntax.Term as Term
 import Parametric.Change.Type as ChangeType
 

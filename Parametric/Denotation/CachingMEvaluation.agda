@@ -6,6 +6,7 @@
 
 import Parametric.Syntax.Type as Type
 import Parametric.Syntax.Term as Term
+open import Base.Data.DependentList
 
 import Parametric.Syntax.MType as MType
 import Parametric.Syntax.MTerm as MTerm

@@ -5,6 +5,7 @@
 ------------------------------------------------------------------------
 
 import Parametric.Syntax.Type as Type
+open import Base.Data.DependentList
 import Parametric.Syntax.Term as Term
 import Parametric.Denotation.Value as Value
 import Parametric.Denotation.Evaluation as Evaluation
@@ -35,13 +36,13 @@ module Parametric.Change.Correctness
       ⟦_⟧Base ⟦_⟧Const ΔBase apply-base diff-base nil-base ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧)
     (meaning-onil-base : ChangeEvaluation.NilStructure
       ⟦_⟧Base ⟦_⟧Const ΔBase apply-base diff-base nil-base ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧)
-    (validity-structure : Validity.Structure ⟦_⟧Base)
+    {{validity-structure : Validity.Structure ⟦_⟧Base}}
     (specification-structure : Specification.Structure
-      Const ⟦_⟧Base ⟦_⟧Const validity-structure)
+      Const ⟦_⟧Base ⟦_⟧Const)
     (derive-const : Derive.Structure Const ΔBase)
     (implementation-structure : Implementation.Structure
       Const ⟦_⟧Base ⟦_⟧Const ΔBase
-      validity-structure specification-structure
+      specification-structure
       ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧ derive-const)
   where
 
@@ -49,9 +50,8 @@ open Type.Structure Base
 open Term.Structure Base Const
 open Value.Structure Base ⟦_⟧Base
 open Evaluation.Structure Const ⟦_⟧Base ⟦_⟧Const
-open Validity.Structure ⟦_⟧Base validity-structure
-open Specification.Structure
-  Const ⟦_⟧Base ⟦_⟧Const validity-structure specification-structure
+open Validity.Structure ⟦_⟧Base
+open Specification.Structure specification-structure
 open ChangeType.Structure Base ΔBase
 open ChangeTerm.Structure Const ΔBase apply-base diff-base nil-base
 open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
@@ -61,10 +61,7 @@ open ChangeEvaluation.Structure
   ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
   meaning-⊕-base meaning-⊝-base meaning-onil-base
 open Derive.Structure Const ΔBase derive-const
-open Implementation.Structure
-  Const ⟦_⟧Base ⟦_⟧Const ΔBase validity-structure specification-structure
-  ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧ derive-const implementation-structure
-
+open Implementation.Structure implementation-structure
 -- The denotational properties of the `derive` transformation.
 -- In particular, the main theorem about it producing the correct
 -- incremental behavior.

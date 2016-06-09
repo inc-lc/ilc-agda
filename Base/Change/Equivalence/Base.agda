@@ -17,7 +17,7 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
 
   -- To avoid unification problems, use a one-field record (a Haskell "newtype")
   -- instead of a "type synonym".
-  record _≙_ dx dy : Set a where
+  record _≙_ (dx dy : Δ {{ca}} x) : Set a where
     -- doe = Delta-Observational Equivalence.
     constructor doe
     field

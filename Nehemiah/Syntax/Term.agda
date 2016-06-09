@@ -25,7 +25,16 @@ data Const : Term.Structure where
   flatmap-const : Const ((int ⇒ bag) • bag • ∅) (bag)
   sum-const : Const (bag • ∅) (int)
 
+
 open Term.Structure Const public
+
+-- Import Base.Data.DependentList again here, as part of the workaround for
+-- agda/agda#1985; see Parametric.Syntax.Term for info.
+--
+-- XXX This import is needed to define the patterns in the right scope; if we
+-- don't, • gets bound to a different occurrence, and we notice that during
+-- typechecking, which happens at use site.
+open import Base.Data.DependentList public
 
 -- Shorthands of constants
 

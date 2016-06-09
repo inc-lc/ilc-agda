@@ -52,12 +52,13 @@ right-identity : ∀ {A : Set} {f : A → A → A} {z neg} →
 right-identity abelian = proj₂ (IsMonoid.identity
   (IsGroup.isMonoid (IsAbelianGroup.isGroup abelian)))
 
-abelian-int : IsAbelianGroup _≡_ _+_ (+ 0) -_
-abelian-int =
-  IsRing.+-isAbelianGroup
-  (IsCommutativeRing.isRing
-  (CommutativeRing.isCommutativeRing
-  ℤ-is-commutativeRing))
+instance
+  abelian-int : IsAbelianGroup _≡_ _+_ (+ 0) (-_)
+  abelian-int =
+    IsRing.+-isAbelianGroup
+    (IsCommutativeRing.isRing
+    (CommutativeRing.isCommutativeRing
+    ℤ-is-commutativeRing))
 commutative-int : (m n : ℤ) → m + n ≡ n + m
 commutative-int = commutative abelian-int
 associative-int : (k m n : ℤ) → (k + m) + n ≡ k + (m + n)
