@@ -20,6 +20,7 @@ open Value.Structure Base ⟦_⟧Base
 
 open import Base.Denotation.Notation
 
+open import Base.Data.DependentList
 open import Relation.Binary.PropositionalEquality
 open import Theorem.CongApp
 open import Postulate.Extensionality

@@ -72,7 +72,11 @@ module Structure (Const : Structure) where
     (Γ : Context) :
     (τ : Type) → Set
 
-  open import Base.Data.DependentList public
+  --open import Base.Data.DependentList public -- No
+  --
+  -- Workaround https://github.com/agda/agda/issues/1985 by making this import
+  -- private; many clients will need to start importing this now.
+  open import Base.Data.DependentList
 
   -- (Terms Γ Σ) represents a list of terms with types from Σ
   -- with free variables bound in Γ.
