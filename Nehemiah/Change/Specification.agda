@@ -17,7 +17,7 @@ open import Data.Integer
 open import Theorem.Groups-Nehemiah
 
 import Parametric.Change.Specification
-  Const ⟦_⟧Base ⟦_⟧Const change-algebra-base-family as Specification
+  Const ⟦_⟧Base ⟦_⟧Const as Specification
 
 private
   ⟦_⟧ΔConst : ∀ {Σ τ} → (c  : Const Σ τ) (ρ : ⟦ Σ ⟧) → Δ₍ Σ ₎ ρ → Δ₍ τ ₎ (⟦ c ⟧Const ρ)

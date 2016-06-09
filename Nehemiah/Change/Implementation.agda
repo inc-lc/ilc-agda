@@ -24,7 +24,7 @@ open import Structure.Bag.Nehemiah
 
 import Parametric.Change.Implementation
     Const ⟦_⟧Base ⟦_⟧Const ΔBase
-    change-algebra-base-family specification-structure
+    specification-structure
     ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧ deriveConst as Implementation
 
 private

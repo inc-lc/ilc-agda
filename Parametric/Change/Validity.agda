@@ -26,7 +26,7 @@ open import Level
 Structure : Set₁
 Structure = ChangeAlgebraFamily zero ⟦_⟧Base
 
-module Structure (change-algebra-base : Structure) where
+module Structure {{change-algebra-base : Structure}} where
   -- change algebras
 
   open CA public renaming

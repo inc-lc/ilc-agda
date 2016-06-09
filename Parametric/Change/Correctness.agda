@@ -38,7 +38,7 @@ module Parametric.Change.Correctness
       ⟦_⟧Base ⟦_⟧Const ΔBase apply-base diff-base nil-base ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧)
     {{validity-structure : Validity.Structure ⟦_⟧Base}}
     (specification-structure : Specification.Structure
-      Const ⟦_⟧Base ⟦_⟧Const validity-structure)
+      Const ⟦_⟧Base ⟦_⟧Const)
     (derive-const : Derive.Structure Const ΔBase)
     (implementation-structure : Implementation.Structure
       Const ⟦_⟧Base ⟦_⟧Const ΔBase
@@ -50,7 +50,7 @@ open Type.Structure Base
 open Term.Structure Base Const
 open Value.Structure Base ⟦_⟧Base
 open Evaluation.Structure Const ⟦_⟧Base ⟦_⟧Const
-open Validity.Structure ⟦_⟧Base validity-structure
+open Validity.Structure ⟦_⟧Base
 open Specification.Structure specification-structure
 open ChangeType.Structure Base ΔBase
 open ChangeTerm.Structure Const ΔBase apply-base diff-base nil-base

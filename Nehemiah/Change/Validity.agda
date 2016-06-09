@@ -28,5 +28,5 @@ instance
   change-algebra-base-family : ChangeAlgebraFamily zero ⟦_⟧Base
   change-algebra-base-family = family change-algebra-base
 
---open Validity.Structure change-algebra-base-family public --XXX agda/agda#1985.
+--open Validity.Structure {{change-algebra-base-family}} public --XXX agda/agda#1985.
 open Validity.Structure public
