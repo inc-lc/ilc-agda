@@ -1,3 +1,0 @@
-# Uncomment the next line and make it point to the Agda standard library v0.8.
-
-#AGDA_LIB=/some/path/to/agda-lib-0.8/src
