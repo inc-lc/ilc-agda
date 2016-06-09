@@ -252,7 +252,7 @@ module Structure (Const : Structure) where
     absVAux τs zero    = absN (reverse τs)
     -- (Support for varying arity does not work here, so {τ₁} must be bound in
     -- the right-hand side).
-    absVAux τs (suc n) = λ {τ₁} → absVAux (τ₁ ∷ τs) n
+    absVAux τs (suc n) {τ₁} = absVAux (τ₁ ∷ τs) n --λ {τ₁} → absVAux (τ₁ ∷ τs) n
 
     -- "Initialize" accumulator to the empty list.
     absV = absVAux []
