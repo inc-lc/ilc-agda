@@ -54,7 +54,9 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
   --   functions using changes parametrically.
   --
   -- * Moreover, d.o.e. should be respected by contexts [ ] x dx and df x [ ];
-  --   this is proved below on both contexts at once by fun-change-respects.
+  --   this is proved below on both contexts at once by
+  --   equiv-fun-changes-respect, and its corollaries fun-change-respects and
+  --   equiv-fun-changes-funs.
   --
   -- * Finally, change algebra operations should respect d.o.e. But ⊞ respects
   --   it by definition, and ⊟ doesn't take change arguments - we will only
@@ -78,9 +80,9 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
   open FC using (changeAlgebra; incrementalization; DerivativeAsChange)
   open FC.FunctionChange
 
-  fun-change-respects : ∀ {x : A} {dx₁ dx₂ : Δ x} {f : A → B} {df₁ df₂} →
+  equiv-fun-changes-respect : ∀ {x : A} {dx₁ dx₂ : Δ x} {f : A → B} {df₁ df₂} →
     _≙_ {{changeAlgebra}} df₁ df₂ → dx₁ ≙ dx₂ → apply df₁ x dx₁ ≙ apply df₂ x dx₂
-  fun-change-respects {x} {dx₁} {dx₂} {f} {df₁} {df₂} df₁≙df₂ dx₁≙dx₂ = doe lemma
+  equiv-fun-changes-respect {x} {dx₁} {dx₂} {f} {df₁} {df₂} df₁≙df₂ dx₁≙dx₂ = doe lemma
     where
       open ≡-Reasoning
       -- This type signature just expands the goal manually a bit.
@@ -99,6 +101,15 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
         ≡⟨ incrementalization f df₂ x dx₂ ⟩
           f x ⊞ apply df₂ x dx₂
         ∎
+
+  fun-change-respects : ∀ {x : A} {dx₁ dx₂ : Δ x} {f : A → B} {df : Δ f} →
+    dx₁ ≙ dx₂ → apply df x dx₁ ≙ apply df x dx₂
+  fun-change-respects {df = df} dx₁≙dx₂ = equiv-fun-changes-respect (≙-refl {dx = df}) dx₁≙dx₂
+
+  -- D.o.e. function changes behave like the same function (up to d.o.e.).
+  equiv-fun-changes-funs : ∀ {x : A} {dx : Δ x} {f : A → B} {df₁ df₂ : Δ f} →
+    _≙_ {{changeAlgebra}} df₁ df₂ → apply df₁ x dx ≙ apply df₂ x dx
+  equiv-fun-changes-funs {dx = dx} df₁≙df₂ = equiv-fun-changes-respect df₁≙df₂ (≙-refl {dx = dx})
 
   open import Postulate.Extensionality
 
