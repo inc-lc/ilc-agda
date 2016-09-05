@@ -11,6 +11,10 @@ open import Data.Sum
 module SumChanges ℓ (X Y : Set ℓ) {{CX : ChangeAlgebra ℓ X}} {{CY : ChangeAlgebra ℓ Y}} where
   open ≡-Reasoning
 
+  -- This is an indexed datatype, so it has two constructors per argument. But
+  -- erasure would probably not be smart enough to notice.
+
+  -- Should we rewrite this as two separate datatypes?
   data SumChange : X ⊎ Y → Set ℓ where
     ch₁ : ∀ {x} → (dx : Δ x) → SumChange (inj₁ x)
     rp₁₂ : ∀ {x} → (y : Y) → SumChange (inj₁ x)
