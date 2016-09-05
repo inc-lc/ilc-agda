@@ -339,7 +339,8 @@ module FunctionChanges
     -- say that the nil change is *the* derivative, hence the derivative is the
     -- nil change (hence also a change).
     --
-    -- In fact, derivatives are only unique up to change equivalence.
+    -- In fact, derivatives are only unique up to change equivalence and
+    -- extensional equality; this is proven in Base.Change.Equivalence.derivative-unique.
     --
     Derivative-is-valid : ∀ {f : A → B} df (Derivative-f-df : Derivative f df) a da →
       f (a ⊞ da) ⊞ (df (a ⊞ da) (nil (a ⊞ da))) ≡ f a ⊞ df a da
