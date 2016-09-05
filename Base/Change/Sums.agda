@@ -56,16 +56,21 @@ module SumChanges ℓ (X Y : Set ℓ) {{CX : ChangeAlgebra ℓ X}} {{CY : Change
         }
       }
 
-  inj₁′ : (x : X) → (dx : Δ x) → Δ {{changeAlgebra}} (inj₁ x)
+  -- Encode infix ascription.
+  as' : ∀ {ℓ} (A : Set ℓ) (a : A) → A
+  as' _ a = a
+  syntax as' A a = a as A
+
+  inj₁′ : RawChange (inj₁ as (X → (X ⊎ Y)))
   inj₁′ x dx = ch₁ dx
 
-  inj₁′Derivative : Derivative {{CX}} {{changeAlgebra}} inj₁ inj₁′
+  inj₁′Derivative : IsDerivative (inj₁ as (X → (X ⊎ Y))) inj₁′
   inj₁′Derivative x dx = refl
 
-  inj₂′ : (y : Y) → (dy : Δ y) → Δ {{changeAlgebra}} (inj₂ y)
+  inj₂′ : RawChange (inj₂ as (Y → (X ⊎ Y)))
   inj₂′ y dy = ch₂ dy
 
-  inj₂′Derivative : Derivative {{CY}} {{changeAlgebra}} inj₂ inj₂′
+  inj₂′Derivative : IsDerivative (inj₂ as (Y → (X ⊎ Y))) inj₂′
   inj₂′Derivative y dy = refl
 
   -- Elimination form for sums. This is a less dependently-typed version of

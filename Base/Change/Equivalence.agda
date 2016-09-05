@@ -134,12 +134,12 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
   delta-ext₂ : ∀ {f : A → B} → ∀ {df dg : Δ f} → (∀ x dx₁ dx₂ → _≙_ {{CA}} dx₁ dx₂ → apply df x dx₁ ≙ apply dg x dx₂) → df ≙ dg
   delta-ext₂ {f} {df} {dg} df-x-dx≙dg-x-dx = delta-ext (λ x dx → df-x-dx≙dg-x-dx x dx dx ≙-refl)
 
-  -- We know that Derivative f (apply (nil f)) (by nil-is-derivative).
-  -- That is, df = nil f -> Derivative f (apply df).
-  -- Now, we try to prove that if Derivative f (apply df) -> df = nil f.
+  -- We know that IsDerivative f (apply (nil f)) (by nil-is-derivative).
+  -- That is, df = nil f -> IsDerivative f (apply df).
+  -- Now, we try to prove that if IsDerivative f (apply df) -> df = nil f.
   -- But first, we prove that f ⊞ df = f.
   derivative-is-⊞-unit : ∀ {f : A → B} df →
-    Derivative f (apply df) → f ⊞ df ≡ f
+    IsDerivative f (apply df) → f ⊞ df ≡ f
   derivative-is-⊞-unit {f} df fdf =
     begin
       f ⊞ df
@@ -158,15 +158,15 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
   -- We can restate the above as "df is a nil change".
 
   derivative-is-nil : ∀ {f : A → B} df →
-    Derivative f (apply df) → df ≙ nil f
+    IsDerivative f (apply df) → df ≙ nil f
   derivative-is-nil df fdf = ⊞-unit-is-nil df (derivative-is-⊞-unit df fdf)
 
   derivative-is-nil-alternative : ∀ {f : A → B} df →
-    (Derivative-f-df : Derivative f df) → DerivativeAsChange df Derivative-f-df ≙ nil f
-  derivative-is-nil-alternative df Derivative-f-df = derivative-is-nil (DerivativeAsChange df Derivative-f-df) Derivative-f-df
+    (IsDerivative-f-df : IsDerivative f df) → DerivativeAsChange df IsDerivative-f-df ≙ nil f
+  derivative-is-nil-alternative df IsDerivative-f-df = derivative-is-nil (DerivativeAsChange df IsDerivative-f-df) IsDerivative-f-df
 
   -- If we have two derivatives, they're both nil, hence they're equal.
-  derivative-unique : ∀ {f : A → B} {df dg : Δ f} → Derivative f (apply df) → Derivative f (apply dg) → df ≙ dg
+  derivative-unique : ∀ {f : A → B} {df dg : Δ f} → IsDerivative f (apply df) → IsDerivative f (apply dg) → df ≙ dg
   derivative-unique {f} {df} {dg} fdf fdg =
     begin
       df
@@ -181,7 +181,7 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
   -- This is Lemma 2.5 in the paper. Note that the statement in the paper uses
   -- (incorrectly) normal equality instead of delta-observational equivalence.
   deriv-zero :
-    (f : A → B) → (df : (a : A) (da : Δ a) → Δ (f a)) → Derivative f df →
+    ∀ (f : A → B) df → IsDerivative f df →
     ∀ v → df v (nil {{CA}} v) ≙ nil {{CB}} (f v)
   deriv-zero f df proof v = doe lemma
     where

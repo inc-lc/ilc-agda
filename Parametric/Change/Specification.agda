@@ -44,7 +44,7 @@ record Structure : Set₁ where
 
     -- Extension point 2: Correctness of the instantiation of extension point 1.
     correctness-const : ∀ {Σ τ} (c : Const Σ τ) →
-      Derivative₍ Σ , τ ₎ ⟦ c ⟧Const ⟦ c ⟧ΔConst
+      IsDerivative₍ Σ , τ ₎ ⟦ c ⟧Const ⟦ c ⟧ΔConst
 
   ---------------
   -- Interface --
@@ -56,10 +56,10 @@ record Structure : Set₁ where
 
   -- And we provide correctness proofs about the derivatives.
   correctness : ∀ {τ Γ} (t : Term Γ τ) →
-    Derivative₍ Γ , τ ₎ ⟦ t ⟧ ⟦ t ⟧Δ
+    IsDerivative₍ Γ , τ ₎ ⟦ t ⟧ ⟦ t ⟧Δ
 
   correctness-terms : ∀ {Σ Γ} (ts : Terms Γ Σ) →
-    Derivative₍ Γ , Σ ₎ ⟦ ts ⟧Terms ⟦ ts ⟧ΔTerms
+    IsDerivative₍ Γ , Σ ₎ ⟦ ts ⟧Terms ⟦ ts ⟧ΔTerms
 
   --------------------
   -- Implementation --
@@ -96,7 +96,7 @@ record Structure : Set₁ where
   ⟦ t • ts ⟧ΔTerms ρ dρ = ⟦ t ⟧Δ ρ dρ • ⟦ ts ⟧ΔTerms ρ dρ
 
   correctVar : ∀ {τ Γ} (x : Var Γ τ) →
-    Derivative₍ Γ , τ ₎ ⟦ x ⟧ ⟦ x ⟧ΔVar
+    IsDerivative₍ Γ , τ ₎ ⟦ x ⟧ ⟦ x ⟧ΔVar
   correctVar (this) (v • ρ) (dv • dρ) = refl
   correctVar (that y) (v • ρ) (dv • dρ) = correctVar y ρ dρ
 

@@ -34,7 +34,7 @@ private
   ⟦ sum-const ⟧ΔConst (b • ∅) (db • ∅) = sumBag db
 
   correctness-const : ∀ {Σ τ} (c : Const Σ τ) →
-    Derivative₍ Σ , τ ₎ ⟦ c ⟧Const ⟦ c ⟧ΔConst
+    IsDerivative₍ Σ , τ ₎ ⟦ c ⟧Const ⟦ c ⟧ΔConst
   correctness-const (intlit-const n) ∅ ∅ = right-id-int n
   correctness-const add-const (n₁ • n₂ • ∅) (dn₁ • dn₂ • ∅) =
     mn·pq=mp·nq {n₁} {n₂} {dn₁} {dn₂}

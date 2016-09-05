@@ -80,14 +80,14 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
   proj₁′ : (v : A × B) → Δ v → Δ (proj₁ v)
   proj₁′ (a , b) (da , db) = da
 
-  proj₁′Derivative : Derivative proj₁ proj₁′
+  proj₁′Derivative : IsDerivative proj₁ proj₁′
   -- Implementation note: we do not need to pattern match on v and dv because
   -- they are records, hence Agda knows that pattern matching on records cannot
   -- fail. Technically, the required feature is the eta-rule on records.
   proj₁′Derivative v dv = refl
 
   -- An extended explanation.
-  proj₁′Derivative₁ : Derivative proj₁ proj₁′
+  proj₁′Derivative₁ : IsDerivative proj₁ proj₁′
   proj₁′Derivative₁ (a , b) (da , db) =
     let v  = (a  , b)
         dv = (da , db)
@@ -104,7 +104,7 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
   proj₂′ : (v : A × B) → Δ v → Δ (proj₂ v)
   proj₂′ (a , b) (da , db) = db
 
-  proj₂′Derivative : Derivative proj₂ proj₂′
+  proj₂′Derivative : IsDerivative proj₂ proj₂′
   proj₂′Derivative v dv = refl
 
   instance
@@ -147,7 +147,7 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
   _,_′ : (a : A) → (da : Δ a) → Δ (_,_ a)
   _,_′ a da = record { apply = _,_′-realizer a da ; correct = λ b db → _,_′-realizer-correct a da b db }
 
-  _,_′-Derivative : Derivative _,_ _,_′
+  _,_′-Derivative : IsDerivative _,_ _,_′
   _,_′-Derivative a da = ext (λ b → cong (_,_ (a ⊞ da)) (update-nil b))
     where
       open import Postulate.Extensionality
@@ -229,11 +229,11 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
       ; correct = uncurry₀′-realizer-correct f df }
 
     -- Now proving that uncurry₀′ is a derivative is trivial!
-    uncurry₀′Derivative₀ : Derivative {{CB = A×B→C}} uncurry₀ uncurry₀′
+    uncurry₀′Derivative₀ : IsDerivative {{CB = A×B→C}} uncurry₀ uncurry₀′
     uncurry₀′Derivative₀ f df = refl
 
     -- If you wonder what's going on, here's the step-by-step proof, going purely by definitional equality.
-    uncurry₀′Derivative : Derivative {{CB = A×B→C}} uncurry₀ uncurry₀′
+    uncurry₀′Derivative : IsDerivative {{CB = A×B→C}} uncurry₀ uncurry₀′
     uncurry₀′Derivative f df =
       begin
         uncurry₀ f ⊞ uncurry₀′ f df

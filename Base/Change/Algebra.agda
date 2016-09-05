@@ -150,24 +150,39 @@ syntax diff′ x u v = u ⊟₍ x ₎ v
 --
 -- This corresponds to Def. 2.4 in the paper.
 
-Derivative : ∀ {a b c d} {A : Set a} {B : Set b} →
+RawChange : ∀ {a b c d} {A : Set a} {B : Set b} →
   {{CA : ChangeAlgebra c A}} →
   {{CB : ChangeAlgebra d B}} →
   (f : A → B) →
-  (df : (a : A) (da : Δ {{CA}} a) → Δ {{CB}} (f a)) →
-  Set (a ⊔ b ⊔ c)
-Derivative {{CA}} {{CB}} f df = ∀ a da → f a ⊞ df a da ≡ f (a ⊞ da)
+  Set (a ⊔ c ⊔ d)
+RawChange f = ∀ a (da : Δ a) → Δ (f a)
 
--- This is a variant of Derivative for change algebra families.
-Derivative₍_,_₎ : ∀ {a b p q c d} {A : Set a} {B : Set b} {P : A → Set p} {Q : B → Set q} →
+IsDerivative : ∀ {a b c d} {A : Set a} {B : Set b} →
+  {{CA : ChangeAlgebra c A}} →
+  {{CB : ChangeAlgebra d B}} →
+  (f : A → B) →
+  (df : RawChange f) →
+  Set (a ⊔ b ⊔ c)
+IsDerivative f df = ∀ a da → f a ⊞ df a da ≡ f (a ⊞ da)
+
+-- This is a variant of IsDerivative for change algebra families.
+RawChange₍_,_₎ : ∀ {a b p q c d} {A : Set a} {B : Set b} {P : A → Set p} {Q : B → Set q} →
+  {{CP : ChangeAlgebraFamily c P}} →
+  {{CQ : ChangeAlgebraFamily d Q}} →
+  (x : A) →
+  (y : B) →
+  (f : P x → Q y) → Set (c ⊔ d ⊔ p)
+RawChange₍_,_₎ x y f = ∀ px (dpx : Δ₍_₎ x px) → Δ₍_₎ y (f px)
+
+IsDerivative₍_,_₎ : ∀ {a b p q c d} {A : Set a} {B : Set b} {P : A → Set p} {Q : B → Set q} →
   {{CP : ChangeAlgebraFamily c P}} →
   {{CQ : ChangeAlgebraFamily d Q}} →
   (x : A) →
   (y : B) →
   (f : P x → Q y) →
-  (df : (px : P x) (dpx : Δ₍_₎ {{CP}} x px) → Δ₍_₎ {{CQ}} y (f px)) →
+  (df : RawChange₍_,_₎ x y f) →
   Set (p ⊔ q ⊔ c)
-Derivative₍_,_₎ {P = P} {{CP}} {{CQ}} x y f df = Derivative {{change-algebra₍ _ ₎}} {{change-algebra₍ _ ₎}} f df where
+IsDerivative₍_,_₎ {P = P} {{CP}} {{CQ}} x y f df = IsDerivative {{change-algebra₍ _ ₎}} {{change-algebra₍ _ ₎}} f df where
   CPx = change-algebra₍_₎ {{CP}} x
   CQy = change-algebra₍_₎ {{CQ}} y
 
@@ -245,8 +260,7 @@ module FunctionChanges
     record FunctionChange (f : A → B) : Set (a ⊔ b ⊔ c ⊔ d) where
       field
         -- Definition 2.6a
-        apply : (a : A) (da : Δ {{CA}} a) →
-          Δ {{CB}} (f a)
+        apply : RawChange f
 
         -- Definition 2.6b.
         -- (for some reason, the version in the paper has the arguments of ≡
@@ -320,7 +334,7 @@ module FunctionChanges
     -- a proof. This is not an issue in the paper, which is formulated in a
     -- proof-irrelevant metalanguage.
     nil-is-derivative : ∀ (f : A → B) →
-      Derivative f (apply (nil f))
+      IsDerivative f (apply (nil f))
     nil-is-derivative f a da =
       begin
         f a ⊞ apply (nil f) a da
@@ -342,12 +356,12 @@ module FunctionChanges
     -- In fact, derivatives are only unique up to change equivalence and
     -- extensional equality; this is proven in Base.Change.Equivalence.derivative-unique.
     --
-    Derivative-is-valid : ∀ {f : A → B} df (Derivative-f-df : Derivative f df) a da →
+    Derivative-is-valid : ∀ {f : A → B} df (IsDerivative-f-df : IsDerivative f df) a da →
       f (a ⊞ da) ⊞ (df (a ⊞ da) (nil (a ⊞ da))) ≡ f a ⊞ df a da
-    Derivative-is-valid {f} df Derivative-f-df a da rewrite Derivative-f-df (a ⊞ da) (nil (a ⊞ da)) | update-nil (a ⊞ da) = sym (Derivative-f-df a da)
+    Derivative-is-valid {f} df IsDerivative-f-df a da rewrite IsDerivative-f-df (a ⊞ da) (nil (a ⊞ da)) | update-nil (a ⊞ da) = sym (IsDerivative-f-df a da)
 
-    DerivativeAsChange : ∀ {f : A → B} df (Derivative-f-df : Derivative f df) → Δ f
-    DerivativeAsChange df Derivative-f-df = record { apply = df ; correct = Derivative-is-valid df Derivative-f-df }
+    DerivativeAsChange : ∀ {f : A → B} df (IsDerivative-f-df : IsDerivative f df) → Δ f
+    DerivativeAsChange df IsDerivative-f-df = record { apply = df ; correct = Derivative-is-valid df IsDerivative-f-df }
     -- In Equivalence.agda, derivative-is-nil-alternative then proves that a derivative is also a nil change.
 
 

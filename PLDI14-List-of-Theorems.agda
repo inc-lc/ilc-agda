@@ -33,7 +33,7 @@ open Base.Change.Algebra using (IsChangeAlgebra)
 open import Base.Change.Equivalence using (deriv-zero)
 
 -- Definition 2.4 (Derivatives)
-open Base.Change.Algebra using (Derivative)
+open Base.Change.Algebra using (IsDerivative)
 
 -- Definition 2.6 (Carrier set of function changes)
 open Base.Change.Algebra.FunctionChanges
