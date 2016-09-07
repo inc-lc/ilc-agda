@@ -57,67 +57,35 @@ module AltFunctionChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB 
     let f₁ = f₀ raw⊕ df
     in (f₁ , f₁′ , IsDerivative-f₁-f₁′)
 
-  -- Produce a complete change, together with the needed correctness proofs.
-  -- Most of these proofs are already needed for the implementation; defining this lemma avoids duplicating them.
-  f-nil-eq : ∀ (f₀ : A → B) (f₀′ : RawChange f₀) (IsDerivative-f₀-f₀′ : IsDerivative f₀ f₀′) →
-      Σ[ nil-f₀ ∈ RawChangeP f₀ ] (
-        let f₁ = f₀ raw⊕ nil-f₀
-        in Σ[ f₁′ ∈ RawChange f₁ ] Σ[ IsDerivative-f₁-f₁′ ∈ IsDerivative f₁ f₁′ ] (f₁ ≅ f₀ × f₁′ ≅ f₀′ × IsDerivative-f₁-f₁′ ≅ IsDerivative-f₀-f₀′))
+  transport-base-f : ∀ {f₀ f₁ : A → B} (eq : f₁ ≅ f₀) (f₀′ : RawChange f₀) (IsDerivative-f₀-f₀′ : IsDerivative f₀ f₀′) →
+    Σ[ f₁′ ∈ RawChange f₁ ] (IsDerivative f₁ f₁′)
+  transport-base-f refl f₀′ IsDerivative-f₀-f₀′ = f₀′ , IsDerivative-f₀-f₀′
 
-  f-nil-eq f₀ f₀′ IsDerivative-f₀-f₀′ = df , f₁′ , IsDerivative-f₁-f₁′ , f₁≅f₀ , f₁′≅f₀′ , IsDerivative-f₁-f₁′≅IsDerivative-f₀-f₀′
-    where
-      df = rawnil f₀
-      f₁ = f₀ raw⊕ df
-      f₁≅f₀ = raw-update-nil f₀
-      f₀≅f₁ = sym f₁≅f₀
-
-      f₁′ = subst RawChange f₀≅f₁ f₀′
-
-      f₁′≅f₀′ = subst-removable RawChange f₀≅f₁ f₀′
-      f₀′≅f₁′ = sym f₁′≅f₀′
-
-      IsDerivative-f₁-f₁′ = hsubst₂ IsDerivative f₀≅f₁ f₀′≅f₁′ IsDerivative-f₀-f₀′
-      IsDerivative-f₁-f₁′≅IsDerivative-f₀-f₀′ = hsubst₂-removable IsDerivative f₀≅f₁ f₀′≅f₁′ IsDerivative-f₀-f₀′
+  transport-base-f-eq : ∀ {f₀ f₁ : A → B} (eq : f₁ ≅ f₀) (f₀′ : RawChange f₀) (IsDerivative-f₀-f₀′ : IsDerivative f₀ f₀′) →
+    (f₁ , transport-base-f eq f₀′ IsDerivative-f₀-f₀′) P.≡ (f₀ , f₀′ , IsDerivative-f₀-f₀′)
+  transport-base-f-eq refl f₀′ IsDerivative-f₀-f₀′ = P.refl
 
   f-nil : (f : FunBaseT) → FChange f
   f-nil (f₀ , f₀′ , IsDerivative-f₀-f₀′) =
-    let (df , f₁′ , IsDerivative-f₁-f₁′ , _ ) = f-nil-eq f₀ f₀′ IsDerivative-f₀-f₀′
-    in df , f₁′ , IsDerivative-f₁-f₁′
+    let
+      df = rawnil f₀
+      f₁ = f₀ raw⊕ df
+      f₁≅f₀ = raw-update-nil f₀
+    in df , transport-base-f f₁≅f₀ f₀′ IsDerivative-f₀-f₀′
 
   f-update-nil : ∀ fstr → (fstr ⊕ f-nil fstr) P.≡ fstr
-  f-update-nil (f₀ , f₀′ , IsDerivative-f₀-f₀′) =
-    let (df , f₁′ , IsDerivative-f₁-f₁′ , f₁≅f₀ , f₁′≅f₀′ , IsDerivative-f₁-f₁′≅IsDerivative-f₀-f₀′ ) = f-nil-eq f₀ f₀′ IsDerivative-f₀-f₀′
-    in ≅-to-≡ (cong₃ (λ x y z → as' FunBaseT (x , y , z)) f₁≅f₀ f₁′≅f₀′ IsDerivative-f₁-f₁′≅IsDerivative-f₀-f₀′)
-
-  f-diff-eq :
-    ∀ (f₀ : A → B) (f₀′ : RawChange f₀) (IsDerivative-f₀-f₀′ : IsDerivative f₀ f₀′) →
-      (g₀ : A → B) (g₀′ : RawChange g₀) (IsDerivative-g₀-g₀′ : IsDerivative g₀ g₀′) →
-      Σ[ df ∈ RawChangeP f₀ ] (
-        let g₁ = f₀ raw⊕ (g₀ raw⊝ f₀)
-        in Σ[ g₁′ ∈ RawChange g₁ ] Σ[ IsDerivative-g₁-g₁′ ∈ IsDerivative g₁ g₁′ ] (g₁ ≅ g₀ × g₁′ ≅ g₀′ × IsDerivative-g₁-g₁′ ≅ IsDerivative-g₀-g₀′))
-  f-diff-eq f₀ f₀′ IsDerivative-f₀-f₀′ g₀ g₀′ IsDerivative-g₀-g₀′
-    = df , g₁′ , IsDerivative-g₁-g₁′ , g₁≅g₀ , g₁′≅g₀′ , IsDerivative-g₁-g₁′≅IsDerivative-g₀-g₀′
-    where
-      df = g₀ raw⊝ f₀
-      g₁ = f₀ raw⊕ (g₀ raw⊝ f₀)
-      g₁≅g₀ = raw-update-diff f₀ g₀
-      g₀≅g₁ = sym g₁≅g₀
-
-      g₁′ = subst RawChange g₀≅g₁ g₀′
-      g₁′≅g₀′ = subst-removable RawChange g₀≅g₁ g₀′
-      g₀′≅g₁′ = sym g₁′≅g₀′
-      IsDerivative-g₁-g₁′ = hsubst₂ IsDerivative g₀≅g₁ g₀′≅g₁′ IsDerivative-g₀-g₀′
-      IsDerivative-g₁-g₁′≅IsDerivative-g₀-g₀′ = hsubst₂-removable IsDerivative g₀≅g₁ g₀′≅g₁′ IsDerivative-g₀-g₀′
+  f-update-nil (f₀ , f₀′ , IsDerivative-f₀-f₀′) = transport-base-f-eq (raw-update-nil f₀) f₀′ IsDerivative-f₀-f₀′
 
   _⊝_ : (g f : FunBaseT) → FChange f
   _⊝_ (g₀ , g₀′ , IsDerivative-g₀-g₀′) (f₀ , f₀′ , IsDerivative-f₀-f₀′) =
-    let (df , g₁′ , IsDerivative-g₁-g₁′ , _) = f-diff-eq f₀ f₀′ IsDerivative-f₀-f₀′ g₀ g₀′ IsDerivative-g₀-g₀′
-    in df , g₁′ , IsDerivative-g₁-g₁′
+    let
+      df = g₀ raw⊝ f₀
+      g₁ = f₀ raw⊕ df
+      g₁≅g₀ = raw-update-diff f₀ g₀
+    in df , transport-base-f g₁≅g₀ g₀′ IsDerivative-g₀-g₀′
 
   f-update-diff : ∀ gstr fstr → fstr ⊕ (gstr ⊝ fstr) P.≡ gstr
-  f-update-diff (g₀ , g₀′ , IsDerivative-g₀-g₀′) (f₀ , f₀′ , IsDerivative-f₀-f₀′) =
-    let (df , g₁′ , IsDerivative-g₁-g₁′ , g₁≅g₀ , g₁′≅g₀′ , IsDerivative-g₁-g₁′≅IsDerivative-g₀-g₀′ ) = f-diff-eq f₀ f₀′ IsDerivative-f₀-f₀′ g₀ g₀′ IsDerivative-g₀-g₀′
-    in ≅-to-≡ (cong₃ (λ x y z → as' FunBaseT (x , y , z)) g₁≅g₀ g₁′≅g₀′ IsDerivative-g₁-g₁′≅IsDerivative-g₀-g₀′)
+  f-update-diff (g₀ , g₀′ , IsDerivative-g₀-g₀′) (f₀ , f₀′ , IsDerivative-f₀-f₀′) = transport-base-f-eq (raw-update-diff f₀ g₀) g₀′ IsDerivative-g₀-g₀′
 
   changeAlgebra : ChangeAlgebra ℓ FunBaseT
   changeAlgebra = record
