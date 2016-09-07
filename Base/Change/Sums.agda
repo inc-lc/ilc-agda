@@ -1,12 +1,13 @@
 module Base.Change.Sums where
 
+open import Data.Sum
 open import Relation.Binary.PropositionalEquality
 open import Level
 
+open import Base.Ascription
 open import Base.Change.Algebra
 open import Base.Change.Equivalence
 open import Postulate.Extensionality
-open import Data.Sum
 
 module SumChanges ℓ (X Y : Set ℓ) {{CX : ChangeAlgebra ℓ X}} {{CY : ChangeAlgebra ℓ Y}} where
   open ≡-Reasoning
@@ -59,11 +60,6 @@ module SumChanges ℓ (X Y : Set ℓ) {{CX : ChangeAlgebra ℓ X}} {{CY : Change
         ; update-nil = s-update-nil
         }
       }
-
-  -- Encode infix ascription.
-  as' : ∀ {ℓ} (A : Set ℓ) (a : A) → A
-  as' _ a = a
-  syntax as' A a = a as A
 
   inj₁′ : RawChange (inj₁ as (X → (X ⊎ Y)))
   inj₁′ x dx = ch₁ dx
