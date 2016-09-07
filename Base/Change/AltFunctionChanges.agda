@@ -57,6 +57,8 @@ module AltFunctionChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB 
     let f₁ = f₀ raw⊕ df
     in (f₁ , f₁′ , IsDerivative-f₁-f₁′)
 
+  -- Produce a complete change, together with the needed correctness proofs.
+  -- Most of these proofs are already needed for the implementation; defining this lemma avoids duplicating them.
   f-nil-eq : ∀ (f₀ : A → B) (f₀′ : RawChange f₀) (IsDerivative-f₀-f₀′ : IsDerivative f₀ f₀′) →
       Σ[ nil-f₀ ∈ RawChangeP f₀ ] (
         let f₁ = f₀ raw⊕ nil-f₀
@@ -112,21 +114,6 @@ module AltFunctionChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB 
     let (df , g₁′ , IsDerivative-g₁-g₁′ , _) = f-diff-eq f₀ f₀′ IsDerivative-f₀-f₀′ g₀ g₀′ IsDerivative-g₀-g₀′
     in df , g₁′ , IsDerivative-g₁-g₁′
 
-  -- _⊝_ : (g f : FunBaseT) → FChange f
-  -- _⊝_ (g , g′ , IsDerivative-g-g′) (f , f′ , IsDerivative-f-f′)
-  --   = g⊝f
-  --   , cast-g′
-  --   , hsubst₂ (IsDerivative {{CA}} {{CB}}) g≅f-raw⊕-g⊝f g′≅cast-g′ IsDerivative-g-g′
-  --   where
-  --     g⊝f = g raw⊝ f
-  --     g≅f-raw⊕-g⊝f : g ≅ f raw⊕ g⊝f
-  --     g≅f-raw⊕-g⊝f = sym (raw-update-diff f g)
-
-  --     cast-g′ = subst RawChange g≅f-raw⊕-g⊝f g′
-
-  --     g′≅cast-g′ : g′ ≅ cast-g′
-  --     g′≅cast-g′ = sym (subst-removable RawChange g≅f-raw⊕-g⊝f g′)
-
   f-update-diff : ∀ gstr fstr → fstr ⊕ (gstr ⊝ fstr) P.≡ gstr
   f-update-diff (g₀ , g₀′ , IsDerivative-g₀-g₀′) (f₀ , f₀′ , IsDerivative-f₀-f₀′) =
     let (df , g₁′ , IsDerivative-g₁-g₁′ , g₁≅g₀ , g₁′≅g₀′ , IsDerivative-g₁-g₁′≅IsDerivative-g₀-g₀′ ) = f-diff-eq f₀ f₀′ IsDerivative-f₀-f₀′ g₀ g₀′ IsDerivative-g₀-g₀′
@@ -140,82 +127,3 @@ module AltFunctionChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB 
                     ; nil = f-nil
                     ; isChangeAlgebra = record { update-diff = f-update-diff ; update-nil = f-update-nil }
                     }
-  -- f-diff : (g f : FunBaseT) → FChange f
-  -- f-diff (g , g′ , IsDerivative-g-g′) (f , f′ , IsDerivative-f-f′) = λ a → g a ⊟ f a
-
-
---   FChange : FunBaseT → Set ℓ
---   FChange (f , f′ , IsDerivative-f-f′) = RawChangeP f
-
---   _⊕_ : (f : FunBaseT) → FChange f → FunBaseT
---   (f , f′ , IsDerivative-f-f′) ⊕ df =
---     ( f raw⊕ df
---     , ( deriv-f⊕df f df
---       , IsDerivative-deriv-f⊕df f df
---       )
---     )
---   f-nil : (f : FunBaseT) → FChange f
---   f-nil (f , f′ , IsDerivative-f-f′) a = nil (f a)
-
---   f-diff : (g f : FunBaseT) → FChange f
---   f-diff (g , g′ , IsDerivative-g-g′) (f , f′ , IsDerivative-f-f′) = λ a → g a ⊟ f a
-
---   -- f-update-nil fstr₀@(f₀ , f′₀ , IsDerivative-f-f′₀) with ext (λ a → sym (update-nil (f₀ a)))
---   -- f-update-nil fstr₀@(f₀ , f′₀ , IsDerivative-f-f′₀) | refl = {!!}
---   -- gives:
--- {-
--- With clause pattern fstr₀@(f₀ , f′₀ , IsDerivative-f-f′₀) is not an
--- instance of its parent pattern
--- (_,_ f₀ (_,_ f′₀ IsDerivative-f-f′₀))
--- -}
-
---   f-update-nil : ∀ fstr → (fstr ⊕ f-nil fstr) ≡ fstr
---   f-update-nil fstr₀@(f₀ , f′₀ , IsDerivative-f-f′₀) = {!!}
---     where
-
---       nil-fstr = f-nil fstr₀
-
---       fstr₁ : FunBaseT
---       fstr₁ = fstr₀ ⊕ f-nil fstr₀
-
---       f₁ : A → B
---       f′₁ : RawChange f₁
---       IsDerivative-f-f′₁ : IsDerivative f₁ f′₁
-
---       f₁ = proj₁ fstr₁
---       f′₁ = proj₁ (proj₂ fstr₁)
---       IsDerivative-f-f′₁ = proj₂ (proj₂ fstr₁)
---       --(f₁ , f′₁ , IsDerivative-f-f′₁) = fstr₀ ⊕ f-nil fstr₀
-
---       f≡f : f₁ ≡ f₀
---       f≡f = raw-update-nil f₀
-
---       -- f′₁′ : RawChange f₀
---       -- f′₁′ = subst RawChange (sym f≡f) f′₁
-
---       -- -- f′₁≡f′₁′ : ∀ a → f′₁ a ≡ f′₁′ a
---       -- -- f′₁≡f′₁′ a = ?
-
---       -- f′≡f′a : ∀ a →  f′₁′ a ≡ f′₀ a
---       -- f′≡f′a a = {!!}
-
---       -- f′≡f′ : f′₀ ≡ f′₁′
---       -- f′≡f′ = ext f′≡f′a
-
---       -- -- IsDer≡ : IsDerivative-f-f′₁ ≡ IsDerivative-f-f′₀
---       -- -- IsDer≡ = ?
-
---   f-update-diff : ∀ gstr fstr → fstr ⊕ (f-diff gstr fstr) ≡ gstr
---   f-update-diff (f , f′ , IsDerivative-f-f′) (g , g′ , IsDerivative-g-g′) = {!!}
---     where
---       fg : f raw⊕ (g raw⊝ f) ≡ g
---       fg = raw-update-diff f g
-
---   changeAlgebra : ChangeAlgebra ℓ FunBaseT
---   changeAlgebra = record
---                     { Change = FChange
---                     ; update = _⊕_
---                     ; diff = f-diff
---                     ; nil = f-nil
---                     ; isChangeAlgebra = record { update-diff = f-update-diff ; update-nil = f-update-nil }
---                     }
