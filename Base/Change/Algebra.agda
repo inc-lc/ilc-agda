@@ -145,49 +145,6 @@ syntax update′ x v dv = v ⊞₍ x ₎ dv
 diff′ = Family.diff
 syntax diff′ x u v = u ⊟₍ x ₎ v
 
--- Derivatives
--- ===========
---
--- This corresponds to Def. 2.4 in the paper.
-
-RawChange : ∀ {a b c d} {A : Set a} {B : Set b} →
-  {{CA : ChangeAlgebra c A}} →
-  {{CB : ChangeAlgebra d B}} →
-  (f : A → B) →
-  Set (a ⊔ c ⊔ d)
-RawChange f = ∀ a (da : Δ a) → Δ (f a)
-
-IsDerivative : ∀ {a b c d} {A : Set a} {B : Set b} →
-  {{CA : ChangeAlgebra c A}} →
-  {{CB : ChangeAlgebra d B}} →
-  (f : A → B) →
-  (df : RawChange f) →
-  Set (a ⊔ b ⊔ c)
-IsDerivative f df = ∀ a da → f a ⊞ df a da ≡ f (a ⊞ da)
-
--- This is a variant of IsDerivative for change algebra families.
-RawChange₍_,_₎ : ∀ {a b p q c d} {A : Set a} {B : Set b} {P : A → Set p} {Q : B → Set q} →
-  {{CP : ChangeAlgebraFamily c P}} →
-  {{CQ : ChangeAlgebraFamily d Q}} →
-  (x : A) →
-  (y : B) →
-  (f : P x → Q y) → Set (c ⊔ d ⊔ p)
-RawChange₍_,_₎ x y f = ∀ px (dpx : Δ₍_₎ x px) → Δ₍_₎ y (f px)
-
-IsDerivative₍_,_₎ : ∀ {a b p q c d} {A : Set a} {B : Set b} {P : A → Set p} {Q : B → Set q} →
-  {{CP : ChangeAlgebraFamily c P}} →
-  {{CQ : ChangeAlgebraFamily d Q}} →
-  (x : A) →
-  (y : B) →
-  (f : P x → Q y) →
-  (df : RawChange₍_,_₎ x y f) →
-  Set (p ⊔ q ⊔ c)
-IsDerivative₍_,_₎ {P = P} {{CP}} {{CQ}} x y f df = IsDerivative {{change-algebra₍ _ ₎}} {{change-algebra₍ _ ₎}} f df where
-  CPx = change-algebra₍_₎ {{CP}} x
-  CQy = change-algebra₍_₎ {{CQ}} y
-
--- Lemma 2.5 appears in Base.Change.Equivalence.
-
 -- Abelian Groups Induce Change Algebras
 -- =====================================
 --
@@ -252,6 +209,47 @@ module GroupChanges
 -- FunctionChanges that takes the change algebras for A and B as
 -- arguments, and provides a changeAlgebra for (A → B). The proofs
 -- are by equational reasoning using 2.1e for A and B.
+
+module _ {a} {b} {c} {d} {A : Set a} {B : Set b} {{CA : ChangeAlgebra c A}} {{CB : ChangeAlgebra d B}}
+  where
+    -- Derivatives
+    -- ===========
+    --
+    -- This corresponds to Def. 2.4 in the paper.
+
+    RawChange :
+      (f : A → B) →
+      Set (a ⊔ c ⊔ d)
+    RawChange f = ∀ a (da : Δ a) → Δ (f a)
+
+    IsDerivative :
+      (f : A → B) →
+      (df : RawChange f) →
+      Set (a ⊔ b ⊔ c)
+    IsDerivative f df = ∀ a da → f a ⊞ df a da ≡ f (a ⊞ da)
+
+module _ {a b p q c d} {A : Set a} {B : Set b} {P : A → Set p} {Q : B → Set q}
+       {{CP : ChangeAlgebraFamily c P}} {{CQ : ChangeAlgebraFamily d Q}}
+  where
+
+    -- This is a variant of IsDerivative for change algebra families.
+    RawChange₍_,_₎ :
+      (x : A) →
+      (y : B) →
+      (f : P x → Q y) → Set (c ⊔ d ⊔ p)
+    RawChange₍_,_₎ x y f = ∀ px (dpx : Δ₍_₎ x px) → Δ₍_₎ y (f px)
+
+    IsDerivative₍_,_₎ :
+      (x : A) →
+      (y : B) →
+      (f : P x → Q y) →
+      (df : RawChange₍_,_₎ x y f) →
+      Set (p ⊔ q ⊔ c)
+    IsDerivative₍_,_₎ x y f df = IsDerivative {{change-algebra₍ _ ₎}} {{change-algebra₍ _ ₎}} f df where
+      CPx = change-algebra₍_₎ {{CP}} x
+      CQy = change-algebra₍_₎ {{CQ}} y
+
+    -- Lemma 2.5 appears in Base.Change.Equivalence.
 
 module FunctionChanges
     {a} {b} {c} {d} (A : Set a) (B : Set b) {{CA : ChangeAlgebra c A}} {{CB : ChangeAlgebra d B}}
