@@ -1,4 +1,4 @@
-module Base.Change.AltFunctionChanges where
+module Base.Change.PointwiseFunctionChanges where
 
 open import Data.Product
 open import Function
