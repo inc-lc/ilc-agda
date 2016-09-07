@@ -11,6 +11,7 @@ module Postulate.Extensionality where
 
 
 open import Relation.Binary.PropositionalEquality
+import Relation.Binary.HeterogeneousEquality as H
 
 postulate ext : ∀ {a b} → Extensionality a b
 
@@ -25,3 +26,6 @@ ext³ : ∀
   ((a : A) (b : B a) (c : C a b) → f a b c ≡ g a b c) → f ≡ g
 
 ext³ fabc=gabc = ext (λ a → ext (λ b → ext (λ c → fabc=gabc a b c)))
+
+hext : ∀ {a b} → {A : Set a} {B : A → Set b} {f g : (x : A) → B x} → (∀ x → f x ≡ g x) → f H.≅ g
+hext f≡g = H.≡-to-≅ (ext f≡g)
