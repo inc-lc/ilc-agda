@@ -256,6 +256,9 @@ module GroupChanges
 module FunctionChanges
     {a} {b} {c} {d} (A : Set a) (B : Set b) {{CA : ChangeAlgebra c A}} {{CB : ChangeAlgebra d B}}
   where
+    Derivative : (A → B) → Set (a ⊔ b ⊔ c ⊔ d)
+    Derivative f = Σ[ f′ ∈ RawChange f ] IsDerivative f f′
+
     -- This corresponds to Definition 2.6 in the paper.
     record FunctionChange (f : A → B) : Set (a ⊔ b ⊔ c ⊔ d) where
       field
