@@ -111,6 +111,45 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
     _≙_ {{changeAlgebra}} df₁ df₂ → apply df₁ x dx ≙ apply df₂ x dx
   equiv-fun-changes-funs {dx = dx} df₁≙df₂ = equiv-fun-changes-respect df₁≙df₂ (≙-refl {dx = dx})
 
+  derivative-doe-characterization : ∀ {a : A} {da : Δ a}
+    {f : A → B} {df : RawChange f} (is-derivative : IsDerivative f df) →
+    _≙_ {{CB}} (df a da) (f (a ⊞ da) ⊟ f a)
+  derivative-doe-characterization {a} {da} {f} {df} is-derivative = doe lemma
+    where
+      open ≡-Reasoning
+      lemma : f a ⊞ df a da ≡ f a ⊞ (f (a ⊞ da) ⊟ f a)
+      lemma =
+        begin
+          (f a ⊞ df a da)
+        ≡⟨ is-derivative a da ⟩
+          (f (a ⊞ da))
+        ≡⟨ sym (update-diff (f (a ⊞ da)) (f a)) ⟩
+          (f a ⊞ (f (a ⊞ da) ⊟ f a))
+        ∎
+
+  derivative-respects-doe : ∀ {x : A} {dx₁ dx₂ : Δ x}
+    {f : A → B} {df : RawChange f} (is-derivative : IsDerivative f df) →
+    _≙_ {{CA}} dx₁ dx₂ →  _≙_ {{CB}} (df x dx₁) (df x dx₂)
+  derivative-respects-doe {x} {dx₁} {dx₂} {f} {df} is-derivative dx₁≙dx₂ =
+    begin
+      df x dx₁
+    ≙⟨ derivative-doe-characterization is-derivative ⟩
+      f (x ⊞ dx₁) ⊟ f x
+    ≡⟨ cong (λ v → f v  ⊟ f x) (proof dx₁≙dx₂) ⟩
+      f (x ⊞ dx₂) ⊟ f x
+    ≙⟨ ≙-sym (derivative-doe-characterization is-derivative) ⟩
+      df x dx₂
+    ∎
+    where
+      open ≙-Reasoning
+
+  -- This is also a corollary of fun-changes-respect
+  derivative-respects-doe-alt : ∀ {x : A} {dx₁ dx₂ : Δ x}
+    {f : A → B} {df : RawChange f} (is-derivative : IsDerivative f df) →
+    _≙_ {{CA}} dx₁ dx₂ →  _≙_ {{CB}} (df x dx₁) (df x dx₂)
+  derivative-respects-doe-alt {x} {dx₁} {dx₂} {f} {df} is-derivative dx₁≙dx₂ =
+    fun-change-respects (DerivativeAsChange is-derivative) dx₁≙dx₂
+
   open import Postulate.Extensionality
 
   -- An extensionality principle for delta-observational equivalence: if
