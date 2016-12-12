@@ -102,9 +102,9 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
           f x ⊞ apply df₂ x dx₂
         ∎
 
-  fun-change-respects : ∀ {x : A} {dx₁ dx₂ : Δ x} {f : A → B} {df : Δ f} →
+  fun-change-respects : ∀ {x : A} {dx₁ dx₂ : Δ x} {f : A → B} (df : Δ f) →
     dx₁ ≙ dx₂ → apply df x dx₁ ≙ apply df x dx₂
-  fun-change-respects {df = df} dx₁≙dx₂ = equiv-fun-changes-respect (≙-refl {dx = df}) dx₁≙dx₂
+  fun-change-respects df dx₁≙dx₂ = equiv-fun-changes-respect (≙-refl {dx = df}) dx₁≙dx₂
 
   -- D.o.e. function changes behave like the same function (up to d.o.e.).
   equiv-fun-changes-funs : ∀ {x : A} {dx : Δ x} {f : A → B} {df₁ df₂ : Δ f} →
@@ -162,8 +162,8 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
   derivative-is-nil df fdf = ⊞-unit-is-nil df (derivative-is-⊞-unit df fdf)
 
   derivative-is-nil-alternative : ∀ {f : A → B} df →
-    (IsDerivative-f-df : IsDerivative f df) → DerivativeAsChange df IsDerivative-f-df ≙ nil f
-  derivative-is-nil-alternative df IsDerivative-f-df = derivative-is-nil (DerivativeAsChange df IsDerivative-f-df) IsDerivative-f-df
+    (IsDerivative-f-df : IsDerivative f df) → DerivativeAsChange IsDerivative-f-df ≙ nil f
+  derivative-is-nil-alternative df IsDerivative-f-df = derivative-is-nil (DerivativeAsChange IsDerivative-f-df) IsDerivative-f-df
 
   -- If we have two derivatives, they're both nil, hence they're equal.
   derivative-unique : ∀ {f : A → B} {df dg : Δ f} → IsDerivative f (apply df) → IsDerivative f (apply dg) → df ≙ dg

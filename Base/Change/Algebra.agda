@@ -360,8 +360,8 @@ module FunctionChanges
       f (a ⊞ da) ⊞ (df (a ⊞ da) (nil (a ⊞ da))) ≡ f a ⊞ df a da
     Derivative-is-valid {f} df IsDerivative-f-df a da rewrite IsDerivative-f-df (a ⊞ da) (nil (a ⊞ da)) | update-nil (a ⊞ da) = sym (IsDerivative-f-df a da)
 
-    DerivativeAsChange : ∀ {f : A → B} df (IsDerivative-f-df : IsDerivative f df) → Δ f
-    DerivativeAsChange df IsDerivative-f-df = record { apply = df ; correct = Derivative-is-valid df IsDerivative-f-df }
+    DerivativeAsChange : ∀ {f : A → B} {df} (IsDerivative-f-df : IsDerivative f df) → Δ f
+    DerivativeAsChange {df = df} IsDerivative-f-df = record { apply = df ; correct = Derivative-is-valid df IsDerivative-f-df }
     -- In Equivalence.agda, derivative-is-nil-alternative then proves that a derivative is also a nil change.
 
 
