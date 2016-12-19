@@ -73,6 +73,16 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
       lemma : _⊞_ {{ca}} x (x ⊞ dx ⊟ x) ≡ x ⊞ dx
       lemma = update-diff {{ca}} (x ⊞ dx) x
 
+  -- \begin{lemma}[Equivalence cancellation]
+  --   |v2 `ominus` v1 `doe` dv| holds if and only if |v2 = v1 `oplus`
+  --   dv|, for any |v1, v2 `elem` V| and |dv `elem` Dt ^ v1|.
+  -- \end{lemma}
+
+  equiv-cancel-1 : ∀ x' dx → _≙_ {{ca}} (x' ⊟ x) dx → x' ≡ x ⊞ dx
+  equiv-cancel-1 x' dx (doe x'⊟x≙dx) = trans (sym (update-diff x' x)) x'⊟x≙dx
+  equiv-cancel-2 : ∀ x' dx → x' ≡ x ⊞ dx → _≙_ {{ca}} (x' ⊟ x) dx
+  equiv-cancel-2 _ dx refl = diff-update
+
 module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
   {{CA : ChangeAlgebra c A}} {{CB : ChangeAlgebra d B}} where
 
