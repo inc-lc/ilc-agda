@@ -214,7 +214,19 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
     (IsDerivative-f-df : IsDerivative f df) → DerivativeAsChange IsDerivative-f-df ≙ nil f
   derivative-is-nil-alternative df IsDerivative-f-df = derivative-is-nil (DerivativeAsChange IsDerivative-f-df) IsDerivative-f-df
 
-  -- If we have two derivatives, they're both nil, hence they're equal.
+  nil-is-derivative : ∀ (f : A → B) → IsDerivative f (apply (nil f))
+  nil-is-derivative f a da =
+    begin
+      f a ⊞ apply (nil f) a da
+    ≡⟨ sym (incrementalization f (nil f) a da) ⟩
+      (f ⊞ nil f) (a ⊞ da)
+    ≡⟨ cong (λ □ → □ (_⊞_ a da)) (update-nil f) ⟩
+      f (a ⊞ da)
+    ∎
+    where
+      open ≡-Reasoning
+
+  -- If we have two derivatives, they're both nil, hence they're equivalent.
   derivative-unique : ∀ {f : A → B} {df dg : Δ f} → IsDerivative f (apply df) → IsDerivative f (apply dg) → df ≙ dg
   derivative-unique {f} {df} {dg} fdf fdg =
     begin
@@ -226,6 +238,27 @@ module _ {a} {b} {c} {d} {A : Set a} {B : Set b}
     ∎
     where
       open ≙-Reasoning
+
+  equiv-derivative-is-derivative : ∀ {f : A → B} (df₁ df₂ : Δ f) → IsDerivative f (apply df₁) →  _≙_ {{changeAlgebra}} df₁ df₂ → IsDerivative f (apply df₂)
+  equiv-derivative-is-derivative {f} df₁ df₂ IsDerivative-f-df₁ df₁≙df₂ a da =
+    begin
+      f a ⊞ apply df₂ a da
+    ≡⟨ sym (incrementalization f df₂ a da) ⟩
+      (f ⊞ df₂) (a ⊞ da)
+    ≡⟨ cong (λ □ → □ (_⊞_ a da)) lemma ⟩
+      f (a ⊞ da)
+    ∎
+    where
+      open ≡-Reasoning
+      lemma : f ⊞ df₂ ≡ f
+      lemma =
+        begin
+          f ⊞ df₂
+        ≡⟨ proof (≙-sym df₁≙df₂) ⟩
+          f ⊞ df₁
+        ≡⟨ derivative-is-⊞-unit df₁ IsDerivative-f-df₁ ⟩
+          f
+        ∎
 
   -- This is Lemma 2.5 in the paper. Note that the statement in the paper uses
   -- (incorrectly) normal equality instead of delta-observational equivalence.
