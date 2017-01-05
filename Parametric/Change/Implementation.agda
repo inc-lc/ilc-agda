@@ -58,7 +58,7 @@ record Structure : Set₁ where
     -- (see Def. 3.8a). Here, we only require that plugins define what the logical
     -- relation is on base types, and provide proofs for the two extension points
     -- below.
-    implements-base : ∀ ι {v : ⟦ ι ⟧Base} → Δ₍ ι ₎ v → ⟦ ΔBase ι ⟧Base → Set
+    implements-base : ∀ ι {v : ⟦ ι ⟧Base} → Δ₍ ι ₎ v → ⟦ ΔBase ι ⟧Type → Set
 
     -- Extension point 2: Differences on base types are logically related.
     u⊟v≈u⊝v-base : ∀ ι {u v : ⟦ ι ⟧Base} →
@@ -70,7 +70,7 @@ record Structure : Set₁ where
     carry-over-base : ∀ {ι}
       {v : ⟦ ι ⟧Base}
       (Δv : Δ₍ ι ₎ v)
-      {Δv′ : ⟦ ΔBase ι ⟧Base} (Δv≈Δv′ : implements-base ι Δv Δv′) →
+      {Δv′ : ⟦ ΔBase ι ⟧Type} (Δv≈Δv′ : implements-base ι Δv Δv′) →
         v ⊞₍ base ι ₎ Δv ≡ v ⟦⊕₍ base ι ₎⟧ Δv′
 
   ------------------------

@@ -26,14 +26,14 @@ open import Base.Denotation.Notation
 
 -- Extension point 1: The value of ⊕ for base types.
 ApplyStructure : Set
-ApplyStructure = ∀ ι → ⟦ ι ⟧Base → ⟦ ΔBase ι ⟧Base → ⟦ ι ⟧Base
+ApplyStructure = ∀ ι → ⟦ ι ⟧Base → ⟦ ΔBase ι ⟧Type → ⟦ ι ⟧Base
 
 -- Extension point 2: The value of ⊝ for base types.
 DiffStructure : Set
-DiffStructure = ∀ ι → ⟦ ι ⟧Base → ⟦ ι ⟧Base → ⟦ ΔBase ι ⟧Base
+DiffStructure = ∀ ι → ⟦ ι ⟧Base → ⟦ ι ⟧Base → ⟦ ΔBase ι ⟧Type
 
 NilStructure : Set
-NilStructure = ∀ ι → ⟦ ι ⟧Base → ⟦ ΔBase ι ⟧Base
+NilStructure = ∀ ι → ⟦ ι ⟧Base → ⟦ ΔBase ι ⟧Type
 
 module Structure
     (⟦apply-base⟧ : ApplyStructure)

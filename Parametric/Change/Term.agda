@@ -24,7 +24,7 @@ open import Data.Product
 
 -- Extension point 1: A term for ⊝ on base types.
 DiffStructure : Set
-DiffStructure = ∀ {ι Γ} → Term Γ (base ι ⇒ base ι ⇒ base (ΔBase ι))
+DiffStructure = ∀ {ι Γ} → Term Γ (base ι ⇒ base ι ⇒ ΔBase ι)
 
 -- Extension point 2: A term for ⊕ on base types.
 ApplyStructure : Set
@@ -32,7 +32,7 @@ ApplyStructure = ∀ {ι Γ} → Term Γ (ΔType (base ι) ⇒ base ι ⇒ base 
 
 -- Extension point 3: A term for 0 on base types.
 NilStructure : Set
-NilStructure = ∀ {ι Γ} → Term Γ (base ι ⇒ base (ΔBase ι))
+NilStructure = ∀ {ι Γ} → Term Γ (base ι ⇒ ΔBase ι)
 
 module Structure
     (apply-base : ApplyStructure)
