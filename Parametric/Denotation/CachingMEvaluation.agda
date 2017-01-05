@@ -206,3 +206,48 @@ module Structure
 
   ⟦_⟧TermCacheCBV : ∀ {τ Γ} → Term Γ τ → ⟦ fromCBVCtx Γ ⟧ValCtxHidCache → ⟦ cbvToCompType τ ⟧CompTypeHidCache
   ⟦ t ⟧TermCacheCBV = ⟦ fromCBV t ⟧CompTermCache
+
+  module _ (ι : Base) where
+    Γ : ValContext
+    Γ = ∅
+    σ = B ι
+    τ = B ι
+    f : Comp Γ (σ ⇛ F τ)
+    f = cAbs (cReturn (vVar vThis))
+
+    bar : ⟦ σ ⇛ F τ ⟧CompTypeHidCache
+    bar = ⟦ f ⟧CompTermCache ∅
+
+    open import Relation.Binary.PropositionalEquality
+    bar≡ : bar ≡ (λ x → vUnit , x , tt)
+    bar≡ = refl
+
+    dbar : ⟦ σ ⇛ F τ ⟧ΔCompType
+    dbar = λ dx → vUnit , λ c₀ → (dx , c₀)
+
+    barbaz : ⟦ base ι ⟧Type → ⟦ ΔBase ι ⟧Type → ⟦ base ι ⟧Type × ⟦ ΔBase ι ⟧Type
+    barbaz x dx =
+      let
+          (τ₁ , y , c₁) = bar x
+          (τ₂ , dbar′) = dbar dx
+          (dy , c₂) = dbar′ c₁
+      in y , dy
+    module _ (f : ⟦ σ ⇛ F τ ⟧CompTypeHidCache) (df : ⟦ σ ⇛ F τ ⟧ΔCompType)
+      (proof : ∀ x dx → proj₁ (f x) ≡ proj₁ (df dx)) where
+
+      -- fdf₁ : ⟦ base ι ⟧Type → ⟦ ΔBase ι ⟧Type → ⟦ base ι ⟧Type × ⟦ ΔBase ι ⟧Type
+      -- fdf₁ x dx =
+      --   let
+      --     (τ₁ , y , c₁) = f x
+      --     (τ₂ , dbar′) = df dx
+      --     --(dy , c₂) = dbar′ c₁ -- fails, as it should be expected!
+      --   in y , dy
+
+      fdf : ⟦ base ι ⟧Type → ⟦ ΔBase ι ⟧Type → ⟦ base ι ⟧Type × ⟦ ΔBase ι ⟧Type
+      fdf x dx with proof x dx
+      ... | p =
+        let
+          (τ₁ , y , c₁) = f x
+          (τ₂ , dbar′) = df dx
+          (dy , c₂) = dbar′ (subst ⟦_⟧ValTypeHidCache p c₁) --
+        in y , dy

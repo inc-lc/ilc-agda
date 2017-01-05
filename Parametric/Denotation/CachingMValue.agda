@@ -64,3 +64,15 @@ module Structure (ΔBase : Structure) where
 
   ⟦_⟧ValCtxHidCache : (Γ : ValContext) → Set
   ⟦_⟧ValCtxHidCache = DependentList ⟦_⟧ValTypeHidCache
+
+  {-# TERMINATING #-}
+  ⟦_⟧ΔValType : ValType → Set
+  ⟦_⟧ΔCompType : CompType → Set
+  ⟦_⟧ΔCompType (F τ) = Σ[ τ₁ ∈ ValType ] (⟦ τ₁ ⟧ValTypeHidCache → ⟦ τ ⟧ΔValType × ⟦ τ₁ ⟧ValTypeHidCache)
+  ⟦_⟧ΔCompType (σ ⇛ τ) = ⟦ σ ⟧ΔValType → ⟦ τ ⟧ΔCompType
+
+  ⟦_⟧ΔValType (U c) = ⟦ c ⟧ΔCompType
+  ⟦_⟧ΔValType (B ι) = ⟦ ΔBase ι ⟧
+  ⟦_⟧ΔValType vUnit = ⊤
+  ⟦_⟧ΔValType (τ₁ v× τ₂) = ⟦_⟧ΔValType τ₁ × ⟦_⟧ΔValType τ₂
+  ⟦_⟧ΔValType (τ₁ v+ τ₂) = (⟦_⟧ΔValType τ₁ ⊎ ⟦_⟧ΔValType τ₂) ⊎ (⟦ τ₁ ⟧ ⊎ ⟦ τ₂ ⟧)
