@@ -31,6 +31,7 @@ module Parametric.Denotation.CachingMEvaluation
     -- They have also subtyping --- not sure whether that's good or bad.
     (⟦_⟧ValBase : MEvaluation.ValStructure Const ⟦_⟧Base ValConst CompConst cbnToCompConst cbvToCompConst)
     (⟦_⟧CompBase : MEvaluation.CompStructure Const ⟦_⟧Base ValConst CompConst cbnToCompConst cbvToCompConst)
+    (ΔBase : CachingMValue.Structure Base ⟦_⟧Base)
   where
 
 open Type.Structure Base
@@ -42,7 +43,7 @@ open MTerm.Structure Const ValConst CompConst cbnToCompConst cbvToCompConst
 open Value.Structure Base ⟦_⟧Base
 open Evaluation.Structure Const ⟦_⟧Base ⟦_⟧Const
 open MValue.Structure Base ⟦_⟧Base
-open CachingMValue.Structure Base ⟦_⟧Base
+open CachingMValue.Structure Base ⟦_⟧Base ΔBase
 open MEvaluation.Structure Const ⟦_⟧Base ValConst CompConst cbnToCompConst cbvToCompConst ⟦_⟧ValBase ⟦_⟧CompBase
 
 open import Base.Denotation.Notation

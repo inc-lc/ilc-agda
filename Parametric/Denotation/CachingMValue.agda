@@ -28,7 +28,10 @@ open import Data.Unit
 open import Level
 open import Function hiding (const)
 
-module Structure where
+Structure : Set
+Structure = Base → Type
+
+module Structure (ΔBase : Structure) where
   {-# TERMINATING #-}
   ⟦_⟧ValTypeHidCache : (τ : ValType) → Set
   ⟦_⟧CompTypeHidCache : (τ : CompType) → Set
