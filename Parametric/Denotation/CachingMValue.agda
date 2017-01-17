@@ -76,3 +76,39 @@ module Structure (ΔBase : Structure) where
   ⟦_⟧ΔValType vUnit = ⊤
   ⟦_⟧ΔValType (τ₁ v× τ₂) = ⟦_⟧ΔValType τ₁ × ⟦_⟧ΔValType τ₂
   ⟦_⟧ΔValType (τ₁ v+ τ₂) = (⟦_⟧ΔValType τ₁ ⊎ ⟦_⟧ΔValType τ₂) ⊎ (⟦ τ₁ ⟧ ⊎ ⟦ τ₂ ⟧)
+
+open import Data.Product
+open import Level
+
+-- -- Needed to allow storing functions in cache:
+-- record _↝_↝_ {a b} (S : Set a) c (T : Set b) : Set (a ⊔ b ⊔ suc c) where
+--   field
+--     cache : Set c
+--     fun : S → (T × cache)
+
+-- record _↝′_↝′_ {a b} (dS : Set a) c (dT : Set b) : Set (a ⊔ b ⊔ suc c) where
+--   field
+--     cache : Set c
+--     fun : dS → cache → (dT × cache)
+
+-- -- -- For simplicity, but won't work:
+-- --
+-- -- record _↝_ {a b} (S : Set a) (T : Set b) : Set (a ⊔ b ⊔ suc zero) where
+-- --   field
+-- --     cache : Set
+-- --     fun : S → (T × cache)
+-- -- record _↝′_ (da : Set₁) (db : Set₁) : Set₁ where
+-- --   field
+-- --     cache : Set
+-- --     dfun : da → cache → (db × cache)
+
+-- fooo : (a b : Set₁) → Set₁
+-- fooo a b = a ↝ zero ↝ (b ↝ zero ↝ b)
+
+-- dfooo : (da db : Set₁) → Set₁
+-- dfooo da db = da ↝′ zero ↝′ (db ↝′ zero ↝′ db)
+
+-- Since caches can contain caches, including function caches, we can't use the
+-- above. The existentials must store object-language codes of some sort. For
+-- extra fun, the resulting code is not typeable with simple types, so we can't
+-- use codes for simple types but must store, say, function bodies.
