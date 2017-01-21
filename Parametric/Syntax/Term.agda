@@ -180,24 +180,6 @@ module Structure (Const : Structure) where
     Term Γ ε → Term Γ ζ → Term Γ η
   app₆ f x = app₅ (app f x)
 
-  UncurriedTermConstructor : (Γ Σ : Context) (τ : Type) → Set
-  UncurriedTermConstructor Γ Σ τ = Terms Γ Σ → Term Γ τ
-
-  uncurriedConst : ∀ {Σ τ} → Const Σ τ → ∀ {Γ} → UncurriedTermConstructor Γ Σ τ
-  uncurriedConst constant = const constant
-
-  CurriedTermConstructor : (Γ Σ : Context) (τ : Type) → Set
-  CurriedTermConstructor Γ ∅ τ′ = Term Γ τ′
-  CurriedTermConstructor Γ (τ • Σ) τ′ = Term Γ τ → CurriedTermConstructor Γ Σ τ′
-
-  curryTermConstructor : ∀ {Σ Γ τ} → UncurriedTermConstructor Γ Σ τ → CurriedTermConstructor Γ Σ τ
-  curryTermConstructor {∅} k = k ∅
-  curryTermConstructor {τ • Σ} k = λ t → curryTermConstructor (λ ts → k (t • ts))
-
-  curriedConst : ∀ {Σ τ} → Const Σ τ → ∀ {Γ} → CurriedTermConstructor Γ Σ τ
-  curriedConst constant = curryTermConstructor (uncurriedConst constant)
-
-
   -- HOAS-like smart constructors for lambdas, for different arities.
 
   -- We could also write this:
