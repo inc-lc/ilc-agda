@@ -15,9 +15,9 @@ open import Relation.Binary.PropositionalEquality
 open import Algebra using (CommutativeRing)
 open import Algebra.Structures
 open import Data.Integer
-import Data.Integer.Properties
+open import Data.Integer.Properties
+  using ()
   renaming (commutativeRing to ℤ-is-commutativeRing)
-open Data.Integer.Properties using (ℤ-is-commutativeRing)
 open import Data.Product
 
 infixl 9 _\\_ -- same as Data.Map.(\\)
@@ -31,17 +31,14 @@ commutative = IsAbelianGroup.comm
 
 associative : ∀ {A : Set} {f : A → A → A} {z neg} →
   IsAbelianGroup _≡_ f z neg → (k m n : A) → f (f k m) n ≡ f k (f m n)
-associative abelian = IsSemigroup.assoc (IsMonoid.isSemigroup
-  (IsGroup.isMonoid (IsAbelianGroup.isGroup abelian)))
+associative abelian = IsAbelianGroup.assoc abelian
 
 left-inverse : ∀ {A : Set} {f : A → A → A} {z neg} →
   IsAbelianGroup _≡_ f z neg → (n : A) → f (neg n) n ≡ z
-left-inverse abelian = proj₁
-  (IsGroup.inverse (IsAbelianGroup.isGroup abelian))
+left-inverse abelian = proj₁ (IsAbelianGroup.inverse abelian)
 right-inverse : ∀ {A : Set} {f : A → A → A} {z neg} →
   IsAbelianGroup _≡_ f z neg → (n : A) → f n (neg n) ≡ z
-right-inverse abelian = proj₂
-  (IsGroup.inverse (IsAbelianGroup.isGroup abelian))
+right-inverse abelian = proj₂ (IsAbelianGroup.inverse abelian)
 
 left-identity : ∀ {A : Set} {f : A → A → A} {z neg} →
   IsAbelianGroup _≡_ f z neg → (n : A) → f z n ≡ n
