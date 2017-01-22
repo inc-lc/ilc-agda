@@ -38,40 +38,16 @@ import Parametric.Change.Correctness
   deriveConst implementation-structure as Correctness
 
 derive-const-correct : Correctness.Structure
-derive-const-correct (intlit-const n) ∅ ρ dρ ρ′ dρ≈ρ′ ∅ = refl
-derive-const-correct add-const (s • t • ∅) ρ dρ ρ′ dρ≈ρ′ (s-correct • t-correct • ∅) = cong₂ _+_
-  s-correct
-  t-correct
-derive-const-correct minus-const (t • ∅) ρ dρ ρ′ dρ≈ρ′ (t-correct • ∅) =
-  cong -_ t-correct
-derive-const-correct empty-const ∅ ρ dρ ρ′ dρ≈ρ′ ∅ = refl
-derive-const-correct insert-const (s • t • ∅) ρ dρ ρ′ dρ≈ρ′ (s-correct • t-correct • ∅) =
-  cong₂ _\\_
-    (cong₂ _++_
-      (cong singletonBag (cong₂ _+_
-        (⟦fit⟧ s ρ ρ′)
-        s-correct))
-      (cong₂ _++_
-        (⟦fit⟧ t ρ ρ′)
-        t-correct))
-    (cong₂ _++_ (cong singletonBag (⟦fit⟧ s ρ ρ′)) (⟦fit⟧ t ρ ρ′))
-derive-const-correct union-const (s • t • ∅) ρ dρ ρ′ dρ≈ρ′ (s-correct • t-correct • ∅) = cong₂ _++_
-  s-correct
-  t-correct
-derive-const-correct negate-const  (t • ∅) ρ dρ ρ′ dρ≈ρ′ (t-correct • ∅) =
-  cong negateBag t-correct
-derive-const-correct flatmap-const (s • t • ∅) ρ dρ ρ′ dρ≈ρ′ (s-correct • t-correct • ∅) =
-  cong₂ _\\_
-    (cong₂ flatmapBag
-      (ext (λ v →
-        cong₂ _++_
-          (cong (λ hole → hole v) (⟦fit⟧ s ρ ρ′))
-            (s-correct v (nil₍ int ₎ v) (+ 0) refl)))
-      (cong₂ _++_
-        (⟦fit⟧ t ρ ρ′)
-       t-correct))
-    (cong₂ flatmapBag (⟦fit⟧ s ρ ρ′) (⟦fit⟧ t ρ ρ′))
-derive-const-correct sum-const (t • ∅) ρ dρ ρ′ dρ≈ρ′ (t-correct • ∅) =
-  cong sumBag t-correct
+derive-const-correct (intlit-const n) = refl
+derive-const-correct add-const w Δw .Δw refl w₁ Δw₁ .Δw₁ refl = refl
+derive-const-correct minus-const w Δw .Δw refl = refl
+derive-const-correct empty-const = refl
+derive-const-correct insert-const w Δw .Δw refl w₁ Δw₁ .Δw₁ refl = refl
+derive-const-correct union-const w Δw .Δw refl w₁ Δw₁ .Δw₁ refl = refl
+derive-const-correct negate-const w Δw .Δw refl = refl
+derive-const-correct flatmap-const w Δw Δw′ Δw≈Δw′ w₁ Δw₁ .Δw₁ refl =
+  cong (λ □ → flatmapBag □ (w₁ ++ Δw₁) ++ negateBag (flatmapBag w w₁))
+  (ext (λ n → cong (_++_ (w n)) (Δw≈Δw′ n (+ 0) (+ 0) refl)))
+derive-const-correct sum-const w Δw .Δw refl = refl
 
 open Correctness.Structure derive-const-correct public

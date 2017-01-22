@@ -70,14 +70,12 @@ open import Base.Denotation.Notation
 open import Relation.Binary.PropositionalEquality
 open import Postulate.Extensionality
 
--- Extension point: A proof that change evaluation for a fully
--- applied primitive is related to the value of incrementalizing
--- this primitive, if their arguments are so related.
+-- Extension point: A proof that change evaluation for a
+-- primitive is related to the value of incrementalizing
+-- this primitive.
 Structure : Set
-Structure = ∀ {Σ Γ τ} (c : Const Σ τ) (ts : Terms Γ Σ)
-  (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
-  (ts-correct : implements-env Σ (⟦ ts ⟧ΔTerms ρ dρ) (⟦ derive-terms ts ⟧Terms (alternate ρ ρ′))) →
-  ⟦ c ⟧ΔConst (⟦ ts ⟧Terms ρ) (⟦ ts ⟧ΔTerms ρ dρ) ≈₍ τ ₎ ⟦ derive-const c (fit-terms ts) (derive-terms ts) ⟧ (alternate ρ ρ′)
+Structure = ∀ {τ} (c : Const τ) →
+  ⟦ c ⟧ΔConst ≈₍ τ ₎ ⟦ derive-const c ⟧Term ∅
 
 module Structure (derive-const-correct : Structure) where
   deriveVar-correct : ∀ {τ Γ} (x : Var Γ τ)
@@ -86,22 +84,21 @@ module Structure (derive-const-correct : Structure) where
   deriveVar-correct this (v • ρ) (dv • dρ) (dv′ • dρ′) (dv≈dv′ • dρ≈dρ′) = dv≈dv′
   deriveVar-correct (that x) (v • ρ) (dv • dρ) (dv′ • dρ′) (dv≈dv′ • dρ≈dρ′) = deriveVar-correct x ρ dρ dρ′ dρ≈dρ′
 
+  derive-const-env-irrelevant : ∀ {Γ τ} (c : Const τ) → (ρ : ⟦ ΔContext Γ ⟧) → ⟦ weaken ∅≼Γ (derive-const c) ⟧Term ρ ≡
+      ⟦ derive-const c ⟧Term ∅
+  derive-const-env-irrelevant {Γ} c ρ =
+    trans
+      (weaken-sound {Γ₁≼Γ₂ = (∅≼Γ {ΔContext Γ})} (derive-const c) ρ)
+      (cong ⟦ derive-const c ⟧Term (⟦∅≼Γ⟧-∅ ρ))
   -- We provide: A variant of Lemma 3.10 for arbitrary contexts.
   derive-correct : ∀ {τ Γ} (t : Term Γ τ)
     (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
     ⟦ t ⟧Δ ρ dρ ≈₍ τ ₎ ⟦ derive t ⟧ (alternate ρ ρ′)
 
-  derive-terms-correct : ∀ {Σ Γ} (ts : Terms Γ Σ)
-    (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) (ρ′ : ⟦ mapContext ΔType Γ ⟧) (dρ≈ρ′ : implements-env Γ dρ ρ′) →
-    implements-env Σ (⟦ ts ⟧ΔTerms ρ dρ) (⟦ derive-terms ts ⟧Terms (alternate ρ ρ′))
-
-  derive-terms-correct ∅ ρ dρ ρ′ dρ≈ρ′ = ∅
-  derive-terms-correct (t • ts) ρ dρ ρ′ dρ≈ρ′ =
-    derive-correct t ρ dρ ρ′ dρ≈ρ′ • derive-terms-correct ts ρ dρ ρ′ dρ≈ρ′
-
-  derive-correct (const c ts) ρ dρ ρ′ dρ≈ρ′ =
-    derive-const-correct c ts ρ dρ ρ′ dρ≈ρ′
-      (derive-terms-correct ts ρ dρ ρ′ dρ≈ρ′)
+  derive-correct {τ} {Γ} (const c) ρ dρ ρ′ dρ≈ρ′ =
+    subst (implements τ ⟦ c ⟧ΔConst)
+      (sym (derive-const-env-irrelevant c (alternate ρ ρ′)))
+      (derive-const-correct c)
   derive-correct (var x) ρ dρ ρ′ dρ≈ρ′ =
     deriveVar-correct x ρ dρ ρ′ dρ≈ρ′
   derive-correct (app {σ} {τ} s t) ρ dρ ρ′ dρ≈ρ′

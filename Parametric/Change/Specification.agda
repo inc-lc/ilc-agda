@@ -40,26 +40,22 @@ record Structure : Set₁ where
 
   field
     -- Extension point 1: Derivatives of constants.
-    ⟦_⟧ΔConst : ∀ {Σ τ} → (c  : Const Σ τ) (ρ : ⟦ Σ ⟧) → Δ₍ Σ ₎ ρ → Δ₍ τ ₎ (⟦ c ⟧Const ρ)
+    ⟦_⟧ΔConst : ∀ {τ} → (c : Const τ) → Δ₍ τ ₎ (⟦ c ⟧Const)
 
     -- Extension point 2: Correctness of the instantiation of extension point 1.
-    correctness-const : ∀ {Σ τ} (c : Const Σ τ) →
-      IsDerivative₍ Σ , τ ₎ ⟦ c ⟧Const ⟦ c ⟧ΔConst
+    correctness-const : ∀ {τ} (c : Const τ) →
+      ⟦ c ⟧Const ⊞₍ τ ₎ ⟦ c ⟧ΔConst ≡ ⟦ c ⟧Const
 
   ---------------
   -- Interface --
   ---------------
 
-  -- We provide: Derivatives of terms and lists of terms.
+  -- We provide: Derivatives of terms.
   ⟦_⟧Δ : ∀ {τ Γ} → (t : Term Γ τ) (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) → Δ₍ τ ₎ (⟦ t ⟧ ρ)
-  ⟦_⟧ΔTerms : ∀ {Σ Γ} → (ts : Terms Γ Σ) (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ) → Δ₍ Σ ₎ (⟦ ts ⟧Terms ρ)
 
   -- And we provide correctness proofs about the derivatives.
   correctness : ∀ {τ Γ} (t : Term Γ τ) →
     IsDerivative₍ Γ , τ ₎ ⟦ t ⟧ ⟦ t ⟧Δ
-
-  correctness-terms : ∀ {Σ Γ} (ts : Terms Γ Σ) →
-    IsDerivative₍ Γ , Σ ₎ ⟦ ts ⟧Terms ⟦ ts ⟧ΔTerms
 
   --------------------
   -- Implementation --
@@ -69,7 +65,7 @@ record Structure : Set₁ where
   ⟦ this   ⟧ΔVar (v • ρ) (dv • dρ) = dv
   ⟦ that x ⟧ΔVar (v • ρ) (dv • dρ) = ⟦ x ⟧ΔVar ρ dρ
 
-  ⟦_⟧Δ (const c ts) ρ dρ = ⟦ c ⟧ΔConst (⟦ ts ⟧Terms ρ) (⟦ ts ⟧ΔTerms ρ dρ)
+  ⟦_⟧Δ (const c) ρ dρ = ⟦ c ⟧ΔConst
   ⟦_⟧Δ (var x) ρ dρ = ⟦ x ⟧ΔVar ρ dρ
   ⟦_⟧Δ (app {σ} {τ} s t) ρ dρ =
        call-change {σ} {τ} (⟦ s ⟧Δ ρ dρ) (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ)
@@ -92,28 +88,12 @@ record Structure : Set₁ where
       ∎
     } where open ≡-Reasoning
 
-  ⟦ ∅ ⟧ΔTerms ρ dρ = ∅
-  ⟦ t • ts ⟧ΔTerms ρ dρ = ⟦ t ⟧Δ ρ dρ • ⟦ ts ⟧ΔTerms ρ dρ
-
   correctVar : ∀ {τ Γ} (x : Var Γ τ) →
     IsDerivative₍ Γ , τ ₎ ⟦ x ⟧ ⟦ x ⟧ΔVar
   correctVar (this) (v • ρ) (dv • dρ) = refl
   correctVar (that y) (v • ρ) (dv • dρ) = correctVar y ρ dρ
 
-  correctness-terms ∅ ρ dρ = refl
-  correctness-terms (t • ts) ρ dρ =
-    cong₂ _•_
-      (correctness t ρ dρ)
-      (correctness-terms ts ρ dρ)
-
-  correctness (const {Σ} {τ} c ts) ρ dρ =
-    begin
-      after₍ τ ₎ (⟦ c ⟧ΔConst (⟦ ts ⟧Terms ρ) (⟦ ts ⟧ΔTerms ρ dρ))
-    ≡⟨ correctness-const c (⟦ ts ⟧Terms ρ) (⟦ ts ⟧ΔTerms ρ dρ) ⟩
-      ⟦ c ⟧Const (after-env (⟦ ts ⟧ΔTerms ρ dρ))
-    ≡⟨ cong ⟦ c ⟧Const (correctness-terms ts ρ dρ) ⟩
-      ⟦ c ⟧Const (⟦ ts ⟧Terms (after-env dρ))
-    ∎ where open ≡-Reasoning
+  correctness (const {τ} c) ρ dρ = correctness-const c
   correctness {τ} (var x) ρ dρ = correctVar {τ} x ρ dρ
   correctness (app {σ} {τ} s t) ρ dρ =
     let
