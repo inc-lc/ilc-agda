@@ -143,5 +143,4 @@ negateEmptyBag-emptyBag : negateBag emptyBag ≡ emptyBag
 negateEmptyBag-emptyBag = right-identity-unique emptyBag (negateBag emptyBag) (right-inverse abelian-bag emptyBag)
 
 a++negateBagEmptyBag≡a : ∀ a → a ++ negateBag emptyBag ≡ a
--- a++negateBagEmptyBag≡a a = trans (cong (_++_ a) negateEmptyBag-emptyBag) (right-id-bag a)
 a++negateBagEmptyBag≡a a rewrite negateEmptyBag-emptyBag = right-id-bag a

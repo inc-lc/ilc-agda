@@ -29,26 +29,6 @@ private
       negateBag b ++ negateBag db
   negate-correct-change b db = trans (a++negateBagEmptyBag≡a (negateBag (b ++ db))) (sym -a·-b=-ab)
 
--- add-correct-change-1 : ∀ a b c d →
---   a + (b + c) + (d + (+ 0)) ≡
---   a + b + (d + c)
--- add-correct-change-1 a b c d =
---   begin
---     a + (b + c) + (d + (+ 0))
---   ≡⟨ cong (λ □ → a + (b + c) + □) (right-id-int d) ⟩
---     (a + (b + c)) + d
---   ≡⟨ associative-int a (b + c) d ⟩
---     a + ((b + c) + d)
---   ≡⟨ cong (λ □ → a + □) (associative-int b c d) ⟩
---     a + (b + (c + d))
---   ≡⟨ sym (associative-int a b (c + d)) ⟩
---     (a + b) + (c + d)
---   ≡⟨ cong (λ □ → a + b + □) (commutative-int c d) ⟩
---     (a + b) + (d + c)
---   ∎
---   where
---     open ≡-Reasoning
-
   add-correct-change-1 : ∀ a b c d →
     a + (b + c) + (d + (+ 0)) ≡
     a + b + (d + c)
@@ -57,16 +37,6 @@ private
   add-correct-change-2 : ∀
     m n p q → m + n + p + q ≡ m + p + (n + q)
   add-correct-change-2 m n p q rewrite associative-int (m + n) p q = mn·pq=mp·nq {m}
-  -- add-correct-change-2 m n p q =
-  --   begin
-  --     ((m + n) + p) + q
-  --   ≡⟨ associative-int (m + n) p q ⟩
-  --     (m + n) + (p + q)
-  --   ≡⟨ mn·pq=mp·nq {m}⟩
-  --     (m + p) + (n + q)
-  --   ∎
-  --   where
-  --     open ≡-Reasoning
 
   sum-correct-change : ∀ b db → sumBag (b ++ db) + sumBag emptyBag ≡ sumBag b + sumBag db
   sum-correct-change b db rewrite sym (homo-sum {b ++ db} {emptyBag}) | right-id-bag (b ++ db) = homo-sum {b} {db}
@@ -169,46 +139,12 @@ private
   union-correct : ∀ a b → (a ++ b) ++ (emptyBag ++ emptyBag) ≡ (a ++ b)
   union-correct a b = trans (cong (λ □ → (a ++ b) ++ □) (right-id-bag emptyBag)) (right-id-bag (a ++ b))
   negate-correct : ∀ b → negateBag b ++ negateBag emptyBag ≡ negateBag b
-  --negate-correct b = trans (cong (λ □ → negateBag b ++ □) negateEmptyBag-emptyBag) (right-id-bag (negateBag b))
   negate-correct b rewrite negateEmptyBag-emptyBag | right-id-bag (negateBag b) = refl
   insert-correct : ∀ n b →
     (singletonBag n ++ b) ++
       (singletonBag (n + + 0) ++ b ++ emptyBag) ++
       negateBag (singletonBag n ++ b)
       ≡ singletonBag n ++ b
-  -- insert-correct n b =
-  --   begin
-  --     (singletonBag n ++ b) ++
-  --     (singletonBag (n + + 0) ++ b ++ emptyBag) ++
-  --     negateBag (singletonBag n ++ b)
-  --   ≡⟨ cong
-  --        (λ □ →
-  --           (singletonBag n ++ b) ++
-  --           (singletonBag □ ++ b ++ emptyBag) ++
-  --           negateBag (singletonBag n ++ b))
-  --        (right-id-int n)
-  --   ⟩
-  --     (singletonBag n ++ b) ++
-  --     (singletonBag n ++ b ++ emptyBag) ++
-  --     negateBag (singletonBag n ++ b)
-  --   ≡⟨ cong
-  --        (λ □ →
-  --          (singletonBag n ++ b) ++
-  --          (singletonBag n ++ □) ++
-  --          negateBag (singletonBag n ++ b)
-  --        )
-  --      (right-id-bag b)
-  --   ⟩
-  --     (singletonBag n ++ b) ++
-  --     (singletonBag n ++ b) ++
-  --     negateBag (singletonBag n ++ b)
-  --   ≡⟨ cong (λ □ → (singletonBag n ++ b) ++ □) (right-inv-bag (singletonBag n ++ b)) ⟩
-  --     (singletonBag n ++ b) ++
-  --     emptyBag
-  --   ≡⟨ right-id-bag (singletonBag n ++ b) ⟩
-  --     singletonBag n ++ b
-  --   ∎
-  --   where open ≡-Reasoning
   insert-correct n b rewrite right-id-int n | right-id-bag b | right-inv-bag (singletonBag n ++ b) | right-id-bag (singletonBag n ++ b) = refl
 
   sum-correct : ∀ b → sumBag b + sumBag emptyBag ≡ sumBag b
