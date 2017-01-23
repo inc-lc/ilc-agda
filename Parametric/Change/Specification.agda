@@ -81,19 +81,19 @@ module Structure where
   correctness {τ} (var x) ρ dρ = correctVar {τ} x ρ dρ
   correctness (app {σ} {τ} s t) ρ dρ =
     let
-      f = ⟦ s ⟧ ρ
-      g = ⟦ s ⟧ (after-env dρ)
-      u = ⟦ t ⟧ ρ
-      v = ⟦ t ⟧ (after-env dρ)
+      f₁ = ⟦ s ⟧ ρ
+      f₂ = ⟦ s ⟧ (after-env dρ)
       Δf = ⟦ s ⟧Δ ρ dρ
+      u₁ = ⟦ t ⟧ ρ
+      u₂ = ⟦ t ⟧ (after-env dρ)
       Δu = ⟦ t ⟧Δ ρ dρ
     in
       begin
-        f u ⊞₍ τ ₎ call-change {σ} {τ} Δf u Δu
-      ≡⟨  sym (is-valid {σ} {τ} Δf u Δu) ⟩
-        (f ⊞₍ σ ⇒ τ ₎ Δf) (u ⊞₍ σ ₎ Δu)
+        f₁ u₁ ⊞₍ τ ₎ call-change {σ} {τ} Δf u₁ Δu
+      ≡⟨  sym (is-valid {σ} {τ} Δf u₁ Δu) ⟩
+        (f₁ ⊞₍ σ ⇒ τ ₎ Δf) (u₁ ⊞₍ σ ₎ Δu)
       ≡⟨ correctness {σ ⇒ τ} s ρ dρ ⟨$⟩ correctness {σ} t ρ dρ ⟩
-        g v
+        f₂ u₂
       ∎ where open ≡-Reasoning
   correctness {σ ⇒ τ} {Γ} (abs t) ρ dρ = ext (λ v →
     let
