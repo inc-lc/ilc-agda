@@ -129,18 +129,3 @@ distribute-neg {f = f} {neg} {z} {a} {b} {{abelian}} = inverse-unique
   ≡⟨ right-id-bag d ⟩
     d
   ∎ where open ≡-Reasoning
-
-open import Algebra.Properties.AbelianGroup (record
-                                               { Carrier = Bag
-                                               ; _≈_ = _≡_
-                                               ; _∙_ = _++_
-                                               ; ε = emptyBag
-                                               ; _⁻¹ = negateBag
-                                               ; isAbelianGroup = abelian-bag
-                                               })
-
-negateEmptyBag-emptyBag : negateBag emptyBag ≡ emptyBag
-negateEmptyBag-emptyBag = right-identity-unique emptyBag (negateBag emptyBag) (right-inverse abelian-bag emptyBag)
-
-a++negateBagEmptyBag≡a : ∀ a → a ++ negateBag emptyBag ≡ a
-a++negateBagEmptyBag≡a a rewrite negateEmptyBag-emptyBag = right-id-bag a

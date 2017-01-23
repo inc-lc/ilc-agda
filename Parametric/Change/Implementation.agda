@@ -22,8 +22,6 @@ module Parametric.Change.Implementation
     (⟦_⟧Const : Evaluation.Structure Const ⟦_⟧Base)
     (ΔBase : ChangeType.Structure Base)
     {{validity-structure : Validity.Structure ⟦_⟧Base}}
-    (specification-structure : Specification.Structure
-       Const ⟦_⟧Base ⟦_⟧Const)
     (⟦apply-base⟧ : ChangeValue.ApplyStructure Const ⟦_⟧Base ΔBase)
     (⟦diff-base⟧ : ChangeValue.DiffStructure Const ⟦_⟧Base ΔBase)
     (⟦nil-base⟧ : ChangeValue.NilStructure Const ⟦_⟧Base ΔBase)
@@ -35,7 +33,6 @@ open Term.Structure Base Const
 open Value.Structure Base ⟦_⟧Base
 open Evaluation.Structure Const ⟦_⟧Base ⟦_⟧Const
 open Validity.Structure ⟦_⟧Base
-open Specification.Structure specification-structure
 open ChangeType.Structure Base ΔBase
 open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
 open Derive.Structure Const ΔBase derive-const

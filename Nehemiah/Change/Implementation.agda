@@ -11,7 +11,6 @@ open import Nehemiah.Syntax.Term
 open import Nehemiah.Denotation.Value
 open import Nehemiah.Denotation.Evaluation
 open import Nehemiah.Change.Validity
-open import Nehemiah.Change.Specification
 open import Nehemiah.Change.Type
 open import Nehemiah.Change.Value
 open import Nehemiah.Change.Derive
@@ -24,7 +23,6 @@ open import Structure.Bag.Nehemiah
 
 import Parametric.Change.Implementation
     Const ⟦_⟧Base ⟦_⟧Const ΔBase
-    specification-structure
     ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧ deriveConst as Implementation
 
 private

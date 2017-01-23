@@ -20,13 +20,12 @@ open import Nehemiah.Change.Value
 open import Nehemiah.Change.Evaluation
 open import Nehemiah.Change.Validity
 open import Nehemiah.Change.Derive
-open import Nehemiah.Change.Specification
 open import Nehemiah.Change.Implementation
 
 open import Base.Denotation.Notation
 open import Relation.Binary.PropositionalEquality
 open import Data.Integer
-open import Structure.Bag.Nehemiah
+open import Theorem.Groups-Nehemiah
 open import Postulate.Extensionality
 
 import Parametric.Change.Correctness
@@ -34,20 +33,35 @@ import Parametric.Change.Correctness
   apply-base diff-base nil-base
   ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
   meaning-⊕-base meaning-⊝-base meaning-onil-base
-  specification-structure
   deriveConst implementation-structure as Correctness
+
+open import Algebra.Structures
 
 derive-const-correct : Correctness.Structure
 derive-const-correct (intlit-const n) = refl
-derive-const-correct add-const w Δw .Δw refl w₁ Δw₁ .Δw₁ refl = refl
-derive-const-correct minus-const w Δw .Δw refl = refl
+derive-const-correct add-const w Δw .Δw refl w₁ Δw₁ .Δw₁ refl
+  rewrite mn·pq=mp·nq {w} {Δw} {w₁} {Δw₁}
+  | associative-int (w + w₁) (Δw + Δw₁) (- (w + w₁))
+  = n+[m-n]=m {w + w₁} {Δw + Δw₁}
+derive-const-correct minus-const w Δw .Δw refl
+  rewrite sym (-m·-n=-mn {w} {Δw})
+  | associative-int (- w) (- Δw) (- (- w)) = n+[m-n]=m { - w} { - Δw}
 derive-const-correct empty-const = refl
 derive-const-correct insert-const w Δw .Δw refl w₁ Δw₁ .Δw₁ refl = refl
-derive-const-correct union-const w Δw .Δw refl w₁ Δw₁ .Δw₁ refl = refl
-derive-const-correct negate-const w Δw .Δw refl = refl
+derive-const-correct union-const w Δw .Δw refl w₁ Δw₁ .Δw₁ refl
+  rewrite ab·cd=ac·bd {w} {Δw} {w₁} {Δw₁}
+  | associative-bag (w ++ w₁) (Δw ++ Δw₁) (negateBag (w ++ w₁))
+  = a++[b\\a]=b {w ++ w₁} {Δw ++ Δw₁}
+derive-const-correct negate-const w Δw .Δw refl
+  rewrite sym (-a·-b=-ab {w} {Δw})
+  | associative-bag (negateBag w) (negateBag Δw) (negateBag (negateBag w))
+  = a++[b\\a]=b {negateBag w} {negateBag Δw}
 derive-const-correct flatmap-const w Δw Δw′ Δw≈Δw′ w₁ Δw₁ .Δw₁ refl =
   cong (λ □ → flatmapBag □ (w₁ ++ Δw₁) ++ negateBag (flatmapBag w w₁))
   (ext (λ n → cong (_++_ (w n)) (Δw≈Δw′ n (+ 0) (+ 0) refl)))
-derive-const-correct sum-const w Δw .Δw refl = refl
+derive-const-correct sum-const w Δw .Δw refl
+  rewrite homo-sum {w} {Δw}
+  | associative-int (sumBag w) (sumBag Δw) (- sumBag w)
+  = n+[m-n]=m {sumBag w} {sumBag Δw}
 
 open Correctness.Structure derive-const-correct public

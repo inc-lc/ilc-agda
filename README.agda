@@ -294,7 +294,6 @@ import Nehemiah.Change.Derive
 import Nehemiah.Denotation.Value
 import Nehemiah.Denotation.Evaluation
 import Nehemiah.Change.Validity
-import Nehemiah.Change.Specification
 
 -- Thirdly, we extend the terms that operate on simply-typed
 -- changes, and the connection to their values to account for the

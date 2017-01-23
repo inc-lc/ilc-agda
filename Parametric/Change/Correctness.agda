@@ -37,12 +37,9 @@ module Parametric.Change.Correctness
     (meaning-onil-base : ChangeEvaluation.NilStructure
       ⟦_⟧Base ⟦_⟧Const ΔBase apply-base diff-base nil-base ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧)
     {{validity-structure : Validity.Structure ⟦_⟧Base}}
-    (specification-structure : Specification.Structure
-      Const ⟦_⟧Base ⟦_⟧Const)
     (derive-const : Derive.Structure Const ΔBase)
     (implementation-structure : Implementation.Structure
       Const ⟦_⟧Base ⟦_⟧Const ΔBase
-      specification-structure
       ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧ derive-const)
   where
 
@@ -51,7 +48,7 @@ open Term.Structure Base Const
 open Value.Structure Base ⟦_⟧Base
 open Evaluation.Structure Const ⟦_⟧Base ⟦_⟧Const
 open Validity.Structure ⟦_⟧Base
-open Specification.Structure specification-structure
+open Specification.Structure Const ⟦_⟧Base ⟦_⟧Const
 open ChangeType.Structure Base ΔBase
 open ChangeTerm.Structure Const ΔBase apply-base diff-base nil-base
 open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
@@ -75,7 +72,7 @@ open import Postulate.Extensionality
 -- this primitive.
 Structure : Set
 Structure = ∀ {τ} (c : Const τ) →
-  ⟦ c ⟧ΔConst ≈₍ τ ₎ ⟦ derive-const c ⟧Term ∅
+  nil₍ τ ₎ ⟦ c ⟧Const ≈₍ τ ₎ ⟦ derive-const c ⟧Term ∅
 
 module Structure (derive-const-correct : Structure) where
   deriveVar-correct : ∀ {τ Γ} (x : Var Γ τ)
@@ -96,7 +93,7 @@ module Structure (derive-const-correct : Structure) where
     ⟦ t ⟧Δ ρ dρ ≈₍ τ ₎ ⟦ derive t ⟧ (alternate ρ ρ′)
 
   derive-correct {τ} {Γ} (const c) ρ dρ ρ′ dρ≈ρ′ =
-    subst (implements τ ⟦ c ⟧ΔConst)
+    subst (implements τ (nil₍ τ ₎ ⟦ c ⟧Const))
       (sym (derive-const-env-irrelevant c (alternate ρ ρ′)))
       (derive-const-correct c)
   derive-correct (var x) ρ dρ ρ′ dρ≈ρ′ =

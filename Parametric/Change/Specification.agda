@@ -30,22 +30,7 @@ open import Relation.Binary.PropositionalEquality
 open import Theorem.CongApp
 open import Postulate.Extensionality
 
--- This module defines two extension points, so to avoid some of
--- the boilerplate, we use record notation.
-
-record Structure : Set₁ where
-  ----------------
-  -- Parameters --
-  ----------------
-
-  field
-    -- Extension point 1: Derivatives of constants.
-    ⟦_⟧ΔConst : ∀ {τ} → (c : Const τ) → Δ₍ τ ₎ (⟦ c ⟧Const)
-
-    -- Extension point 2: Correctness of the instantiation of extension point 1.
-    correctness-const : ∀ {τ} (c : Const τ) →
-      ⟦ c ⟧Const ⊞₍ τ ₎ ⟦ c ⟧ΔConst ≡ ⟦ c ⟧Const
-
+module Structure where
   ---------------
   -- Interface --
   ---------------
@@ -65,7 +50,7 @@ record Structure : Set₁ where
   ⟦ this   ⟧ΔVar (v • ρ) (dv • dρ) = dv
   ⟦ that x ⟧ΔVar (v • ρ) (dv • dρ) = ⟦ x ⟧ΔVar ρ dρ
 
-  ⟦_⟧Δ (const c) ρ dρ = ⟦ c ⟧ΔConst
+  ⟦_⟧Δ (const {τ} c) ρ dρ = nil₍ τ ₎ ⟦ c ⟧Const
   ⟦_⟧Δ (var x) ρ dρ = ⟦ x ⟧ΔVar ρ dρ
   ⟦_⟧Δ (app {σ} {τ} s t) ρ dρ =
        call-change {σ} {τ} (⟦ s ⟧Δ ρ dρ) (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ)
@@ -93,7 +78,7 @@ record Structure : Set₁ where
   correctVar (this) (v • ρ) (dv • dρ) = refl
   correctVar (that y) (v • ρ) (dv • dρ) = correctVar y ρ dρ
 
-  correctness (const {τ} c) ρ dρ = correctness-const c
+  correctness (const {τ} c) ρ dρ = update-nil₍ τ ₎ ⟦ c ⟧Const
   correctness {τ} (var x) ρ dρ = correctVar {τ} x ρ dρ
   correctness (app {σ} {τ} s t) ρ dρ =
     let
