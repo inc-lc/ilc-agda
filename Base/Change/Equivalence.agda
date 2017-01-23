@@ -87,7 +87,7 @@ module _ {a} {b} {A : Set a} {B : Set b}
   {{CA : ChangeAlgebra A}} {{CB : ChangeAlgebra B}} where
 
   equiv-fun-changes-respect : ∀ {x : A} {dx₁ dx₂ : Δ x} {f : A → B} {df₁ df₂ : Δ f} →
-    _≙_ {x = f} df₁ df₂ → dx₁ ≙ dx₂ → apply df₁ x dx₁ ≙ apply df₂ x dx₂
+    df₁ ≙₍ f ₎ df₂ → dx₁ ≙ dx₂ → apply df₁ x dx₁ ≙ apply df₂ x dx₂
   equiv-fun-changes-respect {x} {dx₁} {dx₂} {f} {df₁} {df₂} df₁≙df₂ dx₁≙dx₂ = doe lemma
     where
       open ≡-Reasoning
@@ -114,7 +114,7 @@ module _ {a} {b} {A : Set a} {B : Set b}
 
   -- D.o.e. function changes behave like the same function (up to d.o.e.).
   equiv-fun-changes-funs : ∀ {x : A} {dx} {f : A → B} {df₁ df₂} →
-    _≙_ {x = f} df₁ df₂ → apply df₁ x dx ≙ apply df₂ x dx
+    df₁ ≙₍ f ₎ df₂ → apply df₁ x dx ≙ apply df₂ x dx
   equiv-fun-changes-funs {dx = dx} df₁≙df₂ = equiv-fun-changes-respect df₁≙df₂ (≙-refl {dx = dx})
 
   derivative-doe-characterization : ∀ {a : A} {da : Δ a}
@@ -176,7 +176,7 @@ module _ {a} {b} {A : Set a} {B : Set b}
   -- that's a stronger hypothesis, which doesn't give you extra guarantees. But
   -- here's the statement and proof, for completeness:
 
-  delta-ext₂ : ∀ {f : A → B} → ∀ {df dg : Δ f} → (∀ x (dx₁ dx₂ : Δ x) → _≙_ {x = x} dx₁ dx₂ → apply df x dx₁ ≙ apply dg x dx₂) → df ≙ dg
+  delta-ext₂ : ∀ {f : A → B} → ∀ {df dg : Δ f} → (∀ x (dx₁ dx₂ : Δ x) → dx₁ ≙₍ x ₎ dx₂ → apply df x dx₁ ≙ apply dg x dx₂) → df ≙ dg
   delta-ext₂ {f} {df} {dg} df-x-dx≙dg-x-dx = delta-ext (λ x dx → df-x-dx≙dg-x-dx x dx dx ≙-refl)
 
   -- We know that IsDerivative f (apply (nil f)) (by nil-is-derivative).
@@ -235,7 +235,7 @@ module _ {a} {b} {A : Set a} {B : Set b}
     where
       open ≙-Reasoning
 
-  equiv-derivative-is-derivative : ∀ {f : A → B} df₁ df₂ → IsDerivative f (apply df₁) →  _≙_ {x = f} df₁ df₂ → IsDerivative f (apply df₂)
+  equiv-derivative-is-derivative : ∀ {f : A → B} df₁ df₂ → IsDerivative f (apply df₁) → df₁ ≙₍ f ₎ df₂ → IsDerivative f (apply df₂)
   equiv-derivative-is-derivative {f} df₁ df₂ IsDerivative-f-df₁ df₁≙df₂ a da =
     begin
       f a ⊞ apply df₂ a da

@@ -58,3 +58,7 @@ module _ {a} {A : Set a} {{ca : ChangeAlgebra A}} {x : A} where
     ; _≈_           = _≙_
     ; isEquivalence = ≙-isEquivalence
     }
+
+≙-syntax : ∀ {a} {A : Set a} {{ca : ChangeAlgebra A}} (x : A) (dx₁ dx₂ : Δ x) → Set a
+≙-syntax x dx₁ dx₂ = _≙_ {x = x} dx₁ dx₂
+syntax ≙-syntax x dx₁ dx₂ = dx₁ ≙₍ x ₎ dx₂
