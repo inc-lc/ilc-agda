@@ -21,8 +21,8 @@ open import Base.Change.Algebra
 open import Level
 
 change-algebra-base : ∀ ι → ChangeAlgebra ⟦ ι ⟧Base
-change-algebra-base base-int = GroupChanges.changeAlgebra ℤ {{abelian-int}}
-change-algebra-base base-bag = GroupChanges.changeAlgebra Bag {{abelian-bag}}
+change-algebra-base base-int = GroupChanges.changeAlgebraGroup _ {{abelian-int}}
+change-algebra-base base-bag = GroupChanges.changeAlgebraGroup _ {{abelian-bag}}
 
 instance
   change-algebra-base-family : ChangeAlgebraFamily ⟦_⟧Base

@@ -9,7 +9,7 @@ open import Base.Change.Algebra
 open import Base.Change.Equivalence
 open import Postulate.Extensionality
 
-module SumChanges ℓ (X Y : Set ℓ) {{CX : ChangeAlgebra X}} {{CY : ChangeAlgebra Y}} where
+module SumChanges ℓ {X Y : Set ℓ} {{CX : ChangeAlgebra X}} {{CY : ChangeAlgebra Y}} where
   open ≡-Reasoning
 
   -- This is an indexed datatype, so it has two constructors per argument. But
@@ -49,8 +49,8 @@ module SumChanges ℓ (X Y : Set ℓ) {{CX : ChangeAlgebra X}} {{CY : ChangeAlge
   s-update-nil (inj₂ y) = cong inj₂ (update-nil y)
 
   instance
-    changeAlgebra : ChangeAlgebra (X ⊎ Y)
-    changeAlgebra = record
+    changeAlgebraSums : ChangeAlgebra (X ⊎ Y)
+    changeAlgebraSums = record
       { Change = SumChange
       ; update = _⊕_
       ; diff = _⊝_
@@ -80,16 +80,6 @@ module SumChanges ℓ (X Y : Set ℓ) {{CX : ChangeAlgebra X}} {{CY : ChangeAlge
   match f g (inj₂ y) = g y
 
   module _ {Z : Set ℓ} {{CZ : ChangeAlgebra Z}} where
-    instance
-      X→Z = FunctionChanges.changeAlgebra X Z {{CX}} {{CZ}}
-      --module ΔX→Z = FunctionChanges X Z {{CX}} {{CZ}}
-      Y→Z = FunctionChanges.changeAlgebra Y Z {{CY}} {{CZ}}
-      --module ΔY→Z = FunctionChanges Y Z {{CY}} {{CZ}}
-      X⊎Y→Z = FunctionChanges.changeAlgebra (X ⊎ Y) Z {{changeAlgebra}} {{CZ}}
-      Y→Z→X⊎Y→Z = FunctionChanges.changeAlgebra (Y → Z) (X ⊎ Y → Z) {{Y→Z}} {{X⊎Y→Z}}
-
-    open FunctionChanges using (apply; correct)
-
     match′₀-realizer : (f : X → Z) → Δ f → (g : Y → Z) → Δ g → (s : X ⊎ Y) → Δ s → Δ (match f g s)
     match′₀-realizer f df g dg (inj₁ x) (ch₁ dx) = apply df x dx
     match′₀-realizer f df g dg (inj₁ x) (rp₁₂ y) = ((g ⊞ dg) y) ⊟ (f x)

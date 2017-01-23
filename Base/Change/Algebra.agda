@@ -214,8 +214,8 @@ module GroupChanges
 
     open ≡-Reasoning
 
-    changeAlgebra : ChangeAlgebra A
-    changeAlgebra = record
+    changeAlgebraGroup : ChangeAlgebra A
+    changeAlgebraGroup = record
       { Change = const A
       ; update = _⊕_
       ; diff = _⊝_
@@ -294,9 +294,9 @@ module FunctionChanges
       -- so I just use the underlying implementations.
       funUpdateDiff : ∀ u v → funUpdate v (funDiff u v) ≡ u
       instance
-        changeAlgebra : ChangeAlgebra (A → B)
+        changeAlgebraFun : ChangeAlgebra (A → B)
 
-      changeAlgebra = record
+      changeAlgebraFun = record
         { Change = FunctionChange
           -- in the paper, update and diff below are in Def. 2.7
         ; update = funUpdate
@@ -359,6 +359,21 @@ module FunctionChanges
     DerivativeAsChange {df = df} IsDerivative-f-df = record { apply = df ; correct = Derivative-is-valid df IsDerivative-f-df }
     -- In Equivalence.agda, derivative-is-nil-alternative then proves that a derivative is also a nil change.
 
+-- Reexport a few members with A and B marked as implicit parameters. This
+-- matters especially for changeAlgebra, since otherwise it can't be used for
+-- instance search.
+module _
+    {a} {b} {A : Set a} {B : Set b} {{CA : ChangeAlgebra A}} {{CB : ChangeAlgebra B}}
+  where
+    open FunctionChanges A B {{CA}} {{CB}} public
+      using
+        ( changeAlgebraFun
+        ; apply
+        ; correct
+        ; incrementalization
+        ; DerivativeAsChange
+        ; FunctionChange
+        )
 
 -- List (== Environment) Changes
 -- =============================
@@ -397,9 +412,9 @@ module ListChanges
     update-diff-all (px′ ∷ pxs′) (px ∷ pxs) = cong₂ _∷_ (update-diff px′ px) (update-diff-all pxs′ pxs)
 
     instance
-      changeAlgebra : ChangeAlgebraFamily (All P)
+      changeAlgebraListChanges : ChangeAlgebraFamily (All P)
 
-    changeAlgebra = record
+    changeAlgebraListChanges = record
       { change-algebra = λ xs → record
         { Change = All′ Δ
         ; update = update-all

@@ -30,6 +30,7 @@ module Structure {{change-algebra-base : Structure}} where
   -- change algebras
 
   open CA public renaming
+    -- Constructors for All′
     ( [] to ∅
     ; _∷_ to _•_
     )
@@ -37,8 +38,8 @@ module Structure {{change-algebra-base : Structure}} where
   -- We provide: change algebra for every type
   instance
     change-algebra : ∀ τ → ChangeAlgebra ⟦ τ ⟧Type
-    change-algebra (base ι) = change-algebra₍_₎ {{change-algebra-base}} ι
-    change-algebra (τ₁ ⇒ τ₂) = CA.FunctionChanges.changeAlgebra _ _ {{change-algebra τ₁}} {{change-algebra τ₂}}
+    change-algebra (base ι) = change-algebra₍ ι ₎
+    change-algebra (τ₁ ⇒ τ₂) = changeAlgebraFun {{change-algebra τ₁}} {{change-algebra τ₂}}
 
     change-algebra-family : ChangeAlgebraFamily ⟦_⟧Type
     change-algebra-family = family change-algebra
@@ -46,7 +47,7 @@ module Structure {{change-algebra-base : Structure}} where
   -- function changes
 
   module _ {τ₁ τ₂ : Type} where
-    open FunctionChanges.FunctionChange {{change-algebra τ₁}} {{change-algebra τ₂}} public
+    open FunctionChange {{change-algebra τ₁}} {{change-algebra τ₂}} public
       renaming
         ( correct to is-valid
         ; apply to call-change
@@ -55,7 +56,7 @@ module Structure {{change-algebra-base : Structure}} where
   -- We also provide: change environments (aka. environment changes).
 
   open ListChanges ⟦_⟧Type {{change-algebra-family}} public using () renaming
-    ( changeAlgebra to environment-changes
+    ( changeAlgebraListChanges to environment-changes
     )
 
   after-env : ∀ {Γ : Context} → {ρ : ⟦ Γ ⟧} (dρ : Δ₍ Γ ₎ ρ) → ⟦ Γ ⟧

@@ -12,7 +12,7 @@ open import Data.Product
 
 -- Restriction: we pair sets on the same level (because right now everything
 -- else would risk getting in the way).
-module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra A}} {{CB : ChangeAlgebra B}} where
+module ProductChanges ℓ {A B : Set ℓ} {{CA : ChangeAlgebra A}} {{CB : ChangeAlgebra B}} where
   open ≡-Reasoning
 
   -- The simplest possible definition of changes for products.
@@ -65,8 +65,8 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra A}} {{CB : Change
       ∎
 
   instance
-    changeAlgebra : ChangeAlgebra (A × B)
-    changeAlgebra = record
+    changeAlgebraProducts : ChangeAlgebra (A × B)
+    changeAlgebraProducts = record
       { Change = PChange
       ; update = _⊕_
       ; diff = _⊝_
@@ -106,10 +106,6 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra A}} {{CB : Change
 
   proj₂′Derivative : IsDerivative proj₂ proj₂′
   proj₂′Derivative v dv = refl
-
-  instance
-    B→A×B = FunctionChanges.changeAlgebra B (A × B)
-    A→B→A×B = FunctionChanges.changeAlgebra A (B → A × B)
 
   -- Morally, the following is a change:
   -- What one could wrongly expect to be the derivative of the constructor:
@@ -157,15 +153,6 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra A}} {{CB : Change
   uncurry₀ f (a , b) = f a b
 
   module _ {C : Set ℓ} {{CC : ChangeAlgebra C}} where
-    instance
-      B→C : ChangeAlgebra (B → C)
-      B→C = FunctionChanges.changeAlgebra B C
-      A→B→C : ChangeAlgebra (A → B → C)
-      A→B→C = FunctionChanges.changeAlgebra A (B → C)
-      A×B→C : ChangeAlgebra (A × B → C)
-      A×B→C = FunctionChanges.changeAlgebra (A × B) C
-    open FunctionChanges using (apply; correct)
-
     uncurry₀′-realizer : (f : A → B → C) → Δ f → (p : A × B) → Δ p → Δ (uncurry₀ f p)
     uncurry₀′-realizer f df (a , b) (da , db) = apply (apply df a da) b db
 

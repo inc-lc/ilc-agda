@@ -86,10 +86,6 @@ module _ {a} {A : Set a} {{ca : ChangeAlgebra A}} {x : A} where
 module _ {a} {b} {A : Set a} {B : Set b}
   {{CA : ChangeAlgebra A}} {{CB : ChangeAlgebra B}} where
 
-  module FC = FunctionChanges A B
-  open FC using (changeAlgebra; incrementalization; DerivativeAsChange)
-  open FC.FunctionChange
-
   equiv-fun-changes-respect : ∀ {x : A} {dx₁ dx₂ : Δ x} {f : A → B} {df₁ df₂ : Δ f} →
     _≙_ {x = f} df₁ df₂ → dx₁ ≙ dx₂ → apply df₁ x dx₁ ≙ apply df₂ x dx₂
   equiv-fun-changes-respect {x} {dx₁} {dx₂} {f} {df₁} {df₂} df₁≙df₂ dx₁≙dx₂ = doe lemma
