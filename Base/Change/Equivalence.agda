@@ -86,6 +86,10 @@ module _ {a} {A : Set a} {{ca : ChangeAlgebra A}} {x : A} where
 module _ {a} {b} {A : Set a} {B : Set b}
   {{CA : ChangeAlgebra A}} {{CB : ChangeAlgebra B}} where
 
+  ≙-cong₂ : ∀ {c} {C : Set c} {x y}
+       (f : A → B → C) {dx1 dx2 dy1 dy2} → dx1 ≙ dx2 → dy1 ≙ dy2 → f (x ⊞ dx1) (y ⊞ dy1) ≡ f (x ⊞ dx2) (y ⊞ dy2)
+  ≙-cong₂ f dx1≙dx2 dy1≙dy2 = cong₂ f (proof dx1≙dx2) (proof dy1≙dy2)
+
   equiv-fun-changes-respect : ∀ {x : A} {dx₁ dx₂ : Δ x} {f : A → B} {df₁ df₂ : Δ f} →
     df₁ ≙₍ f ₎ df₂ → dx₁ ≙ dx₂ → apply df₁ x dx₁ ≙ apply df₂ x dx₂
   equiv-fun-changes-respect {x} {dx₁} {dx₂} {f} {df₁} {df₂} df₁≙df₂ dx₁≙dx₂ = doe lemma
