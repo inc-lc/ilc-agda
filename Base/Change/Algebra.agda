@@ -108,12 +108,6 @@ record ChangeAlgebraFamily {a p} ℓ {A : Set a} (P : A → Set p): Set (suc ℓ
     family
   field
     change-algebra : ∀ x → ChangeAlgebra ℓ (P x)
-
-  {-
-  instance
-    change-algebra-extractor : ∀ {x} → ChangeAlgebra ℓ (P x)
-    change-algebra-extractor {x} = change-algebra x
-  -}
   module _ x where
     open ChangeAlgebra (change-algebra x) public
 
