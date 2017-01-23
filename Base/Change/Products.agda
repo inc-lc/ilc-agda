@@ -12,7 +12,7 @@ open import Data.Product
 
 -- Restriction: we pair sets on the same level (because right now everything
 -- else would risk getting in the way).
-module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : ChangeAlgebra ℓ B}} where
+module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra A}} {{CB : ChangeAlgebra B}} where
   open ≡-Reasoning
 
   -- The simplest possible definition of changes for products.
@@ -65,7 +65,7 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
       ∎
 
   instance
-    changeAlgebra : ChangeAlgebra ℓ (A × B)
+    changeAlgebra : ChangeAlgebra (A × B)
     changeAlgebra = record
       { Change = PChange
       ; update = _⊕_
@@ -108,8 +108,8 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
   proj₂′Derivative v dv = refl
 
   instance
-    B→A×B = FunctionChanges.changeAlgebra {c = ℓ} {d = ℓ} B (A × B) {{CB}} {{changeAlgebra}}
-    A→B→A×B = FunctionChanges.changeAlgebra {d = ℓ} A (B → A × B) {{CA}} {{B→A×B}}
+    B→A×B = FunctionChanges.changeAlgebra B (A × B)
+    A→B→A×B = FunctionChanges.changeAlgebra A (B → A × B)
 
   -- Morally, the following is a change:
   -- What one could wrongly expect to be the derivative of the constructor:
@@ -156,13 +156,13 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
   uncurry₀ : ∀ {C : Set ℓ} → (A → B → C) → A × B → C
   uncurry₀ f (a , b) = f a b
 
-  module _ {C : Set ℓ} {{CC : ChangeAlgebra ℓ C}} where
+  module _ {C : Set ℓ} {{CC : ChangeAlgebra C}} where
     instance
-      B→C : ChangeAlgebra ℓ (B → C)
+      B→C : ChangeAlgebra (B → C)
       B→C = FunctionChanges.changeAlgebra B C
-      A→B→C : ChangeAlgebra ℓ (A → B → C)
+      A→B→C : ChangeAlgebra (A → B → C)
       A→B→C = FunctionChanges.changeAlgebra A (B → C)
-      A×B→C : ChangeAlgebra ℓ (A × B → C)
+      A×B→C : ChangeAlgebra (A × B → C)
       A×B→C = FunctionChanges.changeAlgebra (A × B) C
     open FunctionChanges using (apply; correct)
 
@@ -229,11 +229,11 @@ module ProductChanges ℓ (A B : Set ℓ) {{CA : ChangeAlgebra ℓ A}} {{CB : Ch
       ; correct = uncurry₀′-realizer-correct f df }
 
     -- Now proving that uncurry₀′ is a derivative is trivial!
-    uncurry₀′Derivative₀ : IsDerivative {{CB = A×B→C}} uncurry₀ uncurry₀′
+    uncurry₀′Derivative₀ : IsDerivative uncurry₀ uncurry₀′
     uncurry₀′Derivative₀ f df = refl
 
     -- If you wonder what's going on, here's the step-by-step proof, going purely by definitional equality.
-    uncurry₀′Derivative : IsDerivative {{CB = A×B→C}} uncurry₀ uncurry₀′
+    uncurry₀′Derivative : IsDerivative uncurry₀ uncurry₀′
     uncurry₀′Derivative f df =
       begin
         uncurry₀ f ⊞ uncurry₀′ f df

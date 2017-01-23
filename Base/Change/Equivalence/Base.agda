@@ -11,13 +11,13 @@ open import Level
 open import Data.Unit
 open import Function
 
-module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
+module _ {a} {A : Set a} {{ca : ChangeAlgebra A}} {x : A} where
   -- Delta-observational equivalence: these asserts that two changes
   -- give the same result when applied to a base value.
 
   -- To avoid unification problems, use a one-field record (a Haskell "newtype")
   -- instead of a "type synonym".
-  record _≙_ (dx dy : Δ {{ca}} x) : Set a where
+  record _≙_ (dx dy : Δ x) : Set a where
     -- doe = Delta-Observational Equivalence.
     constructor doe
     field
@@ -52,7 +52,7 @@ module _ {a ℓ} {A : Set a} {{ca : ChangeAlgebra ℓ A}} {x : A} where
     ; trans = ≙-trans
     }
 
-  ≙-setoid : Setoid ℓ a
+  ≙-setoid : Setoid a a
   ≙-setoid = record
     { Carrier       = Δ x
     ; _≈_           = _≙_

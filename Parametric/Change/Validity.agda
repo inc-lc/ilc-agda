@@ -24,7 +24,7 @@ open import Level
 
 -- Extension Point: Change algebras for base types
 Structure : Set₁
-Structure = ChangeAlgebraFamily zero ⟦_⟧Base
+Structure = ChangeAlgebraFamily ⟦_⟧Base
 
 module Structure {{change-algebra-base : Structure}} where
   -- change algebras
@@ -36,11 +36,11 @@ module Structure {{change-algebra-base : Structure}} where
 
   -- We provide: change algebra for every type
   instance
-    change-algebra : ∀ τ → ChangeAlgebra zero ⟦ τ ⟧Type
+    change-algebra : ∀ τ → ChangeAlgebra ⟦ τ ⟧Type
     change-algebra (base ι) = change-algebra₍_₎ {{change-algebra-base}} ι
     change-algebra (τ₁ ⇒ τ₂) = CA.FunctionChanges.changeAlgebra _ _ {{change-algebra τ₁}} {{change-algebra τ₂}}
 
-    change-algebra-family : ChangeAlgebraFamily zero ⟦_⟧Type
+    change-algebra-family : ChangeAlgebraFamily ⟦_⟧Type
     change-algebra-family = family change-algebra
 
   -- function changes

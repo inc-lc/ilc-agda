@@ -9,7 +9,7 @@ open import Base.Change.Algebra
 open import Base.Change.Equivalence
 open import Postulate.Extensionality
 
-module SumChanges ℓ (X Y : Set ℓ) {{CX : ChangeAlgebra ℓ X}} {{CY : ChangeAlgebra ℓ Y}} where
+module SumChanges ℓ (X Y : Set ℓ) {{CX : ChangeAlgebra X}} {{CY : ChangeAlgebra Y}} where
   open ≡-Reasoning
 
   -- This is an indexed datatype, so it has two constructors per argument. But
@@ -49,7 +49,7 @@ module SumChanges ℓ (X Y : Set ℓ) {{CX : ChangeAlgebra ℓ X}} {{CY : Change
   s-update-nil (inj₂ y) = cong inj₂ (update-nil y)
 
   instance
-    changeAlgebra : ChangeAlgebra ℓ (X ⊎ Y)
+    changeAlgebra : ChangeAlgebra (X ⊎ Y)
     changeAlgebra = record
       { Change = SumChange
       ; update = _⊕_
@@ -79,7 +79,7 @@ module SumChanges ℓ (X Y : Set ℓ) {{CX : ChangeAlgebra ℓ X}} {{CY : Change
   match f g (inj₁ x) = f x
   match f g (inj₂ y) = g y
 
-  module _ {Z : Set ℓ} {{CZ : ChangeAlgebra ℓ Z}} where
+  module _ {Z : Set ℓ} {{CZ : ChangeAlgebra Z}} where
     instance
       X→Z = FunctionChanges.changeAlgebra X Z {{CX}} {{CZ}}
       --module ΔX→Z = FunctionChanges X Z {{CX}} {{CZ}}
