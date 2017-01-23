@@ -32,12 +32,12 @@ open MValue.Structure Base ⟦_⟧Base
 open import Base.Data.DependentList
 open import Base.Denotation.Notation
 
--- Extension Point: Evaluation of fully applied constants.
+-- Extension Point: Evaluation of constants.
 ValStructure : Set
-ValStructure = ∀ {Σ τ} → ValConst Σ τ → ⟦ Σ ⟧ → ⟦ τ ⟧
+ValStructure = ∀ {τ} → ValConst τ → ⟦ τ ⟧
 
 CompStructure : Set
-CompStructure = ∀ {Σ τ} → CompConst Σ τ → ⟦ Σ ⟧ → ⟦ τ ⟧
+CompStructure = ∀ {τ} → CompConst τ → ⟦ τ ⟧
 
 module Structure
        (⟦_⟧ValBase  : ValStructure)
@@ -47,25 +47,17 @@ module Structure
   -- We provide: Evaluation of arbitrary value/computation terms.
   ⟦_⟧Comp : ∀ {τ Γ} → Comp Γ τ → ⟦ Γ ⟧ValContext → ⟦ τ ⟧CompType
   ⟦_⟧Val : ∀ {τ Γ} → Val Γ τ → ⟦ Γ ⟧ValContext → ⟦ τ ⟧ValType
-  ⟦_⟧Vals : ∀ {Γ Σ} → Vals Γ Σ → ⟦ Γ ⟧ → ⟦ Σ ⟧
 
-  ⟦ ∅ ⟧Vals ρ = ∅
-  -- XXX I don't use this enough, but Val should be ValTerms or ValTms (since
-  -- we're talking about terms representing values, not values themselves). Or
-  -- maybe these are syntactic values... (but not really, variables are
-  -- allowed!)
-  ⟦ vt • valtms ⟧Vals ρ = ⟦ vt ⟧Val ρ • ⟦ valtms ⟧Vals ρ
+  ⟦ vVar x     ⟧Val ρ  = ⟦ x ⟧ValVar ρ
+  ⟦ vThunk x   ⟧Val ρ  = ⟦ x ⟧Comp ρ
+  ⟦ vConst c   ⟧Val ρ  = ⟦ c ⟧ValBase
 
-  ⟦ vVar x        ⟧Val ρ = ⟦ x ⟧ValVar ρ
-  ⟦ vThunk x      ⟧Val ρ = ⟦ x ⟧Comp ρ
-  ⟦ vConst c args ⟧Val ρ = ⟦ c ⟧ValBase (⟦ args ⟧Vals ρ)
-
-  ⟦ cConst c args ⟧Comp ρ = ⟦ c ⟧CompBase (⟦ args ⟧Vals ρ)
-  ⟦ cForce x      ⟧Comp ρ = ⟦ x ⟧Val ρ
-  ⟦ cReturn v     ⟧Comp ρ = ⟦ v ⟧Val ρ
-  ⟦ cAbs c        ⟧Comp ρ = λ x → ⟦ c ⟧Comp (x • ρ)
-  ⟦ cApp s t      ⟧Comp ρ = ⟦ s ⟧Comp ρ (⟦ t ⟧Val ρ)
-  ⟦ c₁ into c₂     ⟧Comp ρ = ⟦ c₂ ⟧Comp (⟦ c₁ ⟧Comp ρ • ρ)
+  ⟦ cConst c   ⟧Comp ρ = ⟦ c ⟧CompBase
+  ⟦ cForce x   ⟧Comp ρ = ⟦ x ⟧Val ρ
+  ⟦ cReturn v  ⟧Comp ρ = ⟦ v ⟧Val ρ
+  ⟦ cAbs c     ⟧Comp ρ = λ x → ⟦ c ⟧Comp (x • ρ)
+  ⟦ cApp s t   ⟧Comp ρ = ⟦ s ⟧Comp ρ (⟦ t ⟧Val ρ)
+  ⟦ c₁ into c₂ ⟧Comp ρ = ⟦ c₂ ⟧Comp (⟦ c₁ ⟧Comp ρ • ρ)
 
   meaningOfVal : ∀ {Γ τ} → Meaning (Val Γ τ)
   meaningOfVal = meaning ⟦_⟧Val

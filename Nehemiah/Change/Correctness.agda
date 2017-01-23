@@ -20,13 +20,12 @@ open import Nehemiah.Change.Value
 open import Nehemiah.Change.Evaluation
 open import Nehemiah.Change.Validity
 open import Nehemiah.Change.Derive
-open import Nehemiah.Change.Specification
 open import Nehemiah.Change.Implementation
 
 open import Base.Denotation.Notation
 open import Relation.Binary.PropositionalEquality
 open import Data.Integer
-open import Structure.Bag.Nehemiah
+open import Theorem.Groups-Nehemiah
 open import Postulate.Extensionality
 
 import Parametric.Change.Correctness
@@ -34,44 +33,45 @@ import Parametric.Change.Correctness
   apply-base diff-base nil-base
   ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
   meaning-⊕-base meaning-⊝-base meaning-onil-base
-  specification-structure
   deriveConst implementation-structure as Correctness
 
+open import Algebra.Structures
+
+private
+  open import Level using () renaming (zero to lzero)
+  open FunctionChanges {c = lzero} {d = lzero} ℤ Bag using (FunctionChange; changeAlgebra)
+
+  flatmap-funarg-equal : ∀ (f : ℤ → Bag) (Δf : Δ f) Δf′ (Δf≈Δf′ : Δf ≈₍ int ⇒ bag ₎ Δf′) →
+    (f ⊞ Δf) ≡ (f ⟦⊕₍ int ⇒ bag ₎⟧ Δf′)
+  flatmap-funarg-equal f Δf Δf′ Δf≈Δf′ = ext lemma
+    where
+    lemma : ∀ v → f v ++ FunctionChange.apply Δf v (+ 0) ≡ f v ++ Δf′ v (+ 0)
+    lemma v rewrite Δf≈Δf′ v (+ 0) (+ 0) refl = refl
+
 derive-const-correct : Correctness.Structure
-derive-const-correct (intlit-const n) ∅ ρ dρ ρ′ dρ≈ρ′ ∅ = refl
-derive-const-correct add-const (s • t • ∅) ρ dρ ρ′ dρ≈ρ′ (s-correct • t-correct • ∅) = cong₂ _+_
-  s-correct
-  t-correct
-derive-const-correct minus-const (t • ∅) ρ dρ ρ′ dρ≈ρ′ (t-correct • ∅) =
-  cong -_ t-correct
-derive-const-correct empty-const ∅ ρ dρ ρ′ dρ≈ρ′ ∅ = refl
-derive-const-correct insert-const (s • t • ∅) ρ dρ ρ′ dρ≈ρ′ (s-correct • t-correct • ∅) =
-  cong₂ _\\_
-    (cong₂ _++_
-      (cong singletonBag (cong₂ _+_
-        (⟦fit⟧ s ρ ρ′)
-        s-correct))
-      (cong₂ _++_
-        (⟦fit⟧ t ρ ρ′)
-        t-correct))
-    (cong₂ _++_ (cong singletonBag (⟦fit⟧ s ρ ρ′)) (⟦fit⟧ t ρ ρ′))
-derive-const-correct union-const (s • t • ∅) ρ dρ ρ′ dρ≈ρ′ (s-correct • t-correct • ∅) = cong₂ _++_
-  s-correct
-  t-correct
-derive-const-correct negate-const  (t • ∅) ρ dρ ρ′ dρ≈ρ′ (t-correct • ∅) =
-  cong negateBag t-correct
-derive-const-correct flatmap-const (s • t • ∅) ρ dρ ρ′ dρ≈ρ′ (s-correct • t-correct • ∅) =
-  cong₂ _\\_
-    (cong₂ flatmapBag
-      (ext (λ v →
-        cong₂ _++_
-          (cong (λ hole → hole v) (⟦fit⟧ s ρ ρ′))
-            (s-correct v (nil₍ int ₎ v) (+ 0) refl)))
-      (cong₂ _++_
-        (⟦fit⟧ t ρ ρ′)
-       t-correct))
-    (cong₂ flatmapBag (⟦fit⟧ s ρ ρ′) (⟦fit⟧ t ρ ρ′))
-derive-const-correct sum-const (t • ∅) ρ dρ ρ′ dρ≈ρ′ (t-correct • ∅) =
-  cong sumBag t-correct
+derive-const-correct (intlit-const n) = refl
+derive-const-correct add-const w Δw .Δw refl w₁ Δw₁ .Δw₁ refl
+  rewrite mn·pq=mp·nq {w} {Δw} {w₁} {Δw₁}
+  | associative-int (w + w₁) (Δw + Δw₁) (- (w + w₁))
+  = n+[m-n]=m {w + w₁} {Δw + Δw₁}
+derive-const-correct minus-const w Δw .Δw refl
+  rewrite sym (-m·-n=-mn {w} {Δw})
+  | associative-int (- w) (- Δw) (- (- w)) = n+[m-n]=m { - w} { - Δw}
+derive-const-correct empty-const = refl
+derive-const-correct insert-const w Δw .Δw refl w₁ Δw₁ .Δw₁ refl = refl
+derive-const-correct union-const w Δw .Δw refl w₁ Δw₁ .Δw₁ refl
+  rewrite ab·cd=ac·bd {w} {Δw} {w₁} {Δw₁}
+  | associative-bag (w ++ w₁) (Δw ++ Δw₁) (negateBag (w ++ w₁))
+  = a++[b\\a]=b {w ++ w₁} {Δw ++ Δw₁}
+derive-const-correct negate-const w Δw .Δw refl
+  rewrite sym (-a·-b=-ab {w} {Δw})
+  | associative-bag (negateBag w) (negateBag Δw) (negateBag (negateBag w))
+  = a++[b\\a]=b {negateBag w} {negateBag Δw}
+derive-const-correct flatmap-const w Δw Δw′ Δw≈Δw′ w₁ Δw₁ .Δw₁ refl
+  rewrite flatmap-funarg-equal w Δw Δw′ Δw≈Δw′ = refl
+derive-const-correct sum-const w Δw .Δw refl
+  rewrite homo-sum {w} {Δw}
+  | associative-int (sumBag w) (sumBag Δw) (- sumBag w)
+  = n+[m-n]=m {sumBag w} {sumBag Δw}
 
 open Correctness.Structure derive-const-correct public

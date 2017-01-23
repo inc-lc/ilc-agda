@@ -48,12 +48,12 @@ open MEvaluation.Structure Const ⟦_⟧Base ValConst CompConst cbnToCompConst c
 
 open import Base.Denotation.Notation
 
--- Extension Point: Evaluation of fully applied constants.
+-- Extension Point: Evaluation of constants.
 ValStructure : Set
-ValStructure = ∀ {Σ τ} → ValConst Σ τ → ⟦ Σ ⟧ValCtxHidCache → ⟦ τ ⟧ValTypeHidCache
+ValStructure = ∀ {τ} → ValConst τ → ⟦ τ ⟧ValTypeHidCache
 
 CompStructure : Set
-CompStructure = ∀ {Σ τ} → CompConst Σ τ → ⟦ Σ ⟧ValCtxHidCache → ⟦ τ ⟧CompTypeHidCache
+CompStructure = ∀ {τ} → CompConst τ → ⟦ τ ⟧CompTypeHidCache
 
 module Structure
        (⟦_⟧ValBaseTermCache  : ValStructure)
@@ -107,11 +107,11 @@ module Structure
   ⟦ vThunk x ⟧ValTermCache ρ = ⟦ x ⟧CompTermCache ρ
   -- No caching, because the arguments are values, so evaluating them does not
   -- produce intermediate results.
-  ⟦ vConst c args ⟧ValTermCache ρ = ⟦ c ⟧ValBaseTermCache (⟦ args ⟧ValsTermCache ρ)
+  ⟦ vConst c ⟧ValTermCache ρ = ⟦ c ⟧ValBaseTermCache
 
   -- The only caching is done by the interpretation of the constant (because the
   -- arguments are values so need no caching).
-  ⟦_⟧CompTermCache (cConst c args) ρ = ⟦ c ⟧CompBaseTermCache (⟦ args ⟧ValsTermCache ρ)
+  ⟦_⟧CompTermCache (cConst c) ρ = ⟦ c ⟧CompBaseTermCache
 
   -- Also, where are introduction forms for pairs and sums among values? With
   -- them, we should see that we can interpret them without adding a cache.

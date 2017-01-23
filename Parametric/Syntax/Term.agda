@@ -56,7 +56,7 @@ open import Data.Sum
 -- module.
 
 Structure : Set₁
-Structure = Context → Type → Set
+Structure = Type → Set
 
 module Structure (Const : Structure) where
 
@@ -86,10 +86,9 @@ module Structure (Const : Structure) where
   -- (Term Γ τ) represents a term of type τ
   -- with free variables bound in Γ.
   data Term Γ where
-    -- constants aka. primitives can only occur fully applied.
-    const : ∀ {Σ τ} →
-      (c : Const Σ τ) →
-      (args : Terms Γ Σ) →
+    -- constants aka. primitives
+    const : ∀ {τ} →
+      (c : Const τ) →
       Term Γ τ
     var : ∀ {τ} →
       (x : Var Γ τ) →
@@ -105,15 +104,11 @@ module Structure (Const : Structure) where
 
   -- Free variables
   FV : ∀ {τ Γ} → Term Γ τ → Vars Γ
-  FV-terms : ∀ {Σ Γ} → Terms Γ Σ → Vars Γ
 
-  FV (const ι ts) = FV-terms ts
+  FV (const ι) = none
   FV (var x) = singleton x
   FV (abs t) = tail (FV t)
   FV (app s t) = FV s ∪ FV t
-
-  FV-terms ∅ = none
-  FV-terms (t • ts) = FV t ∪ FV-terms ts
 
   closed? : ∀ {τ Γ} → (t : Term Γ τ) → (FV t ≡ none) ⊎ ⊤
   closed? t = empty? (FV t)
@@ -124,19 +119,10 @@ module Structure (Const : Structure) where
     (Γ₁≼Γ₂ : Γ₁ ≼ Γ₂) →
     Term Γ₁ τ →
     Term Γ₂ τ
-
-  weaken-terms : ∀ {Γ₁ Γ₂ Σ} →
-    (Γ₁≼Γ₂ : Γ₁ ≼ Γ₂) →
-    Terms Γ₁ Σ →
-    Terms Γ₂ Σ
-
-  weaken Γ₁≼Γ₂ (const c ts) = const c (weaken-terms Γ₁≼Γ₂ ts)
+  weaken Γ₁≼Γ₂ (const c) = const c
   weaken Γ₁≼Γ₂ (var x) = var (weaken-var Γ₁≼Γ₂ x)
   weaken Γ₁≼Γ₂ (app s t) = app (weaken Γ₁≼Γ₂ s) (weaken Γ₁≼Γ₂ t)
   weaken Γ₁≼Γ₂ (abs {σ} t) = abs (weaken (keep σ • Γ₁≼Γ₂) t)
-
-  weaken-terms Γ₁≼Γ₂ ∅ = ∅
-  weaken-terms Γ₁≼Γ₂ (t • ts) = weaken Γ₁≼Γ₂ t • weaken-terms Γ₁≼Γ₂ ts
 
   -- Specialized weakening
   weaken₁ : ∀ {Γ σ τ} →
