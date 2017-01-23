@@ -21,6 +21,6 @@ before_install:
 
 script:
   - stack --no-terminal --install-ghc build Agda ilc
-  - (mkdir -p ../agda-stdlib; cd ../agda-stdlib; curl -L https://github.com/agda/agda-stdlib/archive/v0.12.tar.gz|tar xz)
-  - mkdir ~/.agda; echo "standard-library" > ~/.agda/defaults; echo "$(dirname $PWD)/agda-stdlib/agda-stdlib-0.12/standard-library.agda-lib" > ~/.agda/libraries
+  - (mkdir -p ../agda-stdlib; cd ../agda-stdlib; curl -L https://github.com/agda/agda-stdlib/archive/v0.13.tar.gz|tar xz)
+  - mkdir ~/.agda; echo "standard-library" > ~/.agda/defaults; echo "$(dirname $PWD)/agda-stdlib/agda-stdlib-0.13/standard-library.agda-lib" > ~/.agda/libraries
   - ./agdaCheck.sh
