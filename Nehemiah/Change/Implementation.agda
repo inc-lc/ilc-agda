@@ -23,7 +23,7 @@ open import Structure.Bag.Nehemiah
 
 import Parametric.Change.Implementation
     Const ⟦_⟧Base ⟦_⟧Const ΔBase
-    ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧ deriveConst as Implementation
+    ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧ derive-const as Implementation
 
 private
   implements-base : ∀ ι {v : ⟦ ι ⟧Base} → Δ₍ ι ₎ v → ⟦ ΔBase ι ⟧Type → Set

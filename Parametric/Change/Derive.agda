@@ -25,7 +25,7 @@ Structure = ∀ {τ} →
   Const τ →
   Term ∅ (ΔType τ)
 
-module Structure (deriveConst : Structure) where
+module Structure (derive-const : Structure) where
   fit : ∀ {τ Γ} → Term Γ τ → Term (ΔContext Γ) τ
   fit = weaken Γ≼ΔΓ
 
@@ -41,4 +41,4 @@ module Structure (deriveConst : Structure) where
   derive (var x) = var (deriveVar x)
   derive (app s t) = app (app (derive s) (fit t)) (derive t)
   derive (abs t) = abs (abs (derive t))
-  derive {Γ = Γ} (const c) = weaken (∅≼Γ {ΔContext Γ}) (deriveConst c)
+  derive {Γ = Γ} (const c) = weaken (∅≼Γ {ΔContext Γ}) (derive-const c)
