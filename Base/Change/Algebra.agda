@@ -375,6 +375,14 @@ module _
         ; FunctionChange
         )
 
+module BinaryFunctionChanges
+    {a} {b} {c} (A : Set a) (B : Set b) (C : Set c) {{CA : ChangeAlgebra A}} {{CB : ChangeAlgebra B}} {{CC : ChangeAlgebra C}} where
+    incrementalization-binary : ∀ (f : A → B → C) df a da b db →
+      (f ⊞ df) (a ⊞ da) (b ⊞ db) ≡ f a b ⊞ apply (apply df a da) b db
+    incrementalization-binary f df x dx y dy
+      rewrite cong (λ □ → □ (y ⊞ dy)) (incrementalization f df x dx)
+      = incrementalization (f x) (apply df x dx) y dy
+
 -- List (== Environment) Changes
 -- =============================
 --
