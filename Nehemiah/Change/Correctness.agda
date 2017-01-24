@@ -41,8 +41,8 @@ private
   open import Level using () renaming (zero to lzero)
   open FunctionChanges {c = lzero} {d = lzero} ℤ Bag using (FunctionChange; changeAlgebra)
 
-  flatmap-funarg-equal : ∀ (f : ℤ → Bag) (Δf : Δ f) Δf′ (Δf≈Δf′ : Δf ≈₍ int ⇒ bag ₎ Δf′) →
-    (f ⊞ Δf) ≡ (f ⟦⊕₍ int ⇒ bag ₎⟧ Δf′)
+  flatmap-funarg-equal : ∀ (f : ℤ → Bag) (Δf : Δ₍ int ⇒ bag ₎ f) Δf′ (Δf≈Δf′ : Δf ≈₍ int ⇒ bag ₎ Δf′) →
+    (f ⊞₍ int ⇒ bag ₎ Δf) ≡ (f ⟦⊕₍ int ⇒ bag ₎⟧ Δf′)
   flatmap-funarg-equal f Δf Δf′ Δf≈Δf′ = ext lemma
     where
     lemma : ∀ v → f v ++ FunctionChange.apply Δf v (+ 0) ≡ f v ++ Δf′ v (+ 0)

@@ -4,4 +4,9 @@ cd "$(dirname "$0")"
 
 . agdaConfParse.sh.inc
 
-stack exec --package Agda -- agda +RTS -s -RTS -i . ${mainFile} "$@"
+if [ -n "$agda_reproducible" ]; then
+    prepend="stack exec --package Agda --"
+else
+    prepend=""
+fi
+$prepend agda +RTS -s -RTS -i . ${mainFile} "$@"

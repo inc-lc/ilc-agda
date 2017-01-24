@@ -1,9 +1,4 @@
-resolver: lts-6.6
-
-packages:
-- '.'
-- location:
-    git: https://github.com/agda/agda
-    commit: e3472d7c1441c0d6db66be9e094e9dbcb7c33735
+resolver: lts-7.13
 
 extra-deps:
+- Agda-2.5.2

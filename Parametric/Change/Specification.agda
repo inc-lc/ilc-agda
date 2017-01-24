@@ -5,7 +5,6 @@
 ------------------------------------------------------------------------
 
 import Parametric.Syntax.Type as Type
-open import Base.Data.DependentList
 import Parametric.Syntax.Term as Term
 import Parametric.Denotation.Value as Value
 import Parametric.Denotation.Evaluation as Evaluation
