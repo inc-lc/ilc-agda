@@ -41,13 +41,13 @@ open Base.Change.Algebra.FunctionChanges
 -- Definition 2.7 (Operations on function changes)
 -- ChangeAlgebra.update FunctionChanges.changeAlgebra
 -- ChangeAlgebra.diff   FunctionChanges.changeAlgebra
-open Base.Change.Algebra.FunctionChanges using (changeAlgebra)
+open Base.Change.Algebra.FunctionChanges using (changeAlgebraFun)
 
 -- Theorem 2.8 (Function changes form a change structure)
 -- (In Agda, the proof of Theorem 2.8 has to be included in the
 -- definition of function changes, here
 -- FunctionChanges.changeAlgebra.)
-open Base.Change.Algebra.FunctionChanges using (changeAlgebra)
+open Base.Change.Algebra.FunctionChanges using (changeAlgebraFun)
 
 -- Theorem 2.9 (Incrementalization)
 open Base.Change.Algebra.FunctionChanges using (incrementalization)

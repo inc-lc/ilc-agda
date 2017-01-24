@@ -36,12 +36,12 @@ open import Level
 -- and update-diff is specified in Def. 2.1e.
 
 record IsChangeAlgebra
-    {c} {d}
+    {c}
     {Carrier : Set c}
-    (Change : Carrier → Set d)
+    (Change : Carrier → Set c)
     (update : (v : Carrier) (dv : Change v) → Carrier)
     (diff : (u v : Carrier) → Change v)
-    (nil : (u : Carrier) → Change u) : Set (c ⊔ d) where
+    (nil : (u : Carrier) → Change u) : Set (c) where
   field
     update-diff : ∀ u v → update v (diff u v) ≡ u
     -- This corresponds to Lemma 2.3 from the paper.
@@ -54,10 +54,10 @@ record IsChangeAlgebra
   after : ∀ {v} → Change v → Carrier
   after {v} dv = update v dv
 
-record ChangeAlgebra {c} ℓ
-    (Carrier : Set c) : Set (c ⊔ suc ℓ) where
+record ChangeAlgebra {c}
+    (Carrier : Set c) : Set (suc c) where
   field
-    Change : Carrier → Set ℓ
+    Change : Carrier → Set c
     update : (v : Carrier) (dv : Change v) → Carrier
     diff : (u v : Carrier) → Change v
 
@@ -103,11 +103,12 @@ open ChangeAlgebra {{...}} public
 --
 -- The following definitions implement this idea formally.
 
-record ChangeAlgebraFamily {a p} ℓ {A : Set a} (P : A → Set p): Set (suc ℓ ⊔ p ⊔ a) where
+record ChangeAlgebraFamily {a p} {A : Set a} (P : A → Set p): Set (suc p ⊔ a) where
   constructor
     family
   field
-    change-algebra : ∀ x → ChangeAlgebra ℓ (P x)
+    change-algebra : ∀ x → ChangeAlgebra (P x)
+
   module _ x where
     open ChangeAlgebra (change-algebra x) public
 
@@ -144,38 +145,38 @@ syntax diff′ x u v = u ⊟₍ x ₎ v
 --
 -- This corresponds to Def. 2.4 in the paper.
 
-RawChange : ∀ {a b c d} {A : Set a} {B : Set b} →
-  {{CA : ChangeAlgebra c A}} →
-  {{CB : ChangeAlgebra d B}} →
+RawChange : ∀ {a b} {A : Set a} {B : Set b} →
+  {{CA : ChangeAlgebra A}} →
+  {{CB : ChangeAlgebra B}} →
   (f : A → B) →
-  Set (a ⊔ c ⊔ d)
+  Set (a ⊔ b)
 RawChange f = ∀ a (da : Δ a) → Δ (f a)
 
-IsDerivative : ∀ {a b c d} {A : Set a} {B : Set b} →
-  {{CA : ChangeAlgebra c A}} →
-  {{CB : ChangeAlgebra d B}} →
+IsDerivative : ∀ {a b} {A : Set a} {B : Set b} →
+  {{CA : ChangeAlgebra A}} →
+  {{CB : ChangeAlgebra B}} →
   (f : A → B) →
   (df : RawChange f) →
-  Set (a ⊔ b ⊔ c)
+  Set (a ⊔ b)
 IsDerivative f df = ∀ a da → f a ⊞ df a da ≡ f (a ⊞ da)
 
 -- This is a variant of IsDerivative for change algebra families.
-RawChange₍_,_₎ : ∀ {a b p q c d} {A : Set a} {B : Set b} {P : A → Set p} {Q : B → Set q} →
-  {{CP : ChangeAlgebraFamily c P}} →
-  {{CQ : ChangeAlgebraFamily d Q}} →
+RawChange₍_,_₎ : ∀ {a b p q} {A : Set a} {B : Set b} {P : A → Set p} {Q : B → Set q} →
+  {{CP : ChangeAlgebraFamily P}} →
+  {{CQ : ChangeAlgebraFamily Q}} →
   (x : A) →
   (y : B) →
-  (f : P x → Q y) → Set (c ⊔ d ⊔ p)
+  (f : P x → Q y) → Set (p ⊔ q)
 RawChange₍_,_₎ x y f = ∀ px (dpx : Δ₍_₎ x px) → Δ₍_₎ y (f px)
 
-IsDerivative₍_,_₎ : ∀ {a b p q c d} {A : Set a} {B : Set b} {P : A → Set p} {Q : B → Set q} →
-  {{CP : ChangeAlgebraFamily c P}} →
-  {{CQ : ChangeAlgebraFamily d Q}} →
+IsDerivative₍_,_₎ : ∀ {a b p q} {A : Set a} {B : Set b} {P : A → Set p} {Q : B → Set q} →
+  {{CP : ChangeAlgebraFamily P}} →
+  {{CQ : ChangeAlgebraFamily Q}} →
   (x : A) →
   (y : B) →
   (f : P x → Q y) →
   (df : RawChange₍_,_₎ x y f) →
-  Set (p ⊔ q ⊔ c)
+  Set (p ⊔ q)
 IsDerivative₍_,_₎ {P = P} {{CP}} {{CQ}} x y f df = IsDerivative {{change-algebra₍ _ ₎}} {{change-algebra₍ _ ₎}} f df where
   CPx = change-algebra₍_₎ {{CP}} x
   CQy = change-algebra₍_₎ {{CQ}} y
@@ -213,8 +214,8 @@ module GroupChanges
 
     open ≡-Reasoning
 
-    changeAlgebra : ChangeAlgebra a A
-    changeAlgebra = record
+    changeAlgebraGroup : ChangeAlgebra A
+    changeAlgebraGroup = record
       { Change = const A
       ; update = _⊕_
       ; diff = _⊝_
@@ -248,10 +249,10 @@ module GroupChanges
 -- are by equational reasoning using 2.1e for A and B.
 
 module FunctionChanges
-    {a} {b} {c} {d} (A : Set a) (B : Set b) {{CA : ChangeAlgebra c A}} {{CB : ChangeAlgebra d B}}
+    {a} {b} (A : Set a) (B : Set b) {{CA : ChangeAlgebra A}} {{CB : ChangeAlgebra B}}
   where
     -- This corresponds to Definition 2.6 in the paper.
-    record FunctionChange (f : A → B) : Set (a ⊔ b ⊔ c ⊔ d) where
+    record FunctionChange (f : A → B) : Set (a ⊔ b) where
       field
         -- Definition 2.6a
         apply : RawChange f
@@ -273,14 +274,14 @@ module FunctionChanges
           -- have to prove for Theorem 2.7.
         ; correct = λ a da →
           begin
-            _⊞_ {{CB}} (f (_⊞_ {{CA}} a da)) (g (_⊞_ {{CA}} (a ⊞ da) (nil (a ⊞ da))) ⊟ f (a ⊞ da))
-          ≡⟨ cong (λ □ → _⊞_ {{CB}} (f (a ⊞ da)) (g □ ⊟ f (a ⊞ da)))
-               (update-nil {{CA}} (a ⊞ da)) ⟩
-            _⊞_ {{CB}} (f (a ⊞ da)) (g (a ⊞ da) ⊟ f (a ⊞ da))
-          ≡⟨ update-diff {{CB}} (g (a ⊞ da)) (f (a ⊞ da)) ⟩
+            f (a ⊞ da) ⊞ (g (a ⊞ da ⊞ nil (a ⊞ da)) ⊟ f (a ⊞ da))
+          ≡⟨ cong (λ □ → f (a ⊞ da) ⊞ (g □ ⊟ f (a ⊞ da)))
+               (update-nil (a ⊞ da)) ⟩
+            f (a ⊞ da) ⊞ (g (a ⊞ da) ⊟ f (a ⊞ da))
+          ≡⟨ update-diff (g (a ⊞ da)) (f (a ⊞ da)) ⟩
             g (a ⊞ da)
-          ≡⟨ sym (update-diff {{CB}} (g (a ⊞ da)) (f a)) ⟩
-            _⊞_ {{CB}} (f a) (g (a ⊞ da) ⊟ f a)
+          ≡⟨ sym (update-diff (g (a ⊞ da)) (f a)) ⟩
+            f a ⊞ (g (a ⊞ da) ⊟ f a)
           ∎
         }
 
@@ -293,9 +294,9 @@ module FunctionChanges
       -- so I just use the underlying implementations.
       funUpdateDiff : ∀ u v → funUpdate v (funDiff u v) ≡ u
       instance
-        changeAlgebra : ChangeAlgebra (a ⊔ b ⊔ c ⊔ d) (A → B)
+        changeAlgebraFun : ChangeAlgebra (A → B)
 
-      changeAlgebra = record
+      changeAlgebraFun = record
         { Change = FunctionChange
           -- in the paper, update and diff below are in Def. 2.7
         ; update = funUpdate
@@ -311,10 +312,10 @@ module FunctionChanges
       -- XXX remove mutual recursion by inlining the algebra in here?
       funUpdateDiff = λ g f → ext (λ a →
         begin
-          _⊞_ {{CB}} (f a) (g (_⊞_ {{CA}} a (nil a)) ⊟ f a)
-        ≡⟨ cong (λ □ → _⊞_ {{CB}} (f a) (g □ ⊟ f a)) (update-nil {{CA}} a) ⟩
-          _⊞_ {{CB}} (f a) (g a ⊟ f a)
-        ≡⟨ update-diff {{CB}}  (g a) (f a) ⟩
+          f a ⊞ (g (a ⊞ (nil a)) ⊟ f a)
+        ≡⟨ cong (λ □ → f a ⊞ (g □ ⊟ f a)) (update-nil a) ⟩
+          f a ⊞ (g a ⊟ f a)
+        ≡⟨ update-diff  (g a) (f a) ⟩
           g a
         ∎)
 
@@ -333,9 +334,9 @@ module FunctionChanges
       begin
         f a ⊞ apply (nil f) a da
       ≡⟨ sym (incrementalization f (nil f) a da) ⟩
-        (f ⊞ nil {{changeAlgebra}} f) (a ⊞ da)
+        (f ⊞ nil f) (a ⊞ da)
       ≡⟨ cong (λ □ → □ (a ⊞ da))
-           (update-nil {{changeAlgebra}} f) ⟩
+           (update-nil f) ⟩
         f (a ⊞ da)
       ∎
 
@@ -358,6 +359,21 @@ module FunctionChanges
     DerivativeAsChange {df = df} IsDerivative-f-df = record { apply = df ; correct = Derivative-is-valid df IsDerivative-f-df }
     -- In Equivalence.agda, derivative-is-nil-alternative then proves that a derivative is also a nil change.
 
+-- Reexport a few members with A and B marked as implicit parameters. This
+-- matters especially for changeAlgebra, since otherwise it can't be used for
+-- instance search.
+module _
+    {a} {b} {A : Set a} {B : Set b} {{CA : ChangeAlgebra A}} {{CB : ChangeAlgebra B}}
+  where
+    open FunctionChanges A B {{CA}} {{CB}} public
+      using
+        ( changeAlgebraFun
+        ; apply
+        ; correct
+        ; incrementalization
+        ; DerivativeAsChange
+        ; FunctionChange
+        )
 
 -- List (== Environment) Changes
 -- =============================
@@ -381,26 +397,26 @@ data All′ {a p q} {A : Set a}
     _∷_ : ∀ {x xs} {px : P x} {pxs : All P xs} (qx : Q px) (qxs : All′ Q pxs) → All′ Q (px ∷ pxs)
 
 module ListChanges
-    {a} {c} {A : Set a} (P : A → Set) {{C : ChangeAlgebraFamily c P}}
+    {a} {A : Set a} (P : A → Set) {{C : ChangeAlgebraFamily P}}
   where
-    update-all : ∀ {xs} → (pxs : All P xs) →  All′ (Δ₍_₎ {{C}} _) pxs  → All P xs
+    update-all : ∀ {xs} → (pxs : All P xs) → All′ Δ pxs  → All P xs
     update-all {[]} [] [] = []
-    update-all {x ∷ xs} (px ∷ pxs) (dpx ∷ dpxs) = (px ⊞₍ x ₎ dpx) ∷ update-all pxs dpxs
+    update-all {x ∷ xs} (px ∷ pxs) (dpx ∷ dpxs) = (px ⊞ dpx) ∷ update-all pxs dpxs
 
-    diff-all : ∀ {xs} → (pxs′ pxs : All P xs) → All′ (Δ₍_₎ {{C}} _) pxs
+    diff-all : ∀ {xs} → (pxs′ pxs : All P xs) → All′ Δ pxs
     diff-all [] [] = []
-    diff-all (px′ ∷ pxs′) (px ∷ pxs) = (px′ ⊟₍ _ ₎ px) ∷ diff-all pxs′ pxs
+    diff-all (px′ ∷ pxs′) (px ∷ pxs) = (px′ ⊟ px) ∷ diff-all pxs′ pxs
 
     update-diff-all : ∀ {xs} → (pxs′ pxs : All P xs) → update-all pxs (diff-all pxs′ pxs) ≡ pxs′
     update-diff-all [] [] = refl
-    update-diff-all (px′ ∷ pxs′) (px ∷ pxs) = cong₂ _∷_ (update-diff₍_₎ {{C}} _ px′ px) (update-diff-all pxs′ pxs)
+    update-diff-all (px′ ∷ pxs′) (px ∷ pxs) = cong₂ _∷_ (update-diff px′ px) (update-diff-all pxs′ pxs)
 
     instance
-      changeAlgebra : ChangeAlgebraFamily (c ⊔ a) (All P)
+      changeAlgebraListChanges : ChangeAlgebraFamily (All P)
 
-    changeAlgebra = record
+    changeAlgebraListChanges = record
       { change-algebra = λ xs → record
-        { Change = All′ (Δ₍_₎ {{C}} _)
+        { Change = All′ Δ
         ; update = update-all
         ; diff = diff-all
         ; nil = λ xs → diff-all xs xs

@@ -20,13 +20,12 @@ open import Base.Change.Algebra
 
 open import Level
 
-change-algebra-base : ∀ ι → ChangeAlgebra zero ⟦ ι ⟧Base
-change-algebra-base base-int = GroupChanges.changeAlgebra ℤ {{abelian-int}}
-change-algebra-base base-bag = GroupChanges.changeAlgebra Bag {{abelian-bag}}
+change-algebra-base : ∀ ι → ChangeAlgebra ⟦ ι ⟧Base
+change-algebra-base base-int = GroupChanges.changeAlgebraGroup _ {{abelian-int}}
+change-algebra-base base-bag = GroupChanges.changeAlgebraGroup _ {{abelian-bag}}
 
 instance
-  change-algebra-base-family : ChangeAlgebraFamily zero ⟦_⟧Base
+  change-algebra-base-family : ChangeAlgebraFamily ⟦_⟧Base
   change-algebra-base-family = family change-algebra-base
 
---open Validity.Structure {{change-algebra-base-family}} public --XXX agda/agda#1985.
-open Validity.Structure public
+open Validity.Structure {{change-algebra-base-family}} public
