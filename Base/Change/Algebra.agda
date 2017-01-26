@@ -287,6 +287,8 @@ module FunctionChanges
 
     funUpdate : ∀ (f : A → B) (df : FunctionChange f) → A → B
     funUpdate = λ f df a → f a ⊞ apply df a (nil a)
+
+    funNil : (f : A → B) → FunctionChange f
     funNil = λ f → funDiff f f
 
     mutual
@@ -315,7 +317,7 @@ module FunctionChanges
           f a ⊞ (g (a ⊞ (nil a)) ⊟ f a)
         ≡⟨ cong (λ □ → f a ⊞ (g □ ⊟ f a)) (update-nil a) ⟩
           f a ⊞ (g a ⊟ f a)
-        ≡⟨ update-diff  (g a) (f a) ⟩
+        ≡⟨ update-diff (g a) (f a) ⟩
           g a
         ∎)
 

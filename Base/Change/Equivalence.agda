@@ -9,12 +9,16 @@ open import Relation.Binary.PropositionalEquality
 open import Base.Change.Algebra
 open import Level
 open import Data.Unit
+open import Data.Product
 open import Function
 
 open import Base.Change.Equivalence.Base public
 open import Base.Change.Equivalence.EqReasoning public
 
-module _ {a} {A : Set a} {{ca : ChangeAlgebra A}} {x : A} where
+module _
+  {a} {A : Set a} {{CA : ChangeAlgebra A}}
+  {x : A}
+  where
   -- By update-nil, if dx = nil x, then x ⊞ dx ≡ x.
   -- As a consequence, if dx ≙ nil x, then x ⊞ dx ≡ x
   nil-is-⊞-unit : ∀ (dx : Δ x) → dx ≙ nil x → x ⊞ dx ≡ x
@@ -83,8 +87,10 @@ module _ {a} {A : Set a} {{ca : ChangeAlgebra A}} {x : A} where
   equiv-cancel-2 : ∀ x' dx → x' ≡ x ⊞ dx → x' ⊟ x ≙ dx
   equiv-cancel-2 _ dx refl = diff-update
 
-module _ {a} {b} {A : Set a} {B : Set b}
-  {{CA : ChangeAlgebra A}} {{CB : ChangeAlgebra B}} where
+module _
+  {a} {A : Set a} {{CA : ChangeAlgebra A}}
+  {b} {B : Set b} {{CB : ChangeAlgebra B}}
+  where
 
   ≙-cong₂ : ∀ {c} {C : Set c} {x y}
        (f : A → B → C) {dx1 dx2 dy1 dy2} → dx1 ≙ dx2 → dy1 ≙ dy2 → f (x ⊞ dx1) (y ⊞ dy1) ≡ f (x ⊞ dx2) (y ⊞ dy2)
