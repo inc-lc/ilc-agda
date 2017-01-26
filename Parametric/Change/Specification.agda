@@ -49,7 +49,7 @@ module Structure where
   ⟦ this   ⟧ΔVar (v • ρ) (dv • dρ) = dv
   ⟦ that x ⟧ΔVar (v • ρ) (dv • dρ) = ⟦ x ⟧ΔVar ρ dρ
 
-  ⟦_⟧Δ (const {τ} c) ρ dρ = nil₍ τ ₎ ⟦ c ⟧Const
+  ⟦_⟧Δ (const {τ} c) ρ dρ = nil₍ τ ₎ (⟦ const c ⟧Term ρ)
   ⟦_⟧Δ (var x) ρ dρ = ⟦ x ⟧ΔVar ρ dρ
   ⟦_⟧Δ (app {σ} {τ} s t) ρ dρ =
        call-change {σ} {τ} (⟦ s ⟧Δ ρ dρ) (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ)
