@@ -96,6 +96,9 @@ module _
        (f : A → B → C) {dx1 dx2 dy1 dy2} → dx1 ≙ dx2 → dy1 ≙ dy2 → f (x ⊞ dx1) (y ⊞ dy1) ≡ f (x ⊞ dx2) (y ⊞ dy2)
   ≙-cong₂ f dx1≙dx2 dy1≙dy2 = cong₂ f (proof dx1≙dx2) (proof dy1≙dy2)
 
+  ≙-incrementalization : ∀ (f : A → B) (df : Δ f) x dx → (f ⊞ df) (x ⊞ dx) ⊟ f x ≙ apply df x dx
+  ≙-incrementalization f df x dx = equiv-cancel-2 _ _ (incrementalization f df x dx)
+
   equiv-fun-changes-respect : ∀ {x : A} {dx₁ dx₂ : Δ x} {f : A → B} {df₁ df₂ : Δ f} →
     df₁ ≙₍ f ₎ df₂ → dx₁ ≙ dx₂ → apply df₁ x dx₁ ≙ apply df₂ x dx₂
   equiv-fun-changes-respect {x} {dx₁} {dx₂} {f} {df₁} {df₂} df₁≙df₂ dx₁≙dx₂ = doe lemma
@@ -285,3 +288,13 @@ module _
         ≡⟨ sym (update-nil (f v)) ⟩
           f v ⊞ nil (f v)
         ∎
+module _
+  {a} {A : Set a} {{CA : ChangeAlgebra A}}
+  {b} {B : Set b} {{CB : ChangeAlgebra B}}
+  {c} {C : Set c} {{CC : ChangeAlgebra C}}
+  where
+  ≙-cong₃ : ∀ {d} {D : Set d} {x y z}
+       (f : A → B → C → D) {dx1 dx2 dy1 dy2 dz1 dz2} →
+       dx1 ≙ dx2 → dy1 ≙ dy2 → dz1 ≙ dz2 →
+       f (x ⊞ dx1) (y ⊞ dy1) (z ⊞ dz1) ≡ f (x ⊞ dx2) (y ⊞ dy2) (z ⊞ dz2)
+  ≙-cong₃ f dx1≙dx2 dy1≙dy2 dz1≙dz2 = cong₂ (λ x y → x y) (cong₂ f (proof dx1≙dx2) (proof dy1≙dy2)) (proof dz1≙dz2)

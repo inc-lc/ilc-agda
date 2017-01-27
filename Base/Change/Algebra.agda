@@ -290,6 +290,13 @@ module FunctionChanges
 
     funNil : (f : A → B) → FunctionChange f
     funNil = λ f → funDiff f f
+    private
+      -- Realizer for funNil
+      funNil-realizer : (f : A → B) → RawChange f
+      funNil-realizer f = λ a da → f (a ⊞ da) ⊟ f a
+      -- Note that it cannot use nil (f a), that would not be a correct function change!
+      funNil-correct : ∀ f a da → funNil-realizer f a da ≡ apply (funNil f) a da
+      funNil-correct f a da = refl
 
     mutual
       -- I have to write the type of funUpdateDiff without using changeAlgebra,

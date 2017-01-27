@@ -4,8 +4,8 @@ open import Relation.Binary.PropositionalEquality
 open import Level
 
 open import Base.Change.Algebra
-
-open import Data.Product
+open import Base.Change.Equivalence
+open import Base.Change.Equivalence.Realizers
 
 -- Also try defining sectioned change structures on the positives halves of
 -- groups? Or on arbitrary subsets?
@@ -13,7 +13,11 @@ open import Data.Product
 -- Restriction: we pair sets on the same level (because right now everything
 -- else would risk getting in the way).
 module ProductChanges ℓ {A B : Set ℓ} {{CA : ChangeAlgebra A}} {{CB : ChangeAlgebra B}} where
-  open ≡-Reasoning
+  -- Avoid having to specify A and B all the time; they'd often be ambiguous
+  -- otherwise.
+  import Data.Product as DP
+  open DP.Σ {A = A} {B = λ _ → B}
+  open DP using (_×_; _,_)
 
   -- The simplest possible definition of changes for products.
 
@@ -49,6 +53,8 @@ module ProductChanges ℓ {A B : Set ℓ} {{CA : ChangeAlgebra A}} {{CB : Change
       ≡⟨⟩
         u
       ∎
+    where
+      open ≡-Reasoning
 
   p-update-nil : (v : A × B) → v ⊕ (p-nil v) ≡ v
   p-update-nil (a , b) =
@@ -63,6 +69,8 @@ module ProductChanges ℓ {A B : Set ℓ} {{CA : ChangeAlgebra A}} {{CB : Change
       ≡⟨⟩
         v
       ∎
+    where
+      open ≡-Reasoning
 
   instance
     changeAlgebraProducts : ChangeAlgebra (A × B)
@@ -77,35 +85,64 @@ module ProductChanges ℓ {A B : Set ℓ} {{CA : ChangeAlgebra A}} {{CB : Change
         }
       }
 
-  proj₁′ : (v : A × B) → Δ v → Δ (proj₁ v)
-  proj₁′ (a , b) (da , db) = da
+  --
+  -- Derivatives of introductions and elimination forms for products.
+  --
+  -- For each one define a naive derivative using nil, write a hand-optimized *realizer* for an efficient derivative, and prove they're equivalent.
+  --
+  proj₁′ : Δ proj₁
+  proj₁′ = nil proj₁
 
-  proj₁′Derivative : IsDerivative proj₁ proj₁′
+  proj₁′-realizer : (v : A × B) → Δ v → Δ (proj₁ v)
+  proj₁′-realizer (a , b) (da , db) = da
+
+  proj₁′-realizer-correct : ∀ (p : A × B) (dp : Δ p) → apply proj₁′ p dp ≙₍ proj₁ p ₎ proj₁′-realizer p dp
+  proj₁′-realizer-correct (a , b) (da , db) = diff-update {x = a} {dx = da}
+
+  proj₁′Derivative : IsDerivative proj₁ proj₁′-realizer
   -- Implementation note: we do not need to pattern match on v and dv because
   -- they are records, hence Agda knows that pattern matching on records cannot
   -- fail. Technically, the required feature is the eta-rule on records.
   proj₁′Derivative v dv = refl
 
   -- An extended explanation.
-  proj₁′Derivative₁ : IsDerivative proj₁ proj₁′
+  proj₁′Derivative₁ : IsDerivative proj₁ proj₁′-realizer
   proj₁′Derivative₁ (a , b) (da , db) =
     let v  = (a  , b)
         dv = (da , db)
     in
       begin
-        proj₁ v ⊞ proj₁′ v dv
+        proj₁ v ⊞ proj₁′-realizer v dv
       ≡⟨⟩
         a ⊞ da
       ≡⟨⟩
         proj₁ (v ⊞ dv)
       ∎
+    where
+      open ≡-Reasoning
+
+  proj₁′-faster-w-proof : equiv-raw-change-to-change-ResType proj₁ proj₁′-realizer
+  proj₁′-faster-w-proof = equiv-raw-change-to-change proj₁ proj₁′ proj₁′-realizer proj₁′-realizer-correct
+  proj₁′-faster : Δ proj₁
+  proj₁′-faster = DP.proj₁ proj₁′-faster-w-proof
 
   -- Same for the second extractor.
-  proj₂′ : (v : A × B) → Δ v → Δ (proj₂ v)
-  proj₂′ (a , b) (da , db) = db
+  proj₂′-realizer : (v : A × B) → Δ v → Δ (proj₂ v)
+  proj₂′-realizer (a , b) (da , db) = db
 
-  proj₂′Derivative : IsDerivative proj₂ proj₂′
+  proj₂′ : Δ proj₂
+  proj₂′ = nil proj₂
+
+  proj₂′-realizer-correct : ∀ p (dp : Δ p) → apply proj₂′ p dp ≙₍ proj₂ p ₎ proj₂′-realizer p dp
+  proj₂′-realizer-correct (a , b) (da , db) = diff-update
+
+  proj₂′Derivative : IsDerivative proj₂ proj₂′-realizer
   proj₂′Derivative v dv = refl
+
+  proj₂′-faster-w-proof : equiv-raw-change-to-change-ResType proj₂ proj₂′-realizer
+  proj₂′-faster-w-proof = equiv-raw-change-to-change proj₂ proj₂′ proj₂′-realizer proj₂′-realizer-correct
+  proj₂′-faster : Δ proj₂
+  proj₂′-faster = DP.proj₁ proj₂′-faster-w-proof
 
   -- Morally, the following is a change:
   -- What one could wrongly expect to be the derivative of the constructor:
@@ -124,116 +161,43 @@ module ProductChanges ℓ {A B : Set ℓ} {{CA : ChangeAlgebra A}} {{CB : Change
 
   -- Hence, we need to do some additional work.
 
-  _,_′-realizer-correct _,_′-realizer-correct-detailed :
-    (a : A) → (da : Δ a) → (b : B) → (db : Δ b) →
-      (a , b ⊞ db) ⊞ (_,_′-realizer a da (b ⊞ db) (nil (b ⊞ db))) ≡ (a , b) ⊞ (_,_′-realizer a da b db)
-  _,_′-realizer-correct a da b db rewrite update-nil (b ⊞ db) = refl
+  _,_′ : Δ (_,_ {A = A} {B = λ _ → B})
+  _,_′ = _,_ ⊟ _,_
+  _,_′-realizer-correct : ∀ a da b db → apply (apply _,_′ a da) b db ≙₍ a , b ₎ _,_′-realizer a da b db
+  _,_′-realizer-correct a da b db = doe (≙-cong₂ _,_ diff-update diff-update)
 
-  _,_′-realizer-correct-detailed a da b db =
-    begin
-      (a , b ⊞ db) ⊞ (_,_′-realizer a da) (b ⊞ db) (nil (b ⊞ db))
-    ≡⟨⟩
-      a ⊞ da , b ⊞ db ⊞ (nil (b ⊞ db))
-    ≡⟨ cong (λ □ →  a ⊞ da , □) (update-nil (b ⊞ db)) ⟩
-      a ⊞ da , b ⊞ db
-    ≡⟨⟩
-      (a , b) ⊞ (_,_′-realizer a da) b db
-    ∎
+  open import Data.Product using (Σ-syntax)
 
-  _,_′ : (a : A) → (da : Δ a) → Δ (_,_ a)
-  _,_′ a da = record { apply = _,_′-realizer a da ; correct = λ b db → _,_′-realizer-correct a da b db }
+  _,_′-faster-w-proof : equiv-raw-change-to-change-binary-ResType _,_ _,_′-realizer
+  _,_′-faster-w-proof = equiv-raw-change-to-change-binary _,_ _,_′ _,_′-realizer _,_′-realizer-correct
 
-  _,_′-Derivative : IsDerivative _,_ _,_′
-  _,_′-Derivative a da = ext (λ b → cong (_,_ (a ⊞ da)) (update-nil b))
-    where
-      open import Postulate.Extensionality
+  _,_′-faster : Δ (_,_ {A = A} {B = λ _ → B})
+  _,_′-faster = DP.proj₁ _,_′-faster-w-proof
 
   -- Define specialized variant of uncurry, and derive it.
   uncurry₀ : ∀ {C : Set ℓ} → (A → B → C) → A × B → C
   uncurry₀ f (a , b) = f a b
 
   module _ {C : Set ℓ} {{CC : ChangeAlgebra C}} where
+    uncurry₀′ : Δ uncurry₀
+    uncurry₀′ = nil (uncurry₀ {C = C})
+
     uncurry₀′-realizer : (f : A → B → C) → Δ f → (p : A × B) → Δ p → Δ (uncurry₀ f p)
     uncurry₀′-realizer f df (a , b) (da , db) = apply (apply df a da) b db
 
-    uncurry₀′-realizer-correct uncurry₀′-realizer-correct-detailed :
-      ∀ (f : A → B → C) (df : Δ f) (p : A × B) (dp : Δ p) →
-        uncurry₀ f (p ⊕ dp) ⊞ uncurry₀′-realizer f df (p ⊕ dp) (nil (p ⊞ dp)) ≡ uncurry₀ f p ⊞ uncurry₀′-realizer f df p dp
-
-    -- Hard to read
-    uncurry₀′-realizer-correct f df (a , b) (da , db)
-      rewrite sym (correct (apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db) (nil (b ⊞ db)))
-      | update-nil (b ⊞ db)
-      | {- cong (λ □ → □ (b ⊞ db)) -} (sym (correct df (a ⊞ da) (nil (a ⊞ da))))
-      | update-nil (a ⊞ da)
-      | cong (λ □ → □ (b ⊞ db)) (correct df a da)
-      | correct (apply df a da) b db
-      = refl
-
-    -- Verbose, but it shows all the intermediate steps.
-    uncurry₀′-realizer-correct-detailed f df (a , b) (da , db) =
+    uncurry₀′-realizer-correct : ∀ f df p dp → apply (apply uncurry₀′ f df) p dp ≙₍ uncurry₀ f p ₎ uncurry₀′-realizer f df p dp
+    uncurry₀′-realizer-correct f df (a , b) (da , db) =
       begin
-        uncurry₀ f (a ⊞ da , b ⊞ db) ⊞ uncurry₀′-realizer f df (a ⊞ da , b ⊞ db) (nil (a ⊞ da , b ⊞ db))
-      ≡⟨⟩
-        f (a ⊞ da) (b ⊞ db) ⊞ apply (apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db) (nil (b ⊞ db))
-      ≡⟨ sym (correct (apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db) (nil (b ⊞ db))) ⟩
-        (f (a ⊞ da) ⊞ apply df (a ⊞ da) (nil (a ⊞ da))) ((b ⊞ db) ⊞ (nil (b ⊞ db)))
-      ≡⟨ cong-lem₀ ⟩
-        (f (a ⊞ da) ⊞ apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db)
-      ≡⟨ sym cong-lem₂ ⟩
-        ((f ⊞ df) ((a ⊞ da) ⊞ (nil (a ⊞ da)))) (b ⊞ db)
-      ≡⟨ cong-lem₁ ⟩
-        (f ⊞ df) (a ⊞ da) (b ⊞ db)
-      ≡⟨ cong (λ □ → □ (b ⊞ db)) (correct df a da) ⟩
-        (f a ⊞ apply df a da) (b ⊞ db)
-      ≡⟨ correct (apply df a da) b db ⟩
-        f a b ⊞ apply (apply df a da) b db
-      ≡⟨⟩
-        uncurry₀ f (a , b) ⊞ uncurry₀′-realizer f df (a , b) (da ,  db)
+        (f ⊞ df) (a ⊞ da) (b ⊞ db) ⊟ f a b
+      ≙⟨ equiv-cancel-2 _ _ (incrementalization-binary f df a da b db) ⟩
+        apply (apply df a da) b db
       ∎
       where
-        cong-lem₀ :
-            (f (a ⊞ da) ⊞ apply df (a ⊞ da) (nil (a ⊞ da))) ((b ⊞ db) ⊞ (nil (b ⊞ db)))
-            ≡
-            (f (a ⊞ da) ⊞ apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db)
-        cong-lem₀ rewrite update-nil (b ⊞ db) = refl
+        open ≙-Reasoning
+        open BinaryFunctionChanges A B C
 
-        cong-lem₁ :
-                  ((f ⊞ df) ((a ⊞ da) ⊞ (nil (a ⊞ da)))) (b ⊞ db)
-                  ≡
-                  (f ⊞ df) (a ⊞ da) (b ⊞ db)
-        cong-lem₁ rewrite update-nil (a ⊞ da) = refl
+    uncurry₀′-faster-w-proof : equiv-raw-change-to-change-binary-ResType uncurry₀ uncurry₀′-realizer
+    uncurry₀′-faster-w-proof = equiv-raw-change-to-change-binary uncurry₀ uncurry₀′ uncurry₀′-realizer uncurry₀′-realizer-correct
 
-        cong-lem₂ :
-                  ((f ⊞ df) ((a ⊞ da) ⊞ (nil (a ⊞ da)))) (b ⊞ db)
-                  ≡
-                  (f (a ⊞ da) ⊞ apply df (a ⊞ da) (nil (a ⊞ da))) (b ⊞ db)
-        cong-lem₂ = cong (λ □ → □ (b ⊞ db)) (correct df (a ⊞ da) (nil (a ⊞ da)))
-
-    uncurry₀′ : (f : A → B → C) → Δ f → Δ (uncurry f)
-    uncurry₀′ f df = record
-      { apply = uncurry₀′-realizer f df
-      ; correct = uncurry₀′-realizer-correct f df }
-
-    -- Now proving that uncurry₀′ is a derivative is trivial!
-    uncurry₀′Derivative₀ : IsDerivative uncurry₀ uncurry₀′
-    uncurry₀′Derivative₀ f df = refl
-
-    -- If you wonder what's going on, here's the step-by-step proof, going purely by definitional equality.
-    uncurry₀′Derivative : IsDerivative uncurry₀ uncurry₀′
-    uncurry₀′Derivative f df =
-      begin
-        uncurry₀ f ⊞ uncurry₀′ f df
-      ≡⟨⟩
-        (λ {(a , b) → uncurry₀ f (a , b) ⊞ apply (uncurry₀′ f df) (a , b) (nil (a , b))})
-      ≡⟨⟩
-        (λ {(a , b) → f a b ⊞ apply (apply df a (nil a)) b (nil b)})
-      ≡⟨⟩
-        (λ {(a , b) → (f a ⊞ apply df a (nil a)) b})
-      ≡⟨⟩
-        (λ {(a , b) → (f ⊞ df) a b})
-      ≡⟨⟩
-        (λ {(a , b) → uncurry₀ (f ⊞ df) (a , b)})
-      ≡⟨⟩
-        uncurry₀ (f ⊞ df)
-      ∎
+    uncurry₀′-faster : Δ uncurry₀
+    uncurry₀′-faster = DP.proj₁ uncurry₀′-faster-w-proof

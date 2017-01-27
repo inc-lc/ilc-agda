@@ -1,12 +1,14 @@
 module Base.Change.Sums where
 
 open import Data.Sum
+open import Data.Product
 open import Relation.Binary.PropositionalEquality
 open import Level
 
 open import Base.Ascription
 open import Base.Change.Algebra
 open import Base.Change.Equivalence
+open import Base.Change.Equivalence.Realizers
 open import Postulate.Extensionality
 
 module SumChanges ℓ {X Y : Set ℓ} {{CX : ChangeAlgebra X}} {{CY : ChangeAlgebra Y}} where
@@ -61,49 +63,67 @@ module SumChanges ℓ {X Y : Set ℓ} {{CX : ChangeAlgebra X}} {{CY : ChangeAlge
         }
       }
 
-  inj₁′ : RawChange (inj₁ as (X → (X ⊎ Y)))
-  inj₁′ x dx = ch₁ dx
+  inj₁′ : Δ (inj₁ as (X → (X ⊎ Y)))
+  inj₁′ = nil inj₁
 
-  inj₁′Derivative : IsDerivative (inj₁ as (X → (X ⊎ Y))) inj₁′
+  inj₁′-realizer : RawChange (inj₁ as (X → (X ⊎ Y)))
+  inj₁′-realizer x dx = ch₁ dx
+
+  inj₁′Derivative : IsDerivative (inj₁ as (X → (X ⊎ Y))) inj₁′-realizer
   inj₁′Derivative x dx = refl
 
-  inj₂′ : RawChange (inj₂ as (Y → (X ⊎ Y)))
-  inj₂′ y dy = ch₂ dy
+  inj₁′-realizer-correct : ∀ a da → apply inj₁′ a da ≙₍ inj₁ a as (X ⊎ Y) ₎ inj₁′-realizer a da
+  inj₁′-realizer-correct a da = diff-update
 
-  inj₂′Derivative : IsDerivative (inj₂ as (Y → (X ⊎ Y))) inj₂′
+  inj₁′-faster-w-proof : equiv-raw-change-to-change-ResType inj₁ inj₁′-realizer
+  inj₁′-faster-w-proof = equiv-raw-change-to-change inj₁ inj₁′ inj₁′-realizer inj₁′-realizer-correct
+  inj₁′-faster : Δ inj₁
+  inj₁′-faster = proj₁ inj₁′-faster-w-proof
+
+  inj₂′ : Δ (inj₂ as (Y → (X ⊎ Y)))
+  inj₂′ = nil inj₂
+
+  inj₂′-realizer : RawChange (inj₂ as (Y → (X ⊎ Y)))
+  inj₂′-realizer y dy = ch₂ dy
+
+  inj₂′Derivative : IsDerivative (inj₂ as (Y → (X ⊎ Y))) inj₂′-realizer
   inj₂′Derivative y dy = refl
 
-  -- Elimination form for sums. This is a less dependently-typed version of
-  -- [_,_].
-  match : ∀ {Z : Set ℓ} → (X → Z) → (Y → Z) → X ⊎ Y → Z
-  match f g (inj₁ x) = f x
-  match f g (inj₂ y) = g y
+  inj₂′-realizer-correct : ∀ b db → apply inj₂′ b db ≙₍ inj₂ b as (X ⊎ Y) ₎ inj₂′-realizer b db
+  inj₂′-realizer-correct b db = diff-update
+
+  inj₂′-faster-w-proof : equiv-raw-change-to-change-ResType inj₂ inj₂′-realizer
+  inj₂′-faster-w-proof = equiv-raw-change-to-change inj₂ inj₂′ inj₂′-realizer inj₂′-realizer-correct
+  inj₂′-faster : Δ inj₂
+  inj₂′-faster = proj₁ inj₂′-faster-w-proof
 
   module _ {Z : Set ℓ} {{CZ : ChangeAlgebra Z}} where
-    match′₀-realizer : (f : X → Z) → Δ f → (g : Y → Z) → Δ g → (s : X ⊎ Y) → Δ s → Δ (match f g s)
-    match′₀-realizer f df g dg (inj₁ x) (ch₁ dx) = apply df x dx
-    match′₀-realizer f df g dg (inj₁ x) (rp₁₂ y) = ((g ⊞ dg) y) ⊟ (f x)
-    match′₀-realizer f df g dg (inj₂ y) (rp₂₁ x) = ((f ⊞ df) x) ⊟ (g y)
-    match′₀-realizer f df g dg (inj₂ y) (ch₂ dy) = apply dg y dy
+    -- Elimination form for sums. This is a less dependently-typed version of
+    -- [_,_].
+    match : (X → Z) → (Y → Z) → X ⊎ Y → Z
+    match f g (inj₁ x) = f x
+    match f g (inj₂ y) = g y
 
-    match′₀-realizer-correct : (f : X → Z) → (df : Δ f) → (g : Y → Z) → (dg : Δ g) → (s : X ⊎ Y) → (ds : Δ s) → match f g (s ⊕ ds) ⊞ match′₀-realizer f df g dg (s ⊕ ds) (nil (s ⊕ ds)) ≡ match f g s ⊞ match′₀-realizer f df g dg s ds
-    match′₀-realizer-correct f df g dg (inj₁ x) (ch₁ dx) = correct df x dx
-    match′₀-realizer-correct f df g dg (inj₂ y) (ch₂ dy) = correct dg y dy
-    match′₀-realizer-correct f df g dg (inj₁ x) (rp₁₂ y) rewrite update-diff ((g ⊞ dg) y) (f x) = refl
-    match′₀-realizer-correct f df g dg (inj₂ y) (rp₂₁ x) rewrite update-diff ((f ⊞ df) x) (g y) = refl
+    match′ : Δ match
+    match′ = nil match
 
-    match′₀ : (f : X → Z) → Δ f → (g : Y → Z) → Δ g → Δ (match f g)
-    match′₀ f df g dg = record { apply = match′₀-realizer f df g dg ; correct = match′₀-realizer-correct f df g dg }
+    match′-realizer : (f : X → Z) → Δ f → (g : Y → Z) → Δ g → (s : X ⊎ Y) → Δ s → Δ (match f g s)
+    match′-realizer f df g dg (inj₁ x) (ch₁ dx) = apply df x dx
+    match′-realizer f df g dg (inj₁ x) (rp₁₂ y) = ((g ⊞ dg) y) ⊟ (f x)
+    match′-realizer f df g dg (inj₂ y) (rp₂₁ x) = ((f ⊞ df) x) ⊟ (g y)
+    match′-realizer f df g dg (inj₂ y) (ch₂ dy) = apply dg y dy
 
-    match′-realizer-correct-body : (f : X → Z) → (df : Δ f) → (g : Y → Z) → (dg : Δ g) → (s : X ⊎ Y) →
-      (match f (g ⊞ dg) ⊞ match′₀ f df (g ⊞ dg) (nil (g ⊞ dg))) s ≡ (match f g ⊞ match′₀ f df g dg) s
+    match′-realizer-correct :
+      (f : X → Z) → (df : Δ f) → (g : Y → Z) → (dg : Δ g) → (s : X ⊎ Y) → (ds : Δ s) →
+      apply (apply (apply match′ f df) g dg) s ds ≙₍ match f g s ₎ match′-realizer f df g dg s ds
+    match′-realizer-correct f df g dg (inj₁ x) (ch₁ dx) = ≙-incrementalization f df x dx
+    match′-realizer-correct f df g dg (inj₁ x) (rp₁₂ y) = ≙-refl
+    match′-realizer-correct f df g dg (inj₂ y) (ch₂ dy) = ≙-incrementalization g dg y dy
+    match′-realizer-correct f df g dg (inj₂ y) (rp₂₁ x) = ≙-refl
 
-    match′-realizer-correct-body f df g dg (inj₁ x) = refl
-    -- refl doesn't work here. That seems a *huge* bad smell. However, that's simply because we're only updating g, not f
-    match′-realizer-correct-body f df g dg (inj₂ y) rewrite update-nil y = update-diff (g y ⊞ apply dg y (nil y)) (g y ⊞ apply dg y (nil y))
+    -- We need a ternary variant of the lemma here.
+    match′-faster-w-proof : equiv-raw-change-to-change-ternary-ResType match match′-realizer
+    match′-faster-w-proof = equiv-raw-change-to-change-ternary match match′ match′-realizer match′-realizer-correct
 
-    match′-realizer-correct : (f : X → Z) → (df : Δ f) → (g : Y → Z) → (dg : Δ g) →
-      (match f (g ⊞ dg)) ⊞ match′₀ f df (g ⊞ dg) (nil (g ⊞ dg)) ≡ match f g ⊞ match′₀ f df g dg
-    match′-realizer-correct f df g dg = ext (match′-realizer-correct-body f df g dg)
-    match′ : (f : X → Z) → Δ f → Δ (match f)
-    match′ f df = record { apply = λ g dg → match′₀ f df g dg ; correct = match′-realizer-correct f df }
+    match′-faster : Δ match
+    match′-faster = proj₁ match′-faster-w-proof
