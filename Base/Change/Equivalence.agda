@@ -268,6 +268,8 @@ module _
         ≡⟨ derivative-is-⊞-unit df₁ IsDerivative-f-df₁ ⟩
           f
         ∎
+  equiv-nil-is-derivative : ∀ {f : A → B} df → nil f ≙₍ f ₎ df → IsDerivative f (apply df)
+  equiv-nil-is-derivative {f} df = equiv-derivative-is-derivative (nil f) df (nil-is-derivative f)
 
   -- This is Lemma 2.5 in the paper. Note that the statement in the paper uses
   -- (incorrectly) normal equality instead of delta-observational equivalence.

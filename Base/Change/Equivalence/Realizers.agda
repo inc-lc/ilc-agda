@@ -61,6 +61,14 @@ module _
         | sym (proof (≙df (a ⊞ da) (nil (a ⊞ da))))
         = correct df a da
 
+  equiv-raw-deriv-to-deriv :
+    ∀ (df-realizer : RawChange f) →
+      equiv-hp (nil f) df-realizer →
+      IsDerivative f df-realizer
+  equiv-raw-deriv-to-deriv df-realizer ≙df with equiv-raw-change-to-change (nil f) df-realizer ≙df
+  equiv-raw-deriv-to-deriv .(FunctionChanges.apply nil-f) ≙df | nil-f , refl =
+    equiv-nil-is-derivative nil-f (delta-ext ≙df)
+
 module _
   {a} {A : Set a} {{CA : ChangeAlgebra A}}
   {b} {B : Set b} {{CB : ChangeAlgebra B}}
@@ -122,6 +130,17 @@ module _
           rewrite sym (proof (≙df a da b (nil b)))
           | sym (proof (≙df (a ⊞ da) (nil (a ⊞ da)) b (nil b)))
           = cong (λ □ → □ b) (correct df a da)
+
+  equiv-raw-deriv-to-deriv-binary :
+    ∀ (df-realizer : RawChangeBinary) →
+      (≙df : equiv-hp-binary (nil f) df-realizer) →
+      IsDerivative f (apply (proj₁ (equiv-raw-change-to-change-binary (nil f) df-realizer ≙df)))
+  equiv-raw-deriv-to-deriv-binary df-realizer ≙df a da with equiv-raw-change-to-change-binary (nil f) df-realizer ≙df
+  ... | nil-f , nil-f≡df with sym (nil-f≡df a da)
+  ... | df-a-da≡nil-f-a-da rewrite df-a-da≡nil-f-a-da = equiv-nil-is-derivative nil-f (delta-ext {df = nil f} {dg = nil-f} (λ a da → doe (ext (lemma a da)))) a da
+    where
+      lemma : ∀ a da b → (f a ⊞ apply (nil f) a da) b ≡ (f a ⊞ apply nil-f a da) b
+      lemma a da b rewrite nil-f≡df a da = proof (≙df a da b (nil b))
 
 module _
   {a} {A : Set a} {{CA : ChangeAlgebra A}}

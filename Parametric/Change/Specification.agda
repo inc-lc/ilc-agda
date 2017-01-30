@@ -44,6 +44,43 @@ module Structure where
   --------------------
   -- Implementation --
   --------------------
+  open import Base.Change.Equivalence
+  open import Base.Change.Equivalence.Realizers
+
+  module _ {σ τ : Type} {Γ : Context} (t : Term (σ • Γ) τ) where
+    instance
+      cΓ : ChangeAlgebra ⟦ Γ ⟧Context
+      cΓ = change-algebra₍ Γ ₎
+      cσ : ChangeAlgebra ⟦ σ ⟧Type
+      cσ = change-algebra σ
+      cτ : ChangeAlgebra ⟦ τ ⟧Type
+      cτ = change-algebra τ
+
+    private
+      ⟦⟧Δλ = nil {{changeAlgebraFun {{cΓ}} {{change-algebra₍ σ ⇒ τ ₎}}}} ⟦ abs t ⟧
+
+    ⟦⟧Δλ-realizer : ∀
+      (ρ : ⟦ Γ ⟧) (dρ : Δ₍ Γ ₎ ρ)
+      (v : ⟦ σ ⟧) (dv : Δ₍ σ ₎ v) →
+      Δ₍ τ ₎ (⟦ t ⟧ (v • ρ))
+    ⟦⟧Δλ-realizer ρ dρ v dv = ⟦ t ⟧Δ (v • ρ) (dv • dρ)
+
+    ⟦⟧Δλ-realizer-correct :
+      equiv-hp-binary {{cΓ}} {{cσ}} {{cτ}} (⟦ abs t ⟧) ⟦⟧Δλ ⟦⟧Δλ-realizer
+    ⟦⟧Δλ-realizer-correct ρ dρ v dv =
+      begin
+        ⟦ t ⟧ (v ⊞₍ σ ₎ dv • ρ ⊞₍ Γ ₎ dρ) ⊟₍ τ ₎ ⟦ t ⟧ (v • ρ)
+      ≙⟨ equiv-cancel-2 {{change-algebra τ}}
+           (⟦ t ⟧ (v ⊞₍ σ ₎ dv • ρ ⊞₍ Γ ₎ dρ))
+           (⟦ t ⟧Δ (v • ρ) (dv • dρ))
+           (sym (correctness t (v • ρ) (dv • dρ)))
+      ⟩
+         ⟦ t ⟧Δ (v • ρ) (dv • dρ)
+      ∎ where open ≙-Reasoning
+
+    ⟦_⟧Δλ′-faster = proj₁ (equiv-raw-change-to-change-binary {{cΓ}} {{cσ}} {{cτ}} ⟦ abs t ⟧ ⟦⟧Δλ ⟦⟧Δλ-realizer ⟦⟧Δλ-realizer-correct)
+      where
+        open import Data.Product
 
   ⟦_⟧ΔVar : ∀ {τ Γ} → (x : Var Γ τ) → (ρ : ⟦ Γ ⟧) → Δ₍ Γ ₎ ρ → Δ₍ τ ₎ (⟦ x ⟧Var ρ)
   ⟦ this   ⟧ΔVar (v • ρ) (dv • dρ) = dv
@@ -53,24 +90,7 @@ module Structure where
   ⟦_⟧Δ (var x) ρ dρ = ⟦ x ⟧ΔVar ρ dρ
   ⟦_⟧Δ (app {σ} {τ} s t) ρ dρ =
        call-change {σ} {τ} (⟦ s ⟧Δ ρ dρ) (⟦ t ⟧ ρ) (⟦ t ⟧Δ ρ dρ)
-  ⟦_⟧Δ (abs {σ} {τ} t) ρ dρ = record
-    { apply = λ v dv → ⟦ t ⟧Δ (v • ρ) (dv • dρ)
-    ; correct = λ v dv →
-      begin
-        ⟦ t ⟧ (v ⊞₍ σ ₎ dv • ρ)  ⊞₍ τ ₎
-        ⟦ t ⟧Δ (v ⊞₍ σ ₎ dv • ρ) (nil₍ σ ₎ (v ⊞₍ σ ₎ dv) • dρ)
-      ≡⟨  correctness t (v ⊞₍ σ ₎ dv • ρ) (nil₍ σ ₎ (v ⊞₍ σ ₎ dv) • dρ) ⟩
-        ⟦ t ⟧ (after-env (nil₍ σ ₎ (v ⊞₍ σ ₎ dv) • dρ))
-      ≡⟨⟩
-        ⟦ t ⟧ (((v ⊞₍ σ ₎ dv) ⊞₍ σ ₎ nil₍ σ ₎ (v ⊞₍ σ ₎ dv)) • after-env dρ)
-      ≡⟨  cong (λ hole → ⟦ t ⟧ (hole • after-env dρ)) (update-nil₍ σ ₎ (v ⊞₍ σ ₎ dv))  ⟩
-        ⟦ t ⟧ (v ⊞₍ σ ₎ dv • after-env dρ)
-      ≡⟨⟩
-        ⟦ t ⟧ (after-env (dv • dρ))
-      ≡⟨  sym (correctness t (v • ρ) (dv • dρ))  ⟩
-        ⟦ t ⟧ (v • ρ)  ⊞₍ τ ₎  ⟦ t ⟧Δ (v • ρ) (dv • dρ)
-      ∎
-    } where open ≡-Reasoning
+  ⟦_⟧Δ (abs {σ} {τ} t) ρ dρ = apply ⟦ t ⟧Δλ′-faster ρ dρ
 
   correctVar : ∀ {τ Γ} (x : Var Γ τ) →
     IsDerivative₍ Γ , τ ₎ ⟦ x ⟧ ⟦ x ⟧ΔVar
@@ -95,19 +115,7 @@ module Structure where
       ≡⟨ correctness {σ ⇒ τ} s ρ dρ ⟨$⟩ correctness {σ} t ρ dρ ⟩
         f₂ u₂
       ∎ where open ≡-Reasoning
-  correctness {σ ⇒ τ} {Γ} (abs t) ρ dρ = ext (λ v →
-    let
-      -- dρ′ : ΔEnv (σ • Γ) (v • ρ)
-      dρ′ = nil₍ σ ₎ v • dρ
-    in
-      begin
-        ⟦ t ⟧ (v • ρ) ⊞₍ τ ₎ ⟦ t ⟧Δ _ dρ′
-      ≡⟨ correctness {τ} t _ dρ′ ⟩
-        ⟦ t ⟧ (after-env dρ′)
-      ≡⟨ cong (λ hole → ⟦ t ⟧ (hole • after-env dρ)) (update-nil₍ σ ₎ v) ⟩
-        ⟦ t ⟧ (v • after-env dρ)
-      ∎
-    ) where open ≡-Reasoning
+  correctness {σ ⇒ τ} {Γ} (abs t) ρ dρ = equiv-raw-deriv-to-deriv-binary {{change-algebra₍ Γ ₎}} {{change-algebra σ}} ⟦ abs t ⟧Term (⟦⟧Δλ-realizer t) (⟦⟧Δλ-realizer-correct t) ρ dρ
 
   -- Corollary: (f ⊞ df) (v ⊞ dv) = f v ⊞ df v dv
 
