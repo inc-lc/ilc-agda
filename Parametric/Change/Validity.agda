@@ -35,12 +35,12 @@ module Structure {{change-algebra-base : Structure}} where
     ; _∷_ to _•_
     )
 
+  change-algebra : ∀ τ → ChangeAlgebra ⟦ τ ⟧Type
+  change-algebra (base ι) = change-algebra₍ ι ₎
+  change-algebra (τ₁ ⇒ τ₂) = changeAlgebraFun {{change-algebra τ₁}} {{change-algebra τ₂}}
+
   -- We provide: change algebra for every type
   instance
-    change-algebra : ∀ τ → ChangeAlgebra ⟦ τ ⟧Type
-    change-algebra (base ι) = change-algebra₍ ι ₎
-    change-algebra (τ₁ ⇒ τ₂) = changeAlgebraFun {{change-algebra τ₁}} {{change-algebra τ₂}}
-
     change-algebra-family : ChangeAlgebraFamily ⟦_⟧Type
     change-algebra-family = family change-algebra
 
