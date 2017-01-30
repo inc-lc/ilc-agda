@@ -142,8 +142,3 @@ module Structure
 
   meaning-onil {base ι} {Γ} {t} {ρ} = meaning-onil-base ι {Γ} {t} {ρ}
   meaning-onil {σ ⇒ τ} {Γ} {t} {ρ} = meaning-⊝ {σ ⇒ τ} {Γ} {t} {t} {ρ}
-  -- Ideally, this proof should simply be:
-  -- meaning-⊝ {σ ⇒ τ} {Γ} {t} {t} {ρ}
-  --
-  -- However, the types of the results don't match because using onil constructs
-  -- different environments.
