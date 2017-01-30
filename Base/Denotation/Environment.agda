@@ -75,7 +75,7 @@ instance
 ⟦⟧-≼-trans Γ′ (drop τ • Γ″) (v • ρ) = ⟦⟧-≼-trans Γ′ Γ″ ρ
 
 ⟦⟧-≼-refl : ∀ {Γ : Context} →
-  ∀ (ρ : ⟦ Γ ⟧) → ⟦_⟧ {{meaningOf≼}} ≼-refl ρ ≡ ρ
+  ∀ (ρ : ⟦ Γ ⟧) → ⟦ ≼-refl ⟧≼ ρ ≡ ρ
 ⟦⟧-≼-refl {∅} ∅ = refl
 ⟦⟧-≼-refl {τ • Γ} (v • ρ) = cong₂ _•_ refl (⟦⟧-≼-refl ρ)
 
