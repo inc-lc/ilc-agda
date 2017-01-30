@@ -38,6 +38,7 @@ open Derive.Structure Const ΔBase derive-const
 
 open import Base.Denotation.Notation
 
+open import Base.Change.Equivalence
 open import Relation.Binary.PropositionalEquality
 open import Postulate.Extensionality
 
@@ -55,6 +56,12 @@ record Structure : Set₁ where
     -- relation is on base types, and provide proofs for the two extension points
     -- below.
     implements-base : ∀ ι {v : ⟦ ι ⟧Base} → Δ₍ ι ₎ v → ⟦ ΔBase ι ⟧Type → Set
+
+    implements-base-respects-doe : ∀ ι
+      {v : ⟦ ι ⟧Base} {Δv₁ Δv₂ : Δ₍ ι ₎ v}
+      (Δv₁≙Δv₂ : _≙_ {{change-algebra₍_₎ {P = ⟦_⟧Base} ι}} Δv₁ Δv₂) →
+      {Δv′ : ⟦ ΔBase ι ⟧} (Δv₁≈Δv′ : implements-base ι {v} Δv₁ Δv′) →
+      implements-base ι Δv₂ Δv′
 
     -- Extension point 2: Differences on base types are logically related.
     u⊟v≈u⊝v-base : ∀ ι {u v : ⟦ ι ⟧Base} →
@@ -126,6 +133,15 @@ record Structure : Set₁ where
       carry-over {τ} {f v} (call-change {σ} {τ} Δf v (nil₍ σ ₎ v))
         {Δf′ v (⟦nil₍ σ ₎⟧ v)}
         (Δf≈Δf′ v (nil₍ σ ₎ v) (⟦nil₍ σ ₎⟧ v) (nil-v≈⟦nil⟧-v {σ} {v})))
+
+  implements-respects-doe : ∀ τ
+    {v : ⟦ τ ⟧} {Δv₁ Δv₂ : Δ₍ τ ₎ v}
+    (Δv₁≙Δv₂ : _≙_ {{change-algebra τ}} Δv₁ Δv₂) →
+    {Δv′ : ⟦ ΔType τ ⟧} (Δv₁≈Δv′ : implements τ {v} Δv₁ Δv′) →
+    Δv₂ ≈₍ τ ₎ Δv′
+  implements-respects-doe (base ι) Δv₁≙Δv₂ Δv₁≈Δv′ = implements-base-respects-doe ι Δv₁≙Δv₂ Δv₁≈Δv′
+  implements-respects-doe (σ ⇒ τ) Δv₁≙Δv₂ Δv₁≈Δv′ w Δw Δw′ Δw≈Δw′ =
+     implements-respects-doe τ (equiv-fun-changes-funs Δv₁≙Δv₂) (Δv₁≈Δv′ w Δw Δw′ Δw≈Δw′)
 
   -- A property relating `alternate` and the subcontext relation Γ≼ΔΓ
   ⟦Γ≼ΔΓ⟧ : ∀ {Γ} (ρ : ⟦ Γ ⟧) (dρ : ⟦ mapContext ΔType Γ ⟧) →

@@ -11,12 +11,16 @@ open import Nehemiah.Change.Type public
 open import Base.Denotation.Notation public
 
 open import Structure.Bag.Nehemiah
+open import Data.Product
 open import Data.Integer
 
 import Parametric.Denotation.Value Base as Value
 
+{-# TERMINATING #-}
 ⟦_⟧Base : Value.Structure
-⟦ base-int ⟧Base = ℤ
-⟦ base-bag ⟧Base = Bag
 
 open Value.Structure ⟦_⟧Base public
+
+⟦ base-int ⟧Base = ℤ
+⟦ base-bag ⟧Base = Bag
+⟦ base-pair τ₁ τ₂ ⟧Base = ⟦ τ₁ ⟧Type × ⟦ τ₂ ⟧Type

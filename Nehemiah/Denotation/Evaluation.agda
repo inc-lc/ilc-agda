@@ -10,6 +10,7 @@ open import Nehemiah.Syntax.Type
 open import Nehemiah.Syntax.Term
 open import Nehemiah.Denotation.Value
 
+open import Data.Product
 open import Data.Integer
 open import Structure.Bag.Nehemiah
 
@@ -25,5 +26,8 @@ import Parametric.Denotation.Evaluation Const ⟦_⟧Base as Evaluation
 ⟦ negate-const ⟧Const = λ b → negateBag b
 ⟦ flatmap-const ⟧Const = λ f b → flatmapBag f b
 ⟦ sum-const ⟧Const = λ b → sumBag b
+⟦ pair-const ⟧Const = _,_
+⟦ fst-const ⟧Const = proj₁
+⟦ snd-const ⟧Const = proj₂
 
 open Evaluation.Structure ⟦_⟧Const public

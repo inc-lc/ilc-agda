@@ -10,8 +10,11 @@ open import Nehemiah.Syntax.Type
 
 import Parametric.Change.Type Base as ChangeType
 
+{-# TERMINATING #-}
 ΔBase : ChangeType.Structure
-ΔBase base-int = base base-int
-ΔBase base-bag = base base-bag
 
 open ChangeType.Structure ΔBase public
+
+ΔBase base-int = base base-int
+ΔBase base-bag = base base-bag
+ΔBase (base-pair τ₁ τ₂) = ΔType τ₁ pair ΔType τ₂

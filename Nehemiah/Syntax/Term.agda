@@ -24,6 +24,9 @@ data Const : Term.Structure where
 
   flatmap-const : Const ((int ⇒ bag) ⇒ bag ⇒ bag)
   sum-const : Const (bag ⇒ int)
+  pair-const : ∀ {τ₁ τ₂} → Const (τ₁ ⇒ τ₂ ⇒ τ₁ pair τ₂)
+  fst-const : ∀ {τ₁ τ₂} → Const (τ₁ pair τ₂ ⇒ τ₁)
+  snd-const : ∀ {τ₁ τ₂} → Const (τ₁ pair τ₂ ⇒ τ₂)
 
 open Term.Structure Const public
 
@@ -38,3 +41,6 @@ pattern union s t = app (app (const union-const) s) t
 pattern negate t = app (const negate-const) t
 pattern flatmap s t = app (app (const flatmap-const) s) t
 pattern sum t = app (const sum-const) t
+pattern pair a b = app (app (const pair-const) a) b
+pattern fst p = app (const fst-const) p
+pattern snd p = app (const snd-const) p

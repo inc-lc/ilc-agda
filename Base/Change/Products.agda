@@ -12,7 +12,7 @@ open import Base.Change.Equivalence.Realizers
 
 -- Restriction: we pair sets on the same level (because right now everything
 -- else would risk getting in the way).
-module ProductChanges ℓ {A B : Set ℓ} {{CA : ChangeAlgebra A}} {{CB : ChangeAlgebra B}} where
+module ProductChanges {ℓ} {A B : Set ℓ} {{CA : ChangeAlgebra A}} {{CB : ChangeAlgebra B}} where
   -- Avoid having to specify A and B all the time; they'd often be ambiguous
   -- otherwise.
   import Data.Product as DP
@@ -84,6 +84,16 @@ module ProductChanges ℓ {A B : Set ℓ} {{CA : ChangeAlgebra A}} {{CB : Change
         ; update-nil = p-update-nil
         }
       }
+
+  doe-respect-projs : ∀ {v : (A × B)} {dv₁ dv₂} → dv₁ ≙₍ v ₎ dv₂ → DP.proj₁ dv₁ ≙₍ proj₁ v ₎ DP.proj₁ dv₂ × DP.proj₂ dv₁ ≙₍ proj₂ v ₎ DP.proj₂ dv₂
+  doe-respect-projs {va , vb} {dva₁ , dvb₁} {dva₂ , dbb₂} (doe v⊞dv₁≙v⊞dv₂) =
+    doe va⊞dva₁≡va⊞dva₂ , doe vb⊞dvb₁≡vb⊞dvb₂
+    where
+      foo : ∀ (a1 a2 : A) (b1 b2 : B) → (a1 , b1) ≡ (a2 , b2) → (a1 ≡ a2) × (b1 ≡ b2)
+      foo a1 .a1 b1 .b1 refl = refl , refl
+      lemma = foo _ _ _ _ v⊞dv₁≙v⊞dv₂
+      va⊞dva₁≡va⊞dva₂ = DP.proj₁ lemma
+      vb⊞dvb₁≡vb⊞dvb₂ = DP.proj₂ lemma
 
   --
   -- Derivatives of introductions and elimination forms for products.
@@ -201,3 +211,5 @@ module ProductChanges ℓ {A B : Set ℓ} {{CA : ChangeAlgebra A}} {{CB : Change
 
     uncurry₀′-faster : Δ uncurry₀
     uncurry₀′-faster = DP.proj₁ uncurry₀′-faster-w-proof
+
+open ProductChanges public

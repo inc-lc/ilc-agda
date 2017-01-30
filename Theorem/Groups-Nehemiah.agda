@@ -129,3 +129,17 @@ distribute-neg {f = f} {neg} {z} {a} {b} {{abelian}} = inverse-unique
   ≡⟨ right-id-bag d ⟩
     d
   ∎ where open ≡-Reasoning
+
+[m+n]-m=n : ∀ {m n : ℤ} → (m + n) - m ≡ n
+[m+n]-m=n {m} {n} =
+  begin
+    (m + n) - m
+  ≡⟨ cong (λ hole → hole - m) (commutative-int m n) ⟩
+    (n + m) - m
+  ≡⟨ associative-int n m (- m) ⟩
+    n + (m - m)
+  ≡⟨ cong (_+_ n) (right-inv-int m) ⟩
+    n + (+ 0)
+  ≡⟨ right-id-int n ⟩
+    n
+  ∎ where open ≡-Reasoning

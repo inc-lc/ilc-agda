@@ -24,6 +24,7 @@ open import Nehemiah.Change.Implementation
 
 open import Base.Denotation.Notation
 open import Relation.Binary.PropositionalEquality
+open import Data.Product
 open import Data.Integer
 open import Theorem.Groups-Nehemiah
 open import Postulate.Extensionality
@@ -46,6 +47,10 @@ private
     lemma v rewrite Δf≈Δf′ v (+ 0) (+ 0) refl = refl
 
 derive-const-correct : Correctness.Structure
+open import Base.Change.Equivalence
+
+open Correctness.Structure derive-const-correct public
+
 derive-const-correct (intlit-const n) = refl
 derive-const-correct add-const w Δw .Δw refl w₁ Δw₁ .Δw₁ refl
   rewrite mn·pq=mp·nq {w} {Δw} {w₁} {Δw₁}
@@ -70,5 +75,8 @@ derive-const-correct sum-const w Δw .Δw refl
   rewrite homo-sum {w} {Δw}
   | associative-int (sumBag w) (sumBag Δw) (- sumBag w)
   = n+[m-n]=m {sumBag w} {sumBag Δw}
-
-open Correctness.Structure derive-const-correct public
+derive-const-correct (pair-const {τ₁} {τ₂}) w₁ Δw₁ Δw′₁ Δw≈Δw′₁ w₂ Δw₂ Δw′₂ Δw≈Δw′₂ =
+    implements-respects-doe τ₁ (≙-sym diff-update) Δw≈Δw′₁
+  , implements-respects-doe τ₂ (≙-sym diff-update) Δw≈Δw′₂
+derive-const-correct (fst-const {τ₁} {τ₂}) (w₁ , w₂) (Δw₁ , Δw₂) (Δw′₁ , Δw′₂) (Δw≈Δw′₁ , Δw≈Δw′₂) = implements-respects-doe τ₁ (≙-sym diff-update) Δw≈Δw′₁
+derive-const-correct (snd-const {τ₁} {τ₂}) (w₁ , w₂) (Δw₁ , Δw₂) (Δw′₁ , Δw′₂) (Δw≈Δw′₁ , Δw≈Δw′₂) = implements-respects-doe τ₂ (≙-sym diff-update) Δw≈Δw′₂
