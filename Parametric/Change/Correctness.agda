@@ -29,11 +29,7 @@ module Parametric.Change.Correctness
     (⟦apply-base⟧ : ChangeValue.ApplyStructure Const ⟦_⟧Base ΔBase)
     (⟦diff-base⟧ : ChangeValue.DiffStructure Const ⟦_⟧Base ΔBase)
     (⟦nil-base⟧ : ChangeValue.NilStructure Const ⟦_⟧Base ΔBase)
-    (meaning-⊕-base : ChangeEvaluation.ApplyStructure
-      ⟦_⟧Base ⟦_⟧Const ΔBase apply-base diff-base nil-base ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧)
-    (meaning-⊝-base : ChangeEvaluation.DiffStructure
-      ⟦_⟧Base ⟦_⟧Const ΔBase apply-base diff-base nil-base ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧)
-    (meaning-onil-base : ChangeEvaluation.NilStructure
+    (meaning-structure : ChangeEvaluation.Structure
       ⟦_⟧Base ⟦_⟧Const ΔBase apply-base diff-base nil-base ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧)
     {{validity-structure : Validity.Structure ⟦_⟧Base}}
     (derive-const : Derive.Structure Const ΔBase)
@@ -51,11 +47,7 @@ open Specification.Structure Const ⟦_⟧Base ⟦_⟧Const
 open ChangeType.Structure Base ΔBase
 open ChangeTerm.Structure Const ΔBase apply-base diff-base nil-base
 open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
-open ChangeEvaluation.Structure
-  ⟦_⟧Base ⟦_⟧Const ΔBase
-  apply-base diff-base nil-base
-  ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
-  meaning-⊕-base meaning-⊝-base meaning-onil-base
+open ChangeEvaluation.Structure meaning-structure
 open Derive.Structure Const ΔBase derive-const
 open Implementation.Structure implementation-structure
 -- The denotational properties of the `derive` transformation.

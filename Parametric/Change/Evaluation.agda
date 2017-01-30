@@ -56,11 +56,11 @@ NilStructure = ∀ ι {Γ} →
   {t : Term Γ (base ι)} {ρ : ⟦ Γ ⟧} →
   ⟦nil₍ base ι ₎⟧ (⟦ t ⟧ ρ) ≡ ⟦ onil₍ base ι ₎ t ⟧ ρ
 
-module Structure
-    (meaning-⊕-base    : ApplyStructure)
-    (meaning-⊝-base    : DiffStructure)
-    (meaning-onil-base : NilStructure)
-  where
+record Structure : Set where
+  field
+    meaning-⊕-base    : ApplyStructure
+    meaning-⊝-base    : DiffStructure
+    meaning-onil-base : NilStructure
 
   -- unique names with unambiguous types
   -- to help type inference figure things out
