@@ -9,7 +9,7 @@ import Parametric.Syntax.Term as Term
 import Parametric.Change.Type as ChangeType
 
 module Parametric.Change.Term
-    {Base : Set}
+    {Base : Type.Structure}
     (Const : Term.Structure Base)
     (ΔBase : ChangeType.Structure Base)
   where
