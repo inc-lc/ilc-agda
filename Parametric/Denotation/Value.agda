@@ -16,7 +16,7 @@ open Type.Structure Base
 
 -- Extension point: Values for base types.
 Structure : Set₁
-Structure = Base → Set
+Structure = Base Type → Set
 
 module Structure (⟦_⟧Base : Structure) where
   -- We provide: Values for arbitrary types.

@@ -15,14 +15,14 @@ module Parametric.Change.Specification
     (Const : Term.Structure Base)
     (⟦_⟧Base : Value.Structure Base)
     (⟦_⟧Const : Evaluation.Structure Const ⟦_⟧Base)
-    {{validity-structure : Validity.Structure ⟦_⟧Base}}
+    {{validity-structure : Validity.Structure {Base} ⟦_⟧Base}}
   where
 
 open Type.Structure Base
 open Term.Structure Base Const
 open Value.Structure Base ⟦_⟧Base
 open Evaluation.Structure Const ⟦_⟧Base ⟦_⟧Const
-open Validity.Structure ⟦_⟧Base {{validity-structure}}
+open Validity.Structure {Base} ⟦_⟧Base {{validity-structure}}
 
 open import Base.Denotation.Notation
 open import Relation.Binary.PropositionalEquality

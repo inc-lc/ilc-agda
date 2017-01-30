@@ -14,7 +14,7 @@ open Type.Structure Base
 
 -- Extension point: Simply-typed changes of base types.
 Structure : Set
-Structure = Base → Type
+Structure = Base Type → Type
 
 module Structure (ΔBase : Structure) where
   -- We provide: Simply-typed changes on simple types.

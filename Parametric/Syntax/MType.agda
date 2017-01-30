@@ -9,7 +9,7 @@ module Structure (Base : Type.Structure) where
     --  Derived from CBPV
     data ValType : Set where
       U : (c : CompType) → ValType
-      B : (ι : Base) → ValType
+      B : (ι : Base Type) → ValType
       vUnit : ValType
       _v×_ : (τ₁ : ValType) → (τ₂ : ValType) → ValType
       _v+_ : (τ₁ : ValType) → (τ₂ : ValType) → ValType

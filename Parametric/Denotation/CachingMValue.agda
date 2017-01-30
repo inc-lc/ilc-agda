@@ -29,7 +29,7 @@ open import Level
 open import Function hiding (const)
 
 Structure : Set
-Structure = Base → Type
+Structure = Base Type → Type
 
 module Structure (ΔBase : Structure) where
   {-# TERMINATING #-}

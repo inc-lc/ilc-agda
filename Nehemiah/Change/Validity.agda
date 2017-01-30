@@ -9,7 +9,7 @@ module Nehemiah.Change.Validity where
 open import Nehemiah.Syntax.Type
 open import Nehemiah.Denotation.Value
 
-import Parametric.Change.Validity ⟦_⟧Base as Validity
+import Parametric.Change.Validity {Base} ⟦_⟧Base as Validity
 
 open import Nehemiah.Change.Type 
 open import Nehemiah.Change.Value

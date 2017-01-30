@@ -206,7 +206,7 @@ module Structure
   ⟦_⟧TermCacheCBV : ∀ {τ Γ} → Term Γ τ → ⟦ fromCBVCtx Γ ⟧ValCtxHidCache → ⟦ cbvToCompType τ ⟧CompTypeHidCache
   ⟦ t ⟧TermCacheCBV = ⟦ fromCBV t ⟧CompTermCache
 
-  module _ (ι : Base) where
+  module _ (ι : Base Type) where
     Γ : ValContext
     Γ = ∅
     σ = B ι

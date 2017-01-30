@@ -1,3 +1,4 @@
+{-# OPTIONS --no-positivity-check #-}
 ------------------------------------------------------------------------
 -- INCREMENTAL λ-CALCULUS
 --
@@ -16,7 +17,7 @@ open import Base.Data.DependentList
 -- provide a type, so we say "Structure = Set".
 
 Structure : Set₁
-Structure = Set
+Structure = Set → Set
 
 -- Here is the parametric module that defines the syntax of
 -- simply types in terms of the syntax of base types. In the
@@ -39,7 +40,7 @@ module Structure (Base : Structure) where
   -- Note that we can use our module parameter "Base" here just
   -- like any other type.
   data Type : Set where
-    base : (ι : Base) → Type
+    base : (ι : (Base Type)) → Type
     _⇒_ : (σ : Type) → (τ : Type) → Type
 
   -- We also provide the definitions of contexts of the newly
