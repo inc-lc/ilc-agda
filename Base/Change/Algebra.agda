@@ -167,7 +167,7 @@ RawChange₍_,_₎ : ∀ {a b p q} {A : Set a} {B : Set b} {P : A → Set p} {Q 
   (x : A) →
   (y : B) →
   (f : P x → Q y) → Set (p ⊔ q)
-RawChange₍_,_₎ x y f = ∀ px (dpx : Δ₍_₎ x px) → Δ₍_₎ y (f px)
+RawChange₍ x , y ₎ f = ∀ px (dpx : Δ₍ x ₎ px) → Δ₍ y ₎ (f px)
 
 IsDerivative₍_,_₎ : ∀ {a b p q} {A : Set a} {B : Set b} {P : A → Set p} {Q : B → Set q} →
   {{CP : ChangeAlgebraFamily P}} →

@@ -288,6 +288,7 @@ module _
         ≡⟨ sym (update-nil (f v)) ⟩
           f v ⊞ nil (f v)
         ∎
+
 module _
   {a} {A : Set a} {{CA : ChangeAlgebra A}}
   {b} {B : Set b} {{CB : ChangeAlgebra B}}
