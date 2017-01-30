@@ -31,7 +31,7 @@ open Type.Structure Base
 open Term.Structure Base Const
 open Value.Structure Base ⟦_⟧Base
 open Evaluation.Structure Const ⟦_⟧Base ⟦_⟧Const
-open Validity.Structure ⟦_⟧Base
+open Validity.Structure ⟦_⟧Base {{validity-structure}}
 open ChangeType.Structure Base ΔBase
 open ChangeValue.Structure Const ⟦_⟧Base ΔBase ⟦apply-base⟧ ⟦diff-base⟧ ⟦nil-base⟧
 open Derive.Structure Const ΔBase derive-const

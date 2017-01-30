@@ -46,7 +46,7 @@ open Type.Structure Base
 open Term.Structure Base Const
 open Value.Structure Base ⟦_⟧Base
 open Evaluation.Structure Const ⟦_⟧Base ⟦_⟧Const
-open Validity.Structure ⟦_⟧Base
+open Validity.Structure ⟦_⟧Base {{validity-structure}}
 open Specification.Structure Const ⟦_⟧Base ⟦_⟧Const
 open ChangeType.Structure Base ΔBase
 open ChangeTerm.Structure Const ΔBase apply-base diff-base nil-base
