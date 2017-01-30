@@ -223,17 +223,8 @@ module _
     (IsDerivative-f-df : IsDerivative f df) → DerivativeAsChange IsDerivative-f-df ≙ nil f
   derivative-is-nil-alternative df IsDerivative-f-df = derivative-is-nil (DerivativeAsChange IsDerivative-f-df) IsDerivative-f-df
 
-  nil-is-derivative : ∀ (f : A → B) → IsDerivative f (apply (nil f))
-  nil-is-derivative f a da =
-    begin
-      f a ⊞ apply (nil f) a da
-    ≡⟨ sym (incrementalization f (nil f) a da) ⟩
-      (f ⊞ nil f) (a ⊞ da)
-    ≡⟨ cong (λ □ → □ (a ⊞ da)) (update-nil f) ⟩
-      f (a ⊞ da)
-    ∎
-    where
-      open ≡-Reasoning
+  -- Theorem 2.10, appears in Base.Change.Algebra.
+  -- nil-is-derivative : ∀ (f : A → B) → IsDerivative f (apply (nil f))
 
   -- If we have two derivatives, they're both nil, hence they're equivalent.
   derivative-unique : ∀ {f : A → B} {df dg : Δ f} → IsDerivative f (apply df) → IsDerivative f (apply dg) → df ≙ dg

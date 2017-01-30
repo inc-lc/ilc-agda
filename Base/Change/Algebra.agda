@@ -382,6 +382,7 @@ module _
         ; incrementalization
         ; DerivativeAsChange
         ; FunctionChange
+        ; nil-is-derivative
         )
 
 module BinaryFunctionChanges
