@@ -57,7 +57,7 @@ correctDerive : ∀ {Γ τ} → (t : Term Γ τ) →
 
 correctDerive (const ()) ρ dρ ρdρ
 correctDerive (var x) ρ dρ ρdρ = correctDeriveVar x ρ dρ ρdρ
-correctDerive {Γ} (app {σ} {τ} s t) ρ dρ ρdρ rewrite sym (fit-sound t ρ dρ) =
+correctDerive (app s t) ρ dρ ρdρ rewrite sym (fit-sound t ρ dρ) =
   let
     open ≡-Reasoning
     a0 = ⟦ t ⟧Term ρ
@@ -73,7 +73,7 @@ correctDerive {Γ} (app {σ} {τ} s t) ρ dρ ρdρ rewrite sym (fit-sound t ρ 
     ∎
   where
     open import Theorem.CongApp
-correctDerive {Γ} (abs {σ} {τ} t) ρ dρ ρdρ = ext (λ a →
+correctDerive (abs t) ρ dρ ρdρ = ext (λ a →
   let
     open ≡-Reasoning
     ρ1 = a • ρ
@@ -99,7 +99,7 @@ validDerive (app s t) ρ dρ ρdρ =
     fdf = validDerive s ρ dρ ρdρ
     fvdfv = proj₁ (fdf v dv vdv)
   in subst (λ v′ → valid (f v) (df v′ dv)) (fit-sound t ρ dρ) fvdfv
-validDerive {Γ = Γ} (abs {σ} {τ} t) ρ dρ ρdρ =
+validDerive (abs t) ρ dρ ρdρ =
   λ a da ada →
   let
     fv = ⟦ t ⟧Term (a • ρ)
@@ -127,7 +127,6 @@ validDerive {Γ = Γ} (abs {σ} {τ} t) ρ dρ ρdρ =
        ⟦ t ⟧Term (a ⊕ da • ρ ⊕ dρ)
       ≡⟨ correctDerive t ρ2 dρ2 ρ2dρ2 ⟩
         ⟦ t ⟧Term (a • ρ) ⊕ ⟦ derive t ⟧Term (da • a • alternate ρ dρ)
-      ∎
-      )
+      ∎)
 validDerive (var x) ρ dρ ρdρ = validDeriveVar x ρ dρ ρdρ
 validDerive (const ()) ρ dρ ρdρ
