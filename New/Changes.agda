@@ -99,10 +99,28 @@ module _ {ℓ₁} {ℓ₂}
       f a ⊕ (nil f a da)
     ∎
 
-  -- instance
-  --   pairCA : ChAlg (A × B)
-  -- pairCA = record
-  --   { Ch = Ch CA × Ch CB ; isChAlg = record { _⊕_ = {!!} ; _⊝_ = {!!} ; valid = {!!} ; ⊝-valid = {!!} ; ⊕-⊝ = {!!} } }
+  private
+    _p⊕_ : A × B → Ch A × Ch B → A × B
+    _p⊕_ (a , b) (da , db) = a ⊕ da , b ⊕ db
+    _p⊝_ : A × B → A × B → Ch A × Ch B
+    _p⊝_ (a2 , b2) (a1 , b1) = a2 ⊝ a1 , b2 ⊝ b1
+    pvalid : A × B → Ch A × Ch B → Set (ℓ₂ ⊔ ℓ₁)
+    pvalid (a , b) (da , db) = valid a da × valid b db
+    p⊝-valid : (p1 p2 : A × B) → pvalid p1 (p2 p⊝ p1)
+    p⊝-valid (a1 , b1) (a2 , b2) = ⊝-valid a1 a2 , ⊝-valid b1 b2
+    p⊕-⊝ : (p2 p1 : A × B) → p1 p⊕ (p2 p⊝ p1) ≡ p2
+    p⊕-⊝ (a2 , b2) (a1 , b1) = cong₂ _,_ (⊕-⊝ a2 a1) (⊕-⊝ b2 b1)
+  instance
+    pairCA : ChAlg (A × B)
+  pairCA = record
+    { Ch = Ch A × Ch B
+    ; isChAlg = record
+    { _⊕_ = _p⊕_
+    ; _⊝_ = _p⊝_
+    ; valid = pvalid
+    ; ⊝-valid = p⊝-valid
+    ; ⊕-⊝ = p⊕-⊝
+    } }
 
 open import Data.Integer
 open import Theorem.Groups-Nehemiah
