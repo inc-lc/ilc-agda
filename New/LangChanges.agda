@@ -23,7 +23,7 @@ instance
 
 isChAlgτ (σ ⇒ τ) = isChAlg {{funCA {{chAlgt σ}} {{chAlgt τ}}}}
 isChAlgτ int = isChAlg {{intCA}}
--- isChAlgτ (pair σ τ) = isChAlg {{pairCA {{chAlgt σ}} {{chAlgt τ}}}}
+isChAlgτ (pair σ τ) = isChAlg {{pairCA {{chAlgt σ}} {{chAlgt τ}}}}
 
 module _ where
   eCh : ∀ (Γ : Context) → Set
