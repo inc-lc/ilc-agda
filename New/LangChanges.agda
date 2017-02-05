@@ -27,7 +27,7 @@ isChAlgτ int = isChAlg {{intCA}}
 
 module _ where
   eCh : ∀ (Γ : Context) → Set
-  eCh Γ = DependentList (λ τ → Ch (ichAlgt {τ})) Γ
+  eCh Γ = DependentList (λ τ → Ch ⟦ τ ⟧Type) Γ
   _e⊕_ : ∀ {Γ} → ⟦ Γ ⟧Context → eCh Γ → ⟦ Γ ⟧Context
   _e⊕_ ∅ ∅ = ∅
   _e⊕_ (v ∷ ρ) (dv ∷ dρ) = v ⊕ dv ∷ ρ e⊕ dρ

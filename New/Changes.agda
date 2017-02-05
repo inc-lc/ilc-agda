@@ -33,7 +33,8 @@ record ChAlg {ℓ : Level} (A : Set ℓ) : Set (suc ℓ) where
   open IsChAlg isChAlg public
 
 open ChAlg {{...}} public hiding (Ch)
-open ChAlg using (Ch) public
+Ch : ∀ {ℓ} (A : Set ℓ) → {{CA : ChAlg A}} → Set ℓ
+Ch A {{CA}} = ChAlg.Ch CA
 
 -- Huge hack, but it does gives the output you want to see in all cases I've seen.
 
@@ -49,7 +50,7 @@ open ChAlg using (Ch) public
 module _ {ℓ₁} {ℓ₂}
   {A : Set ℓ₁} {B : Set ℓ₂} {{CA : ChAlg A}} {{CB : ChAlg B}} where
   private
-    fCh = A → Ch CA → Ch CB
+    fCh = A → Ch A → Ch B
     _f⊕_ : (A → B) → fCh → A → B
     _f⊕_ = λ f df a → f a ⊕ df a (nil a)
     _f⊝_ : (g f : A → B) → fCh
@@ -66,7 +67,7 @@ module _ {ℓ₁} {ℓ₂}
     funUpdateDiff : ∀ g f a → (f f⊕ (g f⊝ f)) a ≡ g a
   funUpdateDiff g f a rewrite update-nil a = update-diff (g a) (f a)
   funCA = record
-    { Ch = A → Ch CA → Ch CB
+    { Ch = A → Ch A → Ch B
     ; isChAlg = record
       { _⊕_ = _f⊕_
       ; _⊝_ = _f⊝_
