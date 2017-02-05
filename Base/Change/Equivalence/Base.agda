@@ -7,8 +7,6 @@ module Base.Change.Equivalence.Base where
 
 open import Relation.Binary.PropositionalEquality
 open import Base.Change.Algebra
-open import Level
-open import Data.Unit
 open import Function
 
 module _ {a} {A : Set a} {{ca : ChangeAlgebra A}} {x : A} where
