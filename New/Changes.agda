@@ -14,15 +14,15 @@ record IsChAlg {ℓ : Level} (A : Set ℓ) (Ch : Set ℓ) : Set (suc ℓ) where
     ⊕-⊝ : (b a : A) → a ⊕ (b ⊝ a) ≡ b
   infixl 6 _⊕_ _⊝_
 
-  nil : A → Ch
-  nil a = a ⊝ a
-  nil-valid : (a : A) → valid a (nil a)
-  nil-valid a = ⊝-valid a a
-
   Δ : A → Set ℓ
   Δ a = Σ[ da ∈ Ch ] (valid a da)
 
   update-diff = ⊕-⊝
+
+  nil : A → Ch
+  nil a = a ⊝ a
+  nil-valid : (a : A) → valid a (nil a)
+  nil-valid a = ⊝-valid a a
   update-nil : (a : A) → a ⊕ nil a ≡ a
   update-nil a = update-diff a a
 
