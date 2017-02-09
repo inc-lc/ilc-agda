@@ -95,3 +95,50 @@ ominusτ-equiv Γ ρ (pair σ τ) (a2 , b2) (a1 , b1)
   | ominusτ-equiv _ ((a1 , b1) ∷ (a2 , b2) ∷ ρ) τ b2 b1
   = refl
 ominusτ-equiv Γ ρ (sum σ τ) s2 s1 = {!!}
+
+-- synIsChAlgτ : (τ : Type) → IsChAlg ⟦ τ ⟧Type ⟦ Δt τ ⟧Type (oplusτ τ) (ominusτ τ)
+
+-- synChAlgt : (τ : Type) → ChAlg ⟦ τ ⟧Type
+-- synChAlgt τ = record { Ch = Cht τ ; _⊕_ = oplusτ τ ; _⊝_ = ominusτ τ ; isChAlg = isChAlgτ τ}
+-- private
+--   instance
+--     synIchAlgt : ∀ {τ} → ChAlg ⟦ τ ⟧Type
+-- synIchAlgt {τ} = chAlgt τ
+
+-- synIsChAlgτ τ rewrite oplusτ-equiv-ext τ | ominusτ-equiv-ext τ = ⟦isChAlgτ⟧ τ
+
+-- oplusτo-invariant : ∀ τ {Γ₁ Γ₂} (ρ₁ : ⟦ Γ₁ ⟧Context) (ρ₂ : ⟦ Γ₂ ⟧Context) →
+--   ⟦ oplusτo τ ⟧Term ρ₁ ≡ ⟦ oplusτo τ ⟧Term ρ₂
+-- ominusτo-invariant : ∀ τ {Γ₁ Γ₂} (ρ₁ : ⟦ Γ₁ ⟧Context) (ρ₂ : ⟦ Γ₂ ⟧Context) →
+--   ⟦ ominusτo τ ⟧Term ρ₁ ≡ ⟦ ominusτo τ ⟧Term ρ₂
+-- ominusτo-invariant (σ ⇒ τ) ρ₁ ρ₂ = {!!}
+-- ominusτo-invariant int ρ₁ ρ₂ = refl
+-- ominusτo-invariant (pair σ τ) ρ₁ ρ₂ = {!!}
+-- ominusτo-invariant (sum σ τ) ρ₁ ρ₂ = {!!}
+-- oplusτo-invariant (σ ⇒ τ) ρ₁ ρ₂ = ext³ lemma
+--   where
+--     module _ (f : ⟦ σ ⇒ τ ⟧Type) (df : Cht (σ ⇒ τ)) (a : ⟦ σ ⟧Type) where
+--       ρ₁′ = a ∷ df ∷ f ∷ ρ₁
+--       ρ₁′′ = a ∷ ρ₁′
+--       ρ₂′ = a ∷ df ∷ f ∷ ρ₂
+--       ρ₂′′ = a ∷ ρ₂′
+--       lemma : ⟦ oplusτo τ ⟧Term (a ∷ df ∷ f ∷ ρ₁) (f a)
+--         (df a (⟦ ominusτo σ ⟧Term (a ∷ a ∷ df ∷ f ∷ ρ₁) a a))
+--         ≡
+--         ⟦ oplusτo τ ⟧Term (a ∷ df ∷ f ∷ ρ₂) (f a)
+--         (df a (⟦ ominusτo σ ⟧Term (a ∷ a ∷ df ∷ f ∷ ρ₂) a a))
+--       lemma  rewrite oplusτo-invariant τ ρ₁′ ρ₂′ | ominusτo-invariant σ ρ₁′′ ρ₂′′ = refl
+-- oplusτo-invariant int ρ₁ ρ₂ = refl
+-- oplusτo-invariant (pair σ τ) ρ₁ ρ₂ = ext (λ p → ext (lemma p))
+--   where
+--     module _ (p : ⟦ pair σ τ ⟧Type) (dp : Cht (pair σ τ)) where
+--       ρ₁′ = dp ∷ p ∷ ρ₁
+--       ρ₂′ = dp ∷ p ∷ ρ₂
+--       lemma :
+--         (⟦ oplusτo σ ⟧Term (dp ∷ p ∷ ρ₁) (proj₁ p) (proj₁ dp) ,
+--          ⟦ oplusτo τ ⟧Term (dp ∷ p ∷ ρ₁) (proj₂ p) (proj₂ dp))
+--         ≡
+--         (⟦ oplusτo σ ⟧Term (dp ∷ p ∷ ρ₂) (proj₁ p) (proj₁ dp) ,
+--          ⟦ oplusτo τ ⟧Term (dp ∷ p ∷ ρ₂) (proj₂ p) (proj₂ dp))
+--       lemma rewrite oplusτo-invariant σ ρ₁′ ρ₂′ | oplusτo-invariant τ ρ₁′ ρ₂′ = refl
+-- oplusτo-invariant (sum σ τ) ρ₁ ρ₂ = {!!}
