@@ -55,16 +55,16 @@ validDerive : ∀ {Γ τ} → (t : Term Γ τ) →
 correctDerive : ∀ {Γ τ} → (t : Term Γ τ) →
   IsDerivative ⟦ t ⟧Term (changeSem t)
 
-semConst-rewrite : ∀ {τ Γ} (c : Const τ) (ρ : ⟦ Γ ⟧Context) dρ → changeSem (const c) ρ dρ ≡ ⟦ deriveConst c ⟧Term ∅
-semConst-rewrite c ρ dρ rewrite weaken-sound {Γ₁≼Γ₂ = ∅≼Γ} (deriveConst c) (alternate ρ dρ) | ⟦∅≼Γ⟧-∅ (alternate ρ dρ) = refl
+changeSemConst : ∀ {τ} (c : Const τ) → Cht τ
+changeSemConst c = ⟦ deriveConst c ⟧Term ∅
 
-correctDeriveConst : ∀ {τ} (c : Const τ) → ⟦ c ⟧Const ≡ ⟦ c ⟧Const ⊕ ⟦ deriveConst c ⟧Term ∅
-correctDeriveConst ()
+changeSemConst-rewrite : ∀ {τ Γ} (c : Const τ) (ρ : ⟦ Γ ⟧Context) dρ → changeSem (const c) ρ dρ ≡ changeSemConst c
+changeSemConst-rewrite c ρ dρ rewrite weaken-sound {Γ₁≼Γ₂ = ∅≼Γ} (deriveConst c) (alternate ρ dρ) | ⟦∅≼Γ⟧-∅ (alternate ρ dρ) = refl
 
 validDeriveConst : ∀ {τ} (c : Const τ) → valid ⟦ c ⟧Const (⟦ deriveConst c ⟧Term ∅)
 validDeriveConst ()
 
-correctDerive (const c) ρ dρ ρdρ rewrite semConst-rewrite c ρ dρ = correctDeriveConst c
+correctDerive (const c) ρ dρ ρdρ rewrite changeSemConst-rewrite c ρ dρ = correctDeriveConst c
 correctDerive (var x) ρ dρ ρdρ = correctDeriveVar x ρ dρ ρdρ
 correctDerive (app s t) ρ dρ ρdρ rewrite sym (fit-sound t ρ dρ) =
   let
@@ -138,4 +138,4 @@ validDerive (abs t) ρ dρ ρdρ =
         ⟦ t ⟧Term (a • ρ) ⊕ ⟦ derive t ⟧Term (da • a • alternate ρ dρ)
       ∎)
 validDerive (var x) ρ dρ ρdρ = validDeriveVar x ρ dρ ρdρ
-validDerive (const c) ρ dρ ρdρ rewrite semConst-rewrite c ρ dρ = validDeriveConst c
+validDerive (const c) ρ dρ ρdρ rewrite changeSemConst-rewrite c ρ dρ = validDeriveConst c
