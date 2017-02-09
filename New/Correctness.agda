@@ -9,6 +9,7 @@ open import New.Lang
 open import New.Changes
 open import New.Derive
 open import New.LangChanges
+open import New.LangOps
 
 -- Lemmas
 alternate : ∀ {Γ} → ⟦ Γ ⟧Context → eCh Γ → ⟦ ΔΓ Γ ⟧Context
