@@ -40,6 +40,35 @@ module _ where
   weaken Γ₁≼Γ₂ (app s t) = app (weaken Γ₁≼Γ₂ s) (weaken Γ₁≼Γ₂ t)
   weaken Γ₁≼Γ₂ (abs {σ} t) = abs (weaken (keep σ • Γ₁≼Γ₂) t)
 
+  -- Shorthands for nested applications
+  app₂ : ∀ {Γ α β γ} →
+    Term Γ (α ⇒ β ⇒ γ) →
+    Term Γ α → Term Γ β → Term Γ γ
+  app₂ f x = app (app f x)
+
+  app₃ : ∀ {Γ α β γ δ} →
+    Term Γ (α ⇒ β ⇒ γ ⇒ δ) →
+    Term Γ α → Term Γ β → Term Γ γ → Term Γ δ
+  app₃ f x = app₂ (app f x)
+
+  app₄ : ∀ {Γ α β γ δ ε} →
+    Term Γ (α ⇒ β ⇒ γ ⇒ δ ⇒ ε) →
+    Term Γ α → Term Γ β → Term Γ γ → Term Γ δ →
+    Term Γ ε
+  app₄ f x = app₃ (app f x)
+
+  app₅ : ∀ {Γ α β γ δ ε ζ} →
+    Term Γ (α ⇒ β ⇒ γ ⇒ δ ⇒ ε ⇒ ζ) →
+    Term Γ α → Term Γ β → Term Γ γ → Term Γ δ →
+    Term Γ ε → Term Γ ζ
+  app₅ f x = app₄ (app f x)
+
+  app₆ : ∀ {Γ α β γ δ ε ζ η} →
+    Term Γ (α ⇒ β ⇒ γ ⇒ δ ⇒ ε ⇒ ζ ⇒ η) →
+    Term Γ α → Term Γ β → Term Γ γ → Term Γ δ →
+    Term Γ ε → Term Γ ζ → Term Γ η
+  app₆ f x = app₅ (app f x)
+
 open import Base.Denotation.Environment Type ⟦_⟧Type public
 
 ⟦_⟧Const : ∀ {τ} → Const τ → ⟦ τ ⟧Type
