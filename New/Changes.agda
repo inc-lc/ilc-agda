@@ -4,6 +4,7 @@ open import Relation.Binary.PropositionalEquality
 open import Level
 open import Data.Unit
 open import Data.Product
+open import Data.Sum
 
 record IsChAlg {ℓ : Level} (A : Set ℓ) (Ch : Set ℓ) : Set (suc ℓ) where
   field
@@ -120,6 +121,78 @@ module _ {ℓ₁} {ℓ₂}
     ; valid = pvalid
     ; ⊝-valid = p⊝-valid
     ; ⊕-⊝ = p⊕-⊝
+    } }
+
+  private
+    SumChange = (Ch A ⊎ Ch B) ⊎ (A ⊎ B)
+
+  data SumChange2 : Set (ℓ₁ ⊔ ℓ₂) where
+    ch₁ : (da : Ch A) → SumChange2
+    ch₂ : (db : Ch B) → SumChange2
+    rp : (s : A ⊎ B) → SumChange2
+
+  convert : SumChange → SumChange2
+  convert (inj₁ (inj₁ da)) = ch₁ da
+  convert (inj₁ (inj₂ db)) = ch₂ db
+  convert (inj₂ s) = rp s
+  convert₁ : SumChange2 → SumChange
+  convert₁ (ch₁ da) = inj₁ (inj₁ da)
+  convert₁ (ch₂ db) = inj₁ (inj₂ db)
+  convert₁ (rp s) = inj₂ s
+
+  data SValid : A ⊎ B → SumChange → Set (ℓ₁ ⊔ ℓ₂) where
+    sv₁ : ∀ (a : A) (da : Ch A) (ada : valid a da) → SValid (inj₁ a) (convert₁ (ch₁ da))
+    sv₂ : ∀ (b : B) (db : Ch B) (bdb : valid b db) → SValid (inj₂ b) (convert₁ (ch₂ db))
+    svrp : ∀ (s₁ s₂ : A ⊎ B) → SValid s₁ (convert₁ (rp s₂))
+
+  inv1 : ∀ ds → convert₁ (convert ds) ≡ ds
+  inv1 (inj₁ (inj₁ da)) = refl
+  inv1 (inj₁ (inj₂ db)) = refl
+  inv1 (inj₂ s) = refl
+  inv2 : ∀ ds → convert (convert₁ ds) ≡ ds
+  inv2 (ch₁ da) = refl
+  inv2 (ch₂ db) = refl
+  inv2 (rp s) = refl
+
+  private
+    s⊕2 : A ⊎ B → SumChange2 → A ⊎ B
+    s⊕2 (inj₁ a) (ch₁ da) = inj₁ (a ⊕ da)
+    s⊕2 (inj₂ b) (ch₂ db) = inj₂ (b ⊕ db)
+    s⊕2 (inj₂ b) (ch₁ da) = inj₂ b -- invalid
+    s⊕2 (inj₁ a) (ch₂ db) = inj₁ a -- invalid
+    s⊕2 s (rp s₁) = s₁
+
+    s⊕ : A ⊎ B → SumChange → A ⊎ B
+    s⊕ s ds = s⊕2 s (convert ds)
+
+    s⊝2 : A ⊎ B → A ⊎ B → SumChange2
+    s⊝2 (inj₁ x2) (inj₁ x1) = ch₁ (x2 ⊝ x1)
+    s⊝2 (inj₂ y2) (inj₂ y1) = ch₂ (y2 ⊝ y1)
+    s⊝2 s2 s1 = rp s2
+
+    s⊝ : A ⊎ B → A ⊎ B → SumChange
+    s⊝ s2 s1 = convert₁ (s⊝2 s2 s1)
+
+    s⊝-valid : (a b : A ⊎ B) → SValid a (s⊝ b a)
+    s⊝-valid (inj₁ x1) (inj₁ x2) = sv₁ x1 (x2 ⊝ x1) (⊝-valid x1 x2)
+    s⊝-valid (inj₂ y1) (inj₂ y2) = sv₂ y1 (y2 ⊝ y1) (⊝-valid y1 y2)
+    s⊝-valid s1@(inj₁ x) s2@(inj₂ y) = svrp s1 s2
+    s⊝-valid s1@(inj₂ y) s2@(inj₁ x) = svrp s1 s2
+
+    s⊕-⊝ : (b a : A ⊎ B) → s⊕ a (s⊝ b a) ≡ b
+    s⊕-⊝ (inj₁ x2) (inj₁ x1) rewrite ⊕-⊝ x2 x1 = refl
+    s⊕-⊝ (inj₁ x2) (inj₂ y1) = refl
+    s⊕-⊝ (inj₂ y2) (inj₁ x1) = refl
+    s⊕-⊝ (inj₂ y2) (inj₂ y1) rewrite ⊕-⊝ y2 y1 = refl
+
+  sumCA = record
+    { Ch = SumChange
+    ; isChAlg = record
+    { _⊕_ = s⊕
+    ; _⊝_ = s⊝
+    ; valid = SValid
+    ; ⊝-valid = s⊝-valid
+    ; ⊕-⊝ = s⊕-⊝
     } }
 
 open import Data.Integer
