@@ -1,3 +1,4 @@
+{-# OPTIONS --allow-unsolved-metas #-}
 module New.LangOps where
 
 open import Data.List.All
@@ -24,6 +25,7 @@ oplusτo int = const plus
 oplusτo (pair σ τ) = abs (abs (app₂ (const cons)
   (app₂ (oplusτo σ) (app (const fst) (var (that this))) (app (const fst) (var this)))
   (app₂ (oplusτo τ) (app (const snd) (var (that this))) (app (const snd) (var this)))))
+oplusτo (sum σ τ) = {!!}
 
 ominusτo (σ ⇒ τ) = abs (abs (abs (abs (app₂ (ominusτo τ)
   (app (var (that (that (that this)))) (app₂ (oplusτo σ) (var (that this)) (var this)))
@@ -32,6 +34,7 @@ ominusτo int = const minus
 ominusτo (pair σ τ) = abs (abs (app₂ (const cons)
   (app₂ (ominusτo σ) (app (const fst) (var (that this))) (app (const fst) (var this)))
   (app₂ (ominusτo τ) (app (const snd) (var (that this))) (app (const snd) (var this)))))
+ominusτo (sum σ τ) = {!!}
 
 open import Postulate.Extensionality
 
@@ -74,6 +77,7 @@ oplusτ-equiv Γ ρ (pair σ τ) (a , b) (da , db)
   rewrite oplusτ-equiv _ ((da , db) ∷ (a , b) ∷ ρ) σ a da
   | oplusτ-equiv _ ((da , db) ∷ (a , b) ∷ ρ) τ b db
   = refl
+oplusτ-equiv Γ ρ (sum σ τ) s ds = {!!}
 
 ominusτ-equiv Γ ρ (σ ⇒ τ) g f = ext (λ a → ext (lemma a))
   where
@@ -90,3 +94,4 @@ ominusτ-equiv Γ ρ (pair σ τ) (a2 , b2) (a1 , b1)
   rewrite ominusτ-equiv _ ((a1 , b1) ∷ (a2 , b2) ∷ ρ) σ a2 a1
   | ominusτ-equiv _ ((a1 , b1) ∷ (a2 , b2) ∷ ρ) τ b2 b1
   = refl
+ominusτ-equiv Γ ρ (sum σ τ) s2 s1 = {!!}
