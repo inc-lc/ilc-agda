@@ -16,6 +16,8 @@ module _ where
      cons : ∀ {t1 t2} → Const (t1 ⇒ t2 ⇒ pair t1 t2)
      fst : ∀ {t1 t2} → Const (pair t1 t2 ⇒ t1)
      snd : ∀ {t1 t2} → Const (pair t1 t2 ⇒ t2)
+     linj : ∀ {t1 t2} → Const (t1 ⇒ sum t1 t2)
+     rinj : ∀ {t1 t2} → Const (t2 ⇒ sum t1 t2)
 
   data Term (Γ : Context) :
     (τ : Type) → Set where
@@ -85,6 +87,8 @@ open import Data.Integer
 ⟦ minus ⟧Const = _-_
 ⟦ fst ⟧Const (v1 , v2) = v1
 ⟦ snd ⟧Const (v1 , v2) = v2
+⟦ linj ⟧Const v1 = inj₁ v1
+⟦ rinj ⟧Const v2 = inj₂ v2
 
 ⟦_⟧Term : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧Context → ⟦ τ ⟧Type
 ⟦ const c ⟧Term ρ = ⟦ c ⟧Const

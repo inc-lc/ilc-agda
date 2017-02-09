@@ -26,6 +26,8 @@ deriveConst minus = abs (abs (abs (abs (app₂ (const minus) (var (that (that th
 deriveConst cons = abs (abs (abs (abs (app (app (const cons) (var (that (that this)))) (var this)))))
 deriveConst fst = abs (abs (app (const fst) (var this)))
 deriveConst snd = abs (abs (app (const snd) (var this)))
+deriveConst linj = abs (abs (app (const linj) (app (const linj) (var this))))
+deriveConst rinj = abs (abs (app (const linj) (app (const rinj) (var this))))
 
 deriveVar : ∀ {Γ τ} → Var Γ τ → Var (ΔΓ Γ) (Δt τ)
 deriveVar this = this

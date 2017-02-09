@@ -3,6 +3,7 @@ module New.Correctness where
 open import Relation.Binary.PropositionalEquality
 open import Postulate.Extensionality
 open import Data.Product
+open import Data.Sum
 open import Data.Unit
 
 open import New.Lang
@@ -81,6 +82,8 @@ correctDeriveConst minus = ext (λ m → ext (λ n → lemma m n))
 correctDeriveConst cons = ext (λ v1 → ext (λ v2 → sym (update-nil (v1 , v2))))
 correctDeriveConst fst = ext (λ vp → sym (update-nil (proj₁ vp)))
 correctDeriveConst snd = ext (λ vp → sym (update-nil (proj₂ vp)))
+correctDeriveConst linj = ext (λ va → sym (cong inj₁ (update-nil va)))
+correctDeriveConst rinj = ext (λ vb → sym (cong inj₂ (update-nil vb)))
 
 open import New.Equivalence
 validDeriveConst {τ = t1 ⇒ t2 ⇒ pair .t1 .t2} cons = binary-valid (λ a da ada b db bdb → (ada , bdb)) dcons-eq
@@ -105,6 +108,8 @@ validDeriveConst minus = binary-valid (λ a da ada b db bdb → tt) dminus-eq
     open BinaryValid ⟦ minus ⟧Const (changeSemConst minus)
     dminus-eq : binary-valid-eq-hp
     dminus-eq a da ada b db bdb rewrite right-inv-int (a + da) | right-inv-int (b + db) | right-id-int (a + da - (b + db)) | sym (-m·-n=-mn {b} {db}) = mn·pq=mp·nq {a} {da} { - b} { - db}
+validDeriveConst linj a da ada = sv₁ a da ada , cong inj₁ (update-nil (a ⊕ da))
+validDeriveConst rinj b db bdb = sv₂ b db bdb , cong inj₂ (update-nil (b ⊕ db))
 
 correctDerive (const c) ρ dρ ρdρ rewrite changeSemConst-rewrite c ρ dρ = correctDeriveConst c
 correctDerive (var x) ρ dρ ρdρ = correctDeriveVar x ρ dρ ρdρ
