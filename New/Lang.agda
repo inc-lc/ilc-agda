@@ -11,6 +11,12 @@ open import Base.Data.DependentList public
 
 module _ where
   data Const : (τ : Type) → Set where
+     plus : Const (int ⇒ int ⇒ int)
+     minus : Const (int ⇒ int ⇒ int)
+     cons : ∀ {t1 t2} → Const (t1 ⇒ t2 ⇒ pair t1 t2)
+     fst : ∀ {t1 t2} → Const (pair t1 t2 ⇒ t1)
+     snd : ∀ {t1 t2} → Const (pair t1 t2 ⇒ t2)
+
   data Term (Γ : Context) :
     (τ : Type) → Set where
     -- constants aka. primitives
@@ -71,8 +77,14 @@ module _ where
 
 open import Base.Denotation.Environment Type ⟦_⟧Type public
 
+open import Data.Product
+open import Data.Integer
 ⟦_⟧Const : ∀ {τ} → Const τ → ⟦ τ ⟧Type
-⟦_⟧Const ()
+⟦_⟧Const cons = λ v1 v2 → v1 , v2
+⟦ plus ⟧Const = _+_
+⟦ minus ⟧Const = _-_
+⟦ fst ⟧Const (v1 , v2) = v1
+⟦ snd ⟧Const (v1 , v2) = v2
 
 ⟦_⟧Term : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧Context → ⟦ τ ⟧Type
 ⟦ const c ⟧Term ρ = ⟦ c ⟧Const

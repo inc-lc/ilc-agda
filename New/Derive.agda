@@ -18,7 +18,14 @@ open import Data.Product
 deriveConst : ∀ {τ} →
   Const τ →
   Term ∅ (Δt τ)
-deriveConst ()
+-- dplus = λ m dm n dn → (m + dm) + (n + dn) - (m + n) = dm + dn
+deriveConst plus = abs (abs (abs (abs (app₂ (const plus) (var (that (that this))) (var this)))))
+-- minus = λ m n → m - n
+-- dminus = λ m dm n dn → (m + dm) - (n + dn) - (m - n) = dm - dn
+deriveConst minus = abs (abs (abs (abs (app₂ (const minus) (var (that (that this))) (var this)))))
+deriveConst cons = abs (abs (abs (abs (app (app (const cons) (var (that (that this)))) (var this)))))
+deriveConst fst = abs (abs (app (const fst) (var this)))
+deriveConst snd = abs (abs (app (const snd) (var this)))
 
 deriveVar : ∀ {Γ τ} → Var Γ τ → Var (ΔΓ Γ) (Δt τ)
 deriveVar this = this

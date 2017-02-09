@@ -3,6 +3,7 @@ module New.Correctness where
 open import Relation.Binary.PropositionalEquality
 open import Postulate.Extensionality
 open import Data.Product
+open import Data.Unit
 
 open import New.Lang
 open import New.Changes
@@ -61,8 +62,48 @@ changeSemConst c = ⟦ deriveConst c ⟧Term ∅
 changeSemConst-rewrite : ∀ {τ Γ} (c : Const τ) (ρ : ⟦ Γ ⟧Context) dρ → changeSem (const c) ρ dρ ≡ changeSemConst c
 changeSemConst-rewrite c ρ dρ rewrite weaken-sound {Γ₁≼Γ₂ = ∅≼Γ} (deriveConst c) (alternate ρ dρ) | ⟦∅≼Γ⟧-∅ (alternate ρ dρ) = refl
 
-validDeriveConst : ∀ {τ} (c : Const τ) → valid ⟦ c ⟧Const (⟦ deriveConst c ⟧Term ∅)
-validDeriveConst ()
+validDeriveConst : ∀ {τ} (c : Const τ) → valid ⟦ c ⟧Const (changeSemConst c)
+correctDeriveConst : ∀ {τ} (c : Const τ) → ⟦ c ⟧Const ≡ ⟦ c ⟧Const ⊕ (changeSemConst c)
+correctDeriveConst plus = ext (λ m → ext (lemma m))
+  where
+    open import Data.Integer
+    open import Theorem.Groups-Nehemiah
+    lemma : ∀ m n → m + n ≡ m + n + (m + - m + (n + - n))
+    lemma m n rewrite right-inv-int m | right-inv-int n | right-id-int (m + n) = refl
+
+correctDeriveConst minus = ext (λ m → ext (λ n → lemma m n))
+  where
+    open import Data.Integer
+    open import Theorem.Groups-Nehemiah
+    lemma : ∀ m n → m - n ≡ m - n + (m + - m - (n + - n))
+    lemma m n rewrite right-inv-int m | right-inv-int n | right-id-int (m - n) = refl
+correctDeriveConst cons = ext (λ v1 → ext (λ v2 → sym (update-nil (v1 , v2))))
+correctDeriveConst fst = ext (λ vp → sym (update-nil (proj₁ vp)))
+correctDeriveConst snd = ext (λ vp → sym (update-nil (proj₂ vp)))
+
+open import New.Equivalence
+validDeriveConst {τ = t1 ⇒ t2 ⇒ pair .t1 .t2} cons = binary-valid (λ a da ada b db bdb → (ada , bdb)) dcons-eq
+  where
+    open BinaryValid ⟦ cons {t1} {t2} ⟧Const (changeSemConst cons)
+    dcons-eq : binary-valid-eq-hp
+    dcons-eq a da ada b db bdb rewrite update-nil (a ⊕ da) | update-nil (b ⊕ db) = refl
+validDeriveConst fst (a , b) (da , db) (ada , bdb) = ada , update-nil (a ⊕ da)
+validDeriveConst snd (a , b) (da , db) (ada , bdb) = bdb , update-nil (b ⊕ db)
+
+validDeriveConst plus = binary-valid (λ a da ada b db bdb → tt) dplus-eq
+  where
+    open import Data.Integer
+    open import Theorem.Groups-Nehemiah
+    open BinaryValid ⟦ plus ⟧Const (changeSemConst plus)
+    dplus-eq : binary-valid-eq-hp
+    dplus-eq a da ada b db bdb rewrite right-inv-int (a + da) | right-inv-int (b + db) | right-id-int (a + da + (b + db)) = mn·pq=mp·nq {a} {da} {b} {db}
+validDeriveConst minus = binary-valid (λ a da ada b db bdb → tt) dminus-eq
+  where
+    open import Data.Integer
+    open import Theorem.Groups-Nehemiah
+    open BinaryValid ⟦ minus ⟧Const (changeSemConst minus)
+    dminus-eq : binary-valid-eq-hp
+    dminus-eq a da ada b db bdb rewrite right-inv-int (a + da) | right-inv-int (b + db) | right-id-int (a + da - (b + db)) | sym (-m·-n=-mn {b} {db}) = mn·pq=mp·nq {a} {da} { - b} { - db}
 
 correctDerive (const c) ρ dρ ρdρ rewrite changeSemConst-rewrite c ρ dρ = correctDeriveConst c
 correctDerive (var x) ρ dρ ρdρ = correctDeriveVar x ρ dρ ρdρ
