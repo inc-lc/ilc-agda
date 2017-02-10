@@ -1,7 +1,7 @@
-{-# OPTIONS --allow-unsolved-metas #-}
 module New.LangOps where
 
 open import Data.List.All
+open import Data.Sum
 open import Data.Unit
 open import Data.Product
 open import Relation.Binary.PropositionalEquality
@@ -17,6 +17,8 @@ ominusτo : ∀ {Γ} τ → Term Γ (τ ⇒ τ ⇒ Δt τ)
 onilτo : ∀ {Γ} τ → Term Γ (τ ⇒ Δt τ)
 onilτo τ = abs (app₂ (ominusτo τ) (var this) (var this))
 
+-- Do NOT try to read this, such terms are write-only. But the behavior is
+-- specified to be oplusτ-equiv and ominusτ-equiv.
 oplusτo (σ ⇒ τ) = abs (abs (abs
   (app₂ (oplusτo τ)
     (app (var (that (that this))) (var this))
@@ -25,7 +27,17 @@ oplusτo int = const plus
 oplusτo (pair σ τ) = abs (abs (app₂ (const cons)
   (app₂ (oplusτo σ) (app (const fst) (var (that this))) (app (const fst) (var this)))
   (app₂ (oplusτo τ) (app (const snd) (var (that this))) (app (const snd) (var this)))))
-oplusτo (sum σ τ) = {!!}
+oplusτo (sum σ τ) = abs (abs (app₃ (const match) (var (that this))
+  (abs (app₃ (const match) (var (that this))
+    (abs (app₃ (const match) (var this)
+      (abs (app (const linj) (app₂ (oplusτo σ) (var (that (that this))) (var this))))
+      (abs (app (const linj) (var (that (that this)))))))
+    (abs (var this))))
+  (abs (app₃ (const match) (var (that this))
+    (abs (app₃ (const match) (var this)
+      (abs (app (const rinj) (var (that (that this)))))
+      (abs (app (const rinj) (app₂ (oplusτo τ) (var (that (that this))) (var this))))))
+    (abs (var this))))))
 
 ominusτo (σ ⇒ τ) = abs (abs (abs (abs (app₂ (ominusτo τ)
   (app (var (that (that (that this)))) (app₂ (oplusτo σ) (var (that this)) (var this)))
@@ -34,7 +46,14 @@ ominusτo int = const minus
 ominusτo (pair σ τ) = abs (abs (app₂ (const cons)
   (app₂ (ominusτo σ) (app (const fst) (var (that this))) (app (const fst) (var this)))
   (app₂ (ominusτo τ) (app (const snd) (var (that this))) (app (const snd) (var this)))))
-ominusτo (sum σ τ) = {!!}
+ominusτo (sum σ τ) = abs (abs (app₃ (const match) (var (that this))
+  (abs (app₃ (const match) (var (that this))
+    (abs (app (const linj) (app (const linj) (app₂ (ominusτo σ) (var (that this)) (var this)))))
+    (abs (app (const rinj) (var (that (that (that this))))))))
+  -- (app (const {!!}) {!ominusτo σ!}) {!!}
+  (abs (app₃ (const match) (var (that this))
+    (abs (app (const rinj) (var (that (that (that this))))))
+    (abs (app (const linj) (app (const rinj) (app₂ (ominusτo τ) (var (that this)) (var this)))))))))
 
 open import Postulate.Extensionality
 
@@ -77,7 +96,16 @@ oplusτ-equiv Γ ρ (pair σ τ) (a , b) (da , db)
   rewrite oplusτ-equiv _ ((da , db) ∷ (a , b) ∷ ρ) σ a da
   | oplusτ-equiv _ ((da , db) ∷ (a , b) ∷ ρ) τ b db
   = refl
-oplusτ-equiv Γ ρ (sum σ τ) s ds = {!!}
+oplusτ-equiv Γ ρ (sum σ τ) (inj₁ x) (inj₁ (inj₁ dx))
+  rewrite oplusτ-equiv-ext σ (Δt σ • sum (Δt σ) (Δt τ) • σ • Δt (sum σ τ) • sum σ τ • Γ)
+  = refl
+oplusτ-equiv Γ ρ (sum σ τ) (inj₁ x) (inj₁ (inj₂ dy)) = refl
+oplusτ-equiv Γ ρ (sum σ τ) (inj₁ x) (inj₂ y) = refl
+oplusτ-equiv Γ ρ (sum σ τ) (inj₂ y) (inj₁ (inj₁ dx)) = refl
+oplusτ-equiv Γ ρ (sum σ τ) (inj₂ y) (inj₁ (inj₂ dy))
+  rewrite oplusτ-equiv-ext τ (Δt τ • sum (Δt σ) (Δt τ) • τ • Δt (sum σ τ) • sum σ τ • Γ)
+  = refl
+oplusτ-equiv Γ ρ (sum σ τ) (inj₂ y) (inj₂ y₁) = refl
 
 ominusτ-equiv Γ ρ (σ ⇒ τ) g f = ext (λ a → ext (lemma a))
   where
@@ -94,51 +122,11 @@ ominusτ-equiv Γ ρ (pair σ τ) (a2 , b2) (a1 , b1)
   rewrite ominusτ-equiv _ ((a1 , b1) ∷ (a2 , b2) ∷ ρ) σ a2 a1
   | ominusτ-equiv _ ((a1 , b1) ∷ (a2 , b2) ∷ ρ) τ b2 b1
   = refl
-ominusτ-equiv Γ ρ (sum σ τ) s2 s1 = {!!}
-
--- synIsChAlgτ : (τ : Type) → IsChAlg ⟦ τ ⟧Type ⟦ Δt τ ⟧Type (oplusτ τ) (ominusτ τ)
-
--- synChAlgt : (τ : Type) → ChAlg ⟦ τ ⟧Type
--- synChAlgt τ = record { Ch = Cht τ ; _⊕_ = oplusτ τ ; _⊝_ = ominusτ τ ; isChAlg = isChAlgτ τ}
--- private
---   instance
---     synIchAlgt : ∀ {τ} → ChAlg ⟦ τ ⟧Type
--- synIchAlgt {τ} = chAlgt τ
-
--- synIsChAlgτ τ rewrite oplusτ-equiv-ext τ | ominusτ-equiv-ext τ = ⟦isChAlgτ⟧ τ
-
--- oplusτo-invariant : ∀ τ {Γ₁ Γ₂} (ρ₁ : ⟦ Γ₁ ⟧Context) (ρ₂ : ⟦ Γ₂ ⟧Context) →
---   ⟦ oplusτo τ ⟧Term ρ₁ ≡ ⟦ oplusτo τ ⟧Term ρ₂
--- ominusτo-invariant : ∀ τ {Γ₁ Γ₂} (ρ₁ : ⟦ Γ₁ ⟧Context) (ρ₂ : ⟦ Γ₂ ⟧Context) →
---   ⟦ ominusτo τ ⟧Term ρ₁ ≡ ⟦ ominusτo τ ⟧Term ρ₂
--- ominusτo-invariant (σ ⇒ τ) ρ₁ ρ₂ = {!!}
--- ominusτo-invariant int ρ₁ ρ₂ = refl
--- ominusτo-invariant (pair σ τ) ρ₁ ρ₂ = {!!}
--- ominusτo-invariant (sum σ τ) ρ₁ ρ₂ = {!!}
--- oplusτo-invariant (σ ⇒ τ) ρ₁ ρ₂ = ext³ lemma
---   where
---     module _ (f : ⟦ σ ⇒ τ ⟧Type) (df : Cht (σ ⇒ τ)) (a : ⟦ σ ⟧Type) where
---       ρ₁′ = a ∷ df ∷ f ∷ ρ₁
---       ρ₁′′ = a ∷ ρ₁′
---       ρ₂′ = a ∷ df ∷ f ∷ ρ₂
---       ρ₂′′ = a ∷ ρ₂′
---       lemma : ⟦ oplusτo τ ⟧Term (a ∷ df ∷ f ∷ ρ₁) (f a)
---         (df a (⟦ ominusτo σ ⟧Term (a ∷ a ∷ df ∷ f ∷ ρ₁) a a))
---         ≡
---         ⟦ oplusτo τ ⟧Term (a ∷ df ∷ f ∷ ρ₂) (f a)
---         (df a (⟦ ominusτo σ ⟧Term (a ∷ a ∷ df ∷ f ∷ ρ₂) a a))
---       lemma  rewrite oplusτo-invariant τ ρ₁′ ρ₂′ | ominusτo-invariant σ ρ₁′′ ρ₂′′ = refl
--- oplusτo-invariant int ρ₁ ρ₂ = refl
--- oplusτo-invariant (pair σ τ) ρ₁ ρ₂ = ext (λ p → ext (lemma p))
---   where
---     module _ (p : ⟦ pair σ τ ⟧Type) (dp : Cht (pair σ τ)) where
---       ρ₁′ = dp ∷ p ∷ ρ₁
---       ρ₂′ = dp ∷ p ∷ ρ₂
---       lemma :
---         (⟦ oplusτo σ ⟧Term (dp ∷ p ∷ ρ₁) (proj₁ p) (proj₁ dp) ,
---          ⟦ oplusτo τ ⟧Term (dp ∷ p ∷ ρ₁) (proj₂ p) (proj₂ dp))
---         ≡
---         (⟦ oplusτo σ ⟧Term (dp ∷ p ∷ ρ₂) (proj₁ p) (proj₁ dp) ,
---          ⟦ oplusτo τ ⟧Term (dp ∷ p ∷ ρ₂) (proj₂ p) (proj₂ dp))
---       lemma rewrite oplusτo-invariant σ ρ₁′ ρ₂′ | oplusτo-invariant τ ρ₁′ ρ₂′ = refl
--- oplusτo-invariant (sum σ τ) ρ₁ ρ₂ = {!!}
+ominusτ-equiv Γ ρ (sum σ τ) (inj₁ x) (inj₁ x₁)
+  rewrite ominusτ-equiv-ext σ (σ • σ • sum σ τ • sum σ τ • Γ)
+  = refl
+ominusτ-equiv Γ ρ (sum σ τ) (inj₁ x) (inj₂ y) = refl
+ominusτ-equiv Γ ρ (sum σ τ) (inj₂ y) (inj₁ x) = refl
+ominusτ-equiv Γ ρ (sum σ τ) (inj₂ y) (inj₂ y₁)
+  rewrite ominusτ-equiv-ext τ (τ • τ • sum σ τ • sum σ τ • Γ)
+  = refl
