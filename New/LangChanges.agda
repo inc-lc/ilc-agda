@@ -45,16 +45,38 @@ module _ where
   e⊕-⊝ ∅ ∅ = refl
   e⊕-⊝ (v₂ ∷ ρ₂) (v₁ ∷ ρ₁) = cong₂ _∷_ (⊕-⊝ v₂ v₁) (e⊕-⊝ ρ₂ ρ₁)
 
-  envCA : ∀ Γ → ChAlg ⟦ Γ ⟧Context
-  envCA Γ = record
-    { Ch = eCh Γ
-    ; isChAlg = record
+  {-# TERMINATING #-}
+  isEnvCA : ∀ Γ → IsChAlg ⟦ Γ ⟧Context (eCh Γ)
+
+  e⊚-valid : ∀ {Γ} → (ρ : ⟦ Γ ⟧Context) (dρ1 : eCh Γ) →
+      validΓ ρ dρ1 →
+      (dρ2 : eCh Γ) →
+      validΓ (ρ e⊕ dρ1) dρ2 →
+      validΓ ρ (IsChAlg.default-⊚ (isEnvCA Γ) dρ1 ρ dρ2)
+  e⊚-correct : ∀ {Γ} → (ρ : ⟦ Γ ⟧Context) (dρ1 : eCh Γ) →
+      validΓ ρ dρ1 →
+      (dρ2 : eCh Γ) →
+      validΓ (ρ e⊕ dρ1) dρ2 →
+      (ρ e⊕ IsChAlg.default-⊚ (isEnvCA Γ) dρ1 ρ dρ2) ≡
+      ((ρ e⊕ dρ1) e⊕ dρ2)
+
+  isEnvCA Γ = record
     { _⊕_ = _e⊕_
     ; _⊝_ = _e⊝_
     ; valid = validΓ
     ; ⊝-valid = e⊝-valid
     ; ⊕-⊝ = e⊕-⊝
-    }}
+    ; _⊚[_]_ = IsChAlg.default-⊚ (isEnvCA Γ)
+    ; ⊚-valid = e⊚-valid
+    ; ⊚-correct = e⊚-correct
+    }
+  e⊚-valid {Γ} = IsChAlg.default-⊚-valid (isEnvCA Γ)
+  e⊚-correct {Γ} = IsChAlg.default-⊚-correct (isEnvCA Γ)
+
+  envCA : ∀ Γ → ChAlg ⟦ Γ ⟧Context
+  envCA Γ = record
+    { Ch = eCh Γ
+    ; isChAlg = isEnvCA Γ }
 
 instance
   ienvCA : ∀ {Γ} → ChAlg ⟦ Γ ⟧Context
