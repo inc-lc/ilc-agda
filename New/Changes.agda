@@ -143,7 +143,8 @@ module _ {ℓ₁} {ℓ₂}
   data SValid : A ⊎ B → SumChange → Set (ℓ₁ ⊔ ℓ₂) where
     sv₁ : ∀ (a : A) (da : Ch A) (ada : valid a da) → SValid (inj₁ a) (convert₁ (ch₁ da))
     sv₂ : ∀ (b : B) (db : Ch B) (bdb : valid b db) → SValid (inj₂ b) (convert₁ (ch₂ db))
-    svrp : ∀ (s₁ s₂ : A ⊎ B) → SValid s₁ (convert₁ (rp s₂))
+    svrp₁ : ∀ a1 b2 → SValid (inj₁ a1) (convert₁ (rp (inj₂ b2)))
+    svrp₂ : ∀ b1 a2 → SValid (inj₂ b1) (convert₁ (rp (inj₁ a2)))
 
   inv1 : ∀ ds → convert₁ (convert ds) ≡ ds
   inv1 (inj₁ (inj₁ da)) = refl
@@ -176,8 +177,8 @@ module _ {ℓ₁} {ℓ₂}
     s⊝-valid : (a b : A ⊎ B) → SValid a (s⊝ b a)
     s⊝-valid (inj₁ x1) (inj₁ x2) = sv₁ x1 (x2 ⊝ x1) (⊝-valid x1 x2)
     s⊝-valid (inj₂ y1) (inj₂ y2) = sv₂ y1 (y2 ⊝ y1) (⊝-valid y1 y2)
-    s⊝-valid s1@(inj₁ x) s2@(inj₂ y) = svrp s1 s2
-    s⊝-valid s1@(inj₂ y) s2@(inj₁ x) = svrp s1 s2
+    s⊝-valid s1@(inj₁ x) s2@(inj₂ y) = svrp₁ x y
+    s⊝-valid s1@(inj₂ y) s2@(inj₁ x) = svrp₂ y x
 
     s⊕-⊝ : (b a : A ⊎ B) → s⊕ a (s⊝ b a) ≡ b
     s⊕-⊝ (inj₁ x2) (inj₁ x1) rewrite ⊕-⊝ x2 x1 = refl

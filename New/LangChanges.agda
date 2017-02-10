@@ -7,7 +7,6 @@ open import Relation.Binary.PropositionalEquality
 
 open import New.Lang
 open import New.Changes
-open import New.Derive
 
 isChAlgτ : (τ : Type) → IsChAlg ⟦ τ ⟧Type ⟦ Δt τ ⟧Type
 

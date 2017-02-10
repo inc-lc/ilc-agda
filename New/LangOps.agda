@@ -54,10 +54,10 @@ ominusτ τ = ⟦ ominusτo τ ⟧Term ∅
 oplusτ-equiv : ∀ Γ (ρ : ⟦ Γ ⟧Context) τ a da → ⟦ oplusτo τ ⟧Term ρ a da ≡ ⟦oplusτ⟧ τ a da
 ominusτ-equiv : ∀ Γ (ρ : ⟦ Γ ⟧Context) τ a da → ⟦ ominusτo τ ⟧Term ρ a da ≡ ⟦ominusτ⟧ τ a da
 
-oplusτ-equiv-ext : ∀ τ → oplusτ τ ≡ ⟦oplusτ⟧ τ
-oplusτ-equiv-ext τ = ext (λ a → ext (oplusτ-equiv ∅ ∅ τ a))
-ominusτ-equiv-ext : ∀ τ → ominusτ τ ≡ ⟦ominusτ⟧ τ
-ominusτ-equiv-ext τ = ext (λ a → ext (ominusτ-equiv ∅ ∅ τ a))
+oplusτ-equiv-ext : ∀ τ Γ → ⟦ oplusτo {Γ} τ ⟧Term ≡ λ ρ → ⟦oplusτ⟧ τ
+oplusτ-equiv-ext τ _ = ext³ (λ ρ a da → oplusτ-equiv _ ρ τ a da)
+ominusτ-equiv-ext : ∀ τ Γ → ⟦ ominusτo {Γ} τ ⟧Term ≡ λ ρ → ⟦ominusτ⟧ τ
+ominusτ-equiv-ext τ _ = ext³ (λ ρ a da → ominusτ-equiv _ ρ τ a da)
 
 oplusτ-equiv Γ ρ (σ ⇒ τ) f df = ext (λ a → lemma a)
   where
