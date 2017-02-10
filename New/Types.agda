@@ -1,8 +1,8 @@
 module New.Types where
 
-open import Data.Integer
-open import Data.Product
-open import Data.Sum
+open import Data.Integer public
+open import Data.Product public hiding (map)
+open import Data.Sum public hiding (map)
 infixr 5 _⇒_
 
 data Type : Set where

@@ -3,11 +3,6 @@ open import New.Lang
 open import New.Changes
 open import New.LangOps
 
-open import Relation.Binary.PropositionalEquality
-open import Level
-open import Data.Sum
-open import Data.Product
-
 ΔΓ : Context → Context
 ΔΓ ∅ = ∅
 ΔΓ (τ • Γ) = Δt τ • τ • ΔΓ Γ

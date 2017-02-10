@@ -1,13 +1,6 @@
 module New.Lang where
 
-open import Relation.Binary.PropositionalEquality
-open import Data.Unit
-open import Data.Sum
-
-open import New.Types public
-open import Base.Syntax.Context Type public
-open import Base.Syntax.Vars Type public
-open import Base.Data.DependentList public
+open import New.Contexts public
 
 module _ where
   data Const : (τ : Type) → Set where
@@ -78,10 +71,6 @@ module _ where
     Term Γ ε → Term Γ ζ → Term Γ η
   app₆ f x = app₅ (app f x)
 
-open import Base.Denotation.Environment Type ⟦_⟧Type public
-
-open import Data.Product
-open import Data.Integer
 ⟦_⟧Const : ∀ {τ} → Const τ → ⟦ τ ⟧Type
 ⟦_⟧Const cons = λ v1 v2 → v1 , v2
 ⟦ plus ⟧Const = _+_

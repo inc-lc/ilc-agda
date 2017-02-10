@@ -1,9 +1,7 @@
 module New.Equivalence where
 
-open import Relation.Binary.PropositionalEquality
 open import Function
-open import Data.Product
-open import Postulate.Extensionality
+open import Relation.Binary
 
 open import New.Changes
 
@@ -23,8 +21,6 @@ module _ {a} {A : Set a} {{CA : ChAlg A}} {x : A} where
 
   -- Same priority as ≡
   infix 4 _≙_
-
-  open import Relation.Binary
 
   -- _≙_ is indeed an equivalence relation:
   ≙-refl : ∀ {dx} → dx ≙ dx
@@ -66,7 +62,6 @@ module BinaryValid
   {C : Set} {{CC : ChAlg C}}
   (f : A → B → C) (df : A → Ch A → B → Ch B → Ch C)
   where
-  open import Data.Product
 
   binary-valid-preserve-hp =
     ∀ a da (ada : valid a da)

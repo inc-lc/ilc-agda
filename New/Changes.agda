@@ -1,10 +1,14 @@
 module New.Changes where
 
-open import Relation.Binary.PropositionalEquality
+open import Data.Product public hiding (map)
+open import Data.Sum public hiding (map)
+open import Data.Unit.Base public
+
+open import Relation.Binary.PropositionalEquality public
+open import Postulate.Extensionality public
 open import Level
-open import Data.Unit
-open import Data.Product
-open import Data.Sum
+
+open import Theorem.Groups-Nehemiah public
 
 record IsChAlg {ℓ : Level} (A : Set ℓ) (Ch : Set ℓ) : Set (suc ℓ) where
   field
@@ -299,7 +303,6 @@ module _ {ℓ₁} {ℓ₂}
     ; isChAlg = isSumCA }
 
 open import Data.Integer
-open import Theorem.Groups-Nehemiah
 
 instance
   intCA : ChAlg ℤ

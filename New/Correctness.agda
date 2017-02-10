@@ -1,11 +1,5 @@
 module New.Correctness where
 
-open import Relation.Binary.PropositionalEquality
-open import Postulate.Extensionality
-open import Data.Product
-open import Data.Sum
-open import Data.Unit
-
 open import New.Lang
 open import New.Changes
 open import New.Derive
@@ -72,7 +66,6 @@ module _ {t1 t2 t3 : Type}
   (dg : Cht (t2 ⇒ t3))
   where
   private
-    Γ : Context
     Γ = sum t1 t2 •
       (t2 ⇒ Δt t2 ⇒ Δt t3) •
       (t2 ⇒ t3) •
@@ -106,15 +99,11 @@ validDeriveConst : ∀ {τ} (c : Const τ) → valid ⟦ c ⟧Const (changeSemCo
 correctDeriveConst : ∀ {τ} (c : Const τ) → ⟦ c ⟧Const ≡ ⟦ c ⟧Const ⊕ (changeSemConst c)
 correctDeriveConst plus = ext (λ m → ext (lemma m))
   where
-    open import Data.Integer
-    open import Theorem.Groups-Nehemiah
     lemma : ∀ m n → m + n ≡ m + n + (m + - m + (n + - n))
     lemma m n rewrite right-inv-int m | right-inv-int n | right-id-int (m + n) = refl
 
 correctDeriveConst minus = ext (λ m → ext (λ n → lemma m n))
   where
-    open import Data.Integer
-    open import Theorem.Groups-Nehemiah
     lemma : ∀ m n → m - n ≡ m - n + (m + - m - (n + - n))
     lemma m n rewrite right-inv-int m | right-inv-int n | right-id-int (m - n) = refl
 correctDeriveConst cons = ext (λ v1 → ext (λ v2 → sym (update-nil (v1 , v2))))
@@ -141,15 +130,11 @@ validDeriveConst snd (a , b) (da , db) (ada , bdb) = bdb , update-nil (b ⊕ db)
 
 validDeriveConst plus = binary-valid (λ a da ada b db bdb → tt) dplus-eq
   where
-    open import Data.Integer
-    open import Theorem.Groups-Nehemiah
     open BinaryValid ⟦ plus ⟧Const (changeSemConst plus)
     dplus-eq : binary-valid-eq-hp
     dplus-eq a da ada b db bdb rewrite right-inv-int (a + da) | right-inv-int (b + db) | right-id-int (a + da + (b + db)) = mn·pq=mp·nq {a} {da} {b} {db}
 validDeriveConst minus = binary-valid (λ a da ada b db bdb → tt) dminus-eq
   where
-    open import Data.Integer
-    open import Theorem.Groups-Nehemiah
     open BinaryValid ⟦ minus ⟧Const (changeSemConst minus)
     dminus-eq : binary-valid-eq-hp
     dminus-eq a da ada b db bdb rewrite right-inv-int (a + da) | right-inv-int (b + db) | right-id-int (a + da - (b + db)) | sym (-m·-n=-mn {b} {db}) = mn·pq=mp·nq {a} {da} { - b} { - db}

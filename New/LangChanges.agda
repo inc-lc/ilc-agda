@@ -1,11 +1,6 @@
 module New.LangChanges where
 
-open import Data.List.All
-open import Data.Unit
-open import Data.Product
-open import Relation.Binary.PropositionalEquality
-
-open import New.Lang
+open import New.Contexts public
 open import New.Changes
 
 isChAlgτ : (τ : Type) → IsChAlg ⟦ τ ⟧Type ⟦ Δt τ ⟧Type
@@ -30,20 +25,20 @@ module _ where
   eCh Γ = DependentList (λ τ → Ch ⟦ τ ⟧Type) Γ
   _e⊕_ : ∀ {Γ} → ⟦ Γ ⟧Context → eCh Γ → ⟦ Γ ⟧Context
   _e⊕_ ∅ ∅ = ∅
-  _e⊕_ (v ∷ ρ) (dv ∷ dρ) = v ⊕ dv ∷ ρ e⊕ dρ
+  _e⊕_ (v • ρ) (dv • dρ) = v ⊕ dv • ρ e⊕ dρ
   _e⊝_ : ∀ {Γ} → ⟦ Γ ⟧Context → ⟦ Γ ⟧Context → eCh Γ
   _e⊝_ ∅ ∅ = ∅
-  _e⊝_ (v₂ ∷ ρ₂) (v₁ ∷ ρ₁) = v₂ ⊝ v₁ ∷ ρ₂ e⊝ ρ₁
+  _e⊝_ (v₂ • ρ₂) (v₁ • ρ₁) = v₂ ⊝ v₁ • ρ₂ e⊝ ρ₁
 
   validΓ : ∀ {Γ} → ⟦ Γ ⟧Context → eCh Γ → Set
   validΓ ∅ ∅ = ⊤
-  validΓ (v ∷ ρ) (dv ∷ dρ) = valid v dv × validΓ ρ dρ
+  validΓ (v • ρ) (dv • dρ) = valid v dv × validΓ ρ dρ
   e⊝-valid : ∀ {Γ} → (ρ1 ρ2 : ⟦ Γ ⟧Context) → validΓ ρ1 (ρ2 e⊝ ρ1)
   e⊝-valid ∅ ∅ = tt
-  e⊝-valid (v₁ ∷ ρ₁) (v₂ ∷ ρ₂) = ⊝-valid v₁ v₂ , e⊝-valid ρ₁ ρ₂
+  e⊝-valid (v₁ • ρ₁) (v₂ • ρ₂) = ⊝-valid v₁ v₂ , e⊝-valid ρ₁ ρ₂
   e⊕-⊝ : ∀ {Γ} → (ρ2 ρ1 : ⟦ Γ ⟧Context) → ρ1 e⊕ (ρ2 e⊝ ρ1) ≡ ρ2
   e⊕-⊝ ∅ ∅ = refl
-  e⊕-⊝ (v₂ ∷ ρ₂) (v₁ ∷ ρ₁) = cong₂ _∷_ (⊕-⊝ v₂ v₁) (e⊕-⊝ ρ₂ ρ₁)
+  e⊕-⊝ (v₂ • ρ₂) (v₁ • ρ₁) = cong₂ _•_ (⊕-⊝ v₂ v₁) (e⊕-⊝ ρ₂ ρ₁)
 
   {-# TERMINATING #-}
   isEnvCA : ∀ Γ → IsChAlg ⟦ Γ ⟧Context (eCh Γ)
