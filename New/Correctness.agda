@@ -221,9 +221,6 @@ validDerive (app s t) ρ dρ ρdρ =
 validDerive (abs t) ρ dρ ρdρ =
   λ a da ada →
   let
-    fv = ⟦ t ⟧Term (a • ρ)
-    dfvdv = ⟦ derive t ⟧Term (da • a • alternate ρ dρ)
-    rdr = validDerive t (a • ρ) (da • dρ) (ada , ρdρ)
     ρ1 = a ⊕ da • ρ
     dρ1 = nil (a ⊕ da) • dρ
     ρ2 = a • ρ
@@ -232,6 +229,9 @@ validDerive (abs t) ρ dρ ρdρ =
     ρ1dρ1 = nil-valid (a ⊕ da) , ρdρ
     ρ2dρ2 : valid ρ2 dρ2
     ρ2dρ2 = ada , ρdρ
+    fv = ⟦ t ⟧Term ρ2
+    dfvdv = ⟦ t ⟧ΔTerm ρ2 dρ2
+    rdr = validDerive t ρ2 dρ2 ρ2dρ2
     open ≡-Reasoning
    in
      rdr ,
