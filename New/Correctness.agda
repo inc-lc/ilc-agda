@@ -7,6 +7,7 @@ open import New.Derive
 open import New.LangChanges
 open import New.LangOps
 open import New.FunctionLemmas
+open import New.Unused
 
 -- Lemmas
 alternate : ∀ {Γ} → ⟦ Γ ⟧Context → eCh Γ → ⟦ ΔΓ Γ ⟧Context
@@ -200,6 +201,10 @@ correctDerive (abs t) ρ dρ ρdρ = ext $ λ a →
     dρ1 = nil a • dρ
     ρ1dρ1 = nil-valid a , ρdρ
   in
+    -- equal-future-expand-derivative ⟦ t ⟧Term ⟦ t ⟧ΔTerm (correctDerive t)
+    --   ρ1 dρ1 ρ1dρ1
+    --   (a • (ρ ⊕ dρ))
+    --   (cong (_• ρ ⊕ dρ) (sym (update-nil a)))
     begin
       ⟦ t ⟧Term (a • ρ ⊕ dρ)
     ≡⟨ cong (λ a′ → ⟦ t ⟧Term (a′ • ρ ⊕ dρ)) (sym (update-nil a)) ⟩
@@ -231,16 +236,9 @@ validDerive (abs t) ρ dρ ρdρ =
     open ≡-Reasoning
    in
      rdr ,
-     (begin
-       ⟦ t ⟧Term ρ1 ⊕ ⟦ t ⟧ΔTerm ρ1 dρ1
-      ≡⟨ sym ( correctDerive t ρ1 dρ1 ρ1dρ1) ⟩
-       ⟦ t ⟧Term (ρ1 ⊕ dρ1)
-      ≡⟨⟩
-       ⟦ t ⟧Term (a ⊕ da ⊕ (nil (a ⊕ da)) • ρ ⊕ dρ)
-      ≡⟨ cong (λ a′ → ⟦ t ⟧Term (a′ • ρ ⊕ dρ)) (update-nil (a ⊕ da)) ⟩
-       ⟦ t ⟧Term (a ⊕ da • ρ ⊕ dρ)
-      ≡⟨ correctDerive t ρ2 dρ2 ρ2dρ2 ⟩
-        ⟦ t ⟧Term ρ2 ⊕ ⟦ t ⟧ΔTerm ρ2 dρ2
-      ∎)
+     equal-future-derivative ⟦ t ⟧Term ⟦ t ⟧ΔTerm (correctDerive t)
+       ρ1 dρ1 ρ1dρ1
+       ρ2 dρ2 ρ2dρ2
+       (cong (λ a′ → (a′ • ρ ⊕ dρ)) (update-nil (a ⊕ da)))
 validDerive (var x) ρ dρ ρdρ = validDeriveVar x ρ dρ ρdρ
 validDerive (const c) ρ dρ ρdρ rewrite ⟦ c ⟧ΔConst-rewrite ρ dρ = validDeriveConst c
