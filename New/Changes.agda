@@ -168,16 +168,6 @@ module _ {ℓ₁} {ℓ₂}
       ; ⊚-valid = f⊚-valid
       } }
 
-  nil-is-derivative : ∀ (f : A → B) → IsDerivative f (nil f)
-  nil-is-derivative f a da v =
-    begin
-      f (a ⊕ da)
-    ≡⟨ sym (cong (λ □ → □ (_⊕_ a da)) (update-nil f)) ⟩
-      (f ⊕ nil f) (a ⊕ da)
-    ≡⟨ proj₂ (nil-valid f a da v) ⟩
-      f a ⊕ (nil f a da)
-    ∎
-
   private
     pCh = Ch A × Ch B
     _p⊕_ : A × B → Ch A × Ch B → A × B
