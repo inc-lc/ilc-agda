@@ -5,6 +5,7 @@ open import New.Changes
 open import New.Derive
 open import New.LangChanges
 open import New.LangOps
+open import New.FunctionLemmas
 
 -- Lemmas
 alternate : ∀ {Γ} → ⟦ Γ ⟧Context → eCh Γ → ⟦ ΔΓ Γ ⟧Context
@@ -119,7 +120,6 @@ correctDeriveConst (match {t1} {t2} {t3}) = ext³ lemma
     lemma (inj₁ x) f g rewrite update-nil x | update-nil (f x) = refl
     lemma (inj₂ y) f g rewrite update-nil y | update-nil (g y) = refl
 
-open import New.Equivalence
 validDeriveConst {τ = t1 ⇒ t2 ⇒ pair .t1 .t2} cons = binary-valid (λ a da ada b db bdb → (ada , bdb)) dcons-eq
   where
     open BinaryValid ⟦ cons {t1} {t2} ⟧Const (⟦ cons ⟧ΔConst)
