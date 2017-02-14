@@ -1,5 +1,6 @@
 module New.Correctness where
 
+open import Function hiding (const)
 open import New.Lang
 open import New.Changes
 open import New.Derive
@@ -192,12 +193,11 @@ correctDerive (app s t) ρ dρ ρdρ rewrite sym (fit-sound t ρ dρ) =
     ∎
   where
     open import Theorem.CongApp
-correctDerive (abs t) ρ dρ ρdρ = ext (λ a →
+correctDerive (abs t) ρ dρ ρdρ = ext $ λ a →
   let
     open ≡-Reasoning
     ρ1 = a • ρ
     dρ1 = nil a • dρ
-    ρ1dρ1 : valid ρ1 dρ1
     ρ1dρ1 = nil-valid a , ρdρ
   in
     begin
@@ -206,7 +206,7 @@ correctDerive (abs t) ρ dρ ρdρ = ext (λ a →
       ⟦ t ⟧Term (ρ1 ⊕ dρ1)
     ≡⟨ correctDerive t ρ1 dρ1 ρ1dρ1 ⟩
       ⟦ t ⟧Term ρ1 ⊕ ⟦ t ⟧ΔTerm ρ1 dρ1
-    ∎)
+    ∎
 
 validDerive (app s t) ρ dρ ρdρ =
   let
@@ -225,12 +225,8 @@ validDerive (abs t) ρ dρ ρdρ =
     dρ1 = nil (a ⊕ da) • dρ
     ρ2 = a • ρ
     dρ2 = da • dρ
-    ρ1dρ1 : valid ρ1 dρ1
     ρ1dρ1 = nil-valid (a ⊕ da) , ρdρ
-    ρ2dρ2 : valid ρ2 dρ2
     ρ2dρ2 = ada , ρdρ
-    fv = ⟦ t ⟧Term ρ2
-    dfvdv = ⟦ t ⟧ΔTerm ρ2 dρ2
     rdr = validDerive t ρ2 dρ2 ρ2dρ2
     open ≡-Reasoning
    in
