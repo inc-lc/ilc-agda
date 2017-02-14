@@ -76,10 +76,21 @@ module _ {ℓ₁} {ℓ₂}
     _f⊕_ = λ f df a → f a ⊕ df a (nil a)
     _f⊝_ : (g f : A → B) → fCh
     _f⊝_ = λ g f a da → g (a ⊕ da) ⊝ f a
+
+  IsDerivative : ∀ (f : A → B) → (df : fCh) → Set (ℓ₁ ⊔ ℓ₂)
+  IsDerivative f df = ∀ a da (v : valid a da) → f (a ⊕ da) ≡ f a ⊕ df a da
+
+  WellDefinedFunChangePoint : ∀ (f : A → B) → (df : fCh) → ∀ a da (v : valid a da) → Set ℓ₂
+  WellDefinedFunChangePoint f df a da ada = (f f⊕ df) (a ⊕ da) ≡ f a ⊕ df a da
+
+  WellDefinedFunChange : ∀ (f : A → B) → (df : fCh) → Set (ℓ₁ ⊔ ℓ₂)
+  WellDefinedFunChange f df = ∀ a da ada → WellDefinedFunChangePoint f df a da ada
+
+  private
     fvalid : (A → B) → fCh → Set (ℓ₁ ⊔ ℓ₂)
-    fvalid =  λ f df → ∀ a da (v : valid a da) →
+    fvalid =  λ f df → ∀ a da (ada : valid a da) →
         valid (f a) (df a da) ×
-        (f f⊕ df) (a ⊕ da) ≡ f a ⊕ df a da
+        WellDefinedFunChangePoint f df a da ada
     f⊝-valid : ∀ (f g : A → B) → fvalid f (g f⊝ f)
     f⊝-valid = λ f g a da (v : valid a da) →
          ⊝-valid (f a) (g (a ⊕ da))
@@ -140,9 +151,6 @@ module _ {ℓ₁} {ℓ₂}
     f⊚-correct : ∀ (f : A → B) → (df1 : fCh) → fvalid f df1 → (df2 : fCh) → fvalid (f f⊕ df1) df2 → (a : A) →
       (f f⊕ f⊚ df1 f df2) a ≡ ((f f⊕ df1) f⊕ df2) a
     f⊚-correct f df1 fdf1 df2 fdf2 a = ⊚-correct (f a) (df1 a (nil a)) (proj₁ (fdf1 a (nil a) (nil-valid a))) (df2 a (nil a)) (proj₁ (fdf2 a (nil a) (nil-valid a)))
-
-  IsDerivative : ∀ (f : A → B) → (df : fCh) → Set (ℓ₁ ⊔ ℓ₂)
-  IsDerivative f df = ∀ a da (v : valid a da) → f (a ⊕ da) ≡ f a ⊕ df a da
 
   private
     funUpdateDiff : ∀ g f a → (f f⊕ (g f⊝ f)) a ≡ g a
