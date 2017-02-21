@@ -22,61 +22,61 @@ deriveConst minus = abs (abs (abs (abs (app₂ (const minus) (var (that (that th
 deriveConst cons = abs (abs (abs (abs (app (app (const cons) (var (that (that this)))) (var this)))))
 deriveConst fst = abs (abs (app (const fst) (var this)))
 deriveConst snd = abs (abs (app (const snd) (var this)))
-deriveConst linj = abs (abs (app (const linj) (app (const linj) (var this))))
-deriveConst rinj = abs (abs (app (const linj) (app (const rinj) (var this))))
-deriveConst (match {t1} {t2} {t3}) =
-  -- λ s ds f df g dg →
-  abs (abs (abs (abs (abs (abs
-    -- match ds
-    (app₃ (const match) (var (that (that (that (that this)))))
-      -- λ ds₁ → match ds₁
-      (abs (app₃ (const match) (var this)
-        -- case inj₁ da → absV 1 (λ da → match s
-        (abs (app₃ (const match) (var (that (that (that (that (that (that (that this))))))))
-          -- λ a → app₂ df a da
-          (abs (app₂ (var (that (that (that (that (that this)))))) (var this) (var (that this))))
-          -- absurd: λ b → dg b (nil b)
-          (abs (app₂ (var (that (that (that this)))) (var this) (app (onilτo t2) (var this))))))
-        -- case inj₂ db → absV 1 (λ db → match s
-        (abs (app₃ (const match) (var (that (that (that (that (that (that (that this))))))))
-          -- absurd: λ a → df a (nil a)
-          (abs (app₂ (var (that (that (that (that (that this)))))) (var this) (app (onilτo t1) (var this))))
-          -- λ b → app₂ dg b db
-          (abs (app₂ (var (that (that (that this)))) (var this) (var (that this))))))))
-      -- recomputation branch:
-      -- λ s2 → ominus (match s2 (f ⊕ df) (g ⊕ dg)) (match s f g)
-      (abs (app₂ (ominusτo t3)
-        -- (match s2 (f ⊕ df) (g ⊕ dg))
-        (app₃ (const match)
-          (var this)
-          (app₂ (oplusτo (t1 ⇒ t3))
-            (var (that (that (that (that this)))))
-            (var (that (that (that this)))))
-          (app₂ (oplusτo (t2 ⇒ t3))
-            (var (that (that this)))
-            (var (that this))))
-        -- (match s f g)
-        (app₃ (const match)
-          (var (that (that (that (that (that (that this)))))))
-          (var (that (that (that (that this)))))
-          (var (that (that this))))))))))))
+-- deriveConst linj = abs (abs (app (const linj) (app (const linj) (var this))))
+-- deriveConst rinj = abs (abs (app (const linj) (app (const rinj) (var this))))
+-- deriveConst (match {t1} {t2} {t3}) =
+--   -- λ s ds f df g dg →
+--   abs (abs (abs (abs (abs (abs
+--     -- match ds
+--     (app₃ (const match) (var (that (that (that (that this)))))
+--       -- λ ds₁ → match ds₁
+--       (abs (app₃ (const match) (var this)
+--         -- case inj₁ da → absV 1 (λ da → match s
+--         (abs (app₃ (const match) (var (that (that (that (that (that (that (that this))))))))
+--           -- λ a → app₂ df a da
+--           (abs (app₂ (var (that (that (that (that (that this)))))) (var this) (var (that this))))
+--           -- absurd: λ b → dg b (nil b)
+--           (abs (app₂ (var (that (that (that this)))) (var this) (app (onilτo t2) (var this))))))
+--         -- case inj₂ db → absV 1 (λ db → match s
+--         (abs (app₃ (const match) (var (that (that (that (that (that (that (that this))))))))
+--           -- absurd: λ a → df a (nil a)
+--           (abs (app₂ (var (that (that (that (that (that this)))))) (var this) (app (onilτo t1) (var this))))
+--           -- λ b → app₂ dg b db
+--           (abs (app₂ (var (that (that (that this)))) (var this) (var (that this))))))))
+--       -- recomputation branch:
+--       -- λ s2 → ominus (match s2 (f ⊕ df) (g ⊕ dg)) (match s f g)
+--       (abs (app₂ (ominusτo t3)
+--         -- (match s2 (f ⊕ df) (g ⊕ dg))
+--         (app₃ (const match)
+--           (var this)
+--           (app₂ (oplusτo (t1 ⇒ t3))
+--             (var (that (that (that (that this)))))
+--             (var (that (that (that this)))))
+--           (app₂ (oplusτo (t2 ⇒ t3))
+--             (var (that (that this)))
+--             (var (that this))))
+--         -- (match s f g)
+--         (app₃ (const match)
+--           (var (that (that (that (that (that (that this)))))))
+--           (var (that (that (that (that this)))))
+--           (var (that (that this))))))))))))
 
-{-
-derive (λ s f g → match s f g) =
-λ s ds f df g dg →
-case ds of
- ch1 da →
-   case s of
-     inj1 a → df a da
-     inj2 b → {- absurd -} dg b (nil b)
-  ch2 db →
-   case s of
-     inj2 b → dg b db
-     inj1 a → {- absurd -} df a (nil a)
-  rp s2 →
-    match (f ⊕ df) (g ⊕ dg) s2 ⊝
-    match f g s
--}
+-- {-
+-- derive (λ s f g → match s f g) =
+-- λ s ds f df g dg →
+-- case ds of
+--  ch1 da →
+--    case s of
+--      inj1 a → df a da
+--      inj2 b → {- absurd -} dg b (nil b)
+--   ch2 db →
+--    case s of
+--      inj2 b → dg b db
+--      inj1 a → {- absurd -} df a (nil a)
+--   rp s2 →
+--     match (f ⊕ df) (g ⊕ dg) s2 ⊝
+--     match f g s
+-- -}
 
 deriveVar : ∀ {Γ τ} → Var Γ τ → Var (ΔΓ Γ) (Δt τ)
 deriveVar this = this

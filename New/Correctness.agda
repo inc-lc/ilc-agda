@@ -62,40 +62,40 @@ correctDerive : ∀ {Γ τ} → (t : Term Γ τ) →
 ⟦ c ⟧ΔConst-rewrite ρ dρ rewrite weaken-sound {Γ₁≼Γ₂ = ∅≼Γ} (deriveConst c) (alternate ρ dρ) | ⟦∅≼Γ⟧-∅ (alternate ρ dρ) = refl
 
 
-module _ {t1 t2 t3 : Type}
-  (f : ⟦ t1 ⟧Type → ⟦ t3 ⟧Type)
-  (df : Cht (t1 ⇒ t3))
-  (g : ⟦ t2 ⟧Type → ⟦ t3 ⟧Type)
-  (dg : Cht (t2 ⇒ t3))
-  where
-  private
-    Γ = sum t1 t2 •
-      (t2 ⇒ Δt t2 ⇒ Δt t3) •
-      (t2 ⇒ t3) •
-      (t1 ⇒ Δt t1 ⇒ Δt t3) •
-      (t1 ⇒ t3) •
-      sum (sum (Δt t1) (Δt t2)) (sum t1 t2) •
-      sum t1 t2 • ∅
-  module _ where
-    private
-      Γ′ = t2 • (t2 ⇒ Δt t2 ⇒ Δt t3) • (t2 ⇒ t3) • Γ
-      Γ′′ = t2 • Γ′
-    changeMatchSem-lem1 :
-      ∀ a1 b2 →
-        ⟦ match ⟧ΔConst (inj₁ a1) (inj₂ (inj₂ b2)) f df g dg
-      ≡
-        g b2 ⊕ dg b2 (nil b2) ⊝ f a1
-    changeMatchSem-lem1 a1 b2 rewrite ominusτ-equiv-ext t2 Γ′′ | oplusτ-equiv-ext t3 Γ′ | ominusτ-equiv-ext t3 Γ = refl
-  module _ where
-    private
-      Γ′ = t1 • (t1 ⇒ Δt t1 ⇒ Δt t3) • (t1 ⇒ t3) • Γ
-      Γ′′ = t1 • Γ′
-    changeMatchSem-lem2 :
-      ∀ b1 a2 →
-        ⟦ match ⟧ΔConst (inj₂ b1) (inj₂ (inj₁ a2)) f df g dg
-      ≡
-        f a2 ⊕ df a2 (nil a2) ⊝ g b1
-    changeMatchSem-lem2 b1 a2 rewrite ominusτ-equiv-ext t1 Γ′′ | oplusτ-equiv-ext t3 Γ′ | ominusτ-equiv-ext t3 Γ = refl
+-- module _ {t1 t2 t3 : Type}
+--   (f : ⟦ t1 ⟧Type → ⟦ t3 ⟧Type)
+--   (df : Cht (t1 ⇒ t3))
+--   (g : ⟦ t2 ⟧Type → ⟦ t3 ⟧Type)
+--   (dg : Cht (t2 ⇒ t3))
+--   where
+--   private
+--     Γ = sum t1 t2 •
+--       (t2 ⇒ Δt t2 ⇒ Δt t3) •
+--       (t2 ⇒ t3) •
+--       (t1 ⇒ Δt t1 ⇒ Δt t3) •
+--       (t1 ⇒ t3) •
+--       sum (sum (Δt t1) (Δt t2)) (sum t1 t2) •
+--       sum t1 t2 • ∅
+--   module _ where
+--     private
+--       Γ′ = t2 • (t2 ⇒ Δt t2 ⇒ Δt t3) • (t2 ⇒ t3) • Γ
+--       Γ′′ = t2 • Γ′
+--     changeMatchSem-lem1 :
+--       ∀ a1 b2 →
+--         ⟦ match ⟧ΔConst (inj₁ a1) (inj₂ (inj₂ b2)) f df g dg
+--       ≡
+--         g b2 ⊕ dg b2 (nil b2) ⊝ f a1
+--     changeMatchSem-lem1 a1 b2 rewrite ominusτ-equiv-ext t2 Γ′′ | oplusτ-equiv-ext t3 Γ′ | ominusτ-equiv-ext t3 Γ = refl
+--   module _ where
+--     private
+--       Γ′ = t1 • (t1 ⇒ Δt t1 ⇒ Δt t3) • (t1 ⇒ t3) • Γ
+--       Γ′′ = t1 • Γ′
+--     changeMatchSem-lem2 :
+--       ∀ b1 a2 →
+--         ⟦ match ⟧ΔConst (inj₂ b1) (inj₂ (inj₁ a2)) f df g dg
+--       ≡
+--         f a2 ⊕ df a2 (nil a2) ⊝ g b1
+--     changeMatchSem-lem2 b1 a2 rewrite ominusτ-equiv-ext t1 Γ′′ | oplusτ-equiv-ext t3 Γ′ | ominusτ-equiv-ext t3 Γ = refl
 
 
 validDeriveConst : ∀ {τ} (c : Const τ) → valid ⟦ c ⟧Const (⟦_⟧ΔConst c)
@@ -112,15 +112,15 @@ correctDeriveConst minus = ext (λ m → ext (λ n → lemma m n))
 correctDeriveConst cons = ext (λ v1 → ext (λ v2 → sym (update-nil (v1 , v2))))
 correctDeriveConst fst = ext (λ vp → sym (update-nil (proj₁ vp)))
 correctDeriveConst snd = ext (λ vp → sym (update-nil (proj₂ vp)))
-correctDeriveConst linj = ext (λ va → sym (cong inj₁ (update-nil va)))
-correctDeriveConst rinj = ext (λ vb → sym (cong inj₂ (update-nil vb)))
-correctDeriveConst (match {t1} {t2} {t3}) = ext³ lemma
-  where
-    lemma : ∀ s f g →
-      ⟦ match {t1} {t2} {t3} ⟧Const s f g ≡
-      (⟦ match ⟧Const ⊕ ⟦ match ⟧ΔConst) s f g
-    lemma (inj₁ x) f g rewrite update-nil x | update-nil (f x) = refl
-    lemma (inj₂ y) f g rewrite update-nil y | update-nil (g y) = refl
+-- correctDeriveConst linj = ext (λ va → sym (cong inj₁ (update-nil va)))
+-- correctDeriveConst rinj = ext (λ vb → sym (cong inj₂ (update-nil vb)))
+-- correctDeriveConst (match {t1} {t2} {t3}) = ext³ lemma
+--   where
+--     lemma : ∀ s f g →
+--       ⟦ match {t1} {t2} {t3} ⟧Const s f g ≡
+--       (⟦ match ⟧Const ⊕ ⟦ match ⟧ΔConst) s f g
+--     lemma (inj₁ x) f g rewrite update-nil x | update-nil (f x) = refl
+--     lemma (inj₂ y) f g rewrite update-nil y | update-nil (g y) = refl
 
 validDeriveConst {τ = t1 ⇒ t2 ⇒ pair .t1 .t2} cons = binary-valid (λ a da ada b db bdb → (ada , bdb)) dcons-eq
   where
@@ -140,41 +140,41 @@ validDeriveConst minus = binary-valid (λ a da ada b db bdb → tt) dminus-eq
     open BinaryValid ⟦ minus ⟧Const (⟦ minus ⟧ΔConst)
     dminus-eq : binary-valid-eq-hp
     dminus-eq a da ada b db bdb rewrite right-inv-int (a + da) | right-inv-int (b + db) | right-id-int (a + da - (b + db)) | sym (-m·-n=-mn {b} {db}) = mn·pq=mp·nq {a} {da} { - b} { - db}
-validDeriveConst linj a da ada = sv₁ a da ada , cong inj₁ (update-nil (a ⊕ da))
-validDeriveConst rinj b db bdb = sv₂ b db bdb , cong inj₂ (update-nil (b ⊕ db))
-validDeriveConst (match {t1} {t2} {t3}) =
-  ternary-valid dmatch-valid dmatch-eq
-  where
-    open TernaryValid {{chAlgt (sum t1 t2)}} {{chAlgt (t1 ⇒ t3)}} {{chAlgt (t2 ⇒ t3)}} {{chAlgt t3}} ⟦ match ⟧Const (⟦ match ⟧ΔConst)
+-- validDeriveConst linj a da ada = sv₁ a da ada , cong inj₁ (update-nil (a ⊕ da))
+-- validDeriveConst rinj b db bdb = sv₂ b db bdb , cong inj₂ (update-nil (b ⊕ db))
+-- validDeriveConst (match {t1} {t2} {t3}) =
+--   ternary-valid dmatch-valid dmatch-eq
+--   where
+--     open TernaryValid {{chAlgt (sum t1 t2)}} {{chAlgt (t1 ⇒ t3)}} {{chAlgt (t2 ⇒ t3)}} {{chAlgt t3}} ⟦ match ⟧Const (⟦ match ⟧ΔConst)
 
-    dmatch-valid : ternary-valid-preserve-hp
-    dmatch-valid .(inj₁ a) .(inj₁ (inj₁ da)) (sv₁ a da ada) f df fdf g dg gdg = proj₁ (fdf a da ada)
-    dmatch-valid .(inj₂ b) .(inj₁ (inj₂ db)) (sv₂ b db bdb) f df fdf g dg gdg = proj₁ (gdg b db bdb)
-    dmatch-valid .(inj₁ a1) .(inj₂ (inj₂ b2)) (svrp₁ a1 b2) f df fdf g dg gdg
-      rewrite changeMatchSem-lem1 f df g dg a1 b2
-      = ⊝-valid (f a1) (g b2 ⊕ dg b2 (nil b2))
-    dmatch-valid .(inj₂ b1) .(inj₂ (inj₁ a2)) (svrp₂ b1 a2) f df fdf g dg gdg
-      rewrite changeMatchSem-lem2 f df g dg b1 a2
-      = ⊝-valid (g b1) (f a2 ⊕ df a2 (nil a2))
-    dmatch-eq : ternary-valid-eq-hp
-    dmatch-eq .(inj₁ a) .(inj₁ (inj₁ da)) (sv₁ a da ada) f df fdf g dg gdg
-      rewrite update-nil (a ⊕ da)
-      | update-nil (f (a ⊕ da) ⊕ df (a ⊕ da) (nil (a ⊕ da))) = proj₂ (fdf a da ada)
-    dmatch-eq .(inj₂ b) .(inj₁ (inj₂ db)) (sv₂ b db bdb) f df fdf g dg gdg
-      rewrite update-nil (b ⊕ db)
-      | update-nil (g (b ⊕ db) ⊕ dg (b ⊕ db) (nil (b ⊕ db))) = proj₂ (gdg b db bdb)
-    dmatch-eq .(inj₁ a1) .(inj₂ (inj₂ b2)) (svrp₁ a1 b2) f df fdf g dg gdg
-      rewrite changeMatchSem-lem1 f df g dg a1 b2
-      | update-nil b2
-      | update-diff (g b2 ⊕ dg b2 (nil b2)) (f a1)
-      | update-nil (g b2 ⊕ dg b2 (nil b2))
-      = refl
-    dmatch-eq .(inj₂ b1) .(inj₂ (inj₁ a2)) (svrp₂ b1 a2) f df fdf g dg gdg
-      rewrite changeMatchSem-lem2 f df g dg b1 a2
-      | update-nil a2
-      | update-diff (f a2 ⊕ df a2 (nil a2)) (g b1)
-      | update-nil (f a2 ⊕ df a2 (nil a2))
-      = refl
+--     dmatch-valid : ternary-valid-preserve-hp
+--     dmatch-valid .(inj₁ a) .(inj₁ (inj₁ da)) (sv₁ a da ada) f df fdf g dg gdg = proj₁ (fdf a da ada)
+--     dmatch-valid .(inj₂ b) .(inj₁ (inj₂ db)) (sv₂ b db bdb) f df fdf g dg gdg = proj₁ (gdg b db bdb)
+--     dmatch-valid .(inj₁ a1) .(inj₂ (inj₂ b2)) (svrp₁ a1 b2) f df fdf g dg gdg
+--       rewrite changeMatchSem-lem1 f df g dg a1 b2
+--       = ⊝-valid (f a1) (g b2 ⊕ dg b2 (nil b2))
+--     dmatch-valid .(inj₂ b1) .(inj₂ (inj₁ a2)) (svrp₂ b1 a2) f df fdf g dg gdg
+--       rewrite changeMatchSem-lem2 f df g dg b1 a2
+--       = ⊝-valid (g b1) (f a2 ⊕ df a2 (nil a2))
+--     dmatch-eq : ternary-valid-eq-hp
+--     dmatch-eq .(inj₁ a) .(inj₁ (inj₁ da)) (sv₁ a da ada) f df fdf g dg gdg
+--       rewrite update-nil (a ⊕ da)
+--       | update-nil (f (a ⊕ da) ⊕ df (a ⊕ da) (nil (a ⊕ da))) = proj₂ (fdf a da ada)
+--     dmatch-eq .(inj₂ b) .(inj₁ (inj₂ db)) (sv₂ b db bdb) f df fdf g dg gdg
+--       rewrite update-nil (b ⊕ db)
+--       | update-nil (g (b ⊕ db) ⊕ dg (b ⊕ db) (nil (b ⊕ db))) = proj₂ (gdg b db bdb)
+--     dmatch-eq .(inj₁ a1) .(inj₂ (inj₂ b2)) (svrp₁ a1 b2) f df fdf g dg gdg
+--       rewrite changeMatchSem-lem1 f df g dg a1 b2
+--       | update-nil b2
+--       | update-diff (g b2 ⊕ dg b2 (nil b2)) (f a1)
+--       | update-nil (g b2 ⊕ dg b2 (nil b2))
+--       = refl
+--     dmatch-eq .(inj₂ b1) .(inj₂ (inj₁ a2)) (svrp₂ b1 a2) f df fdf g dg gdg
+--       rewrite changeMatchSem-lem2 f df g dg b1 a2
+--       | update-nil a2
+--       | update-diff (f a2 ⊕ df a2 (nil a2)) (g b1)
+--       | update-nil (f a2 ⊕ df a2 (nil a2))
+--       = refl
 
 correctDerive (const c) ρ dρ ρdρ rewrite ⟦ c ⟧ΔConst-rewrite ρ dρ = correctDeriveConst c
 correctDerive (var x) ρ dρ ρdρ = correctDeriveVar x ρ dρ ρdρ
