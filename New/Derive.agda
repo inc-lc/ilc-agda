@@ -90,3 +90,35 @@ derive (const c) = weaken (∅≼Γ {ΔΓ _}) (deriveConst c)
 derive (var x) = var (deriveVar x)
 derive (app s t) = app (app (derive s) (fit t)) (derive t)
 derive (abs t) = abs (abs (derive t))
+
+open import New.LangChanges
+
+-- Lemmas needed to reason about derivation, for any correctness proof
+alternate : ∀ {Γ} → ⟦ Γ ⟧Context → eCh Γ → ⟦ ΔΓ Γ ⟧Context
+alternate {∅} ∅ ∅ = ∅
+alternate {τ • Γ} (v • ρ) (dv • dρ) = dv • v • alternate ρ dρ
+
+⟦Γ≼ΔΓ⟧ : ∀ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) →
+  ρ ≡ ⟦ Γ≼ΔΓ ⟧≼ (alternate ρ dρ)
+⟦Γ≼ΔΓ⟧ ∅ ∅ = refl
+⟦Γ≼ΔΓ⟧ (v • ρ) (dv • dρ) = cong₂ _•_ refl (⟦Γ≼ΔΓ⟧ ρ dρ)
+
+fit-sound : ∀ {Γ τ} → (t : Term Γ τ) →
+  (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) →
+  ⟦ t ⟧Term ρ ≡ ⟦ fit t ⟧Term (alternate ρ dρ)
+fit-sound t ρ dρ = trans
+  (cong ⟦ t ⟧Term (⟦Γ≼ΔΓ⟧ ρ dρ))
+  (sym (weaken-sound t _))
+
+-- The change semantics is just the semantics composed with derivation!
+⟦_⟧ΔVar : ∀ {Γ τ} → (x : Var Γ τ) → (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → Cht τ
+⟦ x ⟧ΔVar ρ dρ = ⟦ deriveVar x ⟧Var (alternate ρ dρ)
+
+⟦_⟧ΔTerm : ∀ {Γ τ} → (t : Term Γ τ) → (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → Cht τ
+⟦ t ⟧ΔTerm ρ dρ = ⟦ derive t ⟧Term (alternate ρ dρ)
+
+⟦_⟧ΔConst : ∀ {τ} (c : Const τ) → Cht τ
+⟦ c ⟧ΔConst = ⟦ deriveConst c ⟧Term ∅
+
+⟦_⟧ΔConst-rewrite : ∀ {τ Γ} (c : Const τ) (ρ : ⟦ Γ ⟧Context) dρ → ⟦_⟧ΔTerm (const c) ρ dρ ≡ ⟦ c ⟧ΔConst
+⟦ c ⟧ΔConst-rewrite ρ dρ rewrite weaken-sound {Γ₁≼Γ₂ = ∅≼Γ} (deriveConst c) (alternate ρ dρ) | ⟦∅≼Γ⟧-∅ (alternate ρ dρ) = refl
