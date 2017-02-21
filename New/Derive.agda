@@ -94,17 +94,16 @@ alternate : ∀ {Γ} → ⟦ Γ ⟧Context → eCh Γ → ⟦ ΔΓ Γ ⟧Context
 alternate {∅} ∅ ∅ = ∅
 alternate {τ • Γ} (v • ρ) (dv • _ • dρ) = dv • v • alternate ρ dρ
 
--- XXX Should take validity, and allow alternate to be the identity
-⟦Γ≼ΔΓ⟧ : ∀ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) →
+⟦Γ≼ΔΓ⟧ : ∀ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → validΓ ρ dρ →
   ρ ≡ ⟦ Γ≼ΔΓ ⟧≼ (alternate ρ dρ)
-⟦Γ≼ΔΓ⟧ ∅ ∅ = refl
-⟦Γ≼ΔΓ⟧ (_ • ρ) (dv • v • dρ) = cong₂ _•_ refl (⟦Γ≼ΔΓ⟧ ρ dρ)
+⟦Γ≼ΔΓ⟧ ∅ ∅ tt = refl
+⟦Γ≼ΔΓ⟧ (v • ρ) (dv • .v • dρ) (vdv , refl , ρdρ) = cong₂ _•_ refl (⟦Γ≼ΔΓ⟧ ρ dρ ρdρ)
 
 fit-sound : ∀ {Γ τ} → (t : Term Γ τ) →
-  (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) →
+  (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → validΓ ρ dρ →
   ⟦ t ⟧Term ρ ≡ ⟦ fit t ⟧Term (alternate ρ dρ)
-fit-sound t ρ dρ = trans
-  (cong ⟦ t ⟧Term (⟦Γ≼ΔΓ⟧ ρ dρ))
+fit-sound t ρ dρ ρdρ = trans
+  (cong ⟦ t ⟧Term (⟦Γ≼ΔΓ⟧ ρ dρ ρdρ))
   (sym (weaken-sound t _))
 
 -- The change semantics is just the semantics composed with derivation!

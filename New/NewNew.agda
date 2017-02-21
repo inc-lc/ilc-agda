@@ -4,7 +4,7 @@ open import New.Changes
 open import New.LangChanges
 open import New.Lang
 open import New.Types
-open import New.Derive
+open import New.Derive hiding (⟦Γ≼ΔΓ⟧; fit-sound)
 
 [_]_from_to_ : ∀ (τ : Type) → (dv : Cht τ) → (v1 v2 : ⟦ τ ⟧Type) → Set
 [ σ ⇒ τ ] df from f1 to f2 =
@@ -17,6 +17,18 @@ open import New.Derive
 [ ∅ ]Γ ∅ from ∅ to ∅ = ⊤
 [ τ • Γ ]Γ (dv • v1' • dρ) from (v1 • ρ1) to (v2 • ρ2) =
    [ τ ] dv from v1 to v2 × v1 ≡ v1' × [ Γ ]Γ dρ from ρ1 to ρ2
+
+⟦Γ≼ΔΓ⟧ : ∀ {Γ} (ρ1 ρ2 : ⟦ Γ ⟧Context) (dρ : eCh Γ) → [ Γ ]Γ dρ from ρ1 to ρ2 →
+  ρ1 ≡ ⟦ Γ≼ΔΓ ⟧≼ (alternate ρ1 dρ)
+⟦Γ≼ΔΓ⟧ ∅ ∅ ∅ tt = refl
+⟦Γ≼ΔΓ⟧ (v1 • ρ1) (v2 • ρ2) (dv • .v1 • dρ) (dvv , refl , dρρ) = cong₂ _•_ refl (⟦Γ≼ΔΓ⟧ ρ1 ρ2 dρ dρρ)
+
+fit-sound : ∀ {Γ τ} → (t : Term Γ τ) →
+  (ρ1 ρ2 : ⟦ Γ ⟧Context) (dρ : eCh Γ) → [ Γ ]Γ dρ from ρ1 to ρ2 →
+  ⟦ t ⟧Term ρ1 ≡ ⟦ fit t ⟧Term (alternate ρ1 dρ)
+fit-sound t ρ1 ρ2 dρ dρρ = trans
+  (cong ⟦ t ⟧Term (⟦Γ≼ΔΓ⟧ ρ1 ρ2 dρ dρρ))
+  (sym (weaken-sound t _))
 
 fromtoDeriveVar : ∀ {Γ τ} → (x : Var Γ τ) →
   (dρ : eCh Γ) (ρ1 ρ2 : ⟦ Γ ⟧Context) → [ Γ ]Γ dρ from ρ1 to ρ2 →
@@ -37,7 +49,7 @@ fromtoDerive : ∀ {Γ} τ → (t : Term Γ τ) →
     [ τ ] (⟦ t ⟧ΔTerm ρ1 dρ) from (⟦ t ⟧Term ρ1) to (⟦ t ⟧Term ρ2)
 fromtoDerive τ (const c) {dρ} {ρ1} dρρ rewrite ⟦ c ⟧ΔConst-rewrite ρ1 dρ = fromtoDeriveConst c
 fromtoDerive τ (var x) dρρ = fromtoDeriveVar x _ _ _ dρρ
-fromtoDerive τ (app {σ} s t) {dρ} {ρ1} dρρ rewrite sym (fit-sound t ρ1 dρ) =
+fromtoDerive τ (app {σ} s t) {dρ} {ρ1} {ρ2} dρρ rewrite sym (fit-sound t ρ1 ρ2 dρ dρρ) =
   let fromToF = fromtoDerive (σ ⇒ τ) s dρρ
   in let fromToB = fromtoDerive σ t dρρ in fromToF _ _ _ fromToB
 fromtoDerive (σ ⇒ τ) (abs t) dρρ = λ da a1 a2 daa →

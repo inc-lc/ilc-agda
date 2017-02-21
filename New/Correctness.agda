@@ -148,7 +148,7 @@ validDeriveConst minus = binary-valid (λ a da ada b db bdb → tt) dminus-eq
 
 correctDerive (const c) ρ dρ ρdρ rewrite ⟦ c ⟧ΔConst-rewrite ρ dρ = correctDeriveConst c
 correctDerive (var x) ρ dρ ρdρ = correctDeriveVar x ρ dρ ρdρ
-correctDerive (app s t) ρ dρ ρdρ rewrite sym (fit-sound t ρ dρ) =
+correctDerive (app s t) ρ dρ ρdρ rewrite sym (fit-sound t ρ dρ ρdρ) =
   let
     open ≡-Reasoning
     a0 = ⟦ t ⟧Term ρ
@@ -192,7 +192,7 @@ validDerive (app s t) ρ dρ ρdρ =
     vdv = validDerive t ρ dρ ρdρ
     fdf = validDerive s ρ dρ ρdρ
     fvdfv = proj₁ (fdf v dv vdv)
-  in subst (λ v′ → valid (f v) (df v′ dv)) (fit-sound t ρ dρ) fvdfv
+  in subst (λ v′ → valid (f v) (df v′ dv)) (fit-sound t ρ dρ ρdρ) fvdfv
 validDerive (abs t) ρ dρ ρdρ =
   λ a da ada →
   let
