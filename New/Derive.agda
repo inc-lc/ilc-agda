@@ -3,14 +3,6 @@ open import New.Lang
 open import New.Changes
 open import New.LangOps
 
-ΔΓ : Context → Context
-ΔΓ ∅ = ∅
-ΔΓ (τ • Γ) = Δt τ • τ • ΔΓ Γ
-
-Γ≼ΔΓ : ∀ {Γ} → Γ ≼ ΔΓ Γ
-Γ≼ΔΓ {∅} = ∅
-Γ≼ΔΓ {τ • Γ} = drop Δt τ • keep τ • Γ≼ΔΓ
-
 deriveConst : ∀ {τ} →
   Const τ →
   Term ∅ (Δt τ)
@@ -77,6 +69,15 @@ deriveConst snd = abs (abs (app (const snd) (var this)))
 --     match (f ⊕ df) (g ⊕ dg) s2 ⊝
 --     match f g s
 -- -}
+
+
+ΔΓ : Context → Context
+ΔΓ ∅ = ∅
+ΔΓ (τ • Γ) = Δt τ • τ • ΔΓ Γ
+
+Γ≼ΔΓ : ∀ {Γ} → Γ ≼ ΔΓ Γ
+Γ≼ΔΓ {∅} = ∅
+Γ≼ΔΓ {τ • Γ} = drop Δt τ • keep τ • Γ≼ΔΓ
 
 deriveVar : ∀ {Γ τ} → Var Γ τ → Var (ΔΓ Γ) (Δt τ)
 deriveVar this = this
