@@ -92,12 +92,13 @@ derive (abs t) = abs (abs (derive t))
 -- Lemmas needed to reason about derivation, for any correctness proof
 alternate : ∀ {Γ} → ⟦ Γ ⟧Context → eCh Γ → ⟦ ΔΓ Γ ⟧Context
 alternate {∅} ∅ ∅ = ∅
-alternate {τ • Γ} (v • ρ) (dv • dρ) = dv • v • alternate ρ dρ
+alternate {τ • Γ} (v • ρ) (dv • _ • dρ) = dv • v • alternate ρ dρ
 
+-- XXX Should take validity, and allow alternate to be the identity
 ⟦Γ≼ΔΓ⟧ : ∀ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) →
   ρ ≡ ⟦ Γ≼ΔΓ ⟧≼ (alternate ρ dρ)
 ⟦Γ≼ΔΓ⟧ ∅ ∅ = refl
-⟦Γ≼ΔΓ⟧ (v • ρ) (dv • dρ) = cong₂ _•_ refl (⟦Γ≼ΔΓ⟧ ρ dρ)
+⟦Γ≼ΔΓ⟧ (_ • ρ) (dv • v • dρ) = cong₂ _•_ refl (⟦Γ≼ΔΓ⟧ ρ dρ)
 
 fit-sound : ∀ {Γ τ} → (t : Term Γ τ) →
   (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) →

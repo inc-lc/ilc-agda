@@ -17,13 +17,13 @@ validDeriveVar : ∀ {Γ τ} → (x : Var Γ τ) →
   (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) →
   validΓ ρ dρ → valid (⟦ x ⟧Var ρ) (⟦ x ⟧ΔVar ρ dρ)
 
-validDeriveVar this (v • ρ) (dv • dρ) (vdv , ρdρ) = vdv
-validDeriveVar (that x) (v • ρ) (dv • dρ) (vdv , ρdρ) = validDeriveVar x ρ dρ ρdρ
+validDeriveVar this (v • ρ) (dv • .v • dρ) (vdv , refl , ρdρ) = vdv
+validDeriveVar (that x) (v • ρ) (dv • .v • dρ) (vdv , refl , ρdρ) = validDeriveVar x ρ dρ ρdρ
 
 correctDeriveVar : ∀ {Γ τ} → (x : Var Γ τ) →
   IsDerivative ⟦ x ⟧Var (⟦ x ⟧ΔVar)
-correctDeriveVar this (v • ρ) (dv • dρ) ρdρ = refl
-correctDeriveVar (that x) (v • ρ) (dv • dρ) (vdv , ρdρ) = correctDeriveVar x ρ dρ ρdρ
+correctDeriveVar this (v • ρ) (dv • v' • dρ) ρdρ = refl
+correctDeriveVar (that x) (v • ρ) (dv • .v • dρ) (vdv , refl , ρdρ) = correctDeriveVar x ρ dρ ρdρ
 
 validDerive : ∀ {Γ τ} → (t : Term Γ τ) →
   (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → validΓ ρ dρ →
@@ -168,8 +168,8 @@ correctDerive (abs t) ρ dρ ρdρ = ext $ λ a →
   let
     open ≡-Reasoning
     ρ1 = a • ρ
-    dρ1 = nil a • dρ
-    ρ1dρ1 = nil-valid a , ρdρ
+    dρ1 = nil a • a • dρ
+    ρ1dρ1 = nil-valid a , refl , ρdρ
   in
     -- equal-future-expand-derivative ⟦ t ⟧Term ⟦ t ⟧ΔTerm (correctDerive t)
     --   ρ1 dρ1 ρ1dρ1
@@ -197,11 +197,11 @@ validDerive (abs t) ρ dρ ρdρ =
   λ a da ada →
   let
     ρ1 = a ⊕ da • ρ
-    dρ1 = nil (a ⊕ da) • dρ
+    dρ1 = nil (a ⊕ da) • (a ⊕ da) • dρ
     ρ2 = a • ρ
-    dρ2 = da • dρ
-    ρ1dρ1 = nil-valid (a ⊕ da) , ρdρ
-    ρ2dρ2 = ada , ρdρ
+    dρ2 = da • a • dρ
+    ρ1dρ1 = nil-valid (a ⊕ da) , refl , ρdρ
+    ρ2dρ2 = ada , refl , ρdρ
     rdr = validDerive t ρ2 dρ2 ρ2dρ2
     open ≡-Reasoning
    in
