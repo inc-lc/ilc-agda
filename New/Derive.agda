@@ -70,10 +70,7 @@ deriveConst snd = abs (abs (app (const snd) (var this)))
 --     match f g s
 -- -}
 
-
-ΔΓ : Context → Context
-ΔΓ ∅ = ∅
-ΔΓ (τ • Γ) = Δt τ • τ • ΔΓ Γ
+open import New.LangChanges
 
 Γ≼ΔΓ : ∀ {Γ} → Γ ≼ ΔΓ Γ
 Γ≼ΔΓ {∅} = ∅
@@ -91,8 +88,6 @@ derive (const c) = weaken (∅≼Γ {ΔΓ _}) (deriveConst c)
 derive (var x) = var (deriveVar x)
 derive (app s t) = app (app (derive s) (fit t)) (derive t)
 derive (abs t) = abs (abs (derive t))
-
-open import New.LangChanges
 
 -- Lemmas needed to reason about derivation, for any correctness proof
 alternate : ∀ {Γ} → ⟦ Γ ⟧Context → eCh Γ → ⟦ ΔΓ Γ ⟧Context

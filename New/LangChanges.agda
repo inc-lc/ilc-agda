@@ -20,6 +20,10 @@ isChAlgτ int = isChAlg {{intCA}}
 isChAlgτ (pair σ τ) = isChAlg {{pairCA {{chAlgt σ}} {{chAlgt τ}}}}
 -- isChAlgτ (sum σ τ) = isChAlg {{sumCA {{chAlgt σ}} {{chAlgt τ}}}}
 
+ΔΓ : Context → Context
+ΔΓ ∅ = ∅
+ΔΓ (τ • Γ) = Δt τ • τ • ΔΓ Γ
+
 module _ where
   eCh : ∀ (Γ : Context) → Set
   eCh Γ = DependentList (λ τ → Ch ⟦ τ ⟧Type) Γ
