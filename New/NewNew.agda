@@ -16,13 +16,13 @@ open import New.Derive
 [_]Γ_from_to_ : ∀ Γ → eCh Γ → (ρ1 ρ2 : ⟦ Γ ⟧Context) → Set
 [ ∅ ]Γ ∅ from ∅ to ∅ = ⊤
 [ τ • Γ ]Γ (dv • dρ) from (v1 • ρ1) to (v2 • ρ2) =
-  [ Γ ]Γ dρ from ρ1 to ρ2 × [ τ ] dv from v1 to v2
+  [ τ ] dv from v1 to v2 × [ Γ ]Γ dρ from ρ1 to ρ2
 
 fromtoDeriveVar : ∀ {Γ τ} → (x : Var Γ τ) →
   (dρ : eCh Γ) (ρ1 ρ2 : ⟦ Γ ⟧Context) → [ Γ ]Γ dρ from ρ1 to ρ2 →
     [ τ ] (⟦ x ⟧ΔVar ρ1 dρ) from (⟦ x ⟧Var ρ1) to (⟦ x ⟧Var ρ2)
-fromtoDeriveVar this (dv • dρ) (v1 • ρ1) (v2 • ρ2) (dvv , dρρ) = dρρ
-fromtoDeriveVar (that x) (dv • dρ) (v1 • ρ1) (v2 • ρ2) (dvv , dρρ) = fromtoDeriveVar x dρ ρ1 ρ2 dvv
+fromtoDeriveVar this (dv • dρ) (v1 • ρ1) (v2 • ρ2) (dvv , dρρ) = dvv
+fromtoDeriveVar (that x) (dv • dρ) (v1 • ρ1) (v2 • ρ2) (dvv , dρρ) = fromtoDeriveVar x dρ ρ1 ρ2 dρρ
 
 fromtoDeriveConst : ∀ {τ} c →
   [ τ ] ⟦ deriveConst c ⟧Term ∅ from ⟦ c ⟧Const to ⟦ c ⟧Const
@@ -41,4 +41,4 @@ fromtoDerive τ (app s t) {dρ} {ρ1} dρρ rewrite sym (fit-sound t ρ1 dρ) =
   let fromToF = fromtoDerive (_ ⇒ τ) s dρρ
   in let fromToB = fromtoDerive _ t dρρ in fromToF _ _ _ fromToB
 fromtoDerive (σ ⇒ τ) (abs t) dρρ = λ da a1 a2 daa →
-  fromtoDerive _ t (dρρ , daa)
+  fromtoDerive _ t (daa , dρρ)
