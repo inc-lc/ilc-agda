@@ -4,7 +4,7 @@ open import Data.Product public hiding (map)
 open import Data.Sum public hiding (map)
 open import Data.Unit.Base public
 
-open import Relation.Binary.PropositionalEquality public
+open import Relation.Binary.PropositionalEquality public hiding ([_])
 open import Postulate.Extensionality public
 open import Level
 
