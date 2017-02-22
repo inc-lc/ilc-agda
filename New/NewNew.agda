@@ -6,20 +6,11 @@ open import New.Lang
 open import New.Derive
 open import Data.Empty
 
--- module _ {ℓ₁} {ℓ₂}
---   {A : Set ℓ₁} {B : Set ℓ₂} {{CA : ChAlg A}} {{CB : ChAlg B}} where
-
-  -- data SValid3 : A ⊎ B → Ch (A ⊎ B) → Set (ℓ₁ Level.⊔ ℓ₂) where
--- module _ {σ τ : Type} where
---   data SValid3 : Cht (sum σ τ) → (s1 s2 : ⟦ sum σ τ ⟧Type) → Set where
---     sv₁ : ∀ da a1 a2 → [ σ ] da from a1 to a2 → SValid3 (convert₁ (ch₁ da)) (inj₁ a1) (inj₁ a2)
-    -- sv₁ : ∀ (a : A) (da : Ch A) (ada : valid a da) → SValid3 (inj₁ a) (convert₁ (ch₁ da))
-    -- sv₂ : ∀ (b : B) (db : Ch B) (bdb : valid b db) → SValid3 (inj₂ b) (convert₁ (ch₂ db))
-    -- svrp₁ : ∀ a1 b2 → SValid3 (inj₁ a1) (convert₁ (rp (inj₂ b2)))
-    -- svrp₂ : ∀ b1 a2 → SValid3 (inj₂ b1) (convert₁ (rp (inj₁ a2)))
-
 [_]_from_to_ : ∀ (τ : Type) → (dv : Cht τ) → (v1 v2 : ⟦ τ ⟧Type) → Set
 
+-- This can't be a datatype, since it wouldn't be strictly positive as it
+-- appears on the left of an arrow in the function case, which then can be
+-- contained in nested "fromto-validity" proofs.
 sumfromto : ∀ (σ τ : Type) → (dv : SumChange2 {A = ⟦ σ ⟧Type} {B = ⟦ τ ⟧Type}) → (v1 v2 : ⟦ sum σ τ ⟧Type) → Set
 sumfromto σ τ (ch₁ da) (inj₁ a1) (inj₁ a2) = [ σ ] da from a1 to a2
 -- These fallback equations unfortunately don't hold definitionally, they're
@@ -40,8 +31,6 @@ sumfromto σ τ (rp s) _ _ = ⊥
 [ int ] dv from v1 to v2 = v2 ≡ v1 + dv
 [ pair σ τ ] (da , db) from (a1 , b1) to (a2 , b2) = [ σ ] da from a1 to a2 × [ τ ] db from b1 to b2
 [ sum σ τ ] dv from v1 to v2 = sumfromto σ τ (convert dv) v1 v2
--- Doesn't work, the resulting datatype wouldn't be strictly positive.
--- [ sum σ τ ] dv from v1 to v2 = SValid3 dv v1 v2
 
 data [_]Γ_from_to_ : ∀ Γ → eCh Γ → (ρ1 ρ2 : ⟦ Γ ⟧Context) → Set where
   v∅ : [ ∅ ]Γ ∅ from ∅ to ∅
