@@ -21,10 +21,6 @@ fit-sound t ρ dρ ρdρ = trans
   (cong ⟦ t ⟧Term (⟦Γ≼ΔΓ⟧ ρ dρ ρdρ))
   (sym (weaken-sound t _))
 
--- XXX Should try to simply relate the semantics to the nil change, and prove
--- that validity can be carried over, instead of proving separately validity and
--- correctness; elsewhere this does make things simpler.
-
 validDeriveVar : ∀ {Γ τ} → (x : Var Γ τ) →
   (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) →
   validΓ ρ dρ → valid (⟦ x ⟧Var ρ) (⟦ x ⟧ΔVar ρ dρ)
