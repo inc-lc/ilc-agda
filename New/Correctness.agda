@@ -9,6 +9,18 @@ open import New.LangOps
 open import New.FunctionLemmas
 open import New.Unused
 
+⟦Γ≼ΔΓ⟧ : ∀ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → validΓ ρ dρ →
+  ρ ≡ ⟦ Γ≼ΔΓ ⟧≼ dρ
+⟦Γ≼ΔΓ⟧ ∅ ∅ tt = refl
+⟦Γ≼ΔΓ⟧ (v • ρ) (dv • .v • dρ) (vdv , refl , ρdρ) = cong₂ _•_ refl (⟦Γ≼ΔΓ⟧ ρ dρ ρdρ)
+
+fit-sound : ∀ {Γ τ} → (t : Term Γ τ) →
+  (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → validΓ ρ dρ →
+  ⟦ t ⟧Term ρ ≡ ⟦ fit t ⟧Term dρ
+fit-sound t ρ dρ ρdρ = trans
+  (cong ⟦ t ⟧Term (⟦Γ≼ΔΓ⟧ ρ dρ ρdρ))
+  (sym (weaken-sound t _))
+
 -- XXX Should try to simply relate the semantics to the nil change, and prove
 -- that validity can be carried over, instead of proving separately validity and
 -- correctness; elsewhere this does make things simpler.

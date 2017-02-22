@@ -4,7 +4,7 @@ open import New.Changes
 open import New.LangChanges
 open import New.Lang
 open import New.Types
-open import New.Derive hiding (⟦Γ≼ΔΓ⟧; fit-sound)
+open import New.Derive
 
 [_]_from_to_ : ∀ (τ : Type) → (dv : Cht τ) → (v1 v2 : ⟦ τ ⟧Type) → Set
 [ σ ⇒ τ ] df from f1 to f2 =

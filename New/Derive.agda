@@ -90,18 +90,6 @@ derive (app s t) = app (app (derive s) (fit t)) (derive t)
 derive (abs t) = abs (abs (derive t))
 
 -- Lemmas needed to reason about derivation, for any correctness proof
-⟦Γ≼ΔΓ⟧ : ∀ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → validΓ ρ dρ →
-  ρ ≡ ⟦ Γ≼ΔΓ ⟧≼ dρ
-⟦Γ≼ΔΓ⟧ ∅ ∅ tt = refl
-⟦Γ≼ΔΓ⟧ (v • ρ) (dv • .v • dρ) (vdv , refl , ρdρ) = cong₂ _•_ refl (⟦Γ≼ΔΓ⟧ ρ dρ ρdρ)
-
-fit-sound : ∀ {Γ τ} → (t : Term Γ τ) →
-  (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → validΓ ρ dρ →
-  ⟦ t ⟧Term ρ ≡ ⟦ fit t ⟧Term dρ
-fit-sound t ρ dρ ρdρ = trans
-  (cong ⟦ t ⟧Term (⟦Γ≼ΔΓ⟧ ρ dρ ρdρ))
-  (sym (weaken-sound t _))
-
 -- The change semantics is just the semantics composed with derivation!
 ⟦_⟧ΔVar : ∀ {Γ τ} → (x : Var Γ τ) → (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → Cht τ
 ⟦ x ⟧ΔVar ρ dρ = ⟦ deriveVar x ⟧Var dρ
