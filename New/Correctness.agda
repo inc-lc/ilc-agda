@@ -152,7 +152,7 @@ correctDerive (app s t) ρ dρ ρdρ rewrite sym (fit-sound t ρ dρ ρdρ) =
   let
     open ≡-Reasoning
     a0 = ⟦ t ⟧Term ρ
-    da0 = ⟦ derive t ⟧Term (alternate ρ dρ)
+    da0 = ⟦ derive t ⟧Term dρ
     a0da0 = validDerive t ρ dρ ρdρ
   in
     begin
@@ -186,9 +186,9 @@ correctDerive (abs t) ρ dρ ρdρ = ext $ λ a →
 validDerive (app s t) ρ dρ ρdρ =
   let
     f = ⟦ s ⟧Term ρ
-    df = ⟦ derive s ⟧Term (alternate ρ dρ)
+    df = ⟦ derive s ⟧Term dρ
     v = ⟦ t ⟧Term ρ
-    dv = ⟦ derive t ⟧Term (alternate ρ dρ)
+    dv = ⟦ derive t ⟧Term dρ
     vdv = validDerive t ρ dρ ρdρ
     fdf = validDerive s ρ dρ ρdρ
     fvdfv = proj₁ (fdf v dv vdv)

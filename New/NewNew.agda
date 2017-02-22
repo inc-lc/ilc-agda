@@ -19,13 +19,13 @@ open import New.Derive hiding (⟦Γ≼ΔΓ⟧; fit-sound)
    [ τ ] dv from v1 to v2 × v1 ≡ v1' × [ Γ ]Γ dρ from ρ1 to ρ2
 
 ⟦Γ≼ΔΓ⟧ : ∀ {Γ} (ρ1 ρ2 : ⟦ Γ ⟧Context) (dρ : eCh Γ) → [ Γ ]Γ dρ from ρ1 to ρ2 →
-  ρ1 ≡ ⟦ Γ≼ΔΓ ⟧≼ (alternate ρ1 dρ)
+  ρ1 ≡ ⟦ Γ≼ΔΓ ⟧≼ dρ
 ⟦Γ≼ΔΓ⟧ ∅ ∅ ∅ tt = refl
 ⟦Γ≼ΔΓ⟧ (v1 • ρ1) (v2 • ρ2) (dv • .v1 • dρ) (dvv , refl , dρρ) = cong₂ _•_ refl (⟦Γ≼ΔΓ⟧ ρ1 ρ2 dρ dρρ)
 
 fit-sound : ∀ {Γ τ} → (t : Term Γ τ) →
   (ρ1 ρ2 : ⟦ Γ ⟧Context) (dρ : eCh Γ) → [ Γ ]Γ dρ from ρ1 to ρ2 →
-  ⟦ t ⟧Term ρ1 ≡ ⟦ fit t ⟧Term (alternate ρ1 dρ)
+  ⟦ t ⟧Term ρ1 ≡ ⟦ fit t ⟧Term dρ
 fit-sound t ρ1 ρ2 dρ dρρ = trans
   (cong ⟦ t ⟧Term (⟦Γ≼ΔΓ⟧ ρ1 ρ2 dρ dρρ))
   (sym (weaken-sound t _))

@@ -90,31 +90,27 @@ derive (app s t) = app (app (derive s) (fit t)) (derive t)
 derive (abs t) = abs (abs (derive t))
 
 -- Lemmas needed to reason about derivation, for any correctness proof
-alternate : ∀ {Γ} → ⟦ Γ ⟧Context → eCh Γ → ⟦ ΔΓ Γ ⟧Context
-alternate {∅} ∅ ∅ = ∅
-alternate {τ • Γ} (v • ρ) (dv • _ • dρ) = dv • v • alternate ρ dρ
-
 ⟦Γ≼ΔΓ⟧ : ∀ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → validΓ ρ dρ →
-  ρ ≡ ⟦ Γ≼ΔΓ ⟧≼ (alternate ρ dρ)
+  ρ ≡ ⟦ Γ≼ΔΓ ⟧≼ dρ
 ⟦Γ≼ΔΓ⟧ ∅ ∅ tt = refl
 ⟦Γ≼ΔΓ⟧ (v • ρ) (dv • .v • dρ) (vdv , refl , ρdρ) = cong₂ _•_ refl (⟦Γ≼ΔΓ⟧ ρ dρ ρdρ)
 
 fit-sound : ∀ {Γ τ} → (t : Term Γ τ) →
   (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → validΓ ρ dρ →
-  ⟦ t ⟧Term ρ ≡ ⟦ fit t ⟧Term (alternate ρ dρ)
+  ⟦ t ⟧Term ρ ≡ ⟦ fit t ⟧Term dρ
 fit-sound t ρ dρ ρdρ = trans
   (cong ⟦ t ⟧Term (⟦Γ≼ΔΓ⟧ ρ dρ ρdρ))
   (sym (weaken-sound t _))
 
 -- The change semantics is just the semantics composed with derivation!
 ⟦_⟧ΔVar : ∀ {Γ τ} → (x : Var Γ τ) → (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → Cht τ
-⟦ x ⟧ΔVar ρ dρ = ⟦ deriveVar x ⟧Var (alternate ρ dρ)
+⟦ x ⟧ΔVar ρ dρ = ⟦ deriveVar x ⟧Var dρ
 
 ⟦_⟧ΔTerm : ∀ {Γ τ} → (t : Term Γ τ) → (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → Cht τ
-⟦ t ⟧ΔTerm ρ dρ = ⟦ derive t ⟧Term (alternate ρ dρ)
+⟦ t ⟧ΔTerm ρ dρ = ⟦ derive t ⟧Term dρ
 
 ⟦_⟧ΔConst : ∀ {τ} (c : Const τ) → Cht τ
 ⟦ c ⟧ΔConst = ⟦ deriveConst c ⟧Term ∅
 
 ⟦_⟧ΔConst-rewrite : ∀ {τ Γ} (c : Const τ) (ρ : ⟦ Γ ⟧Context) dρ → ⟦_⟧ΔTerm (const c) ρ dρ ≡ ⟦ c ⟧ΔConst
-⟦ c ⟧ΔConst-rewrite ρ dρ rewrite weaken-sound {Γ₁≼Γ₂ = ∅≼Γ} (deriveConst c) (alternate ρ dρ) | ⟦∅≼Γ⟧-∅ (alternate ρ dρ) = refl
+⟦ c ⟧ΔConst-rewrite ρ dρ rewrite weaken-sound {Γ₁≼Γ₂ = ∅≼Γ} (deriveConst c) dρ | ⟦∅≼Γ⟧-∅ dρ = refl
