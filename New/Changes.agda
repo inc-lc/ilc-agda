@@ -281,7 +281,8 @@ module _ {ℓ₁} {ℓ₂}
       s⊕ a (IsChAlg.default-⊚ isSumCA da1 a da2) ≡
       s⊕ (s⊕ a da1) da2
 
-  sumCA : ChAlg (A ⊎ B)
+  instance
+    sumCA : ChAlg (A ⊎ B)
   isSumCA = record
     { _⊕_ = s⊕
     ; _⊝_ = s⊝
