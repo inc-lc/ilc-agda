@@ -124,15 +124,15 @@ fromto→WellDefined {f1 = f1} {f2} {df} dff da a1 a2 daa =
 -- satisfied also by returned or argument functions.
 
 fromto→valid : ∀ {τ} →
-  ∀ v1 v2 dv → [ τ ] dv from v1 to v2 →
+  ∀ dv v1 v2 → [ τ ] dv from v1 to v2 →
   valid v1 dv
 valid→fromto : ∀ {τ} v (dv : Cht τ) → valid v dv → [ τ ] dv from v to (v ⊕ dv)
 
-fromto→valid {int} = λ v1 v2 dv x → tt
-fromto→valid {pair σ τ} (a1 , b1) (a2 , b2) (da , db) (daa , dbb) = (fromto→valid  _ _ _ daa) , (fromto→valid _ _ _ dbb)
-fromto→valid {σ ⇒ τ} f1 f2 df dff = λ a da ada →
-  fromto→valid _ _ _ (dff da a (a ⊕ da) (valid→fromto a da ada)) ,
-  fromto→WellDefined′ dff da a (valid→fromto _ _ ada)
+fromto→valid {int} = λ dv v1 v2 x → tt
+fromto→valid {pair σ τ} (da , db) (a1 , b1) (a2 , b2) (daa , dbb) = (fromto→valid da _ _ daa) , (fromto→valid db _ _ dbb)
+fromto→valid {σ ⇒ τ} df f1 f2 dff = λ a da ada →
+  fromto→valid (df a da) (f1 a) (f2 (a ⊕ da)) (dff da a (a ⊕ da) (valid→fromto a da ada)) ,
+  fromto→WellDefined′ dff da a (valid→fromto a da ada)
 
 valid→fromto {int} v dv tt = refl
 valid→fromto {pair σ τ} (a , b) (da , db) (ada , bdb) = valid→fromto a da ada , valid→fromto b db bdb
@@ -141,6 +141,6 @@ valid→fromto {σ ⇒ τ} f df fdf da a1 a2 daa = body
     fa1da-valid :
       valid (f a1) (df a1 da) ×
       WellDefinedFunChangePoint f df a1 da
-    fa1da-valid = fdf a1 da (fromto→valid _ _ _ daa)
+    fa1da-valid = fdf a1 da (fromto→valid da _ _ daa)
     body : [ τ ] df a1 da from f a1 to (f ⊕ df) a2
-    body rewrite sym (fromto→⊕ _ _ _ daa) | proj₂ fa1da-valid = valid→fromto (f a1) (df a1 da) (proj₁ fa1da-valid)
+    body rewrite sym (fromto→⊕ da _ _ daa) | proj₂ fa1da-valid = valid→fromto (f a1) (df a1 da) (proj₁ fa1da-valid)
