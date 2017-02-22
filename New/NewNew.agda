@@ -31,11 +31,26 @@ fit-sound t dρρ = trans
   (cong ⟦ t ⟧Term (⟦Γ≼ΔΓ⟧ dρρ))
   (sym (weaken-sound t _))
 
-fromtoDeriveVar : ∀ {Γ τ} → (x : Var Γ τ) →
-  ∀ {dρ ρ1 ρ2}  → [ Γ ]Γ dρ from ρ1 to ρ2 →
-    [ τ ] (⟦ x ⟧ΔVar ρ1 dρ) from (⟦ x ⟧Var ρ1) to (⟦ x ⟧Var ρ2)
-fromtoDeriveVar this (dvv v• dρρ) = dvv
-fromtoDeriveVar (that x) (dvv v• dρρ) = fromtoDeriveVar x dρρ
+-- Now relate this validity with ⊕. To know that nil and so on are valid, also
+-- relate it to the other definition.
+
+fromto→⊕ : ∀ {τ} dv v1 v2 →
+  [ τ ] dv from v1 to v2 →
+  v1 ⊕ dv ≡ v2
+
+⊝-fromto : ∀ {τ} (v1 v2 : ⟦ τ ⟧Type) → [ τ ] v2 ⊝ v1 from v1 to v2
+⊝-fromto {σ ⇒ τ} f1 f2 da a1 a2 daa rewrite sym (fromto→⊕ da a1 a2 daa) = ⊝-fromto (f1 a1) (f2 (a1 ⊕ da))
+⊝-fromto {int} v1 v2 = sym (update-diff v2 v1)
+⊝-fromto {pair σ τ} (a1 , b1) (a2 , b2) = ⊝-fromto a1 a2 , ⊝-fromto b1 b2
+
+nil-fromto : ∀ {τ} (v : ⟦ τ ⟧Type) → [ τ ] nil v from v to v
+nil-fromto v = ⊝-fromto v v
+
+fromto→⊕ {σ ⇒ τ} df f1 f2 dff =
+  ext (λ v → fromto→⊕ {τ} (df v (nil v)) (f1 v) (f2 v) (dff (nil v) v v (nil-fromto v)))
+fromto→⊕ {int} dn n1 n2 refl = refl
+fromto→⊕ {pair σ τ} (da , db) (a1 , b1) (a2 , b2) (daa , dbb) =
+  cong₂ _,_ (fromto→⊕ _ _ _ daa) (fromto→⊕ _ _ _ dbb)
 
 fromtoDeriveConst : ∀ {τ} c →
   [ τ ] ⟦ deriveConst c ⟧Term ∅ from ⟦ c ⟧Const to ⟦ c ⟧Const
@@ -44,6 +59,12 @@ fromtoDeriveConst minus da a1 a2 daa db b1 b2 dbb rewrite daa | dbb | sym (-m·-
 fromtoDeriveConst cons da a1 a2 daa db b1 b2 dbb = daa , dbb
 fromtoDeriveConst fst (da , db) (a1 , b1) (a2 , b2) (daa , dbb) = daa
 fromtoDeriveConst snd (da , db) (a1 , b1) (a2 , b2) (daa , dbb) = dbb
+
+fromtoDeriveVar : ∀ {Γ τ} → (x : Var Γ τ) →
+  ∀ {dρ ρ1 ρ2}  → [ Γ ]Γ dρ from ρ1 to ρ2 →
+    [ τ ] (⟦ x ⟧ΔVar ρ1 dρ) from (⟦ x ⟧Var ρ1) to (⟦ x ⟧Var ρ2)
+fromtoDeriveVar this (dvv v• dρρ) = dvv
+fromtoDeriveVar (that x) (dvv v• dρρ) = fromtoDeriveVar x dρρ
 
 fromtoDerive : ∀ {Γ} τ → (t : Term Γ τ) →
   {dρ : eCh Γ} {ρ1 ρ2 : ⟦ Γ ⟧Context} → [ Γ ]Γ dρ from ρ1 to ρ2 →
@@ -56,27 +77,7 @@ fromtoDerive τ (app {σ} s t) dρρ rewrite sym (fit-sound t dρρ) =
 fromtoDerive (σ ⇒ τ) (abs t) dρρ = λ dv v1 v2 dvv →
   fromtoDerive τ t (dvv v• dρρ)
 
--- Now relate this validity with ⊕. To know that nil and so on are valid, also
--- relate it to the other definition.
 open import Postulate.Extensionality
-
-fromto→⊕ : ∀ {τ} dv v1 v2 →
-  [ τ ] dv from v1 to v2 →
-  v1 ⊕ dv ≡ v2
-
-⊝-fromto : ∀ {τ} (v1 v2 : ⟦ τ ⟧Type) → [ τ ] v2 ⊝ v1 from v1 to v2
-⊝-fromto {σ ⇒ τ} f1 f2 da a1 a2 daa rewrite sym (fromto→⊕ _ _ _ daa) = ⊝-fromto (f1 a1) (f2 (a1 ⊕ da))
-⊝-fromto {int} v1 v2 = sym (update-diff v2 v1)
-⊝-fromto {pair σ τ} (a1 , b1) (a2 , b2) = ⊝-fromto a1 a2 , ⊝-fromto b1 b2
-
-nil-fromto : ∀ {τ} (v : ⟦ τ ⟧Type) → [ τ ] nil v from v to v
-nil-fromto v = ⊝-fromto v v
-
-fromto→⊕ {σ ⇒ τ} df f1 f2 dff =
-  ext (λ v → fromto→⊕ {τ} (df v (nil v)) (f1 v) (f2 v) (dff (nil v) v v (nil-fromto v)))
-fromto→⊕ {int} dn n1 n2 refl = refl
-fromto→⊕ {pair σ τ} (da , db) (a1 , b1) (a2 , b2) (daa , dbb) =
-  cong₂ _,_ (fromto→⊕ _ _ _ daa) (fromto→⊕ _ _ _ dbb)
 
 open ≡-Reasoning
 

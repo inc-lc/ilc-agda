@@ -21,62 +21,6 @@ fit-sound t ρ dρ ρdρ = trans
   (cong ⟦ t ⟧Term (⟦Γ≼ΔΓ⟧ ρ dρ ρdρ))
   (sym (weaken-sound t _))
 
-validDeriveVar : ∀ {Γ τ} → (x : Var Γ τ) →
-  (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) →
-  validΓ ρ dρ → valid (⟦ x ⟧Var ρ) (⟦ x ⟧ΔVar ρ dρ)
-
-validDeriveVar this (v • ρ) (dv • .v • dρ) (vdv , refl , ρdρ) = vdv
-validDeriveVar (that x) (v • ρ) (dv • .v • dρ) (vdv , refl , ρdρ) = validDeriveVar x ρ dρ ρdρ
-
-correctDeriveVar : ∀ {Γ τ} → (x : Var Γ τ) →
-  IsDerivative ⟦ x ⟧Var (⟦ x ⟧ΔVar)
-correctDeriveVar this (v • ρ) (dv • v' • dρ) ρdρ = refl
-correctDeriveVar (that x) (v • ρ) (dv • .v • dρ) (vdv , refl , ρdρ) = correctDeriveVar x ρ dρ ρdρ
-
-validDerive : ∀ {Γ τ} → (t : Term Γ τ) →
-  (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → validΓ ρ dρ →
-    valid (⟦ t ⟧Term ρ) (⟦ t ⟧ΔTerm ρ dρ)
-correctDerive : ∀ {Γ τ} → (t : Term Γ τ) →
-  IsDerivative ⟦ t ⟧Term ⟦ t ⟧ΔTerm
-
-
--- module _ {t1 t2 t3 : Type}
---   (f : ⟦ t1 ⟧Type → ⟦ t3 ⟧Type)
---   (df : Cht (t1 ⇒ t3))
---   (g : ⟦ t2 ⟧Type → ⟦ t3 ⟧Type)
---   (dg : Cht (t2 ⇒ t3))
---   where
---   private
---     Γ = sum t1 t2 •
---       (t2 ⇒ Δt t2 ⇒ Δt t3) •
---       (t2 ⇒ t3) •
---       (t1 ⇒ Δt t1 ⇒ Δt t3) •
---       (t1 ⇒ t3) •
---       sum (sum (Δt t1) (Δt t2)) (sum t1 t2) •
---       sum t1 t2 • ∅
---   module _ where
---     private
---       Γ′ = t2 • (t2 ⇒ Δt t2 ⇒ Δt t3) • (t2 ⇒ t3) • Γ
---       Γ′′ = t2 • Γ′
---     changeMatchSem-lem1 :
---       ∀ a1 b2 →
---         ⟦ match ⟧ΔConst (inj₁ a1) (inj₂ (inj₂ b2)) f df g dg
---       ≡
---         g b2 ⊕ dg b2 (nil b2) ⊝ f a1
---     changeMatchSem-lem1 a1 b2 rewrite ominusτ-equiv-ext t2 Γ′′ | oplusτ-equiv-ext t3 Γ′ | ominusτ-equiv-ext t3 Γ = refl
---   module _ where
---     private
---       Γ′ = t1 • (t1 ⇒ Δt t1 ⇒ Δt t3) • (t1 ⇒ t3) • Γ
---       Γ′′ = t1 • Γ′
---     changeMatchSem-lem2 :
---       ∀ b1 a2 →
---         ⟦ match ⟧ΔConst (inj₂ b1) (inj₂ (inj₁ a2)) f df g dg
---       ≡
---         f a2 ⊕ df a2 (nil a2) ⊝ g b1
---     changeMatchSem-lem2 b1 a2 rewrite ominusτ-equiv-ext t1 Γ′′ | oplusτ-equiv-ext t3 Γ′ | ominusτ-equiv-ext t3 Γ = refl
-
-
-validDeriveConst : ∀ {τ} (c : Const τ) → valid ⟦ c ⟧Const (⟦_⟧ΔConst c)
 correctDeriveConst : ∀ {τ} (c : Const τ) → ⟦ c ⟧Const ≡ ⟦ c ⟧Const ⊕ (⟦_⟧ΔConst c)
 correctDeriveConst plus = ext (λ m → ext (lemma m))
   where
@@ -100,6 +44,7 @@ correctDeriveConst snd = ext (λ vp → sym (update-nil (proj₂ vp)))
 --     lemma (inj₁ x) f g rewrite update-nil x | update-nil (f x) = refl
 --     lemma (inj₂ y) f g rewrite update-nil y | update-nil (g y) = refl
 
+validDeriveConst : ∀ {τ} (c : Const τ) → valid ⟦ c ⟧Const (⟦_⟧ΔConst c)
 validDeriveConst {τ = t1 ⇒ t2 ⇒ pair .t1 .t2} cons = binary-valid (λ a da ada b db bdb → (ada , bdb)) dcons-eq
   where
     open BinaryValid ⟦ cons {t1} {t2} ⟧Const (⟦ cons ⟧ΔConst)
@@ -153,6 +98,24 @@ validDeriveConst minus = binary-valid (λ a da ada b db bdb → tt) dminus-eq
 --       | update-diff (f a2 ⊕ df a2 (nil a2)) (g b1)
 --       | update-nil (f a2 ⊕ df a2 (nil a2))
 --       = refl
+
+validDeriveVar : ∀ {Γ τ} → (x : Var Γ τ) →
+  (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) →
+  validΓ ρ dρ → valid (⟦ x ⟧Var ρ) (⟦ x ⟧ΔVar ρ dρ)
+
+validDeriveVar this (v • ρ) (dv • .v • dρ) (vdv , refl , ρdρ) = vdv
+validDeriveVar (that x) (v • ρ) (dv • .v • dρ) (vdv , refl , ρdρ) = validDeriveVar x ρ dρ ρdρ
+
+correctDeriveVar : ∀ {Γ τ} → (x : Var Γ τ) →
+  IsDerivative ⟦ x ⟧Var (⟦ x ⟧ΔVar)
+correctDeriveVar this (v • ρ) (dv • v' • dρ) ρdρ = refl
+correctDeriveVar (that x) (v • ρ) (dv • .v • dρ) (vdv , refl , ρdρ) = correctDeriveVar x ρ dρ ρdρ
+
+validDerive : ∀ {Γ τ} → (t : Term Γ τ) →
+  (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → validΓ ρ dρ →
+    valid (⟦ t ⟧Term ρ) (⟦ t ⟧ΔTerm ρ dρ)
+correctDerive : ∀ {Γ τ} → (t : Term Γ τ) →
+  IsDerivative ⟦ t ⟧Term ⟦ t ⟧ΔTerm
 
 correctDerive (const c) ρ dρ ρdρ rewrite ⟦ c ⟧ΔConst-rewrite ρ dρ = correctDeriveConst c
 correctDerive (var x) ρ dρ ρdρ = correctDeriveVar x ρ dρ ρdρ
