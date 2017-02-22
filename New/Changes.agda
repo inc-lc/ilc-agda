@@ -80,17 +80,17 @@ module _ {ℓ₁} {ℓ₂}
   IsDerivative : ∀ (f : A → B) → (df : fCh) → Set (ℓ₁ ⊔ ℓ₂)
   IsDerivative f df = ∀ a da (v : valid a da) → f (a ⊕ da) ≡ f a ⊕ df a da
 
-  WellDefinedFunChangePoint : ∀ (f : A → B) → (df : fCh) → ∀ a da (v : valid a da) → Set ℓ₂
-  WellDefinedFunChangePoint f df a da ada = (f f⊕ df) (a ⊕ da) ≡ f a ⊕ df a da
+  WellDefinedFunChangePoint : ∀ (f : A → B) → (df : fCh) → ∀ a da → Set ℓ₂
+  WellDefinedFunChangePoint f df a da = (f f⊕ df) (a ⊕ da) ≡ f a ⊕ df a da
 
   WellDefinedFunChange : ∀ (f : A → B) → (df : fCh) → Set (ℓ₁ ⊔ ℓ₂)
-  WellDefinedFunChange f df = ∀ a da ada → WellDefinedFunChangePoint f df a da ada
+  WellDefinedFunChange f df = ∀ a da (ada : valid a da) → WellDefinedFunChangePoint f df a da
 
   private
     fvalid : (A → B) → fCh → Set (ℓ₁ ⊔ ℓ₂)
     fvalid =  λ f df → ∀ a da (ada : valid a da) →
         valid (f a) (df a da) ×
-        WellDefinedFunChangePoint f df a da ada
+        WellDefinedFunChangePoint f df a da
     f⊝-valid : ∀ (f g : A → B) → fvalid f (g f⊝ f)
     f⊝-valid = λ f g a da (v : valid a da) →
          ⊝-valid (f a) (g (a ⊕ da))
