@@ -13,30 +13,30 @@ open import New.Derive
 [ int ] dv from v1 to v2 = v2 ≡ v1 + dv
 [ pair σ τ ] (da , db) from (a1 , b1) to (a2 , b2) = [ σ ] da from a1 to a2 × [ τ ] db from b1 to b2
 
--- XXX This would be more elegant as a datatype — that would avoid the need for
--- an equality proof.
-[_]Γ_from_to_ : ∀ Γ → eCh Γ → (ρ1 ρ2 : ⟦ Γ ⟧Context) → Set
-[ ∅ ]Γ ∅ from ∅ to ∅ = ⊤
-[ τ • Γ ]Γ (dv • v1' • dρ) from (v1 • ρ1) to (v2 • ρ2) =
-   [ τ ] dv from v1 to v2 × v1 ≡ v1' × [ Γ ]Γ dρ from ρ1 to ρ2
+data [_]Γ_from_to_ : ∀ Γ → eCh Γ → (ρ1 ρ2 : ⟦ Γ ⟧Context) → Set where
+  v∅ : [ ∅ ]Γ ∅ from ∅ to ∅
+  _v•_ : ∀ {τ Γ dv v1 v2 dρ ρ1 ρ2} →
+    (dvv : [ τ ] dv from v1 to v2) →
+    (dρρ : [ Γ ]Γ dρ from ρ1 to ρ2) →
+    [ τ • Γ ]Γ (dv • v1 • dρ) from (v1 • ρ1) to (v2 • ρ2)
 
-⟦Γ≼ΔΓ⟧ : ∀ {Γ ρ1 ρ2 dρ} → [ Γ ]Γ dρ from ρ1 to ρ2 →
+⟦Γ≼ΔΓ⟧ : ∀ {Γ ρ1 ρ2 dρ} → (dρρ : [ Γ ]Γ dρ from ρ1 to ρ2) →
   ρ1 ≡ ⟦ Γ≼ΔΓ ⟧≼ dρ
-⟦Γ≼ΔΓ⟧ {∅} {∅} {∅} {∅} tt = refl
-⟦Γ≼ΔΓ⟧ {_ • _} {v1 • ρ1} {v2 • ρ2} {dv • .v1 • dρ} (dvv , refl , dρρ) = cong₂ _•_ refl (⟦Γ≼ΔΓ⟧ dρρ)
+⟦Γ≼ΔΓ⟧ v∅ = refl
+⟦Γ≼ΔΓ⟧ (dvv v• dρρ) = cong₂ _•_ refl (⟦Γ≼ΔΓ⟧ dρρ)
 
 fit-sound : ∀ {Γ τ} → (t : Term Γ τ) →
-  ∀ {ρ1 ρ2 dρ} → [ Γ ]Γ dρ from ρ1 to ρ2 →
+  ∀ {dρ ρ1 ρ2} → [ Γ ]Γ dρ from ρ1 to ρ2 →
   ⟦ t ⟧Term ρ1 ≡ ⟦ fit t ⟧Term dρ
 fit-sound t dρρ = trans
   (cong ⟦ t ⟧Term (⟦Γ≼ΔΓ⟧ dρρ))
   (sym (weaken-sound t _))
 
 fromtoDeriveVar : ∀ {Γ τ} → (x : Var Γ τ) →
-  (dρ : eCh Γ) (ρ1 ρ2 : ⟦ Γ ⟧Context) → [ Γ ]Γ dρ from ρ1 to ρ2 →
+  ∀ {dρ ρ1 ρ2}  → [ Γ ]Γ dρ from ρ1 to ρ2 →
     [ τ ] (⟦ x ⟧ΔVar ρ1 dρ) from (⟦ x ⟧Var ρ1) to (⟦ x ⟧Var ρ2)
-fromtoDeriveVar this (dv • .v1 • dρ) (v1 • ρ1) (v2 • ρ2) (dvv , refl , dρρ) = dvv
-fromtoDeriveVar (that x) (dv • .v1 • dρ) (v1 • ρ1) (v2 • ρ2) (dvv , refl , dρρ) = fromtoDeriveVar x dρ ρ1 ρ2 dρρ
+fromtoDeriveVar this (dvv v• dρρ) = dvv
+fromtoDeriveVar (that x) (dvv v• dρρ) = fromtoDeriveVar x dρρ
 
 fromtoDeriveConst : ∀ {τ} c →
   [ τ ] ⟦ deriveConst c ⟧Term ∅ from ⟦ c ⟧Const to ⟦ c ⟧Const
@@ -50,12 +50,12 @@ fromtoDerive : ∀ {Γ} τ → (t : Term Γ τ) →
   {dρ : eCh Γ} {ρ1 ρ2 : ⟦ Γ ⟧Context} → [ Γ ]Γ dρ from ρ1 to ρ2 →
     [ τ ] (⟦ t ⟧ΔTerm ρ1 dρ) from (⟦ t ⟧Term ρ1) to (⟦ t ⟧Term ρ2)
 fromtoDerive τ (const c) {dρ} {ρ1} dρρ rewrite ⟦ c ⟧ΔConst-rewrite ρ1 dρ = fromtoDeriveConst c
-fromtoDerive τ (var x) dρρ = fromtoDeriveVar x _ _ _ dρρ
+fromtoDerive τ (var x) dρρ = fromtoDeriveVar x dρρ
 fromtoDerive τ (app {σ} s t) dρρ rewrite sym (fit-sound t dρρ) =
   let fromToF = fromtoDerive (σ ⇒ τ) s dρρ
   in let fromToB = fromtoDerive σ t dρρ in fromToF _ _ _ fromToB
-fromtoDerive (σ ⇒ τ) (abs t) dρρ = λ da a1 a2 daa →
-  fromtoDerive τ t (daa , refl , dρρ)
+fromtoDerive (σ ⇒ τ) (abs t) dρρ = λ dv v1 v2 dvv →
+  fromtoDerive τ t (dvv v• dρρ)
 
 -- Now relate this validity with ⊕. To know that nil and so on are valid, also
 -- relate it to the other definition.
