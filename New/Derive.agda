@@ -9,6 +9,7 @@ deriveConst : ∀ {τ} →
   Const τ →
   Term ∅ (Δt τ)
 -- dplus = λ m dm n dn → (m + dm) + (n + dn) - (m + n) = dm + dn
+deriveConst (lit n) = const (lit (+ 0))
 deriveConst plus = abs (abs (abs (abs (app₂ (const plus) (var (that (that this))) (var this)))))
 -- minus = λ m n → m - n
 -- dminus = λ m dm n dn → (m + dm) - (n + dn) - (m - n) = dm - dn

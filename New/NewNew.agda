@@ -94,6 +94,7 @@ fromto→⊕ {sum σ τ} (inj₂ (inj₂ b2)) (inj₂ _) (inj₂ _) ()
 
 fromtoDeriveConst : ∀ {τ} c →
   [ τ ] ⟦ deriveConst c ⟧Term ∅ from ⟦ c ⟧Const to ⟦ c ⟧Const
+fromtoDeriveConst (lit n) = sym (right-id-int n)
 fromtoDeriveConst plus da a1 a2 daa db b1 b2 dbb rewrite daa | dbb = mn·pq=mp·nq {a1} {da} {b1} {db}
 fromtoDeriveConst minus da a1 a2 daa db b1 b2 dbb rewrite daa | dbb | sym (-m·-n=-mn {b1} {db}) = mn·pq=mp·nq {a1} {da} { - b1} { - db}
 fromtoDeriveConst cons da a1 a2 daa db b1 b2 dbb = daa , dbb

@@ -22,6 +22,7 @@ fit-sound t ρ dρ ρdρ = trans
   (sym (weaken-sound t _))
 
 correctDeriveConst : ∀ {τ} (c : Const τ) → ⟦ c ⟧Const ≡ ⟦ c ⟧Const ⊕ (⟦_⟧ΔConst c)
+correctDeriveConst (lit n) = sym (right-id-int n)
 correctDeriveConst plus = ext (λ m → ext (lemma m))
   where
     lemma : ∀ m n → m + n ≡ m + n + (m + - m + (n + - n))
@@ -45,6 +46,7 @@ correctDeriveConst (match {t1} {t2} {t3}) = ext³ lemma
     lemma (inj₂ y) f g rewrite update-nil y | update-nil (g y) = refl
 
 validDeriveConst : ∀ {τ} (c : Const τ) → valid ⟦ c ⟧Const (⟦_⟧ΔConst c)
+validDeriveConst (lit n) = tt
 validDeriveConst {τ = t1 ⇒ t2 ⇒ pair .t1 .t2} cons = binary-valid (λ a da ada b db bdb → (ada , bdb)) dcons-eq
   where
     open BinaryValid ⟦ cons {t1} {t2} ⟧Const (⟦ cons ⟧ΔConst)

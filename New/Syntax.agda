@@ -7,6 +7,7 @@ open import Base.Syntax.Context Type public
 open import Base.Syntax.Vars Type public
 
 data Const : (τ : Type) → Set where
+   lit : ℤ → Const int
    plus : Const (int ⇒ int ⇒ int)
    minus : Const (int ⇒ int ⇒ int)
    cons : ∀ {t1 t2} → Const (t1 ⇒ t2 ⇒ pair t1 t2)

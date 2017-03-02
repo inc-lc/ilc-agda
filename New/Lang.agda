@@ -7,6 +7,7 @@ open import Base.Denotation.Environment Type ⟦_⟧Type public
 
 ⟦_⟧Const : ∀ {τ} → Const τ → ⟦ τ ⟧Type
 ⟦_⟧Const cons = λ v1 v2 → v1 , v2
+⟦ lit n ⟧Const = n
 ⟦ plus ⟧Const = _+_
 ⟦ minus ⟧Const = _-_
 ⟦ fst ⟧Const (v1 , v2) = v1
