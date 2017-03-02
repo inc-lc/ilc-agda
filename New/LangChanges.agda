@@ -1,6 +1,6 @@
 module New.LangChanges where
 
-open import New.Contexts public
+open import New.Lang public
 open import New.Changes
 
 isChAlgτ : (τ : Type) → IsChAlg ⟦ τ ⟧Type ⟦ Δt τ ⟧Type
