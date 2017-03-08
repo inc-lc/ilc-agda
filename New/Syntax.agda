@@ -30,7 +30,7 @@ data Term (Γ : Context) :
     (s : Term Γ (σ ⇒ τ)) →
     (t : Term Γ σ) →
     Term Γ τ
-  -- we use de Bruijn indicies, so we don't need binding occurrences.
+  -- we use de Bruijn indices, so we don't need binding occurrences.
   abs : ∀ {σ τ}
     (t : Term (σ • Γ) τ) →
     Term Γ (σ ⇒ τ)
