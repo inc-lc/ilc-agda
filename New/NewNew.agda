@@ -6,36 +6,36 @@ open import New.Lang
 open import New.Derive
 open import Data.Empty
 
-[_]_from_to_ : ∀ (τ : Type) → (dv : Cht τ) → (v1 v2 : ⟦ τ ⟧Type) → Set
+[_]τ_from_to_ : ∀ (τ : Type) → (dv : Cht τ) → (v1 v2 : ⟦ τ ⟧Type) → Set
 
 -- This can't be a datatype, since it wouldn't be strictly positive as it
 -- appears on the left of an arrow in the function case, which then can be
 -- contained in nested "fromto-validity" proofs.
 sumfromto : ∀ (σ τ : Type) → (dv : SumChange2 {A = ⟦ σ ⟧Type} {B = ⟦ τ ⟧Type}) → (v1 v2 : ⟦ sum σ τ ⟧Type) → Set
-sumfromto σ τ (ch₁ da) (inj₁ a1) (inj₁ a2) = [ σ ] da from a1 to a2
+sumfromto σ τ (ch₁ da) (inj₁ a1) (inj₁ a2) = [ σ ]τ da from a1 to a2
 -- These fallback equations unfortunately don't hold definitionally, they're
 -- split on multiple cases, so the pattern match is a mess.
 --
 -- To "case split" on validity, I typically copy-paste the pattern match from
 -- fromto→⊕ and change the function name :-(.
 sumfromto σ τ (ch₁ da) _ _ = ⊥
-sumfromto σ τ (ch₂ db) (inj₂ b1) (inj₂ b2) = [ τ ] db from b1 to b2
+sumfromto σ τ (ch₂ db) (inj₂ b1) (inj₂ b2) = [ τ ]τ db from b1 to b2
 sumfromto σ τ (ch₂ db) _ _ = ⊥
 sumfromto σ τ (rp (inj₂ b2)) (inj₁ a1) (inj₂ b2') = b2 ≡ b2'
 sumfromto σ τ (rp (inj₁ a2)) (inj₂ b1) (inj₁ a2') = a2 ≡ a2'
 sumfromto σ τ (rp s) _ _ = ⊥
 
-[ σ ⇒ τ ] df from f1 to f2 =
+[ σ ⇒ τ ]τ df from f1 to f2 =
   ∀ (da : Cht σ) (a1 a2 : ⟦ σ ⟧Type) →
-  [ σ ] da from a1 to a2 → [ τ ] df a1 da from f1 a1 to f2 a2
-[ int ] dv from v1 to v2 = v2 ≡ v1 + dv
-[ pair σ τ ] (da , db) from (a1 , b1) to (a2 , b2) = [ σ ] da from a1 to a2 × [ τ ] db from b1 to b2
-[ sum σ τ ] dv from v1 to v2 = sumfromto σ τ (convert dv) v1 v2
+  [ σ ]τ da from a1 to a2 → [ τ ]τ df a1 da from f1 a1 to f2 a2
+[ int ]τ dv from v1 to v2 = v2 ≡ v1 + dv
+[ pair σ τ ]τ (da , db) from (a1 , b1) to (a2 , b2) = [ σ ]τ da from a1 to a2 × [ τ ]τ db from b1 to b2
+[ sum σ τ ]τ dv from v1 to v2 = sumfromto σ τ (convert dv) v1 v2
 
 data [_]Γ_from_to_ : ∀ Γ → eCh Γ → (ρ1 ρ2 : ⟦ Γ ⟧Context) → Set where
   v∅ : [ ∅ ]Γ ∅ from ∅ to ∅
   _v•_ : ∀ {τ Γ dv v1 v2 dρ ρ1 ρ2} →
-    (dvv : [ τ ] dv from v1 to v2) →
+    (dvv : [ τ ]τ dv from v1 to v2) →
     (dρρ : [ Γ ]Γ dρ from ρ1 to ρ2) →
     [ τ • Γ ]Γ (dv • v1 • dρ) from (v1 • ρ1) to (v2 • ρ2)
 
@@ -55,10 +55,10 @@ fit-sound t dρρ = trans
 -- relate it to the other definition.
 
 fromto→⊕ : ∀ {τ} dv v1 v2 →
-  [ τ ] dv from v1 to v2 →
+  [ τ ]τ dv from v1 to v2 →
   v1 ⊕ dv ≡ v2
 
-⊝-fromto : ∀ {τ} (v1 v2 : ⟦ τ ⟧Type) → [ τ ] v2 ⊝ v1 from v1 to v2
+⊝-fromto : ∀ {τ} (v1 v2 : ⟦ τ ⟧Type) → [ τ ]τ v2 ⊝ v1 from v1 to v2
 ⊝-fromto {σ ⇒ τ} f1 f2 da a1 a2 daa rewrite sym (fromto→⊕ da a1 a2 daa) = ⊝-fromto (f1 a1) (f2 (a1 ⊕ da))
 ⊝-fromto {int} v1 v2 = sym (update-diff v2 v1)
 ⊝-fromto {pair σ τ} (a1 , b1) (a2 , b2) = ⊝-fromto a1 a2 , ⊝-fromto b1 b2
@@ -67,7 +67,7 @@ fromto→⊕ : ∀ {τ} dv v1 v2 →
 ⊝-fromto {sum σ τ} (inj₂ b1) (inj₁ a2) = refl
 ⊝-fromto {sum σ τ} (inj₂ b1) (inj₂ b2) = ⊝-fromto b1 b2
 
-nil-fromto : ∀ {τ} (v : ⟦ τ ⟧Type) → [ τ ] nil v from v to v
+nil-fromto : ∀ {τ} (v : ⟦ τ ⟧Type) → [ τ ]τ nil v from v to v
 nil-fromto v = ⊝-fromto v v
 
 fromto→⊕ {σ ⇒ τ} df f1 f2 dff =
@@ -93,7 +93,7 @@ fromto→⊕ {sum σ τ} (inj₂ (inj₂ b2)) (inj₂ _) (inj₁ _) ()
 fromto→⊕ {sum σ τ} (inj₂ (inj₂ b2)) (inj₂ _) (inj₂ _) ()
 
 fromtoDeriveConst : ∀ {τ} c →
-  [ τ ] ⟦ deriveConst c ⟧Term ∅ from ⟦ c ⟧Const to ⟦ c ⟧Const
+  [ τ ]τ ⟦ deriveConst c ⟧Term ∅ from ⟦ c ⟧Const to ⟦ c ⟧Const
 fromtoDeriveConst (lit n) = sym (right-id-int n)
 fromtoDeriveConst plus da a1 a2 daa db b1 b2 dbb rewrite daa | dbb = mn·pq=mp·nq {a1} {da} {b1} {db}
 fromtoDeriveConst minus da a1 a2 daa db b1 b2 dbb rewrite daa | dbb | sym (-m·-n=-mn {b1} {db}) = mn·pq=mp·nq {a1} {da} { - b1} { - db}
@@ -121,13 +121,13 @@ fromtoDeriveConst match (inj₂ (inj₂ b2)) (inj₂ _) (inj₂ _) ()
 
 fromtoDeriveVar : ∀ {Γ τ} → (x : Var Γ τ) →
   ∀ {dρ ρ1 ρ2}  → [ Γ ]Γ dρ from ρ1 to ρ2 →
-    [ τ ] (⟦ x ⟧ΔVar ρ1 dρ) from (⟦ x ⟧Var ρ1) to (⟦ x ⟧Var ρ2)
+    [ τ ]τ (⟦ x ⟧ΔVar ρ1 dρ) from (⟦ x ⟧Var ρ1) to (⟦ x ⟧Var ρ2)
 fromtoDeriveVar this (dvv v• dρρ) = dvv
 fromtoDeriveVar (that x) (dvv v• dρρ) = fromtoDeriveVar x dρρ
 
 fromtoDerive : ∀ {Γ} τ → (t : Term Γ τ) →
   {dρ : eCh Γ} {ρ1 ρ2 : ⟦ Γ ⟧Context} → [ Γ ]Γ dρ from ρ1 to ρ2 →
-    [ τ ] (⟦ t ⟧ΔTerm ρ1 dρ) from (⟦ t ⟧Term ρ1) to (⟦ t ⟧Term ρ2)
+    [ τ ]τ (⟦ t ⟧ΔTerm ρ1 dρ) from (⟦ t ⟧Term ρ1) to (⟦ t ⟧Term ρ2)
 fromtoDerive τ (const c) {dρ} {ρ1} dρρ rewrite ⟦ c ⟧ΔConst-rewrite ρ1 dρ = fromtoDeriveConst c
 fromtoDerive τ (var x) dρρ = fromtoDeriveVar x dρρ
 fromtoDerive τ (app {σ} s t) dρρ rewrite sym (fit-sound t dρρ) =
@@ -145,9 +145,9 @@ open ≡-Reasoning
 -- This statement uses a ⊕ da instead of a2, which is not the style of this formalization but fits better with the other one.
 -- Instead, WellDefinedFunChangeFromTo (without prime) fits this formalization.
 WellDefinedFunChangeFromTo′ : ∀ {σ τ} (f1 : ⟦ σ ⇒ τ ⟧Type) → (df : Cht (σ ⇒ τ)) → Set
-WellDefinedFunChangeFromTo′ f1 df = ∀ da a → [ _ ] da from a to (a ⊕ da) → WellDefinedFunChangePoint f1 df a da
+WellDefinedFunChangeFromTo′ f1 df = ∀ da a → [ _ ]τ da from a to (a ⊕ da) → WellDefinedFunChangePoint f1 df a da
 
-fromto→WellDefined′ : ∀ {σ τ f1 f2 df} → [ σ ⇒ τ ] df from f1 to f2 →
+fromto→WellDefined′ : ∀ {σ τ f1 f2 df} → [ σ ⇒ τ ]τ df from f1 to f2 →
   WellDefinedFunChangeFromTo′ f1 df
 fromto→WellDefined′ {f1 = f1} {f2} {df} dff da a daa =
   begin
@@ -164,14 +164,14 @@ fromto→WellDefined′ {f1 = f1} {f2} {df} dff da a daa =
   ∎
 
 WellDefinedFunChangeFromTo : ∀ {σ τ} (f1 : ⟦ σ ⇒ τ ⟧Type) → (df : Cht (σ ⇒ τ)) → Set
-WellDefinedFunChangeFromTo f1 df = ∀ da a1 a2 → [ _ ] da from a1 to a2 → WellDefinedFunChangePoint f1 df a1 da
+WellDefinedFunChangeFromTo f1 df = ∀ da a1 a2 → [ _ ]τ da from a1 to a2 → WellDefinedFunChangePoint f1 df a1 da
 
-fromto→WellDefined : ∀ {σ τ f1 f2 df} → [ σ ⇒ τ ] df from f1 to f2 →
+fromto→WellDefined : ∀ {σ τ f1 f2 df} → [ σ ⇒ τ ]τ df from f1 to f2 →
   WellDefinedFunChangeFromTo f1 df
 fromto→WellDefined {f1 = f1} {f2} {df} dff da a1 a2 daa =
   fromto→WellDefined′ dff da a1 daa′
   where
-    daa′ : [ _ ] da from a1 to (a1 ⊕ da)
+    daa′ : [ _ ]τ da from a1 to (a1 ⊕ da)
     daa′ rewrite fromto→⊕ da _ _ daa = daa
 
 -- Recursive isomorphism between the two validities.
@@ -184,9 +184,9 @@ fromto→WellDefined {f1 = f1} {f2} {df} dff da a1 a2 daa =
 -- satisfied also by returned or argument functions.
 
 fromto→valid : ∀ {τ} →
-  ∀ dv v1 v2 → [ τ ] dv from v1 to v2 →
+  ∀ dv v1 v2 → [ τ ]τ dv from v1 to v2 →
   valid v1 dv
-valid→fromto : ∀ {τ} v (dv : Cht τ) → valid v dv → [ τ ] dv from v to (v ⊕ dv)
+valid→fromto : ∀ {τ} v (dv : Cht τ) → valid v dv → [ τ ]τ dv from v to (v ⊕ dv)
 
 fromto→valid {int} = λ dv v1 v2 x → tt
 fromto→valid {pair σ τ} (da , db) (a1 , b1) (a2 , b2) (daa , dbb) = (fromto→valid da _ _ daa) , (fromto→valid db _ _ dbb)
@@ -218,7 +218,7 @@ valid→fromto {σ ⇒ τ} f df fdf da a1 a2 daa = body
       valid (f a1) (df a1 da) ×
       WellDefinedFunChangePoint f df a1 da
     fa1da-valid = fdf a1 da (fromto→valid da _ _ daa)
-    body : [ τ ] df a1 da from f a1 to (f ⊕ df) a2
+    body : [ τ ]τ df a1 da from f a1 to (f ⊕ df) a2
     body rewrite sym (fromto→⊕ da _ _ daa) | proj₂ fa1da-valid = valid→fromto (f a1) (df a1 da) (proj₁ fa1da-valid)
 valid→fromto {sum σ τ} .(inj₁ a) .(inj₁ (inj₁ da)) (sv₁ a da ada) = valid→fromto a da ada
 valid→fromto {sum σ τ} .(inj₂ b) .(inj₁ (inj₂ db)) (sv₂ b db bdb) = valid→fromto b db bdb
