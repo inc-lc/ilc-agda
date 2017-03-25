@@ -92,10 +92,10 @@ derive (abs t) = abs (abs (derive t))
 
 -- Lemmas needed to reason about derivation, for any correctness proof
 -- The change semantics is just the semantics composed with derivation!
-⟦_⟧ΔVar : ∀ {Γ τ} → (x : Var Γ τ) → (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → Chτ τ
+⟦_⟧ΔVar : ∀ {Γ τ} → (x : Var Γ τ) → (ρ : ⟦ Γ ⟧Context) (dρ : ChΓ Γ) → Chτ τ
 ⟦ x ⟧ΔVar ρ dρ = ⟦ deriveVar x ⟧Var dρ
 
-⟦_⟧ΔTerm : ∀ {Γ τ} → (t : Term Γ τ) → (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → Chτ τ
+⟦_⟧ΔTerm : ∀ {Γ τ} → (t : Term Γ τ) → (ρ : ⟦ Γ ⟧Context) (dρ : ChΓ Γ) → Chτ τ
 ⟦ t ⟧ΔTerm ρ dρ = ⟦ derive t ⟧Term dρ
 
 ⟦_⟧ΔConst : ∀ {τ} (c : Const τ) → Chτ τ

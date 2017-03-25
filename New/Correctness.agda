@@ -9,13 +9,13 @@ open import New.LangOps
 open import New.FunctionLemmas
 open import New.Unused
 
-⟦Γ≼ΔΓ⟧ : ∀ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → validΓ ρ dρ →
+⟦Γ≼ΔΓ⟧ : ∀ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : ChΓ Γ) → validΓ ρ dρ →
   ρ ≡ ⟦ Γ≼ΔΓ ⟧≼ dρ
 ⟦Γ≼ΔΓ⟧ ∅ ∅ tt = refl
 ⟦Γ≼ΔΓ⟧ (v • ρ) (dv • .v • dρ) (vdv , refl , ρdρ) = cong₂ _•_ refl (⟦Γ≼ΔΓ⟧ ρ dρ ρdρ)
 
 fit-sound : ∀ {Γ τ} → (t : Term Γ τ) →
-  (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → validΓ ρ dρ →
+  (ρ : ⟦ Γ ⟧Context) (dρ : ChΓ Γ) → validΓ ρ dρ →
   ⟦ t ⟧Term ρ ≡ ⟦ fit t ⟧Term dρ
 fit-sound t ρ dρ ρdρ = trans
   (cong ⟦ t ⟧Term (⟦Γ≼ΔΓ⟧ ρ dρ ρdρ))
@@ -102,7 +102,7 @@ validDeriveConst (match {t1} {t2} {t3}) =
       = refl
 
 validDeriveVar : ∀ {Γ τ} → (x : Var Γ τ) →
-  (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) →
+  (ρ : ⟦ Γ ⟧Context) (dρ : ChΓ Γ) →
   validΓ ρ dρ → valid (⟦ x ⟧Var ρ) (⟦ x ⟧ΔVar ρ dρ)
 
 validDeriveVar this (v • ρ) (dv • .v • dρ) (vdv , refl , ρdρ) = vdv
@@ -114,7 +114,7 @@ correctDeriveVar this (v • ρ) (dv • v' • dρ) ρdρ = refl
 correctDeriveVar (that x) (v • ρ) (dv • .v • dρ) (vdv , refl , ρdρ) = correctDeriveVar x ρ dρ ρdρ
 
 validDerive : ∀ {Γ τ} → (t : Term Γ τ) →
-  (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → validΓ ρ dρ →
+  (ρ : ⟦ Γ ⟧Context) (dρ : ChΓ Γ) → validΓ ρ dρ →
     valid (⟦ t ⟧Term ρ) (⟦ t ⟧ΔTerm ρ dρ)
 correctDerive : ∀ {Γ τ} → (t : Term Γ τ) →
   IsDerivative ⟦ t ⟧Term ⟦ t ⟧ΔTerm
