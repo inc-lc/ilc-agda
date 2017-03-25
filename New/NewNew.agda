@@ -152,12 +152,7 @@ fromto→WellDefined′ : ∀ {σ τ f1 f2 df} → [ σ ⇒ τ ]τ df from f1 to
 fromto→WellDefined′ {f1 = f1} {f2} {df} dff da a daa =
   begin
     (f1 ⊕ df) (a ⊕ da)
-  ≡⟨⟩
-    f1 (a ⊕ da) ⊕ df (a ⊕ da) (nil (a ⊕ da))
-  ≡⟨ (fromto→⊕
-     (df (a ⊕ da) (nil (a ⊕ da))) _ _
-     (dff (nil (a ⊕ da)) _ _ (nil-fromto (a ⊕ da))))
-  ⟩
+  ≡⟨ cong (λ □ → □ (a ⊕ da)) (fromto→⊕ df f1 f2 dff)⟩
     f2 (a ⊕ da)
   ≡⟨ sym (fromto→⊕ _ _ _ (dff da _ _ daa)) ⟩
     f1 a ⊕ df a da
