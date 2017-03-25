@@ -314,5 +314,6 @@ intCA = record
   ; ⊝-valid = λ a b → tt
   ; ⊕-⊝ = λ b a → n+[m-n]=m {a} {b}
   ; ⊚-valid = λ a da1 _ da2 _ → tt
+  ; _⊚[_]_ = λ da1 a da2 → da1 + da2
   ; ⊚-correct = λ a da1 _ da2 _ → sym (associative-int a da1 da2)
   } }
