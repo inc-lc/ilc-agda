@@ -5,11 +5,11 @@ open import New.Changes
 
 isChAlgτ : (τ : Type) → IsChAlg ⟦ τ ⟧Type ⟦ Δt τ ⟧Type
 
-Cht : (τ : Type) → Set
-Cht τ = ⟦ Δt τ ⟧Type
+Chτ : (τ : Type) → Set
+Chτ τ = ⟦ Δt τ ⟧Type
 
 chAlgt : (τ : Type) → ChAlg ⟦ τ ⟧Type
-chAlgt τ = record { Ch = Cht τ ; isChAlg = isChAlgτ τ}
+chAlgt τ = record { Ch = Chτ τ ; isChAlg = isChAlgτ τ}
 
 instance
   ichAlgt : ∀ {τ} → ChAlg ⟦ τ ⟧Type

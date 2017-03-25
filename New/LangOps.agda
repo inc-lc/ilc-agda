@@ -85,7 +85,7 @@ oplusτ-equiv Γ ρ (sum σ τ) (inj₂ y) (inj₂ y₁) = refl
 
 ominusτ-equiv Γ ρ (σ ⇒ τ) g f = ext (λ a → ext (lemma a))
   where
-    module _ (a : ⟦ σ ⟧Type) (da : Cht σ) where
+    module _ (a : ⟦ σ ⟧Type) (da : Chτ σ) where
       ρ′ = da • a • f • g • ρ
       lemma : ⟦ ominusτo τ ⟧Term (da • a • f • g • ρ)
         (g (⟦ oplusτo σ ⟧Term (da • a • f • g • ρ) a da)) (f a)

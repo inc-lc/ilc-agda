@@ -6,7 +6,7 @@ open import New.Lang
 open import New.Derive
 open import Data.Empty
 
-[_]τ_from_to_ : ∀ (τ : Type) → (dv : Cht τ) → (v1 v2 : ⟦ τ ⟧Type) → Set
+[_]τ_from_to_ : ∀ (τ : Type) → (dv : Chτ τ) → (v1 v2 : ⟦ τ ⟧Type) → Set
 
 -- This can't be a datatype, since it wouldn't be strictly positive as it
 -- appears on the left of an arrow in the function case, which then can be
@@ -26,7 +26,7 @@ sumfromto σ τ (rp (inj₁ a2)) (inj₂ b1) (inj₁ a2') = a2 ≡ a2'
 sumfromto σ τ (rp s) _ _ = ⊥
 
 [ σ ⇒ τ ]τ df from f1 to f2 =
-  ∀ (da : Cht σ) (a1 a2 : ⟦ σ ⟧Type) →
+  ∀ (da : Chτ σ) (a1 a2 : ⟦ σ ⟧Type) →
   [ σ ]τ da from a1 to a2 → [ τ ]τ df a1 da from f1 a1 to f2 a2
 [ int ]τ dv from v1 to v2 = v2 ≡ v1 + dv
 [ pair σ τ ]τ (da , db) from (a1 , b1) to (a2 , b2) = [ σ ]τ da from a1 to a2 × [ τ ]τ db from b1 to b2
@@ -144,7 +144,7 @@ open ≡-Reasoning
 
 -- This statement uses a ⊕ da instead of a2, which is not the style of this formalization but fits better with the other one.
 -- Instead, WellDefinedFunChangeFromTo (without prime) fits this formalization.
-WellDefinedFunChangeFromTo′ : ∀ {σ τ} (f1 : ⟦ σ ⇒ τ ⟧Type) → (df : Cht (σ ⇒ τ)) → Set
+WellDefinedFunChangeFromTo′ : ∀ {σ τ} (f1 : ⟦ σ ⇒ τ ⟧Type) → (df : Chτ (σ ⇒ τ)) → Set
 WellDefinedFunChangeFromTo′ f1 df = ∀ da a → [ _ ]τ da from a to (a ⊕ da) → WellDefinedFunChangePoint f1 df a da
 
 fromto→WellDefined′ : ∀ {σ τ f1 f2 df} → [ σ ⇒ τ ]τ df from f1 to f2 →
@@ -158,7 +158,7 @@ fromto→WellDefined′ {f1 = f1} {f2} {df} dff da a daa =
     f1 a ⊕ df a da
   ∎
 
-WellDefinedFunChangeFromTo : ∀ {σ τ} (f1 : ⟦ σ ⇒ τ ⟧Type) → (df : Cht (σ ⇒ τ)) → Set
+WellDefinedFunChangeFromTo : ∀ {σ τ} (f1 : ⟦ σ ⇒ τ ⟧Type) → (df : Chτ (σ ⇒ τ)) → Set
 WellDefinedFunChangeFromTo f1 df = ∀ da a1 a2 → [ _ ]τ da from a1 to a2 → WellDefinedFunChangePoint f1 df a1 da
 
 fromto→WellDefined : ∀ {σ τ f1 f2 df} → [ σ ⇒ τ ]τ df from f1 to f2 →
@@ -181,7 +181,7 @@ fromto→WellDefined {f1 = f1} {f2} {df} dff da a1 a2 daa =
 fromto→valid : ∀ {τ} →
   ∀ dv v1 v2 → [ τ ]τ dv from v1 to v2 →
   valid v1 dv
-valid→fromto : ∀ {τ} v (dv : Cht τ) → valid v dv → [ τ ]τ dv from v to (v ⊕ dv)
+valid→fromto : ∀ {τ} v (dv : Chτ τ) → valid v dv → [ τ ]τ dv from v to (v ⊕ dv)
 
 fromto→valid {int} = λ dv v1 v2 x → tt
 fromto→valid {pair σ τ} (da , db) (a1 , b1) (a2 , b2) (daa , dbb) = (fromto→valid da _ _ daa) , (fromto→valid db _ _ dbb)

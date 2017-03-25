@@ -92,13 +92,13 @@ derive (abs t) = abs (abs (derive t))
 
 -- Lemmas needed to reason about derivation, for any correctness proof
 -- The change semantics is just the semantics composed with derivation!
-⟦_⟧ΔVar : ∀ {Γ τ} → (x : Var Γ τ) → (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → Cht τ
+⟦_⟧ΔVar : ∀ {Γ τ} → (x : Var Γ τ) → (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → Chτ τ
 ⟦ x ⟧ΔVar ρ dρ = ⟦ deriveVar x ⟧Var dρ
 
-⟦_⟧ΔTerm : ∀ {Γ τ} → (t : Term Γ τ) → (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → Cht τ
+⟦_⟧ΔTerm : ∀ {Γ τ} → (t : Term Γ τ) → (ρ : ⟦ Γ ⟧Context) (dρ : eCh Γ) → Chτ τ
 ⟦ t ⟧ΔTerm ρ dρ = ⟦ derive t ⟧Term dρ
 
-⟦_⟧ΔConst : ∀ {τ} (c : Const τ) → Cht τ
+⟦_⟧ΔConst : ∀ {τ} (c : Const τ) → Chτ τ
 ⟦ c ⟧ΔConst = ⟦ deriveConst c ⟧Term ∅
 
 ⟦_⟧ΔConst-rewrite : ∀ {τ Γ} (c : Const τ) (ρ : ⟦ Γ ⟧Context) dρ → ⟦_⟧ΔTerm (const c) ρ dρ ≡ ⟦ c ⟧ΔConst
@@ -106,9 +106,9 @@ derive (abs t) = abs (abs (derive t))
 
 module _ {t1 t2 t3 : Type}
   (f : ⟦ t1 ⟧Type → ⟦ t3 ⟧Type)
-  (df : Cht (t1 ⇒ t3))
+  (df : Chτ (t1 ⇒ t3))
   (g : ⟦ t2 ⟧Type → ⟦ t3 ⟧Type)
-  (dg : Cht (t2 ⇒ t3))
+  (dg : Chτ (t2 ⇒ t3))
   where
   private
     Γ : Context
