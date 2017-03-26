@@ -77,28 +77,38 @@ Ch A {{CA}} = ChangeStructure.Ch CA
 {-# DISPLAY ChangeStructure.ch_from_to_ x = ch_from_to_ #-}
 
 module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
-  open ≡-Reasoning
+
+  -- In this module, given change structures CA and CB for A and B, we define
+  -- change structures for A → B, A × B and A ⊎ B.
+
   open import Postulate.Extensionality
+
+  -- Functions
   instance
     funCS : ChangeStructure (A → B)
+
   infixl 6 _f⊕_ _f⊝_
   private
     fCh = A → Ch A → Ch B
-    _f⊕_ : (A → B) → fCh → A → B
-    _f⊕_ = λ f df a → f a ⊕ df a (nil a)
-    _f⊝_ : (g f : A → B) → fCh
-    _f⊝_ = λ g f a da → g (a ⊕ da) ⊝ f a
-    _f⊚[_]_ : fCh → (A → B) → fCh → fCh
-    _f⊚[_]_ df1 f df2 = λ a da → (df1 a (nil a)) ⊚[ f a ] (df2 a da)
-    -- f⊚2 : fCh → (A → B) → fCh → fCh
+
     fCh_from_to_ : (df : fCh) → (f1 f2 : A → B) → Set
     fCh_from_to_ =
       λ df f1 f2 → ∀ da (a1 a2 : A) (daa : ch da from a1 to a2) →
         ch df a1 da from f1 a1 to f2 a2
 
+    _f⊕_ : (A → B) → fCh → A → B
+    _f⊕_ = λ f df a → f a ⊕ df a (nil a)
+
+    _f⊝_ : (g f : A → B) → fCh
+    _f⊝_ = λ g f a da → g (a ⊕ da) ⊝ f a
+
     f⊝-fromto : ∀ (f1 f2 : A → B) → fCh (f2 f⊝ f1) from f1 to f2
     f⊝-fromto f1 f2 da a1 a2 daa
       rewrite sym (fromto→⊕ da a1 a2 daa) = ⊝-fromto (f1 a1) (f2 (a1 ⊕ da))
+
+    _f⊚[_]_ : fCh → (A → B) → fCh → fCh
+    _f⊚[_]_ df1 f df2 = λ a da → (df1 a (nil a)) ⊚[ f a ] (df2 a da)
+
     f⊚-fromto : ∀ (f1 f2 f3 : A → B) (df1 df2 : fCh) → fCh df1 from f1 to f2 → fCh df2 from f2 to f3 →
       fCh df1 f⊚[ f1 ] df2 from f1 to f3
     f⊚-fromto f1 f2 f3 df1 df2 dff1 dff2 da a1 a2 daa = ⊚-fromto (f1 a1) (f2 a1) (f3 a2)  (df1 a1 (nil a1)) (df2 a1 da) (dff1 (nil a1) a1 a1 (nil-fromto a1)) (dff2 da a1 a2 daa)
@@ -121,6 +131,8 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
       ; ⊚-fromto = f⊚-fromto
       }
     }
+
+  -- Products
   private
     pCh = Ch A × Ch B
     _p⊕_ : A × B → Ch A × Ch B → A × B
@@ -142,6 +154,7 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
     p⊚-fromto (a1 , b1) (a2 , b2) (a3 , b3) (da1 , db1) (da2 , db2)
       (daa1 , dbb1) (daa2 , dbb2) =
         ⊚-fromto a1 a2 a3 da1 da2 daa1 daa2 , ⊚-fromto b1 b2 b3 db1 db2 dbb1 dbb2
+
   instance
     pairCS : ChangeStructure (A × B)
   pairCS = record
@@ -158,6 +171,8 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
       ; ⊚-fromto = p⊚-fromto
       }
     }
+
+  -- Sums
   private
     SumChange = (Ch A ⊎ Ch B) ⊎ (A ⊎ B)
 
@@ -244,6 +259,7 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
 open import Data.Integer
 open import Data.Unit
 open import Theorem.Groups-Nehemiah
+
 private
   intCh = ℤ
 instance
