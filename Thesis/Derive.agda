@@ -2,6 +2,7 @@ module Thesis.Derive where
 
 open import Thesis.Lang
 open import Thesis.Changes
+open import Thesis.LangChanges
 open import Thesis.LangOps
 open import Relation.Binary.PropositionalEquality
 

@@ -2,6 +2,7 @@ module Thesis.LangOps where
 
 open import Thesis.Lang
 open import Thesis.Changes
+open import Thesis.LangChanges
 open import Relation.Binary.PropositionalEquality
 open import Postulate.Extensionality
 
