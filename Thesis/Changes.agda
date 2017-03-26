@@ -109,9 +109,26 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
     _f⊚[_]_ : fCh → (A → B) → fCh → fCh
     _f⊚[_]_ df1 f df2 = λ a da → (df1 a (nil a)) ⊚[ f a ] (df2 a da)
 
+    _f2⊚[_]_ : fCh → (A → B) → fCh → fCh
+    _f2⊚[_]_ df1 f df2 = λ a da → df1 a da ⊚[ f a ] df2 (a ⊕ da) (nil (a ⊕ da))
+
     f⊚-fromto : ∀ (f1 f2 f3 : A → B) (df1 df2 : fCh) → fCh df1 from f1 to f2 → fCh df2 from f2 to f3 →
       fCh df1 f⊚[ f1 ] df2 from f1 to f3
-    f⊚-fromto f1 f2 f3 df1 df2 dff1 dff2 da a1 a2 daa = ⊚-fromto (f1 a1) (f2 a1) (f3 a2)  (df1 a1 (nil a1)) (df2 a1 da) (dff1 (nil a1) a1 a1 (nil-fromto a1)) (dff2 da a1 a2 daa)
+    f⊚-fromto f1 f2 f3 df1 df2 dff1 dff2 da a1 a2 daa =
+      ⊚-fromto (f1 a1) (f2 a1) (f3 a2)
+        (df1 a1 (nil a1))
+        (df2 a1 da)
+        (dff1 (nil a1) a1 a1 (nil-fromto a1))
+        (dff2 da a1 a2 daa)
+
+    f⊚2-fromto : ∀ (f1 f2 f3 : A → B) (df1 df2 : fCh) → fCh df1 from f1 to f2 → fCh df2 from f2 to f3 →
+      fCh df1 f2⊚[ f1 ] df2 from f1 to f3
+    f⊚2-fromto f1 f2 f3 df1 df2 dff1 dff2 da a1 a2 daa rewrite fromto→⊕ da a1 a2 daa =
+      ⊚-fromto (f1 a1) (f2 a2) (f3 a2)
+        (df1 a1 da)
+        (df2 a2 (nil a2))
+        (dff1 da a1 a2 daa)
+        (dff2 (nil a2) a2 a2 (nil-fromto a2))
 
   funCS = record
     { Ch = fCh
