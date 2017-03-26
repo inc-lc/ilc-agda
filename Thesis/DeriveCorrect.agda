@@ -3,7 +3,7 @@ module Thesis.DeriveCorrect where
 open import Thesis.Lang
 open import Thesis.Changes
 open import Thesis.Derive
-open import Data.Empty
+
 open import Relation.Binary.PropositionalEquality
 
 open import Theorem.Groups-Nehemiah

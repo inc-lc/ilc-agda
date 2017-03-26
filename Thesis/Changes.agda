@@ -1,14 +1,9 @@
 module Thesis.Changes where
 
 open import Thesis.Lang
-open import Data.Empty
 open import Data.Product
+open import Data.Sum
 open import Relation.Binary.PropositionalEquality
-
--- record BasicChangeStructure (A : Set) : Set₁ where
---   field
---     Ch : Set
---     ch_from_to_ : (dv : Ch) → (v1 v2 : A) → Set
 
 record IsChangeStructure (A : Set) (ChA : Set) (ch_from_to_ : (dv : ChA) → (v1 v2 : A) → Set) : Set₁ where
   infixl 6 _⊕_ _⊝_
@@ -65,21 +60,12 @@ record ChangeStructure (A : Set) : Set₁ where
   field
     Ch : Set
     ch_from_to_ : (dv : Ch) → (v1 v2 : A) → Set
-    -- isChangeStructure : IsChangeStructure A Ch ch_from_to_
-  -- open IsChangeStructure isChangeStructure public
     isCompChangeStructure : IsCompChangeStructure A Ch ch_from_to_
   open IsCompChangeStructure isCompChangeStructure public
 
 open ChangeStructure {{...}} public hiding (Ch)
 Ch : ∀ (A : Set) → {{CA : ChangeStructure A}} → Set
 Ch A {{CA}} = ChangeStructure.Ch CA
-
--- instance
---   iCsToBCS : ∀ {A} {{CA : ChangeStructure A}} → BasicChangeStructure A
---   iCsToBCS {A} {{CA}} = record
---     { Ch = ChangeStructure.Ch CA
---     ; ch_from_to_ = ChangeStructure.ch_from_to_ CA
---     }
 
 {-# DISPLAY IsChangeStructure._⊕_ x = _⊕_ #-}
 {-# DISPLAY ChangeStructure._⊕_ x = _⊕_ #-}
@@ -117,30 +103,6 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
     f⊚-fromto : ∀ (f1 f2 f3 : A → B) (df1 df2 : fCh) → fCh df1 from f1 to f2 → fCh df2 from f2 to f3 →
       fCh df1 f⊚[ f1 ] df2 from f1 to f3
     f⊚-fromto f1 f2 f3 df1 df2 dff1 dff2 da a1 a2 daa = ⊚-fromto (f1 a1) (f2 a1) (f3 a2)  (df1 a1 (nil a1)) (df2 a1 da) (dff1 (nil a1) a1 a1 (nil-fromto a1)) (dff2 da a1 a2 daa)
-      -- ⊚-fromto (f a1) (df1 a1 (nil a1))
-      --   (dff1 (nil a1) a1 a1 (nil-fromto a1))
-      --   (df2 a1 da)
-      -- dff1 (nil a1) a1 a1 (nil-fromto a1)
-
-
-    -- f⊚-fromto3 : ∀ (f : A → B) (df1 : fCh) → fCh df1 from f to (f f⊕ df1) → (df2 : fCh) → fCh df2 from (f f⊕ df1) to (f f⊕ df1 f⊕ df2) →
-    --   fCh df1 f⊚[ f ] df2 from f to (f f⊕ df1 f⊕ df2)
-    -- f⊚-fromto3 f df1 dff1 df2 dff2 da a1 a2 daa = lemma
-    --   where
-    --     foo : f a2 ⊕ df1 a2 (nil a2) ⊕ df2 a2 (nil a2) ≡ f a1 ⊕ df1 a1 (nil a1) ⊕ df2 a1 da
-    --     foo = ?
-    --     bar : ch df2 a1 da from f a1 ⊕ df1 a1 (nil a1) to
-    --       (f a1 ⊕ df1 a1 (nil a1) ⊕ df2 a1 da)
-    --     bar rewrite sym foo = dff2 da a1 a2 daa
-    --     lemma : ch (df1 f⊚[ f ] df2) a1 da from f a1 to (f f⊕ df1 f⊕ df2) a2
-    --     lemma rewrite foo =
-    --       ⊚-fromto (f a1) (df1 a1 (nil a1))
-    --         (dff1 (nil a1) a1 a1 (nil-fromto a1)) (df2 a1 da)
-    --         bar
-    --   -- ⊚-fromto (f a1) (df1 a1 (nil a1))
-    --   --   (dff1 (nil a1) a1 a1 (nil-fromto a1))
-    --   --   (df2 a1 da)
-    --   -- dff1 (nil a1) a1 a1 (nil-fromto a1)
 
   funCS = record
     { Ch = fCh
@@ -258,7 +220,6 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
 
   sfromto→⊕ : (ds : SumChange) (s1 s2 : A ⊎ B) →
     sch ds from s1 to s2 → s1 s⊕ ds ≡ s2
-    -- rewrite sym (inv1 ds)
   sfromto→⊕ ds s1 s2 dss =
     sfromto→⊕2 (convert ds) s1 s2
       (subst (sch_from s1 to s2) (sym (inv1 ds))
