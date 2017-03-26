@@ -45,3 +45,48 @@ fromtoDerive τ (app {σ} s t) dρρ rewrite sym (fit-sound t dρρ) =
   in let fromToB = fromtoDerive σ t dρρ in fromToF _ _ _ fromToB
 fromtoDerive (σ ⇒ τ) (abs t) dρρ = λ dv v1 v2 dvv →
   fromtoDerive τ t (dvv v• dρρ)
+
+-- Getting to the original equation 1 from PLDI'14.
+
+correctDeriveOplus : ∀ {Γ} τ → (t : Term Γ τ) →
+  {dρ : ChΓ Γ} {ρ1 ρ2 : ⟦ Γ ⟧Context} → [ Γ ]Γ dρ from ρ1 to ρ2 →
+     (⟦ t ⟧Term ρ1) ⊕ (⟦ t ⟧ΔTerm ρ1 dρ) ≡ (⟦ t ⟧Term ρ2)
+correctDeriveOplus τ t dρρ = fromto→⊕ _ _ _ (fromtoDerive τ t dρρ)
+
+open import Thesis.LangOps
+
+correctDeriveOplusτ : ∀ {Γ} τ → (t : Term Γ τ)
+  {dρ : ChΓ Γ} {ρ1 ρ2 : ⟦ Γ ⟧Context} → [ Γ ]Γ dρ from ρ1 to ρ2 →
+     (⟦ app₂ (oplusτo τ) (fit t) (derive t) ⟧Term dρ) ≡ (⟦ t ⟧Term ρ2)
+correctDeriveOplusτ τ t {dρ = dρ} {ρ1 = ρ1} dρρ
+  rewrite oplusτ-equiv _ dρ _ (⟦ fit t ⟧Term dρ) (⟦ derive t ⟧Term dρ)
+  | sym (fit-sound t dρρ)
+  = correctDeriveOplus τ t dρρ
+
+deriveGivesDerivative : ∀ {Γ} σ τ → (f : Term Γ (σ ⇒ τ)) (a : Term Γ σ)→
+  {dρ : ChΓ Γ} {ρ1 ρ2 : ⟦ Γ ⟧Context} → [ Γ ]Γ dρ from ρ1 to ρ2 →
+     (⟦ app f a ⟧Term ρ1) ⊕ (⟦ app f a ⟧ΔTerm ρ1 dρ) ≡ (⟦ app f a ⟧Term ρ2)
+deriveGivesDerivative σ τ f a dρρ = correctDeriveOplus τ (app f a) dρρ
+
+deriveGivesDerivative₂ : ∀ {Γ} σ τ → (f : Term Γ (σ ⇒ τ)) (a : Term Γ σ) →
+  {dρ : ChΓ Γ} {ρ1 ρ2 : ⟦ Γ ⟧Context} → [ Γ ]Γ dρ from ρ1 to ρ2 →
+     (⟦ app₂ (oplusτo τ) (fit (app f a)) (app₂ (derive f) (fit a) (derive a)) ⟧Term dρ) ≡ (⟦ app f a ⟧Term ρ2)
+deriveGivesDerivative₂ σ τ f a dρρ = correctDeriveOplusτ τ (app f a) dρρ
+
+-- Proof of the original equation 1 from PLDI'14. The original was restricted to
+-- closed terms. This is a generalization, because it holds also for open terms,
+-- *as long as* the environment change is a nil change.
+eq1 : ∀ {Γ} σ τ →
+  {nilρ : ChΓ Γ} {ρ : ⟦ Γ ⟧Context} → [ Γ ]Γ nilρ from ρ to ρ →
+  ∀ (f : Term Γ (σ ⇒ τ)) (a : Term Γ σ) (da : Term (ΔΓ Γ) (Δt σ)) →
+  (daa : [ σ ]τ (⟦ da ⟧Term nilρ) from (⟦ a ⟧Term ρ) to (⟦ a ⟧Term ρ ⊕ ⟦ da ⟧Term nilρ)) →
+    ⟦ app₂ (oplusτo τ) (fit (app f a)) (app₂ (derive f) (fit a) da) ⟧Term nilρ ≡ ⟦ app (fit f) (app₂ (oplusτo σ) (fit a) da) ⟧Term nilρ
+eq1 σ τ {nilρ} {ρ} dρρ f a da daa
+  rewrite
+    oplusτ-equiv _ nilρ _ (⟦ fit (app f a) ⟧Term nilρ) (⟦ (app₂ (derive f) (fit a) da) ⟧Term nilρ)
+  | sym (fit-sound f dρρ)
+  | oplusτ-equiv _ nilρ _ (⟦ fit a ⟧Term nilρ) (⟦ da ⟧Term nilρ)
+  | sym (fit-sound a dρρ)
+  = fromto→⊕ (⟦ f ⟧ΔTerm ρ nilρ (⟦ a ⟧Term ρ) (⟦ da ⟧Term nilρ)) _ _
+    (fromtoDerive _ f dρρ (⟦ da ⟧Term nilρ) (⟦ a ⟧Term ρ)
+      (⟦ a ⟧Term ρ ⊕ ⟦ da ⟧Term nilρ) daa)
