@@ -1,6 +1,7 @@
 module Thesis.LangChanges where
 
 open import Thesis.Changes
+open import Thesis.IntChanges
 open import Thesis.Lang
 open import Relation.Binary.PropositionalEquality
 
