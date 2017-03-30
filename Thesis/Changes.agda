@@ -2,6 +2,7 @@ module Thesis.Changes where
 
 open import Data.Product
 open import Data.Sum
+open import Data.Unit
 open import Relation.Binary.PropositionalEquality
 
 record IsChangeStructure (A : Set) (ChA : Set) (ch_from_to_ : (dv : ChA) → (v1 v2 : A) → Set) : Set₁ where
@@ -270,5 +271,19 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
       ; fromto→⊕ = sfromto→⊕
       ; _⊝_ = _s⊝_
       ; ⊝-fromto = s⊝-fromto
+      })
+    }
+
+instance
+  unitCS : ChangeStructure ⊤
+
+  unitCS = record
+    { Ch = ⊤
+    ; ch_from_to_ = λ dv v1 v2 → ⊤
+    ; isCompChangeStructure = IsChangeStructure→IsCompChangeStructure (record
+      { _⊕_ = λ _ _ → tt
+      ; fromto→⊕ = λ { _ _ tt _ → refl }
+      ; _⊝_ = λ _ _ → tt
+      ; ⊝-fromto = λ a b → tt
       })
     }

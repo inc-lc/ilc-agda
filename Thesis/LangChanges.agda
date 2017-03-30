@@ -38,6 +38,20 @@ isCompChangeStructureτ int = ChangeStructure.isCompChangeStructure intCS
 isCompChangeStructureτ (pair σ τ) = ChangeStructure.isCompChangeStructure (pairCS {{changeStructureτ σ}} {{changeStructureτ τ}})
 isCompChangeStructureτ (sum σ τ) = ChangeStructure.isCompChangeStructure ((sumCS {{changeStructureτ σ}} {{changeStructureτ τ}}))
 
+open import Data.Unit
+-- We can define an alternative semantics for contexts, that defines environments as nested products:
+⟦_⟧Context-prod : Context → Set
+⟦ ∅ ⟧Context-prod = ⊤
+⟦ τ • Γ ⟧Context-prod = ⟦ τ ⟧Type × ⟦ Γ ⟧Context-prod
+
+-- And define a change structure for such environments, reusing the change
+-- structure constructor for pairs. However, this change structure does not
+-- duplicate base values in the environment. We probably *could* define a
+-- different change structure for pairs that gives the right result.
+changeStructureΓ-old : ∀ Γ → ChangeStructure ⟦ Γ ⟧Context-prod
+changeStructureΓ-old ∅ = unitCS
+changeStructureΓ-old (τ • Γ) = pairCS {{changeStructureτ τ}}  {{changeStructureΓ-old Γ}}
+
 data [_]Γ_from_to_ : ∀ Γ → ChΓ Γ → (ρ1 ρ2 : ⟦ Γ ⟧Context) → Set where
   v∅ : [ ∅ ]Γ ∅ from ∅ to ∅
   _v•_ : ∀ {τ Γ dv v1 v2 dρ ρ1 ρ2} →
