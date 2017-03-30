@@ -24,6 +24,16 @@ record IsChangeStructure (A : Set) (ChA : Set) (ch_from_to_ : (dv : ChA) → (v1
   update-nil : (a : A) → a ⊕ nil a ≡ a
   update-nil a = update-diff a a
 
+  valid : ∀ (a : A) (da : ChA) → Set
+  valid a da = ch da from a to (a ⊕ da)
+  Δ : (a : A) → Set
+  Δ a = Σ[ da ∈ ChA ] valid a da
+  Δ₂ : (a1 : A) (a2 : A) → Set
+  Δ₂ a1 a2 = Σ[ da ∈ ChA ] ch da from a1 to a2
+
+  _⊕'_ : (a1 : A) -> {a2 : A} -> (da : Δ₂ a1 a2) -> A
+  a1 ⊕' (da , daa) = a1 ⊕ da
+
 record IsCompChangeStructure (A : Set) (ChA : Set) (ch_from_to_ : (dv : ChA) → (v1 v2 : A) → Set) : Set₁ where
   field
     isChangeStructure : IsChangeStructure A ChA ch_from_to_
