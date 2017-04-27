@@ -35,16 +35,19 @@ fromtoDeriveVar : ∀ {Γ τ} → (x : Var Γ τ) →
 fromtoDeriveVar this (dvv v• dρρ) = dvv
 fromtoDeriveVar (that x) (dvv v• dρρ) = fromtoDeriveVar x dρρ
 
+fromtoDeriveBase : ∀ {Γ} τ → (t : Term Γ τ) →
+  ch ⟦ t ⟧ΔTerm from ⟦ t ⟧Term to ⟦ t ⟧Term
+fromtoDeriveBase τ (const c) dρ ρ1 ρ2 dρρ rewrite ⟦ c ⟧ΔConst-rewrite ρ1 dρ = fromtoDeriveConst c
+fromtoDeriveBase τ (var x) dρ ρ1 ρ2 dρρ = fromtoDeriveVar x dρρ
+fromtoDeriveBase τ (app {σ} s t) dρ ρ1 ρ2 dρρ rewrite sym (fit-sound t dρρ) =
+  let fromToF = fromtoDeriveBase (σ ⇒ τ) s _ _ _ dρρ
+  in let fromToB = fromtoDeriveBase σ t _ _ _ dρρ in fromToF _ _ _ fromToB
+fromtoDeriveBase (σ ⇒ τ) (abs t) dρ ρ1 ρ2 dρρ = λ dv v1 v2 dvv →
+   fromtoDeriveBase τ t _ _ _ (dvv v• dρρ)
 fromtoDerive : ∀ {Γ} τ → (t : Term Γ τ) →
   {dρ : ChΓ Γ} {ρ1 ρ2 : ⟦ Γ ⟧Context} → [ Γ ]Γ dρ from ρ1 to ρ2 →
     [ τ ]τ (⟦ t ⟧ΔTerm ρ1 dρ) from (⟦ t ⟧Term ρ1) to (⟦ t ⟧Term ρ2)
-fromtoDerive τ (const c) {dρ} {ρ1} dρρ rewrite ⟦ c ⟧ΔConst-rewrite ρ1 dρ = fromtoDeriveConst c
-fromtoDerive τ (var x) dρρ = fromtoDeriveVar x dρρ
-fromtoDerive τ (app {σ} s t) dρρ rewrite sym (fit-sound t dρρ) =
-  let fromToF = fromtoDerive (σ ⇒ τ) s dρρ
-  in let fromToB = fromtoDerive σ t dρρ in fromToF _ _ _ fromToB
-fromtoDerive (σ ⇒ τ) (abs t) dρρ = λ dv v1 v2 dvv →
-  fromtoDerive τ t (dvv v• dρρ)
+fromtoDerive τ t dρρ = fromtoDeriveBase τ t _ _ _ dρρ
 
 -- Getting to the original equation 1 from PLDI'14.
 

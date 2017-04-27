@@ -92,3 +92,10 @@ changeStructureΓ Γ = record { isCompChangeStructure = isEnvCompCS Γ }
 instance
   ichangeStructureΓ : ∀ {Γ} → ChangeStructure ⟦ Γ ⟧Context
   ichangeStructureΓ {Γ} = changeStructureΓ Γ
+
+changeStructureΓτ : ∀ Γ τ → ChangeStructure (⟦ Γ ⟧Context → ⟦ τ ⟧Type)
+changeStructureΓτ Γ τ = funCS
+
+instance
+  ichangeStructureΓτ : ∀ {Γ τ} → ChangeStructure (⟦ Γ ⟧Context → ⟦ τ ⟧Type)
+  ichangeStructureΓτ {Γ} {τ} = changeStructureΓτ Γ τ
