@@ -79,12 +79,31 @@ module _ where
   e⊝-fromto ∅ ∅ = v∅
   e⊝-fromto (v1 • ρ1) (v2 • ρ2) = ⊝-fromto v1 v2 v• e⊝-fromto ρ1 ρ2
 
-  isEnvCompCS Γ = IsChangeStructure→IsCompChangeStructure (record
-    { _⊕_ = _e⊕_
-    ; fromto→⊕ = efromto→⊕
-    ; _⊝_ = _e⊝_
-    ; ⊝-fromto = e⊝-fromto
-    } )
+  _e⊚[_]_ : ∀ {Γ} → ChΓ Γ → ⟦ Γ ⟧Context → ChΓ Γ → ChΓ Γ
+  _e⊚[_]_ {∅} ∅ ∅ ∅ = ∅
+  _e⊚[_]_ {τ • Γ} (dv1 • _ • dρ1) (v1 • ρ1) (dv2 • _ • dρ2) = (dv1 ⊚[ v1 ] dv2) • v1 • (dρ1 e⊚[ ρ1 ] dρ2)
+
+  e⊚-fromto : ∀ Γ → (ρ1 ρ2 ρ3 : ⟦ Γ ⟧Context) (dρ1 dρ2 : ChΓ Γ) →
+    [ Γ ]Γ dρ1 from ρ1 to ρ2 →
+    [ Γ ]Γ dρ2 from ρ2 to ρ3 → [ Γ ]Γ (dρ1 e⊚[ ρ1 ] dρ2) from ρ1 to ρ3
+  e⊚-fromto ∅ ∅ ∅ ∅ ∅ ∅ v∅ v∅ = v∅
+  e⊚-fromto (τ • Γ) (v1 • ρ1) (v2 • ρ2) (v3 • ρ3)
+    (dv1 • (.v1 • dρ1)) (dv2 • (.v2 • dρ2))
+    (dvv1 v• dρρ1) (dvv2 v• dρρ2) =
+        ⊚-fromto v1 v2 v3 dv1 dv2 dvv1 dvv2
+      v•
+        e⊚-fromto Γ ρ1 ρ2 ρ3 dρ1 dρ2 dρρ1 dρρ2
+
+  isEnvCompCS Γ = record
+    { isChangeStructure = record
+      { _⊕_ = _e⊕_
+      ; fromto→⊕ = efromto→⊕
+      ; _⊝_ = _e⊝_
+      ; ⊝-fromto = e⊝-fromto
+      }
+    ; _⊚[_]_ = _e⊚[_]_
+    ; ⊚-fromto = e⊚-fromto Γ
+    }
 
 changeStructureΓ : ∀ Γ → ChangeStructure ⟦ Γ ⟧Context
 changeStructureΓ Γ = record { isCompChangeStructure = isEnvCompCS Γ }
