@@ -62,7 +62,7 @@ data [_]Γ_from_to_ : ∀ Γ → ChΓ Γ → (ρ1 ρ2 : ⟦ Γ ⟧Context) → S
 module _ where
   _e⊕_ : ∀ {Γ} → ⟦ Γ ⟧Context → ChΓ Γ → ⟦ Γ ⟧Context
   _e⊕_ ∅ ∅ = ∅
-  _e⊕_ (_ • ρ) (dv • v • dρ) = v ⊕ dv • ρ e⊕ dρ
+  _e⊕_ (v • ρ) (dv • _ • dρ) = v ⊕ dv • ρ e⊕ dρ
   _e⊝_ : ∀ {Γ} → ⟦ Γ ⟧Context → ⟦ Γ ⟧Context → ChΓ Γ
   _e⊝_ ∅ ∅ = ∅
   _e⊝_ (v₂ • ρ₂) (v₁ • ρ₁) = v₂ ⊝ v₁ • v₁ • ρ₂ e⊝ ρ₁
