@@ -49,36 +49,6 @@ data Val where
 -- data Val2 : ℕ → Type → Set where
 --   prim : ∀ {σ τ n} → (f : Val2 n σ → Val2 n τ) → Val2 (ℕ.suc n) (σ ⇒ τ)
 
--- Standard relational big-step semantics.
-data _⊢_↓_ {Γ} (ρ : ⟦ Γ ⟧Context) : ∀ {τ} → Term Γ τ → Val τ → Set where
-  abs : ∀ {τ₁ τ₂} {t : Term (τ₁ • Γ) τ₂} →
-    ρ ⊢ abs t ↓ closure t ρ
-  app : ∀ {Γ′ τ₁ τ₂ ρ′ v₂ v′} {t₁ : Term Γ (τ₁ ⇒ τ₂)} {t₂ : Term Γ τ₁} {t′ : Term (τ₁ • Γ′) τ₂} →
-    ρ ⊢ t₁ ↓ closure t′ ρ′ →
-    ρ ⊢ t₂ ↓ v₂ →
-    (v₂ • ρ′) ⊢ t′ ↓ v′ →
-    ρ ⊢ app t₁ t₂ ↓ v′
-  var : ∀ {τ} (x : Var Γ τ) →
-    ρ ⊢ var x ↓ (⟦ x ⟧Var ρ)
-  lit : ∀ n →
-    ρ ⊢ const (lit n) ↓ intV n
-  plus : ∀ {t1 t2 v1 v2} →
-    ρ ⊢ t1 ↓ (intV v1) →
-    ρ ⊢ t2 ↓ (intV v2) →
-    ρ ⊢ app (app (const plus) t1) t2 ↓ intV (v1 + v2)
-  minus : ∀ {t1 t2 v1 v2} →
-    ρ ⊢ t1 ↓ (intV v1) →
-    ρ ⊢ t2 ↓ (intV v2) →
-    ρ ⊢ app (app (const minus) t1) t2 ↓ intV (v1 - v2)
-  -- cond-true : ∀ {Γ τ} {ρ : Env Γ} {t₁ t₂ t₃} {v₂ : Val τ} →
-  --   ρ ⊢ t₁ ↓ true →
-  --   ρ ⊢ t₂ ↓ v₂ →
-  --   ρ ⊢ cond t₁ t₂ t₃ ↓ v₂
-  -- cond-false : ∀ {Γ τ} {ρ : Env Γ} {t₁ t₂ t₃} {v₃ : Val τ} →
-  --   ρ ⊢ t₁ ↓ false →
-  --   ρ ⊢ t₃ ↓ v₃ →
-  --   ρ ⊢ cond t₁ t₂ t₃ ↓ v₃
-
 import Base.Denotation.Environment
 -- Den stands for Denotational semantics.
 module Den = Base.Denotation.Environment Type ⟦_⟧Type
@@ -100,16 +70,6 @@ module Den = Base.Denotation.Environment Type ⟦_⟧Type
   Den.⟦ x ⟧Var ⟦ ρ ⟧Env ≡ ⟦ ⟦ x ⟧Var ρ ⟧Val
 ↦-sound (px • ρ) this = refl
 ↦-sound (px • ρ) (that x) = ↦-sound ρ x
-
-↓-sound : ∀ {Γ τ ρ v} {t : Term Γ τ} →
-  ρ ⊢ t ↓ v →
-  ⟦ t ⟧Term ⟦ ρ ⟧Env ≡ ⟦ v ⟧Val
-↓-sound abs = refl
-↓-sound (app ↓₁ ↓₂ ↓′) rewrite ↓-sound ↓₁ | ↓-sound ↓₂ | ↓-sound ↓′ = refl
-↓-sound (var x) = ↦-sound _ x
-↓-sound (lit n) = refl
-↓-sound (plus ↓₁ ↓₂) rewrite ↓-sound ↓₁ | ↓-sound ↓₂ = refl
-↓-sound (minus ↓₁ ↓₂) rewrite ↓-sound ↓₁ | ↓-sound ↓₂ = refl
 
 --
 -- Functional big-step semantics
