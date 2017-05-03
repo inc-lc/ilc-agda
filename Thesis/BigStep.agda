@@ -1,10 +1,14 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 module Thesis.BigStep where
 
+open import Data.Empty
+open import Data.Unit
+open import Relation.Binary.PropositionalEquality
+open import Relation.Binary hiding (_⇒_)
+open import Data.Nat using (ℕ; zero; suc; decTotalOrder; _<_)
+
 open import Thesis.Syntax hiding (suc)
 open import Thesis.Lang hiding (⟦_⟧Context; ⟦_⟧Var; suc)
-
-open import Relation.Binary.PropositionalEquality
 
 -- open import Base.Syntax.Context Type public
 -- open import Base.Syntax.Vars Type public
@@ -34,7 +38,6 @@ open import Relation.Binary.PropositionalEquality
 data Val : Type → Set
 open import Base.Denotation.Environment Type Val public
 open import Base.Data.DependentList public
-open import Data.Nat using (ℕ; zero; suc; decTotalOrder)
 
 data Val where
   closure : ∀ {Γ σ τ} → (t : Term (σ • Γ) τ) → (ρ : ⟦ Γ ⟧Context) → Val (σ ⇒ τ)
@@ -199,9 +202,6 @@ dapply-sound (suc n) ρ ds t dt | Done df | Done v | TimeOut with apply df v (su
 dapply-sound (suc n) ρ ds t dt | Done df | TimeOut | dv = refl
 dapply-sound (suc n) ρ ds t dt | TimeOut | v | dv = refl
 
-open import Data.Empty
-open import Data.Unit
-
 ΔΓ : Context → Context
 ΔΓ ∅ = ∅
 ΔΓ (τ • Γ) = Δt τ • τ • ΔΓ Γ
@@ -254,8 +254,6 @@ _[_]τ'_from_to_ : (n : ℕ) → ∀ τ → ErrVal (Δt τ) → ErrVal τ → Er
 n [ τ ]τ' Done dv from Done v1 to Done v2 = n [ τ ]τ dv from v1 to v2
 n [ τ ]τ' TimeOut from Done v1 to Done v2 = ⊥
 n [ τ ]τ' dv from _ to _ = ⊤
-
-open import Data.Nat.Base using (_<_)
 
 -- XXX: This is a lie for now, but all papers agree we'll want this in the end.
 _[_]τmono_from_to : (n : ℕ) → ∀ τ → (dv : Val (Δt τ)) →
@@ -320,7 +318,6 @@ fromtoDeriveVar : ∀ {Γ} τ n → (x : Var Γ τ) →
 fromtoDeriveVar τ n this (dv • .(v1 • _)) (v1 • ρ1) (v2 • ρ2) (dvv v• dρρ) = dvv
 fromtoDeriveVar τ n (that x) (dv • (.v1 • dρ)) (v1 • ρ1) (v2 • ρ2) (dvv v• dρρ) = fromtoDeriveVar τ n x dρ ρ1 ρ2 dρρ
 
-open import Relation.Binary hiding (_⇒_)
 foo : ∀ {Γ σ τ v1 v2 dv} n (t : Term (σ • Γ) τ) →
   (dρ : ChΓ Γ) (ρ1 ρ2 : ⟦ Γ ⟧Context)
   (da : Val (Δt σ)) (a1 a2 : Val σ) →
@@ -343,15 +340,15 @@ fromtoDerive : ∀ {Γ} τ n → (t : Term Γ τ) →
 fromtoDerive τ zero t dρ ρ1 ρ2 dρρ rewrite zero [ τ ]τ' (deval t ρ1 dρ (suc zero)) fromToTimeOut = tt
 fromtoDerive τ (suc n) (const c) dρ ρ1 ρ2 dρρ = {!!}
 fromtoDerive τ (suc n) (var x) dρ ρ1 ρ2 dρρ = fromtoDeriveVar τ (suc n) x dρ ρ1 ρ2 dρρ
-fromtoDerive τ (suc n) (app s t) dρ ρ1 ρ2 dρρ = {!!}
+fromtoDerive τ (suc n) (app s t) dρ ρ1 ρ2 dρρ = {!fromtoDerive _ (suc n) s dρ ρ1 ρ2 dρρ!}
 -- fromtoDerive (σ ⇒ τ) (suc n) (abs t) dρ ρ1 ρ2 dρρ da a1 a2 daa
 --   rewrite dapply-equiv n t dρ ρ1 da a1 =
 --   fromtoDerive τ (suc n) t (da • a1 • dρ) (a1 • ρ1) (a2 • ρ2) (daa v• dρρ)
-fromtoDerive (σ ⇒ τ) (suc zero) (abs t) dρ ρ1 ρ2 dρρ da a1 a2 daa v1 v2 eqv1 eqv2 = {!!}
+fromtoDerive (σ ⇒ τ) (suc zero) (abs t) dρ ρ1 ρ2 dρρ da a1 a2 daa v1 v2 eqv1 eqv2 = {!LIE!!}
 fromtoDerive (σ ⇒ τ) (suc (suc n)) (abs t) dρ ρ1 ρ2 dρρ da a1 a2 daa v1 v2 eqv1 eqv2 with
   eval (derive t) (da • a1 • dρ) (suc (suc n)) | inspect (eval (derive t) (da • a1 • dρ)) (suc (suc n))
 fromtoDerive (σ ⇒ τ) (suc (suc n)) (abs t) dρ ρ1 ρ2 dρρ da a1 a2 daa v1 v2 eqv1 eqv2 | Done dv | [ eqvv ] = dv , refl , foo n t  dρ ρ1 ρ2 da a1 a2 eqv1 eqv2 eqvv (fromtoDerive τ (suc (suc n)) t (da • a1 • dρ) (a1 • ρ1) (a2 • ρ2) (daa v• dρρ))
-fromtoDerive (σ ⇒ τ) (suc (suc n)) (abs t) dρ ρ1 ρ2 dρρ da a1 a2 daa v1 v2 eqv1 eqv2 | TimeOut | eq = {!!}
+fromtoDerive (σ ⇒ τ) (suc (suc n)) (abs t) dρ ρ1 ρ2 dρρ da a1 a2 daa v1 v2 eqv1 eqv2 | TimeOut | eq = {!LIE!!}
 -- {!eval (derive t)!} , {!fromtoDerive τ (suc n) t (da • a1 • dρ) (a1 • ρ1) (a2 • ρ2) ?!}
 
 -- fromtoDerive (σ ⇒ τ) (suc (suc zero)) (abs t) dρ ρ1 ρ2 dρρ da a1 a2 daa = {!!}
