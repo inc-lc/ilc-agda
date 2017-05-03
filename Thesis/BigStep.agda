@@ -278,6 +278,13 @@ zero [ τ ]τ dv from v1 to v2 = ⊤
 
 suc n [ σ ⇒ τ ]τ df from f1 to f2 = ∀ (da : Val (Δt σ)) → (a1 a2 : Val σ) →
    n [ σ ]τ da from a1 to a2 →
+
+-- This definition violates all tips from Pitts tutorial (Step-Indexed
+-- Biorthogonality: a Tutorial Example). Compare with Definition 4.1,
+-- equation (10), and remark 4.4.
+--
+-- For extra complication, the setting is rather different, so a direct
+-- comparison doesn't quite work.
    ∀ v1 v2 → apply f1 a1 n ≡ Done v1 → apply f2 a2 n ≡ Done v2 →
    Σ[ dv ∈ Val (Δt τ) ]
        dapply df a1 da (suc (suc n)) ≡ Done dv
