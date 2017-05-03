@@ -182,9 +182,13 @@ dapply' _ _ _ _ = TimeOut
 --
 -- However, I expect I wouldn't be able to get a working proof if I got the
 -- indexes wrong.
-dapply-sound : ∀ {Γ σ τ} n ρ (ds : Term Γ (Δt (σ ⇒ τ))) t dt → eval (app (app ds t) dt) ρ (suc (suc n)) ≡ dapply' (eval ds ρ n) (eval t ρ n) (eval dt ρ (suc n)) (suc (suc n))
+dapply-sound : ∀ {Γ σ τ} n ρ (ds : Term Γ (Δt (σ ⇒ τ))) t dt →
+    eval (app (app ds t) dt) ρ (suc (suc n))
+  ≡
+    dapply' (eval ds ρ n) (eval t ρ n) (eval dt ρ (suc n)) (suc (suc n))
 dapply-sound zero ρ ds t dt = refl
-dapply-sound (suc n) ρ ds t dt with eval ds ρ (suc n) | eval t ρ (suc n) | eval dt ρ (suc (suc n))
+dapply-sound (suc n) ρ ds t dt with
+  eval ds ρ (suc n) | eval t ρ (suc n) | eval dt ρ (suc (suc n))
 dapply-sound (suc n) ρ ds t dt | Done df | Done v | Done dv with apply df v (suc n)
 ... | Done dfv = refl
 ... | TimeOut  = refl
