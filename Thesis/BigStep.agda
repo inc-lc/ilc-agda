@@ -33,7 +33,7 @@ open import Relation.Binary.PropositionalEquality
 data Val : Type → Set
 open import Base.Denotation.Environment Type Val public
 open import Base.Data.DependentList public
-open import Data.Nat.Base using (ℕ; zero; suc)
+open import Data.Nat using (ℕ; zero; suc; decTotalOrder)
 
 data Val where
   closure : ∀ {Γ σ τ} → (t : Term (σ • Γ) τ) → (ρ : ⟦ Γ ⟧Context) → Val (σ ⇒ τ)
@@ -254,6 +254,17 @@ n [ τ ]τ' Done dv from Done v1 to Done v2 = n [ τ ]τ dv from v1 to v2
 n [ τ ]τ' TimeOut from Done v1 to Done v2 = ⊥
 n [ τ ]τ' dv from _ to _ = ⊤
 
+open import Data.Nat.Base using (_<_)
+
+-- XXX: This is a lie for now, but all papers agree we'll want this in the end.
+_[_]τmono_from_to : (n : ℕ) → ∀ τ → (dv : Val (Δt τ)) →
+  ∀ v1 v2 n' →
+  n' < n →
+  n [ τ ]τ dv from v1 to v2 →
+  n' [ τ ]τ dv from v1 to v2
+_[_]τmono_from_to = {!!}
+
+
 _[_]τ'_fromToTimeOut : ∀ n τ edv → n [ τ ]τ' edv from TimeOut to TimeOut ≡ ⊤
 n [ τ ]τ' Done v fromToTimeOut = refl
 n [ τ ]τ' TimeOut fromToTimeOut = refl
@@ -277,7 +288,7 @@ zero [ τ ]τ dv from v1 to v2 = ⊤
 --    n [ τ ]τ' dapply df a1 da n from apply f1 a1 n to apply f2 a2 n
 
 suc n [ σ ⇒ τ ]τ df from f1 to f2 = ∀ (da : Val (Δt σ)) → (a1 a2 : Val σ) →
-   n [ σ ]τ da from a1 to a2 →
+   suc n [ σ ]τ da from a1 to a2 →
 
 -- This definition violates all tips from Pitts tutorial (Step-Indexed
 -- Biorthogonality: a Tutorial Example). Compare with Definition 4.1,
@@ -285,7 +296,7 @@ suc n [ σ ⇒ τ ]τ df from f1 to f2 = ∀ (da : Val (Δt σ)) → (a1 a2 : Va
 --
 -- For extra complication, the setting is rather different, so a direct
 -- comparison doesn't quite work.
-   ∀ v1 v2 → apply f1 a1 n ≡ Done v1 → apply f2 a2 n ≡ Done v2 →
+   ∀ v1 v2 → apply f1 a1 (suc n) ≡ Done v1 → apply f2 a2 (suc n) ≡ Done v2 →
    Σ[ dv ∈ Val (Δt τ) ]
        dapply df a1 da (suc (suc n)) ≡ Done dv
      × n [ τ ]τ dv from v1 to v2
@@ -308,6 +319,23 @@ fromtoDeriveVar : ∀ {Γ} τ n → (x : Var Γ τ) →
 fromtoDeriveVar τ n this (dv • .(v1 • _)) (v1 • ρ1) (v2 • ρ2) (dvv v• dρρ) = dvv
 fromtoDeriveVar τ n (that x) (dv • (.v1 • dρ)) (v1 • ρ1) (v2 • ρ2) (dvv v• dρρ) = fromtoDeriveVar τ n x dρ ρ1 ρ2 dρρ
 
+open import Relation.Binary hiding (_⇒_)
+foo : ∀ {Γ σ τ v1 v2 dv} n (t : Term (σ • Γ) τ) →
+  (dρ : ChΓ Γ) (ρ1 ρ2 : ⟦ Γ ⟧Context)
+  (da : Val (Δt σ)) (a1 a2 : Val σ) →
+  (eqv1 : eval t (a1 • ρ1) (suc (suc n)) ≡ Done v1) →
+  (eqv2 : eval t (a2 • ρ2) (suc (suc n)) ≡ Done v2) →
+  (eqvv : eval (derive t) (da • a1 • dρ) (suc (suc n)) ≡ Done dv) →
+  suc (suc n) [ τ ]τ' eval (derive t) (da • a1 • dρ) (suc (suc n)) from
+      eval t (a1 • ρ1) (suc (suc n)) to eval t (a2 • ρ2) (suc (suc n)) →
+  suc n [ τ ]τ dv from v1 to v2
+foo n t dρ ρ1 ρ2 da a1 a2 eqv1 eqv2 eqvv dvv with eval t (a1 • ρ1) (suc (suc n)) | eval t (a2 • ρ2) (suc (suc n)) | eval (derive t) (da • a1 • dρ) (suc (suc n))
+foo n t dρ ρ1 ρ2 da a1 a2 refl refl refl dvv | Done v1 | (Done v2) | (Done dv) = _[_]τmono_from_to (suc (suc n)) _ dv v1 v2 (suc n) (DecTotalOrder.reflexive Data.Nat.decTotalOrder refl) dvv
+foo n t dρ ρ1 ρ2 da a1 a2 refl refl () dvv | Done v₁ | (Done v) | TimeOut
+foo n t dρ ρ1 ρ2 da a1 a2 refl () eqvv dvv | Done v | TimeOut | s
+foo n t dρ ρ1 ρ2 da a1 a2 () eqv2 eqvv dvv | TimeOut | r | s
+-- q r s eqv1 eqv2 eqvv
+
 fromtoDerive : ∀ {Γ} τ n → (t : Term Γ τ) →
   (dρ : ChΓ Γ) (ρ1 ρ2 : ⟦ Γ ⟧Context) → n [ Γ ]Γ dρ from ρ1 to ρ2 →
     n [ τ ]τ' (deval t ρ1 dρ n) from eval t ρ1 n to eval t ρ2 n
@@ -318,9 +346,12 @@ fromtoDerive τ (suc n) (app s t) dρ ρ1 ρ2 dρρ = {!!}
 -- fromtoDerive (σ ⇒ τ) (suc n) (abs t) dρ ρ1 ρ2 dρρ da a1 a2 daa
 --   rewrite dapply-equiv n t dρ ρ1 da a1 =
 --   fromtoDerive τ (suc n) t (da • a1 • dρ) (a1 • ρ1) (a2 • ρ2) (daa v• dρρ)
-
-fromtoDerive (σ ⇒ τ) (suc zero) (abs t) dρ ρ1 ρ2 dρρ da a1 a2 daa v1 v2 () eqv2
-fromtoDerive (σ ⇒ τ) (suc (suc n)) (abs t) dρ ρ1 ρ2 dρρ da a1 a2 daa v1 v2 eqv1 eqv2 = {!fromtoDerive τ (suc n) t (da • a1 • dρ) (a1 • ρ1) (a2 • ρ2) ?!}
+fromtoDerive (σ ⇒ τ) (suc zero) (abs t) dρ ρ1 ρ2 dρρ da a1 a2 daa v1 v2 eqv1 eqv2 = {!!}
+fromtoDerive (σ ⇒ τ) (suc (suc n)) (abs t) dρ ρ1 ρ2 dρρ da a1 a2 daa v1 v2 eqv1 eqv2 with
+  eval (derive t) (da • a1 • dρ) (suc (suc n)) | inspect (eval (derive t) (da • a1 • dρ)) (suc (suc n))
+fromtoDerive (σ ⇒ τ) (suc (suc n)) (abs t) dρ ρ1 ρ2 dρρ da a1 a2 daa v1 v2 eqv1 eqv2 | Done dv | [ eqvv ] = dv , refl , foo n t  dρ ρ1 ρ2 da a1 a2 eqv1 eqv2 eqvv (fromtoDerive τ (suc (suc n)) t (da • a1 • dρ) (a1 • ρ1) (a2 • ρ2) (daa v• dρρ))
+fromtoDerive (σ ⇒ τ) (suc (suc n)) (abs t) dρ ρ1 ρ2 dρρ da a1 a2 daa v1 v2 eqv1 eqv2 | TimeOut | eq = {!!}
+-- {!eval (derive t)!} , {!fromtoDerive τ (suc n) t (da • a1 • dρ) (a1 • ρ1) (a2 • ρ2) ?!}
 
 -- fromtoDerive (σ ⇒ τ) (suc (suc zero)) (abs t) dρ ρ1 ρ2 dρρ da a1 a2 daa = {!!}
 -- fromtoDerive (σ ⇒ τ) (suc (suc (suc n))) (abs t) dρ ρ1 ρ2 dρρ da a1 a2 daa
