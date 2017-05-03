@@ -246,33 +246,6 @@ dapply-equiv : ∀ {Γ σ τ} n
   eval (derive t) (da • a1 • dρ) (suc (suc n))
 dapply-equiv n t dρ ρ1 da a1 = refl
 
--- Failed variants, the step-indexes are wrong:
--- dapply-equiv-2 : ∀ {Γ σ τ} n
---   (t : Term (σ • Γ) τ)
---   (dρ : ChΓ Γ) (ρ1 : ⟦ Γ ⟧Context)
---   (da : Val (Δt σ)) (a1 : Val σ) →
---   dapply (closure (abs (derive t)) dρ) a1 da (suc (suc n)) ≡
---   eval (derive t) (da • a1 • dρ) (suc n)
--- dapply-equiv-2 zero t dρ ρ1 da a1 = {!!}
--- dapply-equiv-2 (suc n) t dρ ρ1 da a1 = refl
--- -- dapply-equiv-2 zero t dρ ρ1 da a1 = refl
--- -- dapply-equiv-2 (suc zero) (const c) dρ ρ1 da a1 = {!!}
--- -- dapply-equiv-2 (suc zero) (var x) dρ ρ1 da a1 = {!!}
--- -- dapply-equiv-2 (suc zero) (app t t₁) dρ ρ1 da a1 = {!!}
--- -- dapply-equiv-2 (suc zero) (abs t) dρ ρ1 da a1 = {!!}
--- -- dapply-equiv-2 (suc (suc n)) t dρ ρ1 da a1 = refl
-
--- Worse:
--- dapply-equiv-0 : ∀ {Γ σ τ} n
---   (t : Term (σ • Γ) τ)
---   (dρ : ChΓ Γ) (ρ1 : ⟦ Γ ⟧Context)
---   (da : Val (Δt σ)) (a1 : Val σ) →
---   dapply (closure (abs (derive t)) dρ) a1 da (suc n) ≡
---   eval (derive t) (da • a1 • dρ) (suc n)
--- dapply-equiv-0 zero t dρ ρ1 da a1 = {!!}
--- dapply-equiv-0 (suc zero) t dρ ρ1 da a1 = {!!}
--- dapply-equiv-0 (suc (suc n)) t dρ ρ1 da a1 = {!!}
-
 -- Target statement:
 
 _[_]τ_from_to_ : (n : ℕ) → ∀ τ → Val (Δt τ) → Val τ → Val τ → Set
