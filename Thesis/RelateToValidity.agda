@@ -5,6 +5,15 @@ open import Relation.Binary.PropositionalEquality public hiding ([_])
 open import Thesis.Changes
 open import Thesis.Lang
 
+module _ {A : Set} {{CA : ChangeStructure A}} where
+  fromto→valid fromto→valid-2 : ∀ da (a1 a2 : A) (daa : ch da from a1 to a2) → valid a1 da
+  fromto→valid da a1 a2 daa rewrite fromto→⊕ da a1 _ daa = daa
+  fromto→valid-2 da a1 a2 daa = subst (ch da from a1 to_) (sym (fromto→⊕ da a1 a2 daa)) daa
+
+  -- The "inverse" is so trivial to not be worth calling, hence commented out:
+  -- valid→fromto : ∀ da (a : A) → (valid a da) → ch da from a to (a ⊕ da)
+  -- valid→fromto _ _ daa = daa
+
 module _
   {A : Set} {B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
 
@@ -12,24 +21,37 @@ module _
   WellDefinedFunChangePoint f df a da = (f ⊕ df) (a ⊕ da) ≡ f a ⊕ df a da
 
   WellDefinedFunChangeFromTo′ : ∀ (f1 : A → B) → (df : Ch (A → B)) → Set
-  WellDefinedFunChangeFromTo′ f1 df = ∀ da a → ch da from a to (a ⊕ da) → WellDefinedFunChangePoint f1 df a da
+  WellDefinedFunChangeFromTo′ f1 df = ∀ da a → valid a da → WellDefinedFunChangePoint f1 df a da
 
   open ≡-Reasoning
+  open import Function
+
+  fromto-incrementalization : ∀ {f1 f2 : A → B} {df} → ch df from f1 to f2 →
+    ∀ {da a} → valid a da →
+    f1 a ⊕ df a da ≡ f2 (a ⊕ da)
+  fromto-incrementalization {f1 = f1} {f2} {df} dff {da} {a} daa = fromto→⊕ _ _ _ (dff da a _ daa)
+
+  fromto→valid-fun : ∀ {f1 f2 : A → B} {df : Ch (A → B)} → ch df from f1 to f2 → ∀ {a da} (daa : valid a da) → valid (f1 a) (df a da)
+  fromto→valid-fun {f1} {f2} {df} dff {a} {da} daa = fromto→valid (df a da) (f1 a) _ (dff da a _ daa)
 
   fromto→WellDefined′ : ∀ {f1 f2 df} → ch df from f1 to f2 →
     WellDefinedFunChangeFromTo′ f1 df
   fromto→WellDefined′ {f1 = f1} {f2} {df} dff da a daa =
     begin
       (f1 ⊕ df) (a ⊕ da)
-    ≡⟨ cong (λ □ → □ (a ⊕ da)) (fromto→⊕ df f1 f2 dff)⟩
+    ≡⟨ cong (_$ (a ⊕ da)) (fromto→⊕ df f1 f2 dff)⟩
       f2 (a ⊕ da)
-    ≡⟨ sym (fromto→⊕ _ _ _ (dff da _ _ daa)) ⟩
+    ≡⟨ sym (fromto-incrementalization dff daa) ⟩
       f1 a ⊕ df a da
     ∎
 
-  -- This is similar (not equivalent) to the old definition of function changes.
-  -- However, such a function need not be defined on invalid changes, unlike the
-  -- functions.
+  -- Δ f is similar to function changes in PLDI'14, but PLDI'14 function changes
+  -- need not be defined on invalid changes; instead, if (df, dff) : Δ f, then
+  -- df is a function change that is also defined on invalid changes.
+  --
+  -- Next we define fΔ. It is closer to the PLDI'14 definition of function
+  -- changes; but it is not defined recursively, so it still produces new-style
+  -- function changes.
   --
   -- Hence this is sort of bigger than Δ f, though not really.
   fΔ : (A → B) → Set
@@ -51,11 +73,11 @@ module _
       valid-res : ch df a da from f a to (f a ⊕ df a da)
       valid-res rewrite sym (fromto→WellDefined′ dff da a daa) = dff da a (a ⊕ da) daa
 
-  fromto-functions-map-Δ : ∀ (f1 f2 : A → B) (df : Ch (A → B)) → ch df from f1 to f2 → fΔ f1
-  fromto-functions-map-Δ f1 f2 df dff a (da , daa) = valid-functions-map-Δ f1 (df , dff′) a (da , daa)
-    where
-      dff′ : ch df from f1 to (f1 ⊕ df)
-      dff′ = subst (ch df from f1 to_) (sym (fromto→⊕ df f1 f2 dff)) dff
+  -- Two alternative proofs
+  fromto-functions-map-Δ-1 fromto-functions-map-Δ-2 : ∀ (f1 f2 : A → B) (df : Ch (A → B)) → ch df from f1 to f2 → fΔ f1
+  fromto-functions-map-Δ-1 f1 f2 df dff a (da , daa) = valid-functions-map-Δ f1 (df , fromto→valid df f1 f2 dff) a (da , daa)
+
+  fromto-functions-map-Δ-2 f1 f2 df dff a (da , daa) = df a da , fromto→valid-fun dff daa
 
 open import Thesis.LangChanges
 
