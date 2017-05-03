@@ -1,3 +1,4 @@
+{-# OPTIONS --allow-unsolved-metas #-}
 module Thesis.BigStep where
 
 open import Thesis.Syntax hiding (suc)
