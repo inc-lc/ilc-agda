@@ -3,8 +3,8 @@
 --
 -- Variables and contexts
 --
--- This module defines the syntax of contexts, prefixes of
--- contexts and variables and properties of these notions.
+-- This module defines the syntax of contexts and subcontexts,
+-- together with variables and properties of these notions.
 --
 -- This module is parametric in the syntax of types, so it
 -- can be reused for different calculi.
@@ -38,66 +38,7 @@ data Var : Context → Type → Set where
 -- Weakening
 -- =========
 --
--- We provide two approaches for weakening: context prefixes and
--- and subcontext relationship. In this formalization, we mostly
--- (maybe exclusively?) use the latter.
-
--- Context Prefixes
--- ----------------
---
--- Useful for making lemmas strong enough to prove by induction.
---
--- Consider using the Subcontexts module instead.
-
-module Prefixes where
-
--- Prefix of a context
-
-  data Prefix : Context → Set where
-    ∅ : ∀ {Γ} → Prefix Γ
-    _•_ : ∀ {Γ} → (τ : Type) → Prefix Γ → Prefix (τ • Γ)
-
--- take only the prefix of a context
-
-  take : (Γ : Context) → Prefix Γ → Context
-  take Γ ∅ = ∅
-  take (τ • Γ) (.τ • Γ′) = τ • take Γ Γ′
-
--- drop the prefix of a context
-
-  drop : (Γ : Context) → Prefix Γ → Context
-  drop Γ ∅ = Γ
-  drop (τ • Γ) (.τ • Γ′) = drop Γ Γ′
-
--- Extend a context to a super context
-
-  infixr 10 _⋎_
-
-  _⋎_ : (Γ₁ Γ₂ : Context) → Context
-  _⋎_ = List._++_
-
-  take-drop : ∀ Γ Γ′ → take Γ Γ′ ⋎ drop Γ Γ′ ≡ Γ
-  take-drop ∅ ∅ = refl
-  take-drop (τ • Γ) ∅ = refl
-  take-drop (τ • Γ) (.τ • Γ′) rewrite take-drop Γ Γ′ = refl
-
-  or-unit : ∀ Γ → Γ ⋎ ∅ ≡ Γ
-  or-unit ∅ = refl
-  or-unit (τ • Γ) rewrite or-unit Γ = refl
-
-  move-prefix : ∀ Γ τ Γ′ →
-    Γ ⋎ (τ • Γ′) ≡ (Γ ⋎ (τ • ∅)) ⋎ Γ′
-  move-prefix ∅ τ Γ′ = refl
-  move-prefix (τ • Γ) τ₁ ∅ = sym (or-unit (τ • Γ ⋎ (τ₁ • ∅)))
-  move-prefix (τ • Γ) τ₁ (τ₂ • Γ′) rewrite move-prefix Γ τ₁ (τ₂ • Γ′) = refl
-
--- Lift a variable to a super context
-
-  lift : ∀ {Γ₁ Γ₂ Γ₃ τ} → Var (Γ₁ ⋎ Γ₃) τ → Var (Γ₁ ⋎ Γ₂ ⋎ Γ₃) τ
-  lift {∅} {∅} x = x
-  lift {∅} {τ • Γ₂} x = that (lift {∅} {Γ₂} x)
-  lift {τ • Γ₁} {Γ₂} this = this
-  lift {τ • Γ₁} {Γ₂} (that x) = that (lift {Γ₁} {Γ₂} x)
+-- We define weakening based on subcontext relationship.
 
 -- Subcontexts
 -- -----------
@@ -178,8 +119,6 @@ module Subcontexts where
   weaken-var (keep τ • ≼₁) (that x) = that (weaken-var ≼₁ x)
   weaken-var (drop τ • ≼₁) x = that (weaken-var ≼₁ x)
 
--- Currently, we export the subcontext relation as well as the
--- definition of _⋎_.
+-- Currently, we export the subcontext relation.
 
 open Subcontexts public
-open Prefixes public using (_⋎_)
