@@ -141,6 +141,18 @@ relT {τ} t1 t2 ρ1 ρ2 n =
   eval t1 ρ1 n ≡ Done v1 →
   Σ[ v2 ∈ Val τ ] (eval t2 ρ2 n ≡ Done v2 × relV τ v1 v2 n)
 
+import Data.Fin as F
+open F using (Fin; _ℕ-_)
+
+-- This is closer to what's used in Dargaye and Leroy, but not the same.
+
+relT2 : ∀ {τ Γ1 Γ2} (t1 : Term Γ1 τ) (t2 : Term Γ2 τ) (ρ1 : ⟦ Γ1 ⟧Context) (ρ2 : ⟦ Γ2 ⟧Context) → ℕ → Set
+relT2 {τ} t1 t2 ρ1 ρ2 n =
+  (v1 : Val τ) →
+  ∀ (j : Fin (suc n)) →
+  eval t1 ρ1 (F.toℕ j) ≡ Done v1 →
+  Σ[ v2 ∈ Val τ ] eval t2 ρ2 (F.toℕ j) ≡ Done v2 × relV τ v1 v2 (F.toℕ (n F.ℕ- j))
+
 relV τ v1 v2 zero = ⊤
 relV (σ ⇒ τ) (closure t1 ρ1) (closure t2 ρ2) (suc n) =
   ∀ (k : ℕ) (k≤n : k ≤ n) →
