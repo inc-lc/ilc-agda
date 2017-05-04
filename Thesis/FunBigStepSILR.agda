@@ -6,9 +6,9 @@
 -- Because of closures, we need relations across different terms with different
 -- contexts and environments.
 --
--- This development is strongly inspired by "A verified framework for
--- higher-order uncurrying optimizations" (and a bit by "Functional Big-Step
--- Semantics"), though I deviate somewhere.
+-- This development is strongly inspired by Dargaye and Leroy (2010), "A
+-- verified framework for higher-order uncurrying optimizations" (and a bit by
+-- "Functional Big-Step Semantics"), though I deviate somewhere.
 module Thesis.FunBigStepSILR where
 
 open import Data.Empty
@@ -147,6 +147,28 @@ relV (σ ⇒ τ) (closure t1 ρ1) (closure t2 ρ2) (suc n) =
   ∀ v1 v2 → relV σ v1 v2 k → relT t1 t2 (v1 • ρ1) (v2 • ρ2) k
 relV nat v1 v2 (suc n) = v1 ≡ v2
 
+open DecTotalOrder Data.Nat.decTotalOrder using () renaming (refl to ≤-refl)
+
+relV-apply-go : ∀ {σ τ} sv1 sv2 tv1 tv2
+  n
+  (svv : relV (σ ⇒ τ) sv1 sv2 n)
+  (tvv : relV σ tv1 tv2 n)
+  v1 →
+  apply sv1 tv1 n ≡ Done v1 →
+  Σ[ v2 ∈ Val τ ] (apply sv2 tv2 n ≡ Done v2 × relV τ v1 v2 (suc n))
+relV-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 zero svv tvv v1 ()
+relV-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc n) svv tvv v1 eqv1 with svv n ≤-refl tv1 tv2 {! tvv !} v1 {! eqv1 !}
+... | v2 , eqv2 , final-v = v2 , {! eqv2 !} , {! final-v !}
+
+relV-apply : ∀ {σ τ sv1 sv2 tv1 tv2}
+  n
+  (svv : relV (σ ⇒ τ) sv1 sv2 n)
+  (tvv : relV σ tv1 tv2 n)
+  {v1} →
+  apply sv1 tv1 n ≡ Done v1 →
+  Σ[ v2 ∈ Val τ ] (apply sv2 tv2 n ≡ Done v2 × relV τ v1 v2 (suc n))
+relV-apply n svv tvv eqv1 = relV-apply-go _ _ _ _ n svv tvv _ eqv1
+
 open import Data.Nat.Properties
 
 relV-mono : ∀ m n → m ≤ n → ∀ τ v1 v2 → relV τ v1 v2 n → relV τ v1 v2 m
@@ -181,15 +203,34 @@ fundamental (const (lit nv)) (suc n) ρ1 ρ2 ρρ .(intV nv) refl = intV nv , re
 fundamental (var x) (suc n) ρ1 ρ2 ρρ v1 refl = fundamentalV x (suc n) ρ1 ρ2 ρρ (⟦ x ⟧Var ρ1) refl
 fundamental (abs t) (suc n) ρ1 ρ2 ρρ (closure .t .ρ1) refl =
   closure t ρ2 , refl , λ k k≤n v1 v2 vv → fundamental t k (v1 • ρ1) (v2 • ρ2) (vv , relρ-mono k _ (≤-step k≤n) _ _ _ ρρ)
-fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 with eval s ρ1 n | inspect (eval s ρ1) n | eval t ρ1 n
+fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 with eval s ρ1 n | inspect (eval s ρ1) n | eval t ρ1 n | inspect (eval t ρ1) n
+fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ seq1 ] | Done tv1 | [ teq1 ] with eval s ρ2 n | inspect (eval s ρ2) n | eval t ρ2 n | fundamental s n ρ1 ρ2 (relρ-mono n _ (n≤1+n n) _ _ _ ρρ) sv1 seq1 | fundamental t n ρ1 ρ2 (relρ-mono n _ (n≤1+n n) _ _ _ ρρ) tv1 teq1
+fundamental {τ = τ} (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ seq1 ] | Done tv1 | [ teq1 ] | Done sv2 | [ seq2 ] | Done tv2 | (.sv2 , refl , svv) | (.tv2 , refl , tvv) = relV-apply n svv tvv tρ1↓v1
+fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 () | Done sv1 | [ seq1 ] | TimeOut | [ teq1 ]
+fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 () | TimeOut | [ seq1 ] | tv1 | [ teq1 ]
+
+-- fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ seq1 ] | Done tv1 | [ teq1 ] with eval s ρ2 n | inspect (eval s ρ2) n | eval t ρ2 n | fundamental s n ρ1 ρ2 (relρ-mono n _ (n≤1+n n) _ _ _ ρρ) sv1 seq1
+--... | sv2 | [ seq2 ] | tv2 | (sv2' , sρ2↓sv2 , svv) = ?
+
+
 -- TODO: match sv2 before matching on fundamental s.
-fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ eq ] | Done tv1 with fundamental s n ρ1 ρ2 (relρ-mono n _ (n≤1+n n) _ _ _ ρρ) sv1 eq
-fundamental {τ = τ} (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ eq ] | Done tv1 | (sv2 , sρ2↓sv2 , svv) = v2 , {!!}
-  where
-    v2 : Val τ
-    v2 = {!!}
-    -- tρ2↓v2 : apply sv2 tv2 n ≡ Done v1
-    -- tρ2↓v2 = ?
-fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 () | Done sv | _ | TimeOut
-fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 () | TimeOut | _ | Done tv1
-fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 () | TimeOut | _ | TimeOut
+-- fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ eq1 ] | Done tv1 with eval s ρ2 n | inspect (eval s ρ2) n | eval t ρ2 n | fundamental s n ρ1 ρ2 (relρ-mono n _ (n≤1+n n) _ _ _ ρρ) sv1 eq1
+-- fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ eq1 ] | (Done tv1) | (Done sv2) | [ eq2 ] | (Done tv2) | [ teq1 ] | (sv2' , sρ2↓sv2 , svv) = {!!}
+-- fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ eq1 ] | (Done tv1) | (Done sv2) | [ eq2 ] | TimeOut | [ teq1 ] | (sv2' , sρ2↓sv2 , svv) with fundamental t n ρ1 ρ2 (relρ-mono n _ (n≤1+n n) _ _ _ ρρ) tv1 {!teq1!}
+-- ... | (tv2' , tρ2↓tv2 , tvv) = {!!}
+-- fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ eq1 ] | (Done tv1) | TimeOut | [ eq2 ] | b | [ teq1 ] | (sv2' , () , svv)
+
+-- fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ eq1 ] | (Done tv1) | (Done sv2) | [ eq2 ] | (Done tv2) with fundamental s n ρ1 ρ2 (relρ-mono n _ (n≤1+n n) _ _ _ ρρ) sv1 eq1
+-- fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ eq1 ] | (Done tv1) | (Done sv2) | [ eq2 ] | (Done tv2) | (sv2' , sρ2↓sv2 , svv) = {!!}
+-- fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ eq1 ] | (Done tv1) | (Done sv2) | [ eq2 ] | TimeOut = {!!}
+-- fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ eq1 ] | (Done tv1) | TimeOut | [ eq2 ] | tv2 = {!!}
+-- fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ eq1 ] | Done tv1 with fundamental s n ρ1 ρ2 (relρ-mono n _ (n≤1+n n) _ _ _ ρρ) sv1 eq1
+-- fundamental {τ = τ} (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ eq1 ] | Done tv1 | (sv2 , sρ2↓sv2 , svv) = v2 , {!!}
+--   where
+--     v2 : Val τ
+--     v2 = {!!}
+--     -- tρ2↓v2 : apply sv2 tv2 n ≡ Done v1
+--     -- tρ2↓v2 = ?
+-- fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 () | Done sv | _ | TimeOut
+-- fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 () | TimeOut | _ | Done tv1
+-- fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 () | TimeOut | _ | TimeOut
