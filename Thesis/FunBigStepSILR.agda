@@ -1,3 +1,4 @@
+{-# OPTIONS --allow-unsolved-metas #-}
 -- Step-indexed logical relations based on functional big-step semantics.
 --
 -- Goal for now: just prove the fundamental theorem of logical relations,
