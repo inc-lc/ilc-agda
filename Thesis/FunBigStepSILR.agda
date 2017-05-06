@@ -98,6 +98,20 @@ eval (app s t) ρ (suc n) with eval s ρ n | eval t ρ n
 ... | Done f | Done a = apply f a n
 ... | _ | _ = TimeOut
 
+eval-const-mono : ∀ {τ} → (c : Const τ) → ∀ {v} n → evalConst c n ≡ Done v → evalConst c (suc n) ≡ Done v
+eval-const-mono (lit v) n eq = eq
+eval-mono : ∀ {Γ τ} → (t : Term Γ τ) → (ρ : ⟦ Γ ⟧Context) → ∀ v n → eval t ρ n ≡ Done v → eval t ρ (suc n) ≡ Done v
+eval-mono t ρ v zero ()
+eval-mono (const c) ρ v (suc n) eq = eval-const-mono c n eq
+eval-mono (var x) ρ v (suc n) eq = eq
+eval-mono (app s t) ρ v (suc n) eq with eval s ρ n | inspect (eval s ρ) n | eval t ρ n | inspect (eval t ρ) n
+eval-mono (app s t) ρ v (suc n) eq | Done sv | [ seq ] | (Done tv) | [ teq ] with eval s ρ (suc n) | eval-mono s ρ sv n seq | eval t ρ (suc n) | eval-mono t ρ tv n teq
+eval-mono (app s t) ρ v (suc n) eq | Done (closure ct cρ) | [ seq ] | (Done tv) | [ teq ] | .(Done (closure ct cρ)) | refl | .(Done tv) | refl = eval-mono ct (tv • cρ) _ n eq
+eval-mono (app s t) ρ v (suc n) () | Done _ | [ seq ] | TimeOut | [ teq ]
+eval-mono (app s t) ρ v (suc n) () | TimeOut | [ seq ] | tv | [ teq ]
+-- = {!eval-mono s ρ (suc n)!}
+eval-mono (abs t) ρ v (suc n) eq = eq
+
 -- Can we prove eval sound wrt. our reference denotational semantics? Yes! Very
 -- cool! (Commented out until I paste that semantics here.)
 -- eval-sound : ∀ {Γ τ} ρ v n (t : Term Γ τ) →
@@ -155,6 +169,7 @@ relT2 {τ} t1 t2 ρ1 ρ2 n =
   Σ[ v2 ∈ Val τ ] eval t2 ρ2 (F.toℕ j) ≡ Done v2 × relV τ v1 v2 (F.toℕ (n F.ℕ- j))
 
 relV τ v1 v2 zero = ⊤
+-- Seems the proof for abs would go through even if here we do not step down.
 relV (σ ⇒ τ) (closure t1 ρ1) (closure t2 ρ2) (suc n) =
   ∀ (k : ℕ) (k≤n : k ≤ n) →
   ∀ v1 v2 → relV σ v1 v2 k → relT t1 t2 (v1 • ρ1) (v2 • ρ2) k
@@ -164,23 +179,24 @@ open DecTotalOrder Data.Nat.decTotalOrder using () renaming (refl to ≤-refl)
 
 relV-apply-go : ∀ {σ τ} sv1 sv2 tv1 tv2
   n
-  (svv : relV (σ ⇒ τ) sv1 sv2 n)
-  (tvv : relV σ tv1 tv2 n)
+  (svv : relV (σ ⇒ τ) sv1 sv2 (suc n))
+  (tvv : relV σ tv1 tv2 (suc n))
   v1 →
   apply sv1 tv1 n ≡ Done v1 →
-  Σ[ v2 ∈ Val τ ] (apply sv2 tv2 n ≡ Done v2 × relV τ v1 v2 (suc n))
+  Σ[ v2 ∈ Val τ ] (apply sv2 tv2 n ≡ Done v2 × relV τ v1 v2 n)
 relV-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 zero svv tvv v1 ()
-relV-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc n) svv tvv v1 eqv1 with svv n ≤-refl tv1 tv2 {! tvv !} v1 {! eqv1 !}
-... | v2 , eqv2 , final-v = v2 , {! eqv2 !} , {! final-v !}
+relV-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc n) svv tvv v1 eqv1 with svv (suc n) ≤-refl tv1 tv2 {! tvv !} v1  eqv1
+... | v2 , eqv2 , final-v = v2 , eqv2  , final-v
 
 relV-apply : ∀ {σ τ sv1 sv2 tv1 tv2}
   n
-  (svv : relV (σ ⇒ τ) sv1 sv2 n)
-  (tvv : relV σ tv1 tv2 n)
+  (svv : relV (σ ⇒ τ) sv1 sv2 (suc n))
+  (tvv : relV σ tv1 tv2 (suc n))
   {v1} →
   apply sv1 tv1 n ≡ Done v1 →
   Σ[ v2 ∈ Val τ ] (apply sv2 tv2 n ≡ Done v2 × relV τ v1 v2 (suc n))
-relV-apply n svv tvv eqv1 = relV-apply-go _ _ _ _ n svv tvv _ eqv1
+relV-apply n svv tvv eqv1 = {!!}
+-- relV-apply-go _ _ _ _ n svv tvv _ eqv1
 
 open import Data.Nat.Properties
 
@@ -210,6 +226,15 @@ fundamentalV this (suc n) (v1 • ρ1) (v2 • ρ2) (vv , ρρ) .v1 refl = v2 , 
 fundamentalV (that x) (suc n) (v1 • ρ1) (v2 • ρ2) (vv , ρρ) = fundamentalV x (suc n) ρ1 ρ2 ρρ
 
 fundamental : ∀ {Γ τ} (t : Term Γ τ) → (n : ℕ) → (ρ1 ρ2 : ⟦ Γ ⟧Context) (ρρ : relρ Γ ρ1 ρ2 n) → relT t t ρ1 ρ2 n
+
+fundamental-aux : ∀ {Γ τ} (t : Term Γ τ) → (n : ℕ) → (ρ1 ρ2 : ⟦ Γ ⟧Context) (ρρ : relρ Γ ρ1 ρ2 (suc n)) → (v1 : Val τ) →
+  eval t ρ1 n ≡ Done v1 →
+  Σ[ v2 ∈ Val τ ] (eval t ρ2 n ≡ Done v2 × eval t ρ2 (suc n) ≡ Done v2 × relV τ v1 v2 (suc n))
+fundamental-aux s n ρ1 ρ2 ρρ sv1 seq1 with eval s ρ2 n | inspect (eval s ρ2) n | fundamental s n ρ1 ρ2 (relρ-mono n _ (n≤1+n n) _ _ _ ρρ) sv1 seq1 | fundamental s (suc n) ρ1 ρ2 ρρ sv1 (eval-mono s ρ1 sv1 n seq1)
+... | Done sv2 | [ seq2 ] | (.sv2 , refl , svv) | (sv2' , sveq , svv') with trans (sym (eval-mono s ρ2 sv2 n seq2)) sveq
+fundamental-aux s n ρ1 ρ2 ρρ sv1 seq1 | Done sv2 | [ seq2 ] | (.sv2 , refl , svv) | (.sv2 , sveq , svv') | refl = sv2 , refl , sveq , svv'
+--
+-- |
 fundamental t zero ρ1 ρ2 ρρ v ()
 -- XXX trivial case for constants.
 fundamental (const (lit nv)) (suc n) ρ1 ρ2 ρρ .(intV nv) refl = intV nv , refl , refl
@@ -217,8 +242,14 @@ fundamental (var x) (suc n) ρ1 ρ2 ρρ v1 refl = fundamentalV x (suc n) ρ1 ρ
 fundamental (abs t) (suc n) ρ1 ρ2 ρρ (closure .t .ρ1) refl =
   closure t ρ2 , refl , λ k k≤n v1 v2 vv → fundamental t k (v1 • ρ1) (v2 • ρ2) (vv , relρ-mono k _ (≤-step k≤n) _ _ _ ρρ)
 fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 with eval s ρ1 n | inspect (eval s ρ1) n | eval t ρ1 n | inspect (eval t ρ1) n
-fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ seq1 ] | Done tv1 | [ teq1 ] with eval s ρ2 n | inspect (eval s ρ2) n | eval t ρ2 n | fundamental s n ρ1 ρ2 (relρ-mono n _ (n≤1+n n) _ _ _ ρρ) sv1 seq1 | fundamental t n ρ1 ρ2 (relρ-mono n _ (n≤1+n n) _ _ _ ρρ) tv1 teq1
-fundamental {τ = τ} (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ seq1 ] | Done tv1 | [ teq1 ] | Done sv2 | [ seq2 ] | Done tv2 | (.sv2 , refl , svv) | (.tv2 , refl , tvv) = relV-apply n svv tvv tρ1↓v1
+fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ seq1 ] | Done tv1 | [ teq1 ] with eval s ρ2 n | fundamental-aux s n ρ1 ρ2 ρρ sv1 seq1 | eval t ρ2 n | fundamental-aux t n ρ1 ρ2 ρρ tv1 teq1
+fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ seq1 ] | (Done tv1) | [ teq1 ] | (Done sv2) | (.sv2 , refl , seq2' , svv') | (Done tv2) | (.tv2 , refl , teq2' , tvv') = relV-apply n svv' tvv' tρ1↓v1
+-- fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ seq1 ] | Done tv1 | [ teq1 ] with eval s ρ2 n | inspect (eval s ρ2) n | fundamental s n ρ1 ρ2 (relρ-mono n _ (n≤1+n n) _ _ _ ρρ) sv1 seq1 | fundamental s (suc n) ρ1 ρ2 ρρ sv1 (eval-mono s ρ1 sv1 n seq1)
+-- ... | Done sv2 | [ seq2 ] | (.sv2 , refl , svv) | (sv2' , sveq , svv') with trans (sym (eval-mono s ρ2 sv2 n seq2)) sveq
+-- fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ seq1 ] | (Done tv1) | [ teq1 ] | (Done sv2) | [ seq2 ] | (.sv2 , refl , svv) | (.sv2 , sveq , svv') | refl = {!!}
+-- | fundamental t n ρ1 ρ2 (relρ-mono n _ (n≤1+n n) _ _ _ ρρ) tv1 teq1
+
+-- fundamental {τ = τ} (app s t) (suc n) ρ1 ρ2 ρρ v1 tρ1↓v1 | Done sv1 | [ seq1 ] | Done tv1 | [ teq1 ] | Done sv2 | [ seq2 ] | Done tv2 | (.sv2 , refl , svv) | (.tv2 , refl , tvv) = relV-apply n svv tvv tρ1↓v1
 fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 () | Done sv1 | [ seq1 ] | TimeOut | [ teq1 ]
 fundamental (app s t) (suc n) ρ1 ρ2 ρρ v1 () | TimeOut | [ seq1 ] | tv1 | [ teq1 ]
 
