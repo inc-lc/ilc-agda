@@ -30,7 +30,7 @@ fromtoDeriveConst match .(inj₂ (inj₁ a2)) .(inj₂ b1) .(inj₁ a2) (sftrp�
    = ⊝-fromto (g1 b1) ((f1 ⊕ df) a2)
 
 fromtoDeriveVar : ∀ {Γ τ} → (x : Var Γ τ) →
-  ∀ {dρ ρ1 ρ2}  → [ Γ ]Γ dρ from ρ1 to ρ2 →
+  ∀ {dρ ρ1 ρ2} → [ Γ ]Γ dρ from ρ1 to ρ2 →
     [ τ ]τ (⟦ x ⟧ΔVar ρ1 dρ) from (⟦ x ⟧Var ρ1) to (⟦ x ⟧Var ρ2)
 fromtoDeriveVar this (dvv v• dρρ) = dvv
 fromtoDeriveVar (that x) (dvv v• dρρ) = fromtoDeriveVar x dρρ
