@@ -1,10 +1,7 @@
 module Thesis.Syntax where
 
 open import Thesis.Types public
-
--- Instantiate generic Context support
-open import Base.Syntax.Context Type public
-open import Base.Syntax.Vars Type public
+open import Thesis.Contexts public
 
 data Const : (τ : Type) → Set where
    lit : ℤ → Const int

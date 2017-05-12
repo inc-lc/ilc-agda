@@ -2,7 +2,9 @@ module Thesis.LangChanges where
 
 open import Thesis.Changes
 open import Thesis.IntChanges
-open import Thesis.Lang
+open import Thesis.Types
+open import Thesis.Contexts
+open import Thesis.Environments
 open import Relation.Binary.PropositionalEquality
 
 Chτ : (τ : Type) → Set

@@ -1,9 +1,7 @@
 module Thesis.Lang where
 
 open import Thesis.Syntax public
-
-open import Base.Data.DependentList public
-open import Base.Denotation.Environment Type ⟦_⟧Type public
+open import Thesis.Environments public
 
 ⟦_⟧Const : ∀ {τ} → Const τ → ⟦ τ ⟧Type
 ⟦_⟧Const cons = λ v1 v2 → v1 , v2
