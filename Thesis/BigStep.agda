@@ -220,13 +220,13 @@ deriveConst : ∀ {τ} →
   Term ∅ (Δt τ)
 deriveConst = {!!}
 
-deriveVar : ∀ {Γ τ} → Var Γ τ → Var (ΔΓ Γ) (Δt τ)
-deriveVar this = this
-deriveVar (that x) = that (that (deriveVar x))
+derive-var : ∀ {Γ τ} → Var Γ τ → Var (ΔΓ Γ) (Δt τ)
+derive-var this = this
+derive-var (that x) = that (that (derive-var x))
 
 derive : ∀ {Γ τ} → Term Γ τ → Term (ΔΓ Γ) (Δt τ)
 derive (const c) = weaken (∅≼Γ {ΔΓ _}) (deriveConst c)
-derive (var x) = var (deriveVar x)
+derive (var x) = var (derive-var x)
 derive (app s t) = app (app (derive s) (fit t)) (derive t)
 derive (abs t) = abs (abs (derive t))
 
@@ -314,7 +314,7 @@ data _[_]Γ_from_to_ : ∀ ℕ Γ → ChΓ Γ → (ρ1 ρ2 : ⟦ Γ ⟧Context) 
 
 fromtoDeriveVar : ∀ {Γ} τ n → (x : Var Γ τ) →
   (dρ : ChΓ Γ) (ρ1 ρ2 : ⟦ Γ ⟧Context) → n [ Γ ]Γ dρ from ρ1 to ρ2 →
-    n [ τ ]τ (⟦ deriveVar x ⟧Var dρ) from ⟦ x ⟧Var ρ1 to ⟦ x ⟧Var ρ2
+    n [ τ ]τ (⟦ derive-var x ⟧Var dρ) from ⟦ x ⟧Var ρ1 to ⟦ x ⟧Var ρ2
 fromtoDeriveVar τ n this (dv • .(v1 • _)) (v1 • ρ1) (v2 • ρ2) (dvv v• dρρ) = dvv
 fromtoDeriveVar τ n (that x) (dv • (.v1 • dρ)) (v1 • ρ1) (v2 • ρ2) (dvv v• dρρ) = fromtoDeriveVar τ n x dρ ρ1 ρ2 dρρ
 

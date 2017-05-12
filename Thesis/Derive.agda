@@ -93,18 +93,18 @@ case ds of
     match f g s
 -}
 
-deriveVar : ∀ {Γ τ} → Var Γ τ → Var (ΔΓ Γ) (Δt τ)
-deriveVar this = this
-deriveVar (that x) = that (that (deriveVar x))
+derive-var : ∀ {Γ τ} → Var Γ τ → Var (ΔΓ Γ) (Δt τ)
+derive-var this = this
+derive-var (that x) = that (that (derive-var x))
 
 derive : ∀ {Γ τ} → Term Γ τ → Term (ΔΓ Γ) (Δt τ)
 derive (const c) = weaken (∅≼Γ {ΔΓ _}) (deriveConst c)
-derive (var x) = var (deriveVar x)
+derive (var x) = var (derive-var x)
 derive (app s t) = app (app (derive s) (fit t)) (derive t)
 derive (abs t) = abs (abs (derive t))
 
 ⟦_⟧ΔVar : ∀ {Γ τ} → (x : Var Γ τ) → (ρ : ⟦ Γ ⟧Context) (dρ : ChΓ Γ) → Chτ τ
-⟦ x ⟧ΔVar ρ dρ = ⟦ deriveVar x ⟧Var dρ
+⟦ x ⟧ΔVar ρ dρ = ⟦ derive-var x ⟧Var dρ
 
 ⟦_⟧ΔTerm : ∀ {Γ τ} → (t : Term Γ τ) → (ρ : ⟦ Γ ⟧Context) (dρ : ChΓ Γ) → Chτ τ
 ⟦ t ⟧ΔTerm ρ dρ = ⟦ derive t ⟧Term dρ
