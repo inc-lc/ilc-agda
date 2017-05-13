@@ -11,6 +11,7 @@ open import Theorem.Groups-Nehemiah
 
 fromtoDeriveConst : ∀ {τ : Type} (c : Const τ) →
   ch ⟦ c ⟧ΔConst from ⟦ c ⟧Const to ⟦ c ⟧Const
+fromtoDeriveConst unit = tt
 fromtoDeriveConst (lit n) = right-id-int n
 fromtoDeriveConst plus da a1 a2 daa db b1 b2 dbb rewrite sym daa | sym dbb = sym (mn·pq=mp·nq {a1} {da} {b1} {db})
 fromtoDeriveConst minus da a1 a2 daa db b1 b2 dbb rewrite sym daa | sym dbb | sym (-m·-n=-mn {b1} {db}) = sym (mn·pq=mp·nq {a1} {da} { - b1} { - db})

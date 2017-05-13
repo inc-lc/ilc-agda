@@ -18,6 +18,7 @@ oplusτo (σ ⇒ τ) = abs (abs (abs
   (app₂ (oplusτo τ)
     (app (var (that (that this))) (var this))
     (app₂ (var (that this)) (var this) (app (onilτo σ) (var this))))))
+oplusτo unit = abs (abs (const unit))
 oplusτo int = const plus
 oplusτo (pair σ τ) = abs (abs (app₂ (const cons)
   (app₂ (oplusτo σ) (app (const fst) (var (that this))) (app (const fst) (var this)))
@@ -37,6 +38,7 @@ oplusτo (sum σ τ) = abs (abs (app₃ (const match) (var (that this))
 ominusτo (σ ⇒ τ) = abs (abs (abs (abs (app₂ (ominusτo τ)
   (app (var (that (that (that this)))) (app₂ (oplusτo σ) (var (that this)) (var this)))
   (app (var (that (that this))) (var (that this)))))))
+ominusτo unit = abs (abs (const unit))
 ominusτo int = const minus
 ominusτo (pair σ τ) = abs (abs (app₂ (const cons)
   (app₂ (ominusτo σ) (app (const fst) (var (that this))) (app (const fst) (var this)))
@@ -69,6 +71,7 @@ oplusτ-equiv Γ ρ (σ ⇒ τ) f df = ext (λ a → lemma a)
         rewrite ominusτ-equiv _ ρ′′ σ a a
         | oplusτ-equiv _ ρ′ τ (f a) (df a (nil a))
         = refl
+oplusτ-equiv Γ ρ unit tt tt = refl
 oplusτ-equiv Γ ρ int a da = refl
 oplusτ-equiv Γ ρ (pair σ τ) (a , b) (da , db)
   rewrite oplusτ-equiv _ ((da , db) • (a , b) • ρ) σ a da
@@ -95,6 +98,7 @@ ominusτ-equiv Γ ρ (σ ⇒ τ) g f = ext (λ a → ext (lemma a))
       lemma
         rewrite oplusτ-equiv _ ρ′ σ a da
         | ominusτ-equiv _ ρ′ τ (g (a ⊕ da)) (f a) = refl
+ominusτ-equiv Γ ρ unit tt tt = refl
 ominusτ-equiv Γ ρ int b a = refl
 ominusτ-equiv Γ ρ (pair σ τ) (a2 , b2) (a1 , b1)
   rewrite ominusτ-equiv _ ((a1 , b1) • (a2 , b2) • ρ) σ a2 a1

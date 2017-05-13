@@ -4,6 +4,7 @@ open import Thesis.Syntax public
 open import Thesis.Environments public
 
 ⟦_⟧Const : ∀ {τ} → Const τ → ⟦ τ ⟧Type
+⟦ unit ⟧Const = tt
 ⟦ lit n ⟧Const = n
 ⟦ plus ⟧Const = _+_
 ⟦ minus ⟧Const = _-_

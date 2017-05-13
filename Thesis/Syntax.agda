@@ -4,6 +4,7 @@ open import Thesis.Types public
 open import Thesis.Contexts public
 
 data Const : (τ : Type) → Set where
+   unit : Const unit
    lit : ℤ → Const int
    plus : Const (int ⇒ int ⇒ int)
    minus : Const (int ⇒ int ⇒ int)

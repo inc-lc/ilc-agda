@@ -29,6 +29,7 @@ deriveConst : ∀ {τ} →
   Const τ →
   Term ∅ (Δt τ)
 
+deriveConst unit = const unit
 deriveConst (lit n) = const (lit (+ 0))
 deriveConst plus = abs (abs (abs (abs (app₂ (const plus) (var (that (that this))) (var this)))))
 -- minus = λ m n → m - n

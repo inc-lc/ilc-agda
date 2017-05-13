@@ -31,11 +31,13 @@ instance
 [ σ ⇒ τ ]τ df from f1 to f2 =
   ∀ (da : Chτ σ) (a1 a2 : ⟦ σ ⟧Type) →
   [ σ ]τ da from a1 to a2 → [ τ ]τ df a1 da from f1 a1 to f2 a2
+[ unit ]τ tt from tt to tt = ⊤
 [ int ]τ dv from v1 to v2 = v1 + dv ≡ v2
 [ pair σ τ ]τ (da , db) from (a1 , b1) to (a2 , b2) = [ σ ]τ da from a1 to a2 × [ τ ]τ db from b1 to b2
 [ sum σ τ ]τ dv from v1 to v2 = sch_from_to_ dv v1 v2
 
 isCompChangeStructureτ (σ ⇒ τ) = ChangeStructure.isCompChangeStructure (funCS {{changeStructureτ σ}} {{changeStructureτ τ}})
+isCompChangeStructureτ unit = ChangeStructure.isCompChangeStructure unitCS
 isCompChangeStructureτ int = ChangeStructure.isCompChangeStructure intCS
 isCompChangeStructureτ (pair σ τ) = ChangeStructure.isCompChangeStructure (pairCS {{changeStructureτ σ}} {{changeStructureτ τ}})
 isCompChangeStructureτ (sum σ τ) = ChangeStructure.isCompChangeStructure (sumCS {{changeStructureτ σ}} {{changeStructureτ τ}})
