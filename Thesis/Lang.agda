@@ -4,10 +4,10 @@ open import Thesis.Syntax public
 open import Thesis.Environments public
 
 ⟦_⟧Const : ∀ {τ} → Const τ → ⟦ τ ⟧Type
-⟦_⟧Const cons = λ v1 v2 → v1 , v2
 ⟦ lit n ⟧Const = n
 ⟦ plus ⟧Const = _+_
 ⟦ minus ⟧Const = _-_
+⟦ cons ⟧Const v1 v2 = v1 , v2
 ⟦ fst ⟧Const (v1 , v2) = v1
 ⟦ snd ⟧Const (v1 , v2) = v2
 ⟦ linj ⟧Const v1 = inj₁ v1

@@ -38,7 +38,7 @@ instance
 isCompChangeStructureτ (σ ⇒ τ) = ChangeStructure.isCompChangeStructure (funCS {{changeStructureτ σ}} {{changeStructureτ τ}})
 isCompChangeStructureτ int = ChangeStructure.isCompChangeStructure intCS
 isCompChangeStructureτ (pair σ τ) = ChangeStructure.isCompChangeStructure (pairCS {{changeStructureτ σ}} {{changeStructureτ τ}})
-isCompChangeStructureτ (sum σ τ) = ChangeStructure.isCompChangeStructure ((sumCS {{changeStructureτ σ}} {{changeStructureτ τ}}))
+isCompChangeStructureτ (sum σ τ) = ChangeStructure.isCompChangeStructure (sumCS {{changeStructureτ σ}} {{changeStructureτ τ}})
 
 open import Data.Unit
 -- We can define an alternative semantics for contexts, that defines environments as nested products:
