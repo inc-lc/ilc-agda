@@ -5,7 +5,7 @@ open import Data.Nat.Base
 open import Data.Integer
 open import Relation.Binary.PropositionalEquality
 
-open import Thesis.ANormal
+open import Thesis.ANormal public
 
 data Val : Type → Set
 -- data Val (τ : Type) : Set

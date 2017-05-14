@@ -100,7 +100,7 @@ eval-fun (term t) ρ n = eval-term t ρ n
 eval-fun (abs f) ρ n = Done (closure f ρ)
 
 -- Erasure from typed to untyped values.
-import Thesis.ANormal as T
+import Thesis.ANormalBigStep as T
 
 erase-type : T.Type → Type
 erase-type _ = uni

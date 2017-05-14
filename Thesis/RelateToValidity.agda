@@ -55,7 +55,7 @@ module _
   --
   -- Hence this is sort of bigger than Δ f, though not really.
   fΔ : (A → B) → Set
-  fΔ f = (a : A) → Δ a → Δ (f a)
+  fΔ f = (a : A) → Δ₁ a → Δ₁ (f a)
 
   -- We can indeed map Δ f into fΔ f, via valid-functions-map-Δ. If this mapping
   -- were an injection, we could say that fΔ f is bigger than Δ f. But we'd need
@@ -67,7 +67,7 @@ module _
   -- 2. We need to quotient Δ f by identifying functions that only differ by
   --    behavior on invalid changes; such functions can't be distinguished after
   --    being injected into fΔ f.
-  valid-functions-map-Δ : ∀ (f : A → B) (df : Δ f) → fΔ f
+  valid-functions-map-Δ : ∀ (f : A → B) (df : Δ₁ f) → fΔ f
   valid-functions-map-Δ f (df , dff) a (da , daa) = df a da , valid-res
     where
       valid-res : ch df a da from f a to (f a ⊕ df a da)
