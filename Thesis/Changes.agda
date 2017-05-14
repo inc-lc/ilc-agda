@@ -290,10 +290,14 @@ instance
   unitCS = record
     { Ch = ⊤
     ; ch_from_to_ = λ dv v1 v2 → ⊤
-    ; isCompChangeStructure = IsChangeStructure→IsCompChangeStructure (record
+    ; isCompChangeStructure = record
+      { isChangeStructure = record
       { _⊕_ = λ _ _ → tt
       ; fromto→⊕ = λ { _ _ tt _ → refl }
       ; _⊝_ = λ _ _ → tt
       ; ⊝-fromto = λ a b → tt
-      })
+      }
+      ; _⊚[_]_ = λ da1 a da2 → tt
+      ; ⊚-fromto = λ a1 a2 a3 da1 da2 daa1 daa2 → tt
+      }
     }
