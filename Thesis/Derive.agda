@@ -153,3 +153,24 @@ module _ {t1 t2 t3 : Type}
       ≡
         f a2 ⊕ df a2 (nil a2) ⊝ g b1
     changeMatchSem-lem2 b1 a2 rewrite ominusτ-equiv-ext t1 Γ′′ | oplusτ-equiv-ext t3 Γ′ | ominusτ-equiv-ext t3 Γ = refl
+  module _ where
+    private
+      Γ′ Γ′′ : Context
+      Γ′ = t1 • (t1 ⇒ Δt t1 ⇒ Δt t3) • (t1 ⇒ t3) • Γ
+      Γ′′ = t1 • Γ′
+    changeMatchSem-lem3 :
+      ∀ a1 a2 →
+        ⟦ match ⟧ΔConst (inj₁ a1) (inj₂ (inj₁ a2)) f df g dg ≡
+        f a2 ⊕ df a2 (nil a2) ⊝ f a1
+    changeMatchSem-lem3 a1 a2 rewrite ominusτ-equiv-ext t1 Γ′′ | oplusτ-equiv-ext t3 Γ′ | ominusτ-equiv-ext t3 Γ = refl
+  module _ where
+    private
+      Γ′ Γ′′ : Context
+      Γ′ = t2 • (t2 ⇒ Δt t2 ⇒ Δt t3) • (t2 ⇒ t3) • Γ
+      Γ′′ = t2 • Γ′
+    changeMatchSem-lem4 :
+      ∀ b1 b2 →
+        ⟦ match ⟧ΔConst (inj₂ b1) (inj₂ (inj₂ b2)) f df g dg
+      ≡
+        g b2 ⊕ dg b2 (nil b2) ⊝ g b1
+    changeMatchSem-lem4 b1 b2 rewrite ominusτ-equiv-ext t2 Γ′′ | oplusτ-equiv-ext t3 Γ′ | ominusτ-equiv-ext t3 Γ = refl
