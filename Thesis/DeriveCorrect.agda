@@ -22,13 +22,22 @@ fromtoDeriveConst linj da a1 a2 daa = sft₁ daa
 fromtoDeriveConst rinj db b1 b2 dbb = sft₂ dbb
 fromtoDeriveConst match .(inj₁ (inj₁ _)) .(inj₁ _) .(inj₁ _) (sft₁ daa) df f1 f2 dff dg g1 g2 dgg = dff _ _ _ daa
 fromtoDeriveConst match .(inj₁ (inj₂ _)) .(inj₂ _) .(inj₂ _) (sft₂ dbb) df f1 f2 dff dg g1 g2 dgg = dgg _ _ _ dbb
-fromtoDeriveConst match .(inj₂ (inj₂ b2)) .(inj₁ a1) .(inj₂ b2) (sftrp₁ a1 b2) df f1 f2 dff dg g1 g2 dgg
+fromtoDeriveConst match .(inj₂ (inj₂ b2)) .(inj₁ a1) .(inj₂ b2) (sftrp (inj₁ a1) (inj₂ b2)) df f1 f2 dff dg g1 g2 dgg
  rewrite changeMatchSem-lem1 f1 df g1 dg a1 b2
- | sym (fromto→⊕ dg g1 g2 dgg) = ⊝-fromto (f1 a1) ((g1 ⊕ dg) b2)
-fromtoDeriveConst match .(inj₂ (inj₁ a2)) .(inj₂ b1) .(inj₁ a2) (sftrp₂ b1 a2) df f1 f2 dff dg g1 g2 dgg
+ | sym (fromto→⊕ dg g1 g2 dgg)
+ = ⊝-fromto (f1 a1) ((g1 ⊕ dg) b2)
+fromtoDeriveConst match .(inj₂ (inj₁ a2)) .(inj₂ b1) .(inj₁ a2) (sftrp (inj₂ b1) (inj₁ a2)) df f1 f2 dff dg g1 g2 dgg
   rewrite changeMatchSem-lem2 f1 df g1 dg b1 a2
   | sym (fromto→⊕ df f1 f2 dff)
-   = ⊝-fromto (g1 b1) ((f1 ⊕ df) a2)
+  = ⊝-fromto (g1 b1) ((f1 ⊕ df) a2)
+fromtoDeriveConst match .(inj₂ (inj₁ a2)) .(inj₁ a1) .(inj₁ a2) (sftrp (inj₁ a1) (inj₁ a2)) df f1 f2 dff dg g1 g2 dgg
+  rewrite changeMatchSem-lem3 f1 df g1 dg a1 a2
+  | sym (fromto→⊕ df f1 f2 dff)
+  = ⊝-fromto (f1 a1) ((f1 ⊕ df) a2)
+fromtoDeriveConst match .(inj₂ (inj₂ b2)) .(inj₂ b1) .(inj₂ b2) (sftrp (inj₂ b1) (inj₂ b2)) df f1 f2 dff dg g1 g2 dgg
+  rewrite changeMatchSem-lem4 f1 df g1 dg b1 b2
+ | sym (fromto→⊕ dg g1 g2 dgg)
+  = ⊝-fromto (g1 b1) ((g1 ⊕ dg) b2)
 
 fromtoDeriveVar : ∀ {Γ τ} → (x : Var Γ τ) →
   ∀ {dρ ρ1 ρ2} → [ Γ ]Γ dρ from ρ1 to ρ2 →

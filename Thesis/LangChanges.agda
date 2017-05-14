@@ -83,13 +83,13 @@ module _ where
   e⊝-fromto ∅ ∅ = v∅
   e⊝-fromto (v1 • ρ1) (v2 • ρ2) = ⊝-fromto v1 v2 v• e⊝-fromto ρ1 ρ2
 
-  _e⊚[_]_ : ∀ {Γ} → ChΓ Γ → ⟦ Γ ⟧Context → ChΓ Γ → ChΓ Γ
-  _e⊚[_]_ {∅} ∅ ∅ ∅ = ∅
-  _e⊚[_]_ {τ • Γ} (dv1 • _ • dρ1) (v1 • ρ1) (dv2 • _ • dρ2) = (dv1 ⊚[ v1 ] dv2) • v1 • (dρ1 e⊚[ ρ1 ] dρ2)
+  _e⊚_ : ∀ {Γ} → ChΓ Γ → ChΓ Γ → ChΓ Γ
+  _e⊚_ {∅} ∅ ∅ = ∅
+  _e⊚_ {τ • Γ} (dv1 • v1 • dρ1) (dv2 • _ • dρ2) = dv1 ⊚[ ⟦ τ ⟧Type ] dv2 • v1 • dρ1 e⊚ dρ2
 
   e⊚-fromto : ∀ Γ → (ρ1 ρ2 ρ3 : ⟦ Γ ⟧Context) (dρ1 dρ2 : ChΓ Γ) →
     [ Γ ]Γ dρ1 from ρ1 to ρ2 →
-    [ Γ ]Γ dρ2 from ρ2 to ρ3 → [ Γ ]Γ (dρ1 e⊚[ ρ1 ] dρ2) from ρ1 to ρ3
+    [ Γ ]Γ dρ2 from ρ2 to ρ3 → [ Γ ]Γ (dρ1 e⊚ dρ2) from ρ1 to ρ3
   e⊚-fromto ∅ ∅ ∅ ∅ ∅ ∅ v∅ v∅ = v∅
   e⊚-fromto (τ • Γ) (v1 • ρ1) (v2 • ρ2) (v3 • ρ3)
     (dv1 • (.v1 • dρ1)) (dv2 • (.v2 • dρ2))
@@ -105,7 +105,7 @@ module _ where
       ; _⊝_ = _e⊝_
       ; ⊝-fromto = e⊝-fromto
       }
-    ; _⊚[_]_ = _e⊚[_]_
+    ; _⊚_ = _e⊚_
     ; ⊚-fromto = e⊚-fromto Γ
     }
 
