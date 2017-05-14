@@ -1,7 +1,8 @@
 module Thesis.ANormalDTerm where
 
-open import Thesis.ANormal
-
+open import Thesis.ANormal public
+open import Thesis.Changes public
+open import Thesis.LangChanges public
 
 ΔΔ : Context → Context
 ΔΔ ∅ = ∅
