@@ -1,4 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
 module Thesis.Changes where
 
 open import Data.Product
@@ -264,16 +263,18 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
   s⊝-fromto s1@(inj₂ b1) s2@(inj₁ a2) = sftrp s1 s2
 
   _s⊚2_ : SumChange2 → SumChange2 → SumChange2
-  _ s⊚2 rp s3 = rp s3
+  ds1 s⊚2 rp s3 = rp s3
   ch₁ da1 s⊚2 ch₁ da2 = ch₁ (da1 ⊚[ A ] da2)
   rp (inj₁ a2) s⊚2 ch₁ da2 = rp (inj₁ (a2 ⊕ da2))
   ch₂ db1 s⊚2 ch₂ db2 = ch₂ (db1 ⊚[ B ] db2)
   rp (inj₂ b2) s⊚2 ch₂ db2 = rp (inj₂ (b2 ⊕ db2))
   -- Cases for invalid combinations of input changes.
-  ch₂ db s⊚2 ch₁ da = {!!}
-  rp (inj₂ y) s⊚2 ch₁ da2 = {!!}
-  ch₁ da s⊚2 ch₂ db = {!!}
-  rp (inj₁ a2) s⊚2 ch₂ db2 = {!!}
+  --
+  -- That is, whenever ds2 is a non-replacement change for outputs that ds1
+  -- can't produce.
+  --
+  -- We can prove validity preservation *without* filling this in.
+  ds1 s⊚2 ds2 = ds1
 
   _s⊚_ : SumChange → SumChange → SumChange
   ds1 s⊚ ds2 = convert₁ (convert ds1 s⊚2 convert ds2)
