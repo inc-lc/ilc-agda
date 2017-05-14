@@ -301,6 +301,7 @@ suc n [ σ ⇒ τ ]τ df from f1 to f2 = ∀ (da : Val (Δt σ)) → (a1 a2 : Va
      × n [ τ ]τ dv from v1 to v2
 
 suc n [ int ]τ intV dn from intV n1 to intV n2 = n1 + dn ≡ n2
+suc n [ unit ]τ dv from v1 to v2 = ⊤
 suc n [ pair σ τ ]τ pairV da db from pairV a1 b1 to pairV a2 b2 =
   suc n [ σ ]τ da from a1 to a2 × suc n [ τ ]τ db from b1 to b2
 suc n [ sum σ τ ]τ () from v1 to v2
