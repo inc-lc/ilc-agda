@@ -271,17 +271,53 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
   s⊝-fromto (inj₁ a1) (inj₂ b2) = sftrp₁ a1 b2
   s⊝-fromto (inj₂ b1) (inj₁ a2) = sftrp₂ b1 a2
   s⊝-fromto (inj₂ b1) (inj₂ b2) = sft₂ (⊝-fromto b1 b2)
+  _s⊚2[_]_ : SumChange2 → A ⊎ B → SumChange2 → SumChange2
+  ch₁ da1 s⊚2[ inj₁ a ] ch₁ da2 = ch₁ (da1 ⊚[ a ] da2)
+  ch₁ da1 s⊚2[ inj₂ b ] ch₁ da2 = {!!}
+  ch₂ db s⊚2[ s ] ch₁ da = {!!}
+  rp (inj₁ a2) s⊚2[ s ] ch₁ da2 = rp (inj₁ (a2 ⊕ da2))
+  rp (inj₂ y) s⊚2[ s ] ch₁ da2 = {!!}
+  ch₁ da s⊚2[ s ] ch₂ db = {!!}
+  ch₂ db1 s⊚2[ inj₁ a ] ch₂ db2 = ch₂ {!!}
+  ch₂ db1 s⊚2[ inj₂ b ] ch₂ db2 = ch₂ (db1 ⊚[ b ] db2)
+  rp (inj₁ a2) s⊚2[ s ] ch₂ db2 = {!!}
+  rp (inj₂ b2) s⊚2[ s ] ch₂ db2 = rp (inj₂ (b2 ⊕ db2))
+  ch₁ da s⊚2[ s ] rp s₁ = rp s₁
+  ch₂ db s⊚2[ s ] rp s₁ = rp s₁
+  rp s2 s⊚2[ s1 ] rp s3 = rp s3
+
+  _s⊚[_]_ : SumChange → A ⊎ B → SumChange → SumChange
+  ds1 s⊚[ s ] ds2 = convert₁ (convert ds1 s⊚2[ s ] convert ds2)
+
+  s⊚-fromto : (s1 s2 s3 : A ⊎ B) (ds1 ds2 : SumChange) →
+      sch ds1 from s1 to s2 →
+      sch ds2 from s2 to s3 → sch ds1 s⊚[ s1 ] ds2 from s1 to s3
+  s⊚-fromto (inj₁ a1) (inj₁ a2) (inj₁ a3) (inj₁ (inj₁ da1)) (inj₁ (inj₁ da2)) (sft₁ daa1) (sft₁ daa2) = sft₁ (⊚-fromto a1 a2 a3 _ _ daa1 daa2)
+  s⊚-fromto .(inj₂ b1) .(inj₁ a2) (inj₁ a3) .(inj₂ (inj₁ a2)) (inj₁ (inj₁ da2)) (sftrp₂ b1 a2) (sft₁ daa2) with sfromto→⊕ (inj₁ (inj₁ da2)) _ _ (sft₁ daa2)
+  s⊚-fromto .(inj₂ b1) .(inj₁ a2) (inj₁ .(a2 ⊕ da2)) .(inj₂ (inj₁ a2)) (inj₁ (inj₁ da2)) (sftrp₂ b1 a2) (sft₁ daa2) | refl = sftrp₂ b1 (a2 ⊕ da2)
+  s⊚-fromto (inj₂ b1) (inj₂ b2) (inj₂ b3) (inj₁ (inj₂ db1)) (inj₁ (inj₂ db2)) (sft₂ dbb1) (sft₂ dbb2) = sft₂ (⊚-fromto b1 b2 b3 _ _ dbb1 dbb2)
+  s⊚-fromto .(inj₁ a1) .(inj₂ b2) .(inj₂ _) .(inj₂ (inj₂ b2)) (inj₁ (inj₂ db2)) (sftrp₁ a1 b2) (sft₂ dbb2) with sfromto→⊕ (inj₁ (inj₂ db2)) _ _ (sft₂ dbb2)
+  s⊚-fromto .(inj₁ a1) .(inj₂ b2) .(inj₂ (b2 ⊕ db2)) .(inj₂ (inj₂ b2)) (inj₁ (inj₂ db2)) (sftrp₁ a1 b2) (sft₂ dbb2) | refl = sftrp₁ a1 (b2 ⊕ db2)
+  s⊚-fromto (inj₁ a1) .(inj₁ a2) .(inj₂ b2) .(inj₁ (inj₁ _)) .(inj₂ (inj₂ b2)) (sft₁ daa) (sftrp₁ a2 b2) = sftrp₁ a1 b2
+  s⊚-fromto .(inj₂ b1) .(inj₁ a1) .(inj₂ b2) .(inj₂ (inj₁ a1)) .(inj₂ (inj₂ b2)) (sftrp₂ b1 .a1) (sftrp₁ a1 b2) = {!!}
+  s⊚-fromto .(inj₂ _) .(inj₂ b2) .(inj₁ a2) .(inj₁ (inj₂ _)) .(inj₂ (inj₁ a2)) (sft₂ dbb2) (sftrp₂ b2 a2) = sftrp₂ _ _
+  s⊚-fromto .(inj₁ a1) .(inj₂ b1) .(inj₁ a2) .(inj₂ (inj₂ b1)) .(inj₂ (inj₁ a2)) (sftrp₁ a1 .b1) (sftrp₂ b1 a2) = {!!}
+
   instance
     sumCS : ChangeStructure (A ⊎ B)
   sumCS = record
     { Ch = SumChange
     ; ch_from_to_ = sch_from_to_
-    ; isCompChangeStructure = IsChangeStructure→IsCompChangeStructure (record
+    ; isCompChangeStructure = record
+      { isChangeStructure = record
       { _⊕_ = _s⊕_
       ; fromto→⊕ = sfromto→⊕
       ; _⊝_ = _s⊝_
       ; ⊝-fromto = s⊝-fromto
-      })
+      }
+      ; _⊚[_]_ = _s⊚[_]_
+      ; ⊚-fromto = s⊚-fromto
+      }
     }
 
 instance
