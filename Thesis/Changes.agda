@@ -38,34 +38,15 @@ record IsChangeStructure (A : Set) (ChA : Set) (ch_from_to_ : (dv : ChA) → (v1
 record IsCompChangeStructure (A : Set) (ChA : Set) (ch_from_to_ : (dv : ChA) → (v1 v2 : A) → Set) : Set₁ where
   field
     isChangeStructure : IsChangeStructure A ChA ch_from_to_
-    _⊚[_]_ : ChA → A → ChA → ChA
+    _⊚_ : ChA → ChA → ChA
     ⊚-fromto : ∀ (a1 a2 a3 : A) (da1 da2 : ChA) →
-      ch da1 from a1 to a2 → ch da2 from a2 to a3 → ch da1 ⊚[ a1 ] da2 from a1 to a3
+      ch da1 from a1 to a2 → ch da2 from a2 to a3 → ch da1 ⊚ da2 from a1 to a3
 
   open IsChangeStructure isChangeStructure public
   ⊚-correct : ∀ (a1 a2 a3 : A) (da1 da2 : ChA) →
     ch da1 from a1 to a2 → ch da2 from a2 to a3 →
-    a1 ⊕ (da1 ⊚[ a1 ] da2) ≡ a3
+    a1 ⊕ (da1 ⊚ da2) ≡ a3
   ⊚-correct a1 a2 a3 da1 da2 daa1 daa2 = fromto→⊕ _ _ _ (⊚-fromto _ _ _ da1 da2 daa1 daa2)
-
-IsChangeStructure→IsCompChangeStructure : ∀ {A ChA ch_from_to_} → IsChangeStructure A ChA ch_from_to_ → IsCompChangeStructure A ChA ch_from_to_
-IsChangeStructure→IsCompChangeStructure {A} {ChA} {ch_from_to_} isCS = record
-  { isChangeStructure = isCS
-  ; _⊚[_]_ = λ da1 a da2 → a ⊕ da1 ⊕ da2 ⊝ a
-  ; ⊚-fromto = body
-  }
-  where
-    _⊕_ = IsChangeStructure._⊕_ isCS
-    _⊝_ = IsChangeStructure._⊝_ isCS
-    fromto→⊕ = IsChangeStructure.fromto→⊕ isCS
-    ⊝-fromto = IsChangeStructure.⊝-fromto isCS
-    infixl 6 _⊕_ _⊝_
-    body : ∀ (a1 a2 a3 : A) da1 da2 →
-      ch da1 from a1 to a2 →
-      ch da2 from a2 to a3 → ch a1 ⊕ da1 ⊕ da2 ⊝ a1 from a1 to a3
-    body a1 a2 a3 da1 da2 daa1 daa2 rewrite fromto→⊕ _ _ _ daa1 | fromto→⊕ _ _ _ daa2 =
-      ⊝-fromto a1 a3
-
 
 record ChangeStructure (A : Set) : Set₁ where
   field
@@ -78,14 +59,25 @@ open ChangeStructure {{...}} public hiding (Ch)
 Ch : ∀ (A : Set) → {{CA : ChangeStructure A}} → Set
 Ch A {{CA}} = ChangeStructure.Ch CA
 
+-- infix 2 Σ-syntax
+
+-- Σ-syntax : ∀ {a b} (A : Set a) → (A → Set b) → Set (a ⊔ b)
+-- Σ-syntax = Σ
+
+-- syntax Σ-syntax A (λ x → B) = Σ[ x ∈ A ] B
+
+⊚-syntax : ∀ (A : Set) → {{CA : ChangeStructure A}} → Ch A → Ch A → Ch A
+⊚-syntax A {{CA}} da1 da2 = _⊚_ {{CA}} da1 da2
+syntax ⊚-syntax A da1 da2 = da1 ⊚[ A ] da2
+
 {-# DISPLAY IsChangeStructure._⊕_ x = _⊕_ #-}
 {-# DISPLAY ChangeStructure._⊕_ x = _⊕_ #-}
 {-# DISPLAY IsChangeStructure._⊝_ x = _⊝_ #-}
 {-# DISPLAY ChangeStructure._⊝_ x = _⊝_ #-}
 {-# DISPLAY IsChangeStructure.nil x = nil #-}
 {-# DISPLAY ChangeStructure.nil x = nil #-}
-{-# DISPLAY IsCompChangeStructure._⊚[_]_ x = _⊚[_]_ #-}
-{-# DISPLAY ChangeStructure._⊚[_]_ x = _⊚[_]_ #-}
+{-# DISPLAY IsCompChangeStructure._⊚_ x = _⊚_ #-}
+{-# DISPLAY ChangeStructure._⊚_ x = _⊚_ #-}
 {-# DISPLAY ChangeStructure.ch_from_to_ x = ch_from_to_ #-}
 
 module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
@@ -118,14 +110,14 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
     f⊝-fromto f1 f2 da a1 a2 daa
       rewrite sym (fromto→⊕ da a1 a2 daa) = ⊝-fromto (f1 a1) (f2 (a1 ⊕ da))
 
-    _f⊚[_]_ : fCh → (A → B) → fCh → fCh
-    _f⊚[_]_ df1 f df2 = λ a da → (df1 a (nil a)) ⊚[ f a ] (df2 a da)
+    _f⊚_ : fCh → fCh → fCh
+    _f⊚_ df1 df2 = λ a da → df1 a (nil a) ⊚[ B ] df2 a da
 
-    _f2⊚[_]_ : fCh → (A → B) → fCh → fCh
-    _f2⊚[_]_ df1 f df2 = λ a da → df1 a da ⊚[ f a ] df2 (a ⊕ da) (nil (a ⊕ da))
+    _f2⊚_ : fCh → fCh → fCh
+    _f2⊚_ df1 df2 = λ a da → df1 a da ⊚[ B ] df2 (a ⊕ da) (nil (a ⊕ da))
 
     f⊚-fromto : ∀ (f1 f2 f3 : A → B) (df1 df2 : fCh) → fCh df1 from f1 to f2 → fCh df2 from f2 to f3 →
-      fCh df1 f⊚[ f1 ] df2 from f1 to f3
+      fCh df1 f⊚ df2 from f1 to f3
     f⊚-fromto f1 f2 f3 df1 df2 dff1 dff2 da a1 a2 daa =
       ⊚-fromto (f1 a1) (f2 a1) (f3 a2)
         (df1 a1 (nil a1))
@@ -134,7 +126,7 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
         (dff2 da a1 a2 daa)
 
     f⊚2-fromto : ∀ (f1 f2 f3 : A → B) (df1 df2 : fCh) → fCh df1 from f1 to f2 → fCh df2 from f2 to f3 →
-      fCh df1 f2⊚[ f1 ] df2 from f1 to f3
+      fCh df1 f2⊚ df2 from f1 to f3
     f⊚2-fromto f1 f2 f3 df1 df2 dff1 dff2 da a1 a2 daa rewrite fromto→⊕ da a1 a2 daa =
       ⊚-fromto (f1 a1) (f2 a2) (f3 a2)
         (df1 a1 da)
@@ -156,7 +148,7 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
         ; _⊝_ = _f⊝_
         ; ⊝-fromto = f⊝-fromto
         }
-      ; _⊚[_]_ = _f⊚[_]_
+      ; _⊚_ = _f⊚_
       ; ⊚-fromto = f⊚-fromto
       }
     }
@@ -170,8 +162,8 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
     _p⊝_ (a2 , b2) (a1 , b1) = a2 ⊝ a1 , b2 ⊝ b1
     pch_from_to_ : pCh → A × B → A × B → Set
     pch (da , db) from (a1 , b1) to (a2 , b2) = ch da from a1 to a2 × ch db from b1 to b2
-    _p⊚[_]_ : pCh → A × B → pCh → pCh
-    (da1 , db1) p⊚[ a , b ] (da2 , db2) = da1 ⊚[ a ] da2 , db1 ⊚[ b ] db2
+    _p⊚_ : pCh → pCh → pCh
+    (da1 , db1) p⊚ (da2 , db2) = da1 ⊚[ A ] da2 , db1 ⊚[ B ] db2
     pfromto→⊕ : ∀ dp p1 p2 →
       pch dp from p1 to p2 → p1 p⊕ dp ≡ p2
     pfromto→⊕ (da , db) (a1 , b1) (a2 , b2) (daa , dbb) =
@@ -179,7 +171,7 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
     p⊝-fromto : ∀ (p1 p2 : A × B) → pch p2 p⊝ p1 from p1 to p2
     p⊝-fromto (a1 , b1) (a2 , b2) = ⊝-fromto a1 a2 , ⊝-fromto b1 b2
     p⊚-fromto : ∀ p1 p2 p3 dp1 dp2 →
-      pch dp1 from p1 to p2 → (pch dp2 from p2 to p3) → pch dp1 p⊚[ p1 ] dp2 from p1 to p3
+      pch dp1 from p1 to p2 → (pch dp2 from p2 to p3) → pch dp1 p⊚ dp2 from p1 to p3
     p⊚-fromto (a1 , b1) (a2 , b2) (a3 , b3) (da1 , db1) (da2 , db2)
       (daa1 , dbb1) (daa2 , dbb2) =
         ⊚-fromto a1 a2 a3 da1 da2 daa1 daa2 , ⊚-fromto b1 b2 b3 db1 db2 dbb1 dbb2
@@ -196,7 +188,7 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
         ; _⊝_ = _p⊝_
         ; ⊝-fromto = p⊝-fromto
         }
-      ; _⊚[_]_ = _p⊚[_]_
+      ; _⊚_ = _p⊚_
       ; ⊚-fromto = p⊚-fromto
       }
     }
@@ -271,26 +263,24 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
   s⊝-fromto s1@(inj₁ a1) s2@(inj₂ b2) = sftrp s1 s2
   s⊝-fromto s1@(inj₂ b1) s2@(inj₁ a2) = sftrp s1 s2
 
-  -- TODO: drop all indexes prefixed with _
-  _s⊚2[_]_ : SumChange2 → A ⊎ B → SumChange2 → SumChange2
-  _ s⊚2[ _s1 ] rp s3 = rp s3
-  ch₁ da1 s⊚2[ inj₁ _a ] ch₁ da2 = ch₁ (da1 ⊚[ _a ] da2)
-  ch₁ da1 s⊚2[ inj₂ _b ] ch₁ da2 = ch₁ (da1 ⊚[ {!!} ] da2)
-  ch₂ db s⊚2[ _s ] ch₁ da = {!!}
-  rp (inj₁ a2) s⊚2[ _s ] ch₁ da2 = rp (inj₁ (a2 ⊕ da2))
-  rp (inj₂ y) s⊚2[ _s ] ch₁ da2 = {!!}
-  ch₁ da s⊚2[ _s ] ch₂ db = {!!}
-  ch₂ db1 s⊚2[ inj₁ _a ] ch₂ db2 = ch₂ (db1 ⊚[ {!!} ] db2)
-  ch₂ db1 s⊚2[ inj₂ _b ] ch₂ db2 = ch₂ (db1 ⊚[ _b ] db2)
-  rp (inj₁ a2) s⊚2[ _s ] ch₂ db2 = {!!}
-  rp (inj₂ b2) s⊚2[ _s ] ch₂ db2 = rp (inj₂ (b2 ⊕ db2))
+  _s⊚2_ : SumChange2 → SumChange2 → SumChange2
+  _ s⊚2 rp s3 = rp s3
+  ch₁ da1 s⊚2 ch₁ da2 = ch₁ (da1 ⊚[ A ] da2)
+  rp (inj₁ a2) s⊚2 ch₁ da2 = rp (inj₁ (a2 ⊕ da2))
+  ch₂ db1 s⊚2 ch₂ db2 = ch₂ (db1 ⊚[ B ] db2)
+  rp (inj₂ b2) s⊚2 ch₂ db2 = rp (inj₂ (b2 ⊕ db2))
+  -- Cases for invalid combinations of input changes.
+  ch₂ db s⊚2 ch₁ da = {!!}
+  rp (inj₂ y) s⊚2 ch₁ da2 = {!!}
+  ch₁ da s⊚2 ch₂ db = {!!}
+  rp (inj₁ a2) s⊚2 ch₂ db2 = {!!}
 
-  _s⊚[_]_ : SumChange → A ⊎ B → SumChange → SumChange
-  ds1 s⊚[ s ] ds2 = convert₁ (convert ds1 s⊚2[ s ] convert ds2)
+  _s⊚_ : SumChange → SumChange → SumChange
+  ds1 s⊚ ds2 = convert₁ (convert ds1 s⊚2 convert ds2)
 
   s⊚-fromto : (s1 s2 s3 : A ⊎ B) (ds1 ds2 : SumChange) →
       sch ds1 from s1 to s2 →
-      sch ds2 from s2 to s3 → sch ds1 s⊚[ s1 ] ds2 from s1 to s3
+      sch ds2 from s2 to s3 → sch ds1 s⊚ ds2 from s1 to s3
 
   s⊚-fromto (inj₁ a1) (inj₁ a2) (inj₁ a3) (inj₁ (inj₁ da1)) (inj₁ (inj₁ da2)) (sft₁ daa1) (sft₁ daa2) = sft₁ (⊚-fromto a1 a2 a3 _ _ daa1 daa2)
   s⊚-fromto (inj₂ b1) (inj₂ b2) (inj₂ b3) (inj₁ (inj₂ db1)) (inj₁ (inj₂ db2)) (sft₂ dbb1) (sft₂ dbb2) = sft₂ (⊚-fromto b1 b2 b3 _ _ dbb1 dbb2)
@@ -315,7 +305,7 @@ module _ {A B : Set} {{CA : ChangeStructure A}} {{CB : ChangeStructure B}} where
       ; _⊝_ = _s⊝_
       ; ⊝-fromto = s⊝-fromto
       }
-      ; _⊚[_]_ = _s⊚[_]_
+      ; _⊚_ = _s⊚_
       ; ⊚-fromto = s⊚-fromto
       }
     }
@@ -333,7 +323,7 @@ instance
       ; _⊝_ = λ _ _ → tt
       ; ⊝-fromto = λ a b → tt
       }
-      ; _⊚[_]_ = λ da1 a da2 → tt
+      ; _⊚_ = λ da1 da2 → tt
       ; ⊚-fromto = λ a1 a2 a3 da1 da2 daa1 daa2 → tt
       }
     }

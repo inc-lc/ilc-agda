@@ -20,7 +20,7 @@ intCS = record
       ; _⊝_ = _-_
       ; ⊝-fromto = λ a b → n+[m-n]=m {a} {b}
       }
-    ; _⊚[_]_ = λ da1 a da2 → da1 + da2
+    ; _⊚_ = λ da1 da2 → da1 + da2
     ; ⊚-fromto = i⊚-fromto
     }
   }
