@@ -26,8 +26,8 @@ record IsChangeStructure (A : Set) (ChA : Set) (ch_from_to_ : (dv : ChA) → (v1
 
   valid : ∀ (a : A) (da : ChA) → Set
   valid a da = ch da from a to (a ⊕ da)
-  Δ : (a : A) → Set
-  Δ a = Σ[ da ∈ ChA ] valid a da
+  -- Δ : (a : A) → Set
+  -- Δ a = Σ[ da ∈ ChA ] valid a da
   Δ₂ : (a1 : A) (a2 : A) → Set
   Δ₂ a1 a2 = Σ[ da ∈ ChA ] ch da from a1 to a2
 
