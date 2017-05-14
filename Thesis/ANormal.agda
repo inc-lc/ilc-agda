@@ -65,8 +65,8 @@ weaken-fun-sound : ∀ {Γ₁ Γ₂ τ} (Γ₁≼Γ₂ : Γ₁ ≼ Γ₂)
 weaken-fun-sound Γ₁≼Γ₂ (term x) ρ = weaken-term-sound Γ₁≼Γ₂ x ρ
 weaken-fun-sound Γ₁≼Γ₂ (abs f) ρ = ext (λ v → weaken-fun-sound (keep _ • Γ₁≼Γ₂) f (v • ρ))
 
-open import Thesis.Changes
-open import Thesis.LangChanges
+open import Thesis.Changes public
+open import Thesis.LangChanges public
 
 derive-var : ∀ {Γ τ} → Var Γ τ → Var (ΔΓ Γ) (Δt τ)
 derive-var this = this

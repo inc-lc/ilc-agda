@@ -2,11 +2,22 @@ module Thesis.ANormalUntyped where
 
 open import Data.Nat.Base
 open import Data.Integer.Base
+open import Relation.Binary.PropositionalEquality
 
 {- Typed deBruijn indexes for untyped languages. -}
 
-data Type : Set where
-  Uni : Type
+-- Make this abstract again *and* add needed equations.
+abstract
+  data Type : Set where
+    Uni : Type
+  uni = Uni
+
+  -- Allow exposing that there's a single type where needed.
+  isUni : ∀ τ → τ ≡ uni
+  isUni Uni = refl
+
+-- This equation allows bypassing more checks. Otherwise we'd need to use isUni
+-- even more often.
 _⇒_ : Type → Type → Type
 _⇒_ σ τ = τ
 
@@ -16,12 +27,24 @@ data Term (Γ : Context) (τ : Type) : Set where
     Term Γ τ
   lett : ∀ {σ τ₁} → (f : Var Γ (σ ⇒ τ₁)) → (x : Var Γ σ) → Term (τ₁ • Γ) τ → Term Γ τ
 
+{-
+deriveC Δ (lett f x t) = dlett df x dx
+-}
+
+-- data ΔCTerm (Γ : Context) (τ : Type) (Δ : Context) : Set where
+-- data ΔCTerm (Γ : Context) (τ : Type) (Δ : Context) : Set where
+--   cvar : (x : Var Γ τ) Δ →
+--     ΔCTerm Γ τ Δ
+--   clett : ∀ {σ τ₁ κ} → (f : Var Γ (σ ⇒ τ₁)) → (x : Var Γ σ) →
+--     ΔCTerm (τ₁ • Γ) τ (? • Δ) →
+--     ΔCTerm Γ τ Δ
+
 weaken-term : ∀ {Γ₁ Γ₂ τ} →
   (Γ₁≼Γ₂ : Γ₁ ≼ Γ₂) →
   Term Γ₁ τ →
   Term Γ₂ τ
 weaken-term Γ₁≼Γ₂ (var x) = var (weaken-var Γ₁≼Γ₂ x)
-weaken-term Γ₁≼Γ₂ (lett f x t) = lett (weaken-var Γ₁≼Γ₂ f) (weaken-var Γ₁≼Γ₂ x) (weaken-term ( keep _ • Γ₁≼Γ₂) t)
+weaken-term Γ₁≼Γ₂ (lett f x t) = lett (weaken-var Γ₁≼Γ₂ f) (weaken-var Γ₁≼Γ₂ x) (weaken-term (keep _ • Γ₁≼Γ₂) t)
 
 data Fun (Γ : Context) : (τ : Type) → Set where
   term : ∀ {τ} → Term Γ τ → Fun Γ τ
@@ -65,7 +88,8 @@ eval-fun : ∀ {Γ τ} → Fun Γ τ → ⟦ Γ ⟧Context → Res τ
 eval-term : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧Context → Res τ
 
 apply : ∀ {σ τ} → Val (σ ⇒ τ) → Val σ → Res τ
-apply {Uni} (closure {σ = Uni} f ρ) a n = eval-fun f (a • ρ) n
+apply {σ} (closure {σ = σ₁} f ρ) a n with isUni σ | isUni σ₁
+apply {.uni} (closure {_} {.uni} f ρ) a n | refl | refl = eval-fun f (a • ρ) n
 apply (intV _) a n = Error
 
 eval-term t ρ zero = TimeOut
@@ -79,7 +103,7 @@ eval-fun (abs f) ρ n = Done (closure f ρ)
 import Thesis.ANormal as T
 
 erase-type : T.Type → Type
-erase-type _ = Uni
+erase-type _ = uni
 
 erase-val : ∀ {τ} → T.Val τ → Val (erase-type τ)
 
@@ -115,7 +139,6 @@ erase-val (T.closure t ρ) = closure (erase-fun t) (erase-env ρ)
 erase-val (T.intV n) = intV n
 
 -- Different erasures commute.
-open import Relation.Binary.PropositionalEquality
 erasure-commute-var : ∀ {Γ τ} (x : T.Var Γ τ) ρ →
   erase-val (T.Op.⟦ x ⟧Var ρ) ≡ ⟦ erase-var x ⟧Var (erase-env ρ)
 erasure-commute-var T.this (v • ρ) = refl
@@ -127,7 +150,8 @@ erasure-commute-fun : ∀ {Γ τ} (t : T.Fun Γ τ) ρ n →
   erase-errVal (T.eval-fun t ρ n) ≡ eval-fun (erase-fun t) (erase-env ρ) n
 
 erasure-commute-apply : ∀ {σ τ} (f : T.Val (σ T.⇒ τ)) a n → erase-errVal (T.apply f a n) ≡ apply (erase-val f) (erase-val a) n
-erasure-commute-apply (T.closure t ρ) a n = erasure-commute-fun t (a • ρ) n
+erasure-commute-apply {σ} (T.closure t ρ) a n with isUni (erase-type σ)
+erasure-commute-apply {σ} (T.closure t ρ) a n | refl = erasure-commute-fun t (a • ρ) n
 
 erasure-commute-term : ∀ {Γ τ} (t : T.Term Γ τ) ρ n →
   erase-errVal (T.eval-term t ρ n) ≡ eval-term (erase-term t) (erase-env ρ) n
