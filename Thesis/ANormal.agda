@@ -24,6 +24,11 @@ data Fun (Γ : Context) : (τ : Type) → Set where
   term : ∀ {τ} → Term Γ τ → Fun Γ τ
   abs : ∀ {σ τ} → Fun (σ • Γ) τ → Fun Γ (σ ⇒ τ)
 
+-- Indeed, caching doesn't work there with Fun. It works on FunR. Eventually
+-- should adapt definitions to FunR.
+data FunR (Γ : Context) : (τ : Type) → Set where
+  cabsterm : ∀ {σ τ} → Term (σ • Γ) τ → FunR Γ (σ ⇒ τ)
+
 open import Thesis.Environments public
 
 ⟦_⟧Term : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧Context → ⟦ τ ⟧Type

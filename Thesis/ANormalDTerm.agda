@@ -7,6 +7,8 @@ open import Thesis.LangChanges public
 ΔΔ : Context → Context
 ΔΔ ∅ = ∅
 ΔΔ (τ • Γ) = Δt τ • ΔΔ Γ
+
+-- Because the standard name is so irregular.
 Δτ = Δt
 
 ChΔ : ∀ (Δ : Context) → Set
