@@ -239,26 +239,26 @@ relρ2-mono m n m≤n (τ • Γ) (v1 • ρ1) (v2 • ρ2) (vv , ρρ) = relV2-
 -- relV-apply-go2 (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc n) svv tvv v1 eqv1 | .v2 , eqv2' , final-v' | v2 , eqv2 , final-v | refl = v2 , eqv2' , final-v
 
 
-relV-apply-go : ∀ {σ τ} sv1 sv2 tv1 tv2
-  n
-  (svv : relV (σ ⇒ τ) sv1 sv2 (suc n))
-  (tvv : relV σ tv1 tv2 (suc n))
-  v1 →
-  apply sv1 tv1 n ≡ Done v1 →
-  Σ[ v2 ∈ Val τ ] (apply sv2 tv2 n ≡ Done v2 × relV τ v1 v2 (suc n))
-relV-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 zero svv tvv v1 ()
-relV-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc n) svv tvv v1 eqv1
-  with svv (suc n) ≤-refl tv1 tv2 ((relV-mono _ _ (≤-step ≤-refl) _ _ _ tvv)) v1 eqv1
-relV-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc n) svv tvv v1 eqv1 | v2 , eqv2 , final-v = v2 , eqv2 , {!final-v!}
+-- relV-apply-go : ∀ {σ τ} sv1 sv2 tv1 tv2
+--   n
+--   (svv : relV (σ ⇒ τ) sv1 sv2 (suc n))
+--   (tvv : relV σ tv1 tv2 (suc n))
+--   v1 →
+--   apply sv1 tv1 n ≡ Done v1 →
+--   Σ[ v2 ∈ Val τ ] (apply sv2 tv2 n ≡ Done v2 × relV τ v1 v2 (suc n))
+-- relV-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 zero svv tvv v1 ()
+-- relV-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc n) svv tvv v1 eqv1
+--   with svv (suc n) ≤-refl tv1 tv2 ((relV-mono _ _ (≤-step ≤-refl) _ _ _ tvv)) v1 eqv1
+-- relV-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc n) svv tvv v1 eqv1 | v2 , eqv2 , final-v = v2 , eqv2 , {!final-v!}
 
-relV-apply : ∀ {σ τ sv1 sv2 tv1 tv2}
-  n
-  (svv : relV (σ ⇒ τ) sv1 sv2 (suc n))
-  (tvv : relV σ tv1 tv2 (suc n))
-  {v1} →
-  apply sv1 tv1 n ≡ Done v1 →
-  Σ[ v2 ∈ Val τ ] (apply sv2 tv2 n ≡ Done v2 × relV τ v1 v2 (suc n))
-relV-apply n svv tvv eqv1 = relV-apply-go _ _ _ _ n svv tvv _ eqv1
+-- relV-apply : ∀ {σ τ sv1 sv2 tv1 tv2}
+--   n
+--   (svv : relV (σ ⇒ τ) sv1 sv2 (suc n))
+--   (tvv : relV σ tv1 tv2 (suc n))
+--   {v1} →
+--   apply sv1 tv1 n ≡ Done v1 →
+--   Σ[ v2 ∈ Val τ ] (apply sv2 tv2 n ≡ Done v2 × relV τ v1 v2 (suc n))
+-- relV-apply n svv tvv eqv1 = relV-apply-go _ _ _ _ n svv tvv _ eqv1
 --
 
 -- -- fundamental lemma of logical relations.
@@ -360,7 +360,7 @@ relV2-apply-go : ∀ {σ τ} sv1 sv2 tv1 tv2
   v1 →
   (eqv1 : apply sv1 tv1 (suc (F.toℕ j)) ≡ Done v1) →
   Σ[ v2 ∈ Val τ ] (apply sv2 tv2 (suc (F.toℕ j)) ≡ Done v2 × relV2 τ v1 v2 (F.toℕ (n ℕ- Fin.suc j)))
-relV2-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc zero) Fin.zero tt tt v1 eqv1 = {!!}
+relV2-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc zero) Fin.zero tt tt v1 eqv1 = {!CAN'T BE FILLED!}
 relV2-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc (suc n)) Fin.zero svv tvv v1 eqv1 = {!!}
 relV2-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc n) (Fin.suc j) svv tvv v1 eqv1 = {!!}
 
