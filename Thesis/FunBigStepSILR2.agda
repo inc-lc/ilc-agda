@@ -80,45 +80,40 @@ module Den = Base.Denotation.Environment Type ⟦_⟧Type
 --
 -- One could drop types and add error values instead.
 
-data ErrVal (τ : Type) (n0 : ℕ) : Set where
-  Done : (v : Val τ) → (n1 : ℕ) → (n≤ : n1 ≤ n0) → ErrVal τ n0
-  Error : ErrVal τ n0
-  TimeOut : ErrVal τ n0
+data ErrVal (τ : Type) : Set where
+  Done : (v : Val τ) → (n1 : ℕ) → ErrVal τ
+  Error : ErrVal τ
+  TimeOut : ErrVal τ
 
 Res : Type → Set
-Res τ = (n : ℕ) → ErrVal τ n
-
-up : ∀ {τ n0 n1} → ErrVal τ n1 → (n1 ≤ n0) → ErrVal τ n0
-up (Done v n2 n2≤n1) n1≤n0 = Done v n2 (≤-trans n2≤n1 n1≤n0)
-up Error n≤ = Error
-up TimeOut n≤ = TimeOut
+Res τ = (n : ℕ) → ErrVal τ
 
 _>>=_ : ∀ {σ τ} → Res σ → (Val σ → Res τ) → Res τ
 (s >>= t) n0 with s n0
-... | Done v n1 n≤ = up (t v n1) n≤
+... | Done v n1 = t v n1
 ... | Error = Error
 ... | TimeOut = TimeOut
 
 evalConst : ∀ {τ} → Const τ → Res τ
 evalConst (lit v) zero = TimeOut
-evalConst (lit v) (suc n) = Done (intV v) n (≤-step ≤-refl)
+evalConst (lit v) (suc n) = Done (intV v) n
 
 {-# TERMINATING #-}
 eval : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧Context → Res τ
 
 apply : ∀ {σ τ} → Val (σ ⇒ τ) → Val σ → Res τ
-apply (closure t ρ) a (suc n) = up (eval t (a • ρ) n) (≤-step ≤-refl)
+apply (closure t ρ) a (suc n) = eval t (a • ρ) n
 apply (closure t ρ) a zero = TimeOut
 
-eval (var x) ρ n = Done (⟦ x ⟧Var ρ) n ≤-refl
-eval (abs t) ρ n = Done (closure t ρ) n ≤-refl
+eval (var x) ρ n = Done (⟦ x ⟧Var ρ) n
+eval (abs t) ρ n = Done (closure t ρ) n
 eval (const c) ρ n = evalConst c n
 eval _ ρ zero = TimeOut
 -- eval (app s t) ρ = eval s ρ >>= (λ sv → eval t ρ >>= λ tv → apply sv tv)
 eval (app s t) ρ n0 with eval s ρ n0
 ... | Error = Error
 ... | TimeOut = TimeOut
-... | Done sv n1 n1≤n0 with eval t ρ n1
-... | Done tv n2 n2≤n1 = up (apply sv tv n2) (≤-trans n2≤n1 n1≤n0)
+... | Done sv n1 with eval t ρ n1
+... | Done tv n2 = apply sv tv n2
 ... | Error = Error
 ... | TimeOut = TimeOut
