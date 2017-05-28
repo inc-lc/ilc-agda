@@ -199,7 +199,8 @@ open import Algebra.Structures
 open import Data.Product
 open import Function
 
-module GroupChanges
+-- For non-abelian groups
+module PlainGroupChanges
     {a} (A : Set a) {_⊕_} {ε} {_⁻¹}
     {{isGroup : IsGroup {A = A} _≡_ _⊕_ ε _⁻¹}}
   where
@@ -240,7 +241,7 @@ module GroupChanges
         }
       }
 
-module AbelianGroupChanges
+module GroupChanges
     {a} (A : Set a) {_⊕_} {ε} {_⁻¹}
     {{isAbelianGroup : IsAbelianGroup {A = A} _≡_ _⊕_ ε _⁻¹}}
   where
