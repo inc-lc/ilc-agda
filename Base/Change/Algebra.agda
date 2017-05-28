@@ -201,6 +201,47 @@ open import Function
 
 module GroupChanges
     {a} (A : Set a) {_⊕_} {ε} {_⁻¹}
+    {{isGroup : IsGroup {A = A} _≡_ _⊕_ ε _⁻¹}}
+  where
+    open IsGroup isGroup
+      hiding
+        ( refl
+        ; sym
+        )
+      renaming
+        ( ∙-cong to _⟨⊕⟩_
+        )
+
+    open ≡-Reasoning
+
+    _⊝_ : A → A → A
+    v ⊝ u = (u ⁻¹) ⊕ v
+
+    changeAlgebraGroup : ChangeAlgebra A
+    changeAlgebraGroup = record
+      { Change = const A
+      ; update = _⊕_
+      ; diff = _⊝_
+      ; nil = const ε
+      ; isChangeAlgebra = record
+        { update-diff = λ u v →
+            begin
+              v ⊕ (u ⊝ v)
+            ≡⟨⟩
+               v ⊕ ((v ⁻¹) ⊕ u)
+            ≡⟨  sym (assoc _ _ _) ⟩
+               (v ⊕ (v ⁻¹)) ⊕ u
+            ≡⟨ proj₂ inverse v ⟨⊕⟩ refl ⟩
+               ε ⊕ u
+            ≡⟨ proj₁ identity u ⟩
+              u
+            ∎
+        ; update-nil = proj₂ identity
+        }
+      }
+
+module AbelianGroupChanges
+    {a} (A : Set a) {_⊕_} {ε} {_⁻¹}
     {{isAbelianGroup : IsAbelianGroup {A = A} _≡_ _⊕_ ε _⁻¹}}
   where
     open IsAbelianGroup isAbelianGroup
