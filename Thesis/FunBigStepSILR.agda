@@ -372,55 +372,55 @@ module Bar where
   -- relV2-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 n j svv tvv v1 eqv1 with svv _ ≤-refl tv1 tv2 tvv v1 (n ℕ- Fin.suc j) eqv1
   --... | v2 , eqv2 , final-v = {! !}
 
--- relV2-apply-go : ∀ {σ τ} sv1 sv2 tv1 tv2
---   n j
---   (svv : relV2 (σ ⇒ τ) sv1 sv2 (F.toℕ (n ℕ- Fin.suc j)))
---   (tvv : relV2 σ tv1 tv2 (F.toℕ (n ℕ- Fin.suc j)))
---   v1 →
---   (eqv1 : apply sv1 tv1 (suc (F.toℕ j)) ≡ Done v1) →
---   Σ[ v2 ∈ Val τ ] (apply sv2 tv2 (suc (F.toℕ j)) ≡ Done v2 × relV2 τ v1 v2 (F.toℕ (n ℕ- Fin.suc j)))
--- relV2-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 n j svv tvv v1 eqv1 with svv _ ≤-refl tv1 tv2 tvv v1
--- ... | r = {!r !}
--- -- relV2-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc zero) Fin.zero tt tt v1 eqv1 = {!CAN'T BE FILLED!}
--- -- relV2-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc (suc n)) Fin.zero svv tvv v1 eqv1 = {!!}
--- -- relV2-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc n) (Fin.suc j) svv tvv v1 eqv1 = {!!}
+relV2-apply-go : ∀ {σ τ} sv1 sv2 tv1 tv2
+  n j
+  (svv : relV2 (σ ⇒ τ) sv1 sv2 (n ℕ-ℕ Fin.suc j))
+  (tvv : relV2 σ tv1 tv2 (n ℕ-ℕ Fin.suc j))
+  v1 →
+  (eqv1 : apply sv1 tv1 (suc (F.toℕ j)) ≡ Done v1) →
+  Σ[ v2 ∈ Val τ ] (apply sv2 tv2 (suc (F.toℕ j)) ≡ Done v2 × relV2 τ v1 v2 (n ℕ-ℕ Fin.suc j))
+relV2-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 n j svv tvv v1 eqv1 with svv _ ≤-refl tv1 tv2 tvv v1
+... | r = {!r !}
+-- relV2-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc zero) Fin.zero tt tt v1 eqv1 = {!CAN'T BE FILLED!}
+-- relV2-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc (suc n)) Fin.zero svv tvv v1 eqv1 = {!!}
+-- relV2-apply-go (closure st1 ρ1) (closure st2 ρ2) tv1 tv2 (suc n) (Fin.suc j) svv tvv v1 eqv1 = {!!}
 
--- relV2-apply : ∀ {σ τ sv1 sv2 tv1 tv2}
---   n j
---   (svv : relV2 (σ ⇒ τ) sv1 sv2 (F.toℕ (n ℕ- Fin.suc j)))
---   (tvv : relV2 σ tv1 tv2 (F.toℕ (n ℕ- Fin.suc j)))
---   {v1} →
---   apply sv1 tv1 (suc (F.toℕ j)) ≡ Done v1 →
---   Σ[ v2 ∈ Val τ ] (apply sv2 tv2 (suc (F.toℕ j)) ≡ Done v2 × relV2 τ v1 v2 (F.toℕ (n ℕ- Fin.suc j)))
--- relV2-apply n j svv tvv eqv1 = relV2-apply-go _ _ _ _ n j svv tvv _ eqv1
+relV2-apply : ∀ {σ τ sv1 sv2 tv1 tv2}
+  n j
+  (svv : relV2 (σ ⇒ τ) sv1 sv2 (n ℕ-ℕ Fin.suc j))
+  (tvv : relV2 σ tv1 tv2 (n ℕ-ℕ Fin.suc j))
+  {v1} →
+  apply sv1 tv1 (suc (F.toℕ j)) ≡ Done v1 →
+  Σ[ v2 ∈ Val τ ] (apply sv2 tv2 (suc (F.toℕ j)) ≡ Done v2 × relV2 τ v1 v2 ((n ℕ-ℕ Fin.suc j)))
+relV2-apply n j svv tvv eqv1 = relV2-apply-go _ _ _ _ n j svv tvv _ eqv1
 
--- fundamental2 : ∀ {Γ τ} (t : Term Γ τ) → (n : ℕ) → (ρ1 ρ2 : ⟦ Γ ⟧Context) (ρρ : relρ2 Γ ρ1 ρ2 n) → relT2 t t ρ1 ρ2 n
--- fundamental2 t n ρ1 ρ2 ρρ v1 Fin.zero ()
--- fundamental2 (const (lit nv)) n ρ1 ρ2 ρρ .(intV nv) (Fin.suc j) refl = intV nv , refl , relV-nat-refl (intV nv) (F.toℕ (n ℕ- Fin.suc j))
--- fundamental2 (var x) n ρ1 ρ2 ρρ .(⟦ x ⟧Var ρ1) (Fin.suc j) refl = fundamentalV2 x n ρ1 ρ2 ρρ (⟦ x ⟧Var ρ1) (Fin.suc j) refl
--- fundamental2 (abs t) n ρ1 ρ2 ρρ .(closure t ρ1) (Fin.suc j) refl = closure t ρ2 , refl , res-valid (F.toℕ (n ℕ- Fin.suc j)) (ltn2 n j)
---   -- foo (F.toℕ (n ℕ- Fin.suc j))
---   where
---     res-valid : ∀ nj → nj ≤ n → relV2 _ (closure t ρ1) (closure t ρ2) nj
---     res-valid nj nj≤n k k≤nj v1 v2 vv v3 Fin.zero ()
---     res-valid nj nj≤n k k≤nj v1 v2 vv v3 (Fin.suc j₁) eq = fundamental2 t k (v1 • ρ1) (v2 • ρ2) (vv , relρ2-mono _ _ (≤-trans k≤nj nj≤n) _ _ _ ρρ) v3 (Fin.suc j₁) eq
+fundamental2 : ∀ {Γ τ} (t : Term Γ τ) → (n : ℕ) → (ρ1 ρ2 : ⟦ Γ ⟧Context) (ρρ : relρ2 Γ ρ1 ρ2 n) → relT2 t t ρ1 ρ2 n
+fundamental2 t n ρ1 ρ2 ρρ v1 Fin.zero ()
+fundamental2 (const (lit nv)) n ρ1 ρ2 ρρ .(intV nv) (Fin.suc j) refl = intV nv , refl , relV-nat-refl (intV nv) (F.toℕ (n ℕ- Fin.suc j))
+fundamental2 (var x) n ρ1 ρ2 ρρ .(⟦ x ⟧Var ρ1) (Fin.suc j) refl = fundamentalV2 x n ρ1 ρ2 ρρ (⟦ x ⟧Var ρ1) (Fin.suc j) refl
+fundamental2 (abs t) n ρ1 ρ2 ρρ .(closure t ρ1) (Fin.suc j) refl = closure t ρ2 , refl , res-valid (n ℕ-ℕ Fin.suc j) (ltn2 n j)
+  -- foo (F.toℕ (n ℕ- Fin.suc j))
+  where
+    res-valid : ∀ nj → nj ≤ n → relV2 _ (closure t ρ1) (closure t ρ2) nj
+    res-valid nj nj≤n k k≤nj v1 v2 vv v3 Fin.zero ()
+    res-valid nj nj≤n k k≤nj v1 v2 vv v3 (Fin.suc j₁) eq = fundamental2 t k (v1 • ρ1) (v2 • ρ2) (vv , relρ2-mono _ _ (≤-trans k≤nj nj≤n) _ _ _ ρρ) v3 (Fin.suc j₁) eq
 
---     -- foo : relV2 _ (closure t ρ1) (closure t ρ2) (F.toℕ (n ℕ- Fin.suc j))
---     -- foo with (F.toℕ (n ℕ- Fin.suc j))
---     -- foo | zero = tt
---     -- foo | (suc nj) = λ k k≤nj v1 v2 vv v3 j₁ eq → {!!}
+    -- foo : relV2 _ (closure t ρ1) (closure t ρ2) (F.toℕ (n ℕ- Fin.suc j))
+    -- foo with (F.toℕ (n ℕ- Fin.suc j))
+    -- foo | zero = tt
+    -- foo | (suc nj) = λ k k≤nj v1 v2 vv v3 j₁ eq → {!!}
 
---     -- λ k k≤nj v1 v2 vv v3 j₁ eq →
---     -- fundamental2 t k (v1 • ρ1) (v2 • ρ2) (vv , relρ-mono k _ (≤-step k≤nj) _ _ _ ρρ)
+    -- λ k k≤nj v1 v2 vv v3 j₁ eq →
+    -- fundamental2 t k (v1 • ρ1) (v2 • ρ2) (vv , relρ-mono k _ (≤-step k≤nj) _ _ _ ρρ)
 
---     -- foo | zero = ?
---     -- foo | (suc nj) k k≤nj v1 v2 vv = {!!}
--- fundamental2 (app s t) (suc _) ρ1 ρ2 ρρ v1 (Fin.suc Fin.zero) ()
--- fundamental2 (app s t) (suc _) ρ1 ρ2 ρρ v1 (Fin.suc (Fin.suc j)) appst-ρ1↓v1 with eval s ρ1 (suc (F.toℕ j)) | inspect (eval s ρ1) (suc (F.toℕ j))
--- fundamental2 (app s t) (suc _) ρ1 ρ2 ρρ v1 (Fin.suc (Fin.suc j)) appst-ρ1↓v1 | Done sv1 | [ sρ1↓sv1 ] with eval t ρ1 (suc (F.toℕ j)) | inspect (eval t ρ1) (suc (F.toℕ j))
--- fundamental2 (app s t) (suc n) ρ1 ρ2 ρρ v1 (Fin.suc (Fin.suc j)) appst-ρ1↓v1 | Done sv1 | [ sρ1↓sv1 ] | Done tv1 | [ tρ1↓tv1 ] with eval s ρ2 (suc (F.toℕ j)) | fundamental2 s n ρ1 ρ2 (relρ2-mono n (suc n) (≤-step ≤-refl) _ _ _ ρρ) sv1 (Fin.suc j) sρ1↓sv1
--- fundamental2 (app s t) (suc n) ρ1 ρ2 ρρ v1 (Fin.suc (Fin.suc j)) appst-ρ1↓v1 | Done sv1 | [ sρ1↓sv1 ] | (Done tv1) | [ tρ1↓tv1 ] | .(Done sv2) | (sv2 , refl , svv) with
---   eval t ρ2 (suc (F.toℕ j)) | fundamental2 t n ρ1 ρ2 (relρ2-mono n (suc n) (≤-step ≤-refl) _ _ _ ρρ) tv1 (Fin.suc j) tρ1↓tv1
--- ... | .(Done tv2) | (tv2 , refl , tvv) = relV2-apply n j svv tvv appst-ρ1↓v1
--- fundamental2 (app s t) (suc _) ρ1 ρ2 ρρ v1 (Fin.suc (Fin.suc j)) () | Done sv1 | [ sρ1↓sv1 ] | TimeOut | [ tρ1↓tv1 ]
--- fundamental2 (app s t) (suc _) ρ1 ρ2 ρρ v1 (Fin.suc (Fin.suc j)) () | TimeOut | [ sρ1↓sv1 ]
+    -- foo | zero = ?
+    -- foo | (suc nj) k k≤nj v1 v2 vv = {!!}
+fundamental2 (app s t) (suc _) ρ1 ρ2 ρρ v1 (Fin.suc Fin.zero) ()
+fundamental2 (app s t) (suc _) ρ1 ρ2 ρρ v1 (Fin.suc (Fin.suc j)) appst-ρ1↓v1 with eval s ρ1 (suc (F.toℕ j)) | inspect (eval s ρ1) (suc (F.toℕ j))
+fundamental2 (app s t) (suc _) ρ1 ρ2 ρρ v1 (Fin.suc (Fin.suc j)) appst-ρ1↓v1 | Done sv1 | [ sρ1↓sv1 ] with eval t ρ1 (suc (F.toℕ j)) | inspect (eval t ρ1) (suc (F.toℕ j))
+fundamental2 (app s t) (suc n) ρ1 ρ2 ρρ v1 (Fin.suc (Fin.suc j)) appst-ρ1↓v1 | Done sv1 | [ sρ1↓sv1 ] | Done tv1 | [ tρ1↓tv1 ] with eval s ρ2 (suc (F.toℕ j)) | fundamental2 s n ρ1 ρ2 (relρ2-mono n (suc n) (≤-step ≤-refl) _ _ _ ρρ) sv1 (Fin.suc j) sρ1↓sv1
+fundamental2 (app s t) (suc n) ρ1 ρ2 ρρ v1 (Fin.suc (Fin.suc j)) appst-ρ1↓v1 | Done sv1 | [ sρ1↓sv1 ] | (Done tv1) | [ tρ1↓tv1 ] | .(Done sv2) | (sv2 , refl , svv) with
+  eval t ρ2 (suc (F.toℕ j)) | fundamental2 t n ρ1 ρ2 (relρ2-mono n (suc n) (≤-step ≤-refl) _ _ _ ρρ) tv1 (Fin.suc j) tρ1↓tv1
+... | .(Done tv2) | (tv2 , refl , tvv) = relV2-apply n j svv tvv appst-ρ1↓v1
+fundamental2 (app s t) (suc _) ρ1 ρ2 ρρ v1 (Fin.suc (Fin.suc j)) () | Done sv1 | [ sρ1↓sv1 ] | TimeOut | [ tρ1↓tv1 ]
+fundamental2 (app s t) (suc _) ρ1 ρ2 ρρ v1 (Fin.suc (Fin.suc j)) () | TimeOut | [ sρ1↓sv1 ]
