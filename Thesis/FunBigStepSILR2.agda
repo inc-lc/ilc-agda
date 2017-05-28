@@ -109,11 +109,4 @@ eval (var x) ρ n = Done (⟦ x ⟧Var ρ) n
 eval (abs t) ρ n = Done (closure t ρ) n
 eval (const c) ρ n = evalConst c n
 eval _ ρ zero = TimeOut
--- eval (app s t) ρ = eval s ρ >>= (λ sv → eval t ρ >>= λ tv → apply sv tv)
-eval (app s t) ρ n0 with eval s ρ n0
-... | Error = Error
-... | TimeOut = TimeOut
-... | Done sv n1 with eval t ρ n1
-... | Done tv n2 = apply sv tv n2
-... | Error = Error
-... | TimeOut = TimeOut
+eval (app s t) ρ = eval s ρ >>= (λ sv → eval t ρ >>= λ tv → apply sv tv)
