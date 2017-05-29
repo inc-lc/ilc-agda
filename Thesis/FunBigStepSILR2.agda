@@ -214,7 +214,7 @@ mutual
     -- Here, computing t2 is allowed to take an unbounded number of steps. Having to write a number at all is annoying.
 
   relV : ∀ τ (v1 v2 : Val τ) → ℕ → Set
-  relV nat v1 v2 n = v1 ≡ v2
+  relV nat (intV v1) (intV v2) n = v1 ≡ v2
   relV (σ ⇒ τ) (closure t1 ρ1) (closure t2 ρ2) n =
     ∀ (k : ℕ) (k≤n : k < n) v1 v2 →
     relV σ v1 v2 k →
@@ -231,7 +231,7 @@ relρ ∅ ∅ ∅ n = ⊤
 relρ (τ • Γ) (v1 • ρ1) (v2 • ρ2) n = relV τ v1 v2 n × relρ Γ ρ1 ρ2 n
 
 relV-mono : ∀ m n → m ≤ n → ∀ τ v1 v2 → relV τ v1 v2 n → relV τ v1 v2 m
-relV-mono m n m≤n nat v1 v2 vv = vv
+relV-mono m n m≤n nat (intV v1) (intV v2) vv = vv
 relV-mono m n m≤n (σ ⇒ τ) (closure t1 ρ1) (closure t2 ρ2) ff k k≤m = ff k (≤-trans k≤m m≤n)
 
 relρ-mono : ∀ m n → m ≤ n → ∀ Γ ρ1 ρ2 → relρ Γ ρ1 ρ2 n → relρ Γ ρ1 ρ2 m
