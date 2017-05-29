@@ -110,8 +110,7 @@ _>>=_ : ∀ {σ τ} → Res σ → (Val σ → Res τ) → Res τ
 ... | TimeOut = TimeOut
 
 evalConst : ∀ {τ} → Const τ → Res τ
-evalConst (lit v) zero = TimeOut
-evalConst (lit v) (suc n) = Done (intV v) n
+evalConst (lit v) n = Done (intV v) n
 
 {-# TERMINATING #-}
 eval : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧Context → Res τ
@@ -126,8 +125,7 @@ eval _ ρ zero = TimeOut
 eval (app s t) ρ (suc n) = (eval s ρ >>= (λ sv → eval t ρ >>= λ tv → apply sv tv)) n
 
 eval-const-dec : ∀ {τ} → (c : Const τ) → ∀ {v} n0 n1 → evalConst c n0 ≡ Done v n1 →  n1 ≤ n0
-eval-const-dec (lit v) zero n1 ()
-eval-const-dec (lit v) (suc n0) .n0 refl = ≤-step ≤-refl
+eval-const-dec (lit v) n0 .n0 refl = ≤-refl
 
 {-# TERMINATING #-}
 eval-dec : ∀ {Γ τ} → (t : Term Γ τ) → ∀ ρ v n0 n1 → eval t ρ n0 ≡ Done v n1 → n1 ≤ n0
@@ -144,8 +142,7 @@ eval-dec (app s t) ρ v (suc n0) n3 () | Error | [ seq ]
 eval-dec (app s t) ρ v (suc n0) n3 () | TimeOut | [ seq ]
 
 eval-const-mono : ∀ {τ} → (c : Const τ) → ∀ {v} n0 n1 → evalConst c n0 ≡ Done v n1 → evalConst c (suc n0) ≡ Done v (suc n1)
-eval-const-mono (lit v) zero n1 ()
-eval-const-mono (lit v) (suc n0) .n0 refl = refl
+eval-const-mono (lit v) n0 .n0 refl = refl
 
 -- ARGH
 {-# TERMINATING #-}
@@ -169,8 +166,7 @@ eval-adjust-plus zero t ρ v n0 n1 eq = eq
 eval-adjust-plus (suc d) t ρ v n0 n1 eq = eval-mono t ρ v (d + n0) (d + n1) (eval-adjust-plus d t ρ v n0 n1 eq)
 
 eval-const-strengthen : ∀ {τ} → (c : Const τ) → ∀ {v} n0 n1 → evalConst c (suc n0) ≡ Done v (suc n1) → evalConst c n0 ≡ Done v n1
-eval-const-strengthen (lit v) zero n1 ()
-eval-const-strengthen (lit v) (suc n0) .n0 refl = refl
+eval-const-strengthen (lit v) n0 .n0 refl = refl
 
 -- {-# TERMINATING #-}
 -- eval-strengthen : ∀ {Γ τ} → (t : Term Γ τ) → ∀ ρ v n0 n1 → eval t ρ (suc n0) ≡ Done v (suc n1) → eval t ρ n0 ≡ Done v n1
@@ -265,8 +261,7 @@ lt1 (s≤s p) = ≤-step p
 fundamental : ∀ {Γ τ} (t : Term Γ τ) → (n : ℕ) → (ρ1 ρ2 : ⟦ Γ ⟧Context) (ρρ : relρ Γ ρ1 ρ2 n) → relT t t ρ1 ρ2 n
 fundamental t zero ρ1 ρ2 ρρ = tt
 fundamental (var x) (suc n) ρ1 ρ2 ρρ = fundamentalV x (suc n) ρ1 ρ2 ρρ
-fundamental (const (lit v)) (suc zero) ρ1 ρ2 ρρ v1 n-j n-j≤n ()
-fundamental (const (lit v)) (suc (suc n)) ρ1 ρ2 ρρ .(intV v) .n n-j≤n refl = intV v , suc zero , refl , refl
+fundamental (const (lit v)) (suc n) ρ1 ρ2 ρρ .(intV v) .n n-j≤n refl = intV v , zero , refl , refl
 fundamental (abs t) (suc n) ρ1 ρ2 ρρ .(closure t ρ1) .n n-j≤n refl =  closure t ρ2 , zero , refl , (λ k k≤n v1 v2 vv → fundamental t k (v1 • ρ1) (v2 • ρ2) (vv , relρ-mono k (suc n) (lt1 k≤n) _ _ _ ρρ))
 fundamental (app s t) (suc zero) ρ1 ρ2 ρρ v1 n-j n-j≤n ()
 fundamental (app s t) (suc (suc n)) ρ1 ρ2 ρρ v1 n-j n-j≤n eq with eval s ρ1 n | inspect (eval s ρ1) n
