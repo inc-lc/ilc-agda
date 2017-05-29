@@ -172,12 +172,50 @@ eval-adjust-plus (suc d) t ρ v n0 n1 eq = eval-mono t ρ v (d + n0) (d + n1) (e
 eval-const-strengthen : ∀ {τ} → (c : Const τ) → ∀ {v} n0 n1 → evalConst c (suc n0) ≡ Done v (suc n1) → evalConst c n0 ≡ Done v n1
 eval-const-strengthen (lit v) n0 .n0 refl = refl
 
+-- I started trying to prove eval-strengthen, which I appeal to informally
+-- below, but I gave up. I still guess the lemma is true but proving it looks
+-- too painful to bother.
+
+-- Without this lemma, I can't fully prove that this logical relation is
+-- equivalent to the original one.
+-- But this one works (well, at least up to the fundamental theorem, haven't
+-- attempted other lemmas), so it should be good enough.
+
+-- eval-mono-err : ∀ {Γ τ} → (t : Term Γ τ) → ∀ ρ n → eval t ρ n ≡ Error → eval t ρ (suc n) ≡ Error
+-- eval-mono-err (const (lit x)) ρ zero eq = {!!}
+-- eval-mono-err (const (lit x)) ρ (suc n) eq = {!!}
+-- eval-mono-err (var x) ρ n eq = {!!}
+-- eval-mono-err (app t t₁) ρ n eq = {!!}
+-- eval-mono-err (abs t) ρ n eq = {!!}
+
+-- -- eval t ρ (suc n0) ≡ Done v (suc n1) → eval t ρ n0 ≡ Done v n
+-- eval-aux : ∀ {Γ τ} → (t : Term Γ τ) → ∀ ρ n → (Σ[ res0 ∈ ErrVal τ ] eval t ρ n ≡ res0) × (Σ[ resS ∈ ErrVal τ ] eval t ρ n ≡ resS)
+-- eval-aux t ρ n with
+--   eval t ρ n | inspect (eval t ρ) n |
+--   eval t ρ (suc n) | inspect (eval t ρ) (suc n)
+-- eval-aux t ρ n | res0 | [ eq0 ] | (Done v1 n1) | [ eq1 ] = {!!}
+-- eval-aux t ρ n | res0 | [ eq0 ] | Error | [ eq1 ] = {!!}
+-- eval-aux t ρ n | Done v n1 | [ eq0 ] | TimeOut | [ eq1 ] = {!!}
+-- eval-aux t ρ n | Error | [ eq0 ] | TimeOut | [ eq1 ] = {!!}
+-- eval-aux t ρ n | TimeOut | [ eq0 ] | TimeOut | [ eq1 ] = (TimeOut , refl) , (TimeOut , refl)
+
 -- {-# TERMINATING #-}
 -- eval-strengthen : ∀ {Γ τ} → (t : Term Γ τ) → ∀ ρ v n0 n1 → eval t ρ (suc n0) ≡ Done v (suc n1) → eval t ρ n0 ≡ Done v n1
 -- eval-strengthen (const c) ρ v n0 n1 eq = eval-const-strengthen c n0 n1 eq
 -- eval-strengthen (var x) ρ .(⟦ x ⟧Var ρ) n0 .n0 refl = refl
 -- eval-strengthen (abs t) ρ .(closure t ρ) n0 .n0 refl = refl
--- eval-strengthen (app s t) ρ v zero n1 eq = {!!}
+-- eval-strengthen (app s t) ρ v zero n1 eq with eval s ρ 0 | inspect (eval s ρ) 0
+-- eval-strengthen (app s t) ρ v zero n1 eq | Done sv sn1 | [ seq ] with eval-dec s ρ sv 0 sn1 seq
+-- eval-strengthen (app s t) ρ v zero n1 eq | Done sv .0 | [ seq ] | z≤n with eval t ρ 0 | inspect (eval t ρ) 0
+-- eval-strengthen (app s t) ρ v zero n1 eq | Done sv _ | [ seq ] | z≤n | Done tv tn1 | [ teq ]  with eval-dec t ρ tv 0 tn1 teq
+-- eval-strengthen (app s t) ρ v zero n1 eq | Done (closure st sρ) _ | [ seq ] | z≤n | (Done tv .0) | [ teq ] | z≤n with eval-dec st _ v 0 (suc n1) eq
+-- eval-strengthen (app s t) ρ v zero n1 eq | Done (closure st sρ) _ | [ seq ] | z≤n | (Done tv _) | [ teq ] | z≤n | ()
+-- eval-strengthen (app s t) ρ v zero n1 () | Done sv _ | [ seq ] | z≤n | Error | [ teq ]
+-- eval-strengthen (app s t) ρ v zero n1 () | Done sv _ | [ seq ] | z≤n | TimeOut | [ teq ]
+-- eval-strengthen (app s t) ρ v zero n1 () | Error | [ seq ]
+-- eval-strengthen (app s t) ρ v zero n1 () | TimeOut | [ seq ]
+-- -- eval-dec s ρ
+-- --  {!eval-dec s ρ ? (suc zero) (suc n1) !}
 -- -- eval-strengthen (app s t) ρ v (suc n0) n1 eq with eval s ρ (suc n0) | inspect (eval s ρ) (suc n0)
 -- -- eval-strengthen (app s t) ρ v₁ (suc n0) n2 eq | Done sv n1 | [ seq ] with eval s ρ n0 = {!eval-strengthen s ρ v n0 n1 seq !}
 -- -- eval-strengthen (app s t) ρ v (suc n0) n1 () | Error | [ seq ]
