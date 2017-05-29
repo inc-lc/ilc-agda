@@ -8,7 +8,7 @@
 -- contexts and environments.
 --
 -- This development is strongly inspired by "Imperative self-adjusting
--- computation", POPL'08, in preference to Dargaye and Leroy (2010), "A verified
+-- computation" (ISAC below), POPL'08, in preference to Dargaye and Leroy (2010), "A verified
 -- framework for higher-order uncurrying optimizations", but I deviate
 -- somewhere, especially to try following "Functional Big-Step Semantics"),
 -- though I deviate somewhere.
@@ -75,6 +75,16 @@ module Den = Base.Denotation.Environment Type ⟦_⟧Type
 
 -- Termination is far from obvious to Agda once we use closures. So we use
 -- step-indexing with a fuel value.
+
+-- WARNING: ISAC's big-step semantics produces a step count as "output". But
+-- that would not help Agda establish termination. That's only a problem for a
+-- functional big-step semantics, not for a relational semantics.
+--
+-- So, instead, I tried to use a sort of writer monad: the interpreter gets fuel
+-- and returns the remaining fuel. That's the same trick as in "functional
+-- big-step semantics". However that doesn't help termination either,
+-- since Agda doesn't see that the returned fuel is no bigger.
+
 -- Since we focus for now on STLC, unlike that
 -- paper, we can avoid error values by keeping types.
 --
@@ -110,13 +120,31 @@ eval (const c) ρ n = evalConst c n
 eval _ ρ zero = TimeOut
 eval (app s t) ρ (suc n) = (eval s ρ >>= (λ sv → eval t ρ >>= λ tv → apply sv tv)) n
 
+eval-const-dec : ∀ {τ} → (c : Const τ) → ∀ {v} n0 n1 → evalConst c n0 ≡ Done v n1 →  n1 ≤ n0
+eval-const-dec (lit v) zero n1 ()
+eval-const-dec (lit v) (suc n0) .n0 refl = ≤-step ≤-refl
+
+{-# TERMINATING #-}
+eval-dec : ∀ {Γ τ} → (t : Term Γ τ) → ∀ ρ v n0 n1 → eval t ρ n0 ≡ Done v n1 → n1 ≤ n0
+eval-dec (const c) ρ v n0 n1 eq = eval-const-dec c n0 n1 eq
+eval-dec (var x) ρ .(⟦ x ⟧Var ρ) n0 .n0 refl = ≤-refl
+eval-dec (abs t) ρ .(closure t ρ) n0 .n0 refl = ≤-refl
+eval-dec (app s t) ρ v zero n1 ()
+eval-dec (app s t) ρ v (suc n0) n3 eq  with eval s ρ n0 | inspect (eval s ρ) n0
+eval-dec (app s t) ρ v (suc n0) n3 eq | Done sv sn1 | [ seq ] with eval t ρ sn1 | inspect (eval t ρ) sn1
+eval-dec (app s t) ρ v (suc n0) n3 eq | Done sv@(closure st sρ) sn1 | [ seq ] | (Done tv tn2) | [ teq ] = ≤-step (≤-trans (≤-trans (eval-dec st _ _ _ _ eq) (eval-dec t _ _ _ _ teq)) (eval-dec s _ _ _ _ seq))
+eval-dec (app s t) ρ v (suc n0) n3 () | Done sv sn1 | [ seq ] | Error | [ teq ]
+eval-dec (app s t) ρ v (suc n0) n3 () | Done sv sn1 | [ seq ] | TimeOut | [ teq ]
+eval-dec (app s t) ρ v (suc n0) n3 () | Error | [ seq ]
+eval-dec (app s t) ρ v (suc n0) n3 () | TimeOut | [ seq ]
+
 eval-const-mono : ∀ {τ} → (c : Const τ) → ∀ {v} n0 n1 → evalConst c n0 ≡ Done v n1 → evalConst c (suc n0) ≡ Done v (suc n1)
 eval-const-mono (lit v) zero n1 ()
 eval-const-mono (lit v) (suc n0) .n0 refl = refl
 
 -- ARGH
 {-# TERMINATING #-}
-eval-mono : ∀ {Γ τ} → (t : Term Γ τ) → (ρ : ⟦ Γ ⟧Context) → ∀ v n0 n1 → eval t ρ n0 ≡ Done v n1 → eval t ρ (suc n0) ≡ Done v (suc n1)
+eval-mono : ∀ {Γ τ} → (t : Term Γ τ) → ∀ ρ v n0 n1 → eval t ρ n0 ≡ Done v n1 → eval t ρ (suc n0) ≡ Done v (suc n1)
 eval-mono (const c) ρ v n0 n1 eq = eval-const-mono c n0 n1 eq
 eval-mono (var x) ρ .(⟦ x ⟧Var ρ) n0 .n0 refl = refl
 eval-mono (abs t) ρ .(closure t ρ) n0 .n0 refl = refl
@@ -131,29 +159,55 @@ eval-mono (app s t) ρ v (suc n0) n2 () | Done sv n1 | [ seq ] | .(Done sv (suc 
 eval-mono (app s t) ρ v (suc n0) n1 () | Error | [ seq ]
 eval-mono (app s t) ρ v (suc n0) n1 () | TimeOut | [ seq ]
 
-relT : ∀ {τ Γ1 Γ2} (t1 : Term Γ1 τ) (t2 : Term Γ2 τ) (ρ1 : ⟦ Γ1 ⟧Context) (ρ2 : ⟦ Γ2 ⟧Context) → ℕ → Set
+module Alt where
+  mutual
+    relT : ∀ {τ Γ1 Γ2} (t1 : Term Γ1 τ) (t2 : Term Γ2 τ) (ρ1 : ⟦ Γ1 ⟧Context) (ρ2 : ⟦ Γ2 ⟧Context) → ℕ → Set
+    relT {τ} t1 t2 ρ1 ρ2 n =
+      (v1 : Val τ) →
+      ∀ n-j (n-j≤n : n-j < n) →
+      (eq : eval t1 ρ1 n ≡ Done v1 n-j) →
+      Σ[ v2 ∈ Val τ ] Σ[ n2 ∈ ℕ ] Σ[ n3 ∈ ℕ ] eval t2 ρ2 n2 ≡ Done v2 n3 × relV τ v1 v2 (suc n-j)
+      -- Here, computing t2 is allowed to take an unbounded number of steps. Having to write a number at all is annoying.
 
-relV : ∀ τ (v1 v2 : Val τ) → ℕ → Set
-relV τ v1 v2 zero = ⊤
--- Seems the proof for abs would go through even if here we do not step down.
--- However, that only works as long as we use a typed language; not stepping
--- down here, in an untyped language, gives a non-well-founded definition.
-relV nat v1 v2 (suc n) = v1 ≡ v2
-relV (σ ⇒ τ) (closure t1 ρ1) (closure t2 ρ2) (suc n) =
-  ∀ (k : ℕ) (k≤n : k ≤ n) v1 v2 →
-  relV σ v1 v2 k →
-  relT t1 t2 (v1 • ρ1) (v2 • ρ2) k
+    relV : ∀ τ (v1 v2 : Val τ) → ℕ → Set
+    -- Seems the proof for abs would go through even if here we do not step down.
+    -- However, that only works as long as we use a typed language; not stepping
+    -- down here, in an untyped language, gives a non-well-founded definition.
+    relV nat v1 v2 n = v1 ≡ v2
+    relV (σ ⇒ τ) (closure t1 ρ1) (closure t2 ρ2) n =
+      ∀ (k : ℕ) (k≤n : k < n) v1 v2 →
+      relV σ v1 v2 k →
+      relT t1 t2 (v1 • ρ1) (v2 • ρ2) k
+mutual
+  relT : ∀ {τ Γ1 Γ2} (t1 : Term Γ1 τ) (t2 : Term Γ2 τ) (ρ1 : ⟦ Γ1 ⟧Context) (ρ2 : ⟦ Γ2 ⟧Context) → ℕ → Set
+  relT {τ} t1 t2 ρ1 ρ2 zero = ⊤
+  relT {τ} t1 t2 ρ1 ρ2 (suc n) =
+    (v1 : Val τ) →
+    ∀ n-j (n-j≤n : n-j ≤ n) →
+    (eq : eval t1 ρ1 n ≡ Done v1 n-j) →
+    Σ[ v2 ∈ Val τ ] Σ[ n2 ∈ ℕ ] Σ[ n3 ∈ ℕ ] eval t2 ρ2 n2 ≡ Done v2 n3 × relV τ v1 v2 (suc n-j)
+    -- Here, computing t2 is allowed to take an unbounded number of steps. Having to write a number at all is annoying.
+
+  relV : ∀ τ (v1 v2 : Val τ) → ℕ → Set
+  relV τ v1 v2 zero = ⊤
+  -- Seems the proof for abs would go through even if here we do not step down.
+  -- However, that only works as long as we use a typed language; not stepping
+  -- down here, in an untyped language, gives a non-well-founded definition.
+  relV nat v1 v2 (suc n) = v1 ≡ v2
+  relV (σ ⇒ τ) (closure t1 ρ1) (closure t2 ρ2) (suc n) =
+    ∀ (k : ℕ) (k≤n : k ≤ n) v1 v2 →
+    relV σ v1 v2 k →
+    relT t1 t2 (v1 • ρ1) (v2 • ρ2) k
+  -- Here, in the conclusion, I'm not relating app (closure t1 ρ1) v1 with app
+  -- (closure t2 ρ2) v2 (or some encoding of that that actually works), but the
+  -- result of taking a step from that configuration. That is important, because
+  -- both Pitts' "Step-Indexed Biorthogonality: a Tutorial Example" and
+  -- "Imperative Self-Adjusting Computation" do the same thing (and point out it's
+  -- important).
 
 relρ : ∀ Γ (ρ1 ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
 relρ ∅ ∅ ∅ n = ⊤
 relρ (τ • Γ) (v1 • ρ1) (v2 • ρ2) n = relV τ v1 v2 n × relρ Γ ρ1 ρ2 n
-
-relT {τ} t1 t2 ρ1 ρ2 zero = ⊤
-relT {τ} t1 t2 ρ1 ρ2 (suc n) =
-  (v1 : Val τ) →
-  ∀ n-j (n-j≤n : n-j ≤ n) →
-  (eq : eval t1 ρ1 n ≡ Done v1 n-j) →
-  Σ[ v2 ∈ Val τ ] Σ[ n2 ∈ ℕ ] Σ[ n3 ∈ ℕ ] eval t2 ρ2 n2 ≡ Done v2 n3 × relV τ v1 v2 (suc n-j)
 
 relV-mono : ∀ m n → m ≤ n → ∀ τ v1 v2 → relV τ v1 v2 n → relV τ v1 v2 m
 relV-mono zero n m≤n τ v1 v2 vv = tt
@@ -171,9 +225,16 @@ fundamentalV (that x) (suc n) (v1 • ρ1) (v2 • ρ2) (vv , ρρ) = fundamenta
 
 -- relT (app s t) (app s t)
 
-relV-apply : ∀ {σ τ Γ} (s : Term Γ (σ ⇒ τ)) t v1 ρ2 n-j →
+relV-apply : ∀ {σ τ Γ} (s : Term Γ (σ ⇒ τ)) t v1 ρ2 n-j
+  n1 sv1 sv2
+  (svv : relV (σ ⇒ τ) sv1 sv2 n1)
+  n2 tv1 tv2
+  (tvv : relV σ tv1 tv2 (suc (suc n2)))
+  (eq : apply sv1 tv1 n2 ≡ Done v1 n-j) →
+  -- (tvv)
+  -- (eqv1)
   Σ[ v2 ∈ Val τ ] Σ[ n2 ∈ ℕ ] Σ[ n3 ∈ ℕ ] eval (app s t) ρ2 n2 ≡ Done v2 n3 × relV τ v1 v2 (suc n-j)
-relV-apply = {!!}
+relV-apply s t v1 ρ n-j n1 sv1 sv2 svv n2 tv1 tv2 tvv eq = {!!}
 
 fundamental : ∀ {Γ τ} (t : Term Γ τ) → (n : ℕ) → (ρ1 ρ2 : ⟦ Γ ⟧Context) (ρρ : relρ Γ ρ1 ρ2 n) → relT t t ρ1 ρ2 n
 fundamental t zero ρ1 ρ2 ρρ = tt
@@ -184,8 +245,8 @@ fundamental (abs t) (suc n) ρ1 ρ2 ρρ .(closure t ρ1) .n n-j≤n refl =  clo
 fundamental (app s t) (suc zero) ρ1 ρ2 ρρ v1 n-j n-j≤n ()
 fundamental (app s t) (suc (suc n)) ρ1 ρ2 ρρ v1 n-j n-j≤n eq with eval s ρ1 n | inspect (eval s ρ1) n
 fundamental (app s t) (suc (suc n)) ρ1 ρ2 ρρ v1 n-j n-j≤n eq | Done sv1 n1 | [ s1eq ] with eval t ρ1 n1 | inspect (eval t ρ1) n1
-fundamental (app s t) (suc (suc n)) ρ1 ρ2 ρρ v1 n-j n-j≤n eq | Done (closure st1 sρ1) n1 | [ s1eq ] | Done tv1 n2 | [ t1eq ] with fundamental s _ ρ1 ρ2 ρρ (closure st1 sρ1) (suc n1) (s≤s {!!}) (eval-mono s ρ1 (closure st1 sρ1) n n1 s1eq) | fundamental t _ ρ1 ρ2 ρρ tv1 (suc n2) {!!} {!eval-mono t ρ1 tv1 n1 n2 t1eq!}
-... | closure st2 sρ2 , sn3 , sn4 , s2eq , svv | tv2 , tn3 , tn4 , t2eq , tvv = {!!}
+fundamental (app s t) (suc (suc n)) ρ1 ρ2 ρρ v1 n-j n-j≤n eq | Done (closure st1 sρ1) n1 | [ s1eq ] | Done tv1 n2 | [ t1eq ] with fundamental s (suc (suc n)) ρ1 ρ2 ρρ (closure st1 sρ1) (suc n1) (s≤s (eval-dec s ρ1 _ n n1 s1eq)) (eval-mono s ρ1 (closure st1 sρ1) n n1 s1eq) | fundamental t (suc (suc n1)) ρ1 ρ2 (relρ-mono (suc (suc n1)) (suc (suc n)) (s≤s (s≤s (eval-dec s ρ1 _ n n1 s1eq))) _ _ _ ρρ) tv1 (suc n2) (s≤s (eval-dec t ρ1 _ n1 n2 t1eq)) (eval-mono t ρ1 tv1 n1 n2 t1eq)
+... | sv2@(closure st2 sρ2) , sn3 , sn4 , s2eq , svv | tv2 , tn3 , tn4 , t2eq , tvv = {! relV-apply s t v1 ρ2 n-j _ _ sv2 svv _ tv1 tv2 tvv eq!}
 --
 -- {!eval s ρ2 !}
 -- fundamental s (suc (suc n)) ρ1 ρ2 ρρ (closure st1 sρ1) ? ?
