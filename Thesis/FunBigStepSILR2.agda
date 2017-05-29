@@ -3,6 +3,10 @@
 -- Goal for now: just prove the fundamental theorem of logical relations,
 -- relating a term to itself in a different environments.
 --
+-- But to betray the eventual goal, I can also relate integer values with a
+-- change in the relation witness. That was a completely local change. But that
+-- might also be because we only have few primitives.
+--
 -- Because of closures, we need relations across different terms with different
 -- contexts and environments.
 --
@@ -192,6 +196,8 @@ eval-const-strengthen (lit v) n0 .n0 refl = refl
 -- eval-adjust-minus zero t n0 n1 eq = eq
 -- eval-adjust-minus (suc d) t n0 n1 eq = eval-adjust-minus d t n0 n1 (eval-strengthen t _ _ (d + n0) (d + n1) eq)
 
+import Data.Integer as I
+open I using (ℤ)
 mutual
   -- This is not the same definition of relT, but it is equivalent.
   relT : ∀ {τ Γ1 Γ2} (t1 : Term Γ1 τ) (t2 : Term Γ2 τ) (ρ1 : ⟦ Γ1 ⟧Context) (ρ2 : ⟦ Γ2 ⟧Context) → ℕ → Set
@@ -214,17 +220,31 @@ mutual
     -- Here, computing t2 is allowed to take an unbounded number of steps. Having to write a number at all is annoying.
 
   relV : ∀ τ (v1 v2 : Val τ) → ℕ → Set
-  relV nat (intV v1) (intV v2) n = v1 ≡ v2
+  -- Show the proof still goes through if we relate clearly different values by
+  -- inserting changes in the relation.
+  -- There's no syntax to produce such changes, but you can add changes to the
+  -- environment.
+  relV nat (intV v1) (intV v2) n = Σ[ dv ∈ ℤ ] dv I.+ (I.+ v1) ≡ (I.+ v2)
   relV (σ ⇒ τ) (closure t1 ρ1) (closure t2 ρ2) n =
     ∀ (k : ℕ) (k≤n : k < n) v1 v2 →
     relV σ v1 v2 k →
     relT t1 t2 (v1 • ρ1) (v2 • ρ2) k
-  -- Here, in the conclusion, I'm not relating app (closure t1 ρ1) v1 with app
+  -- Above, in the conclusion, I'm not relating app (closure t1 ρ1) v1 with app
   -- (closure t2 ρ2) v2 (or some encoding of that that actually works), but the
   -- result of taking a step from that configuration. That is important, because
   -- both Pitts' "Step-Indexed Biorthogonality: a Tutorial Example" and
   -- "Imperative Self-Adjusting Computation" do the same thing (and point out it's
   -- important).
+
+  -- Relate λ x → 0 and λ x → 1 at any step count.
+  example1 : ∀ n → relV (nat ⇒ nat) (closure (const (lit 0)) ∅) (closure (const (lit 1)) ∅) n
+  example1 n zero k≤n v1 v2 x = tt
+  example1 n (suc k) k≤n v1 v2 x .(intV 0) .k n-j≤n refl = intV 1 , 0 , refl , (I.+ 1 , refl)
+
+  -- Relate λ x → 0 and λ x → x at any step count.
+  example2 : ∀ n → relV (nat ⇒ nat) (closure (const (lit 0)) ∅) (closure (var this) ∅) n
+  example2 n zero k≤n v1 v2 x = tt
+  example2 n (suc k) k≤n (intV v1) (intV v2) x .(intV 0) .k n-j≤n refl = intV v2 , 0 , refl , (I.+ v2 , cong I.+_ (+-right-identity v2))
 
 relρ : ∀ Γ (ρ1 ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
 relρ ∅ ∅ ∅ n = ⊤
@@ -261,7 +281,7 @@ lt1 (s≤s p) = ≤-step p
 fundamental : ∀ {Γ τ} (t : Term Γ τ) → (n : ℕ) → (ρ1 ρ2 : ⟦ Γ ⟧Context) (ρρ : relρ Γ ρ1 ρ2 n) → relT t t ρ1 ρ2 n
 fundamental t zero ρ1 ρ2 ρρ = tt
 fundamental (var x) (suc n) ρ1 ρ2 ρρ = fundamentalV x (suc n) ρ1 ρ2 ρρ
-fundamental (const (lit v)) (suc n) ρ1 ρ2 ρρ .(intV v) .n n-j≤n refl = intV v , zero , refl , refl
+fundamental (const (lit v)) (suc n) ρ1 ρ2 ρρ .(intV v) .n n-j≤n refl = intV v , zero , refl , I.+ zero , refl
 fundamental (abs t) (suc n) ρ1 ρ2 ρρ .(closure t ρ1) .n n-j≤n refl =  closure t ρ2 , zero , refl , (λ k k≤n v1 v2 vv → fundamental t k (v1 • ρ1) (v2 • ρ2) (vv , relρ-mono k (suc n) (lt1 k≤n) _ _ _ ρρ))
 fundamental (app s t) (suc zero) ρ1 ρ2 ρρ v1 n-j n-j≤n ()
 fundamental (app s t) (suc (suc n)) ρ1 ρ2 ρρ v1 n-j n-j≤n eq with eval s ρ1 n | inspect (eval s ρ1) n
