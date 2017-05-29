@@ -304,18 +304,6 @@ fundamentalV (that x) (suc n) (v1 • ρ1) (v2 • ρ2) (vv , ρρ) = fundamenta
 lt1 : ∀ {k n} → k < n → k ≤ n
 lt1 (s≤s p) = ≤-step p
 
--- relV-apply : ∀ {σ τ Γ} (s : Term Γ (σ ⇒ τ)) t v1 ρ2 n-j
---   n1 sv1 sv2
---   (svv : relV (σ ⇒ τ) sv1 sv2 n1)
---   n2 tv1 tv2
---   (tvv : relV σ tv1 tv2 (suc (suc n2)))
---   (eq : apply sv1 tv1 n2 ≡ Done v1 n-j) →
---   -- (tvv)
---   -- (eqv1)
---   Σ[ v2 ∈ Val τ ] Σ[ n2 ∈ ℕ ] Σ[ n3 ∈ ℕ ] eval (app s t) ρ2 n2 ≡ Done v2 n3 × relV τ v1 v2 (suc n-j)
--- relV-apply s t v1 ρ n-j n1 (closure st ρ1) (closure st2 ρ2) svv n2 tv1 tv2 tvv eq = {! !}
--- -- relV-apply s t v1 ρ2 n-j _ _ sv2 svv _ tv1 tv2 tvv eq
-
 fundamental : ∀ {Γ τ} (t : Term Γ τ) → (n : ℕ) → (ρ1 ρ2 : ⟦ Γ ⟧Context) (ρρ : relρ Γ ρ1 ρ2 n) → relT t t ρ1 ρ2 n
 fundamental t zero ρ1 ρ2 ρρ = tt
 fundamental (var x) (suc n) ρ1 ρ2 ρρ = fundamentalV x (suc n) ρ1 ρ2 ρρ
