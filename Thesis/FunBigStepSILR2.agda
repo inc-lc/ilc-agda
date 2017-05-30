@@ -256,8 +256,17 @@ mutual
   -- This difference might affect the status of some proofs in Ahmed's papers,
   -- but that's not a problem here.
 
+  -- Also: can't confirm this in any of the papers I'm using, but I'd guess that
+  -- all papers using environments allow to relate closures with different
+  -- implementations and different hidden environments.
+  --
+  -- To check if the proof goes through with equal context, I changed the proof.
+  -- Now a proof that two closures are equivalent contains a proof that their
+  -- typing contexts are equivalent. The changes were limited softawre
+  -- engineering, the same proofs go through.
+
   -- This is not the same definition of relT, but it is equivalent.
-  relT : ∀ {τ Γ1 Γ2} (t1 : Term Γ1 τ) (t2 : Term Γ2 τ) (ρ1 : ⟦ Γ1 ⟧Context) (ρ2 : ⟦ Γ2 ⟧Context) → ℕ → Set
+  relT : ∀ {τ Γ} (t1 : Term Γ τ) (t2 : Term Γ τ) (ρ1 : ⟦ Γ ⟧Context) (ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
   -- This equation is a lemma in the original definition.
   relT t1 t2 ρ1 ρ2 zero = ⊤
   -- To compare this definition, note that the original k is suc n here.
@@ -282,10 +291,16 @@ mutual
   -- There's no syntax to produce such changes, but you can add changes to the
   -- environment.
   relV nat (intV v1) (intV v2) n = Σ[ dv ∈ ℤ ] dv I.+ (I.+ v1) ≡ (I.+ v2)
-  relV (σ ⇒ τ) (closure t1 ρ1) (closure t2 ρ2) n =
-    ∀ (k : ℕ) (k≤n : k < n) v1 v2 →
-    relV σ v1 v2 k →
-    relT t1 t2 (v1 • ρ1) (v2 • ρ2) k
+  relV (σ ⇒ τ) (closure {Γ1} t1 ρ1) (closure {Γ2} t2 ρ2) n =
+    Σ[ ≡Γ ∈ Γ1 ≡ Γ2 ]
+      ∀ (k : ℕ) (k≤n : k < n) v1 v2 →
+      relV σ v1 v2 k →
+      relT
+        t1
+        (subst (λ Γ → Term (σ • Γ) τ) (sym ≡Γ) t2)
+        (v1 • ρ1)
+        (subst (λ Γ → ⟦ σ • Γ ⟧Context) (sym ≡Γ) (v2 • ρ2))
+        k
   -- Above, in the conclusion, I'm not relating app (closure t1 ρ1) v1 with app
   -- (closure t2 ρ2) v2 (or some encoding of that that actually works), but the
   -- result of taking a step from that configuration. That is important, because
@@ -319,13 +334,17 @@ mutual
 
   -- Relate λ x → 0 and λ x → 1 at any step count.
   example1 : ∀ n → relV (nat ⇒ nat) (closure (const (lit 0)) ∅) (closure (const (lit 1)) ∅) n
-  example1 n zero k≤n v1 v2 x = tt
-  example1 n (suc k) k≤n v1 v2 x .(intV 0) .k n-j≤n refl = intV 1 , 0 , refl , (I.+ 1 , refl)
+  example1 n = refl ,
+    λ { zero k≤n v1 v2 x → tt
+      ; (suc k) k≤n v1 v2 x .(intV 0) .k n-j≤n refl → intV 1 , 0 , refl , (I.+ 1 , refl)
+      }
 
   -- Relate λ x → 0 and λ x → x at any step count.
   example2 : ∀ n → relV (nat ⇒ nat) (closure (const (lit 0)) ∅) (closure (var this) ∅) n
-  example2 n zero k≤n v1 v2 x = tt
-  example2 n (suc k) k≤n (intV v1) (intV v2) x .(intV 0) .k n-j≤n refl = intV v2 , 0 , refl , (I.+ v2 , cong I.+_ (+-right-identity v2))
+  example2 n = refl ,
+    λ { zero k≤n v1 v2 x → tt
+      ; (suc k) k≤n (intV v1) (intV v2) x .(intV 0) .k n-j≤n refl → intV v2 , 0 , refl , (I.+ v2 , cong I.+_ (+-right-identity v2))
+      }
 
 relρ : ∀ Γ (ρ1 ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
 relρ ∅ ∅ ∅ n = ⊤
@@ -333,7 +352,7 @@ relρ (τ • Γ) (v1 • ρ1) (v2 • ρ2) n = relV τ v1 v2 n × relρ Γ ρ1 
 
 relV-mono : ∀ m n → m ≤ n → ∀ τ v1 v2 → relV τ v1 v2 n → relV τ v1 v2 m
 relV-mono m n m≤n nat (intV v1) (intV v2) vv = vv
-relV-mono m n m≤n (σ ⇒ τ) (closure t1 ρ1) (closure t2 ρ2) ff k k≤m = ff k (≤-trans k≤m m≤n)
+relV-mono m n m≤n (σ ⇒ τ) (closure t1 ρ1) (closure t2 ρ2) (refl , ff) = refl , λ k k≤m → ff k (≤-trans k≤m m≤n)
 
 relρ-mono : ∀ m n → m ≤ n → ∀ Γ ρ1 ρ2 → relρ Γ ρ1 ρ2 n → relρ Γ ρ1 ρ2 m
 relρ-mono m n m≤n ∅ ∅ ∅ tt = tt
@@ -341,7 +360,7 @@ relρ-mono m n m≤n (τ • Γ) (v1 • ρ1) (v2 • ρ2) (vv , ρρ) = relV-mo
 
 fundamentalV : ∀ {Γ τ} (x : Var Γ τ) → (n : ℕ) → (ρ1 ρ2 : ⟦ Γ ⟧Context) (ρρ : relρ Γ ρ1 ρ2 n) → relT (var x) (var x) ρ1 ρ2 n
 fundamentalV x zero ρ1 ρ2 ρρ = tt
-fundamentalV this (suc n) (v1 • ρ1) (v2 • ρ2) (vv , ρρ) .v1 .n n-j≤n refl =  v2 , zero , refl , vv
+fundamentalV this (suc n) (v1 • ρ1) (v2 • ρ2) (vv , ρρ) .v1 .n n-j≤n refl = v2 , zero , refl , vv
 fundamentalV (that x) (suc n) (v1 • ρ1) (v2 • ρ2) (vv , ρρ) = fundamentalV x (suc n) ρ1 ρ2 ρρ
 
 lt1 : ∀ {k n} → k < n → k ≤ n
@@ -351,14 +370,14 @@ fundamental : ∀ {Γ τ} (t : Term Γ τ) → (n : ℕ) → (ρ1 ρ2 : ⟦ Γ �
 fundamental t zero ρ1 ρ2 ρρ = tt
 fundamental (var x) (suc n) ρ1 ρ2 ρρ = fundamentalV x (suc n) ρ1 ρ2 ρρ
 fundamental (const (lit v)) (suc n) ρ1 ρ2 ρρ .(intV v) .n n-j≤n refl = intV v , zero , refl , I.+ zero , refl
-fundamental (abs t) (suc n) ρ1 ρ2 ρρ .(closure t ρ1) .n n-j≤n refl =  closure t ρ2 , zero , refl , (λ k k≤n v1 v2 vv → fundamental t k (v1 • ρ1) (v2 • ρ2) (vv , relρ-mono k (suc n) (lt1 k≤n) _ _ _ ρρ))
+fundamental (abs t) (suc n) ρ1 ρ2 ρρ .(closure t ρ1) .n n-j≤n refl =  closure t ρ2 , zero , refl , refl , λ k k≤n v1 v2 vv → fundamental t k (v1 • ρ1) (v2 • ρ2) (vv , relρ-mono k (suc n) (lt1 k≤n) _ _ _ ρρ)
 fundamental (app s t) (suc zero) ρ1 ρ2 ρρ v1 n-j n-j≤n ()
 fundamental (app s t) (suc (suc n)) ρ1 ρ2 ρρ v1 n-j n-j≤n eq with eval s ρ1 n | inspect (eval s ρ1) n
 fundamental (app s t) (suc (suc n)) ρ1 ρ2 ρρ v1 n-j n-j≤n eq | Done sv1 n1 | [ s1eq ] with eval-dec s _ _ n n1 s1eq | eval t ρ1 n1 | inspect (eval t ρ1) n1
 fundamental (app s t) (suc (suc n)) ρ1 ρ2 ρρ v1 n-j n-j≤n eq | Done (closure st1 sρ1) n1 | [ s1eq ] | n1≤n | Done tv1 n2 | [ t1eq ] with eval-dec t _ _ n1 n2 t1eq
 ... | n2≤n1 with fundamental s (suc (suc n)) ρ1 ρ2 ρρ (closure st1 sρ1) (suc n1) (s≤s n1≤n) (eval-mono s ρ1 (closure st1 sρ1) n n1 s1eq)
   | fundamental t (suc (suc n1)) ρ1 ρ2 (relρ-mono (suc (suc n1)) (suc (suc n)) (s≤s (s≤s n1≤n)) _ _ _ ρρ) tv1 (suc n2) (s≤s n2≤n1) (eval-mono t ρ1 tv1 n1 n2 t1eq)
-... | sv2@(closure st2 sρ2) , sn3 , s2eq , svv | tv2 , tn3 , t2eq , tvv with svv (suc n2) (s≤s (s≤s n2≤n1)) tv1 tv2 (relV-mono _ _ (s≤s (n≤1+n n2)) _ _ _ tvv ) v1 n-j (eval-dec st1 _ _ _ _ eq) eq
+... | sv2@(closure st2 sρ2) , sn3 , s2eq , refl , svv | tv2 , tn3 , t2eq , tvv with svv (suc n2) (s≤s (s≤s n2≤n1)) tv1 tv2 (relV-mono _ _ (s≤s (n≤1+n n2)) _ _ _ tvv ) v1 n-j (eval-dec st1 _ _ _ _ eq) eq
 ... | v2 , n3 , eq2 , vv = v2 , suc (sn3 + (tn3 + n3)) , comp , vv
   where
     s2eq-adj : eval s ρ2 (sn3 + (tn3 + n3)) ≡ Done (closure st2 sρ2) (tn3 + n3)
