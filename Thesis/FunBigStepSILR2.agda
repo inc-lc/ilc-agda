@@ -343,7 +343,7 @@ mutual
   relV3 nat (intV v1) (intV dv) (intV v2) n = dv + v1 ≡ v2
   relV3 (σ ⇒ τ) (closure {Γ1} t1 ρ1) (closure dt dρ) (closure {Γ2} t2 ρ2) n =
     Σ (Γ1 ≡ Γ2) λ { refl →
-      ∀ (k : ℕ) (k≤n : k < n) v1 dv v2 →
+      ∀ (k : ℕ) (k<n : k < n) v1 dv v2 →
       relV3 σ v1 dv v2 k →
       relT3 t1 (app (weaken (drop (Δτ σ) • ≼-refl) dt) (var this)) t2 (v1 • ρ1) (dv • v1 • dρ) (v2 • ρ2) k
     }
@@ -351,15 +351,15 @@ mutual
   -- Relate λ x → 0 and λ x → 1 at any step count.
   example1 : ∀ n → relV (nat ⇒ nat) (closure (const (lit 0)) ∅) (closure (const (lit 1)) ∅) n
   example1 n = refl ,
-    λ { zero k≤n v1 v2 x → tt
-      ; (suc k) k≤n v1 v2 x .(intV 0) .k n-j≤n refl → intV 1 , 0 , refl , (I.+ 1 , refl)
+    λ { zero k<n v1 v2 x → tt
+      ; (suc k) k<n v1 v2 x .(intV 0) .k n-j≤n refl → intV 1 , 0 , refl , (I.+ 1 , refl)
       }
 
   -- Relate λ x → 0 and λ x → x at any step count.
   example2 : ∀ n → relV (nat ⇒ nat) (closure (const (lit 0)) ∅) (closure (var this) ∅) n
   example2 n = refl ,
-    λ { zero k≤n v1 v2 x → tt
-      ; (suc k) k≤n (intV v1) (intV v2) x .(intV 0) .k n-j≤n refl → intV v2 , 0 , refl , (I.+ v2 , cong I.+_ (+-right-identity v2))
+    λ { zero k<n v1 v2 x → tt
+      ; (suc k) k<n (intV v1) (intV v2) x .(intV 0) .k n-j≤n refl → intV v2 , 0 , refl , (I.+ v2 , cong I.+_ (+-right-identity v2))
       }
 
 relρ : ∀ Γ (ρ1 ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
@@ -386,7 +386,7 @@ fundamental : ∀ {Γ τ} (t : Term Γ τ) → (n : ℕ) → (ρ1 ρ2 : ⟦ Γ �
 fundamental t zero ρ1 ρ2 ρρ = tt
 fundamental (var x) (suc n) ρ1 ρ2 ρρ = fundamentalV x (suc n) ρ1 ρ2 ρρ
 fundamental (const (lit v)) (suc n) ρ1 ρ2 ρρ .(intV v) .n n-j≤n refl = intV v , zero , refl , I.+ zero , refl
-fundamental (abs t) (suc n) ρ1 ρ2 ρρ .(closure t ρ1) .n n-j≤n refl =  closure t ρ2 , zero , refl , refl , λ k k≤n v1 v2 vv → fundamental t k (v1 • ρ1) (v2 • ρ2) (vv , relρ-mono k (suc n) (lt1 k≤n) _ _ _ ρρ)
+fundamental (abs t) (suc n) ρ1 ρ2 ρρ .(closure t ρ1) .n n-j≤n refl =  closure t ρ2 , zero , refl , refl , λ k k<n v1 v2 vv → fundamental t k (v1 • ρ1) (v2 • ρ2) (vv , relρ-mono k (suc n) (lt1 k<n) _ _ _ ρρ)
 fundamental (app s t) (suc zero) ρ1 ρ2 ρρ v1 n-j n-j≤n ()
 fundamental (app s t) (suc (suc n)) ρ1 ρ2 ρρ v1 n-j n-j≤n eq with eval s ρ1 n | inspect (eval s ρ1) n
 fundamental (app s t) (suc (suc n)) ρ1 ρ2 ρρ v1 n-j n-j≤n eq | Done sv1 n1 | [ s1eq ] with eval-dec s _ _ n n1 s1eq | eval t ρ1 n1 | inspect (eval t ρ1) n1
