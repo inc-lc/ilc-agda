@@ -1,4 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
 -- Step-indexed logical relations based on functional big-step semantics.
 --
 -- Goal for now: just prove the fundamental theorem of logical relations,
@@ -78,6 +77,15 @@ data Term (Γ : Context) :
   abs : ∀ {σ τ}
     (t : Term (σ • Γ) τ) →
     Term Γ (σ ⇒ τ)
+
+weaken : ∀ {Γ₁ Γ₂ τ} →
+  (Γ₁≼Γ₂ : Γ₁ ≼ Γ₂) →
+  Term Γ₁ τ →
+  Term Γ₂ τ
+weaken Γ₁≼Γ₂ (const c) = const c
+weaken Γ₁≼Γ₂ (var x) = var (weaken-var Γ₁≼Γ₂ x)
+weaken Γ₁≼Γ₂ (app s t) = app (weaken Γ₁≼Γ₂ s) (weaken Γ₁≼Γ₂ t)
+weaken Γ₁≼Γ₂ (abs {σ} t) = abs (weaken (keep σ • Γ₁≼Γ₂) t)
 
 data Val : Type → Set
 open import Base.Denotation.Environment Type Val public
@@ -314,7 +322,8 @@ mutual
 
   -- Since the original relation allows unrelated environments, we do that here
   -- too. However, while that is fine as a logical relation, it's not OK if we
-  -- want to prove that validity agrees with oplus.
+  -- want to prove that validity agrees with oplus. Now relT demands
+  -- environments with matching contexts, we could do the same here.
   relT3 : ∀ {τ Γ1 Γ2 ΔΓ} (t1 : Term Γ1 τ) (dt : Term ΔΓ (Δτ τ)) (t2 : Term Γ2 τ) (ρ1 : ⟦ Γ1 ⟧Context) (dρ : ⟦ ΔΓ ⟧Context) (ρ2 : ⟦ Γ2 ⟧Context) → ℕ → Set
   relT3 t1 dt t2 ρ1 dρ ρ2 zero = ⊤
   relT3 {τ} t1 dt t2 ρ1 dρ ρ2 (suc n) =
@@ -325,12 +334,18 @@ mutual
     Σ[ dv ∈ Val (Δτ τ) ] Σ[ dn ∈ ℕ ] eval dt dρ dn ≡ Done dv 0 ×
     relV3 τ v1 dv v2 (suc n-j)
 
+  -- Weakening in this definition is going to be annoying to use. And having to
+  -- construct terms is ugly.
+
+  -- Weakening could be avoided if we use a separate language of change terms
+  -- with two environments, and with a dclosure binding two variables at once,
+  -- and so on.
   relV3 : ∀ τ (v1 : Val τ) (dv : Val (Δτ τ)) (v2 : Val τ) → ℕ → Set
   relV3 nat (intV v1) (intV dv) (intV v2) n = dv + v1 ≡ v2
   relV3 (σ ⇒ τ) (closure t1 ρ1) (closure dt dρ) (closure t2 ρ2) n =
     ∀ (k : ℕ) (k≤n : k < n) v1 dv v2 →
     relV3 σ v1 dv v2 k →
-    relT3 t1 {!dt!} t2 (v1 • ρ1) dρ (v2 • ρ2) k
+    relT3 t1 (app (weaken (drop (Δτ σ) • ≼-refl) dt) (var this)) t2 (v1 • ρ1) (dv • v1 • dρ) (v2 • ρ2) k
 
   -- Relate λ x → 0 and λ x → 1 at any step count.
   example1 : ∀ n → relV (nat ⇒ nat) (closure (const (lit 0)) ∅) (closure (const (lit 1)) ∅) n
