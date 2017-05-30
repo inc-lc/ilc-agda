@@ -1,3 +1,4 @@
+{-# OPTIONS --allow-unsolved-metas #-}
 -- Step-indexed logical relations based on functional big-step semantics.
 --
 -- Goal for now: just prove the fundamental theorem of logical relations,
@@ -16,6 +17,17 @@
 -- somewhere, especially to try following "Functional Big-Step Semantics"),
 -- though I deviate somewhere.
 
+-- In fact, this development is typed, hence some parts of the model are closer
+-- to Ahmed (ESOP 2006), "Step-Indexed Syntactic Logical Relations for Recursive
+-- and Quantified Types". But for many relevant aspects, the two papers are
+-- interchangeable.
+--
+-- The main insight from the ISAC paper missing from the other one is how to
+-- step-index a big-step semantics correctly: just ensure that the steps in the
+-- big-step semantics agree with the ones in the small-step semantics. *Then*
+-- everything just works with big-step semantics. Quite a few other details are
+-- fiddly, but those are the same in small-step semantics.
+--
 -- CHEATS:
 -- "Fuctional big-step semantics" requires an external termination proof for the
 -- semantics. There it is also mechanized, here it isn't. Worse, the same
@@ -36,6 +48,7 @@ open DecTotalOrder Data.Nat.decTotalOrder using () renaming (refl to ≤-refl; t
 data Type : Set where
   _⇒_ : (σ τ : Type) → Type
   nat : Type
+infixr 20 _⇒_
 
 ⟦_⟧Type : Type → Set
 ⟦ σ ⇒ τ ⟧Type = ⟦ σ ⟧Type → ⟦ τ ⟧Type
@@ -237,10 +250,16 @@ eval-const-strengthen (lit v) n0 .n0 refl = refl
 import Data.Integer as I
 open I using (ℤ)
 mutual
+  -- Warning: compared to Ahmed's papers, this definition for relT also requires
+  -- t1 to be well-typed, not just t2.
+  --
+  -- This difference might affect the status of some proofs in Ahmed's papers,
+  -- but that's not a problem here.
+
   -- This is not the same definition of relT, but it is equivalent.
   relT : ∀ {τ Γ1 Γ2} (t1 : Term Γ1 τ) (t2 : Term Γ2 τ) (ρ1 : ⟦ Γ1 ⟧Context) (ρ2 : ⟦ Γ2 ⟧Context) → ℕ → Set
   -- This equation is a lemma in the original definition.
-  relT {τ} t1 t2 ρ1 ρ2 zero = ⊤
+  relT t1 t2 ρ1 ρ2 zero = ⊤
   -- To compare this definition, note that the original k is suc n here.
   relT {τ} t1 t2 ρ1 ρ2 (suc n) =
     (v1 : Val τ) →
@@ -273,6 +292,30 @@ mutual
   -- both Pitts' "Step-Indexed Biorthogonality: a Tutorial Example" and
   -- "Imperative Self-Adjusting Computation" do the same thing (and point out it's
   -- important).
+
+  Δτ : Type → Type
+  Δτ (σ ⇒ τ) = σ ⇒ (Δτ σ) ⇒ Δτ τ
+  Δτ nat = nat
+
+  -- Since the original relation allows unrelated environments, we do that here
+  -- too. However, while that is fine as a logical relation, it's not OK if we
+  -- want to prove that validity agrees with oplus.
+  relT3 : ∀ {τ Γ1 Γ2 ΔΓ} (t1 : Term Γ1 τ) (dt : Term ΔΓ (Δτ τ)) (t2 : Term Γ2 τ) (ρ1 : ⟦ Γ1 ⟧Context) (dρ : ⟦ ΔΓ ⟧Context) (ρ2 : ⟦ Γ2 ⟧Context) → ℕ → Set
+  relT3 t1 dt t2 ρ1 dρ ρ2 zero = ⊤
+  relT3 {τ} t1 dt t2 ρ1 dρ ρ2 (suc n) =
+    (v1 : Val τ) →
+    ∀ n-j (n-j≤n : n-j ≤ n) →
+    (eq : eval t1 ρ1 n ≡ Done v1 n-j) →
+    Σ[ v2 ∈ Val τ ] Σ[ n2 ∈ ℕ ] eval t2 ρ2 n2 ≡ Done v2 0 ×
+    Σ[ dv ∈ Val (Δτ τ) ] Σ[ dn ∈ ℕ ] eval dt dρ dn ≡ Done dv 0 ×
+    relV3 τ v1 dv v2 (suc n-j)
+
+  relV3 : ∀ τ (v1 : Val τ) (dv : Val (Δτ τ)) (v2 : Val τ) → ℕ → Set
+  relV3 nat (intV v1) (intV dv) (intV v2) n = dv + v1 ≡ v2
+  relV3 (σ ⇒ τ) (closure t1 ρ1) (closure dt dρ) (closure t2 ρ2) n =
+    ∀ (k : ℕ) (k≤n : k < n) v1 dv v2 →
+    relV3 σ v1 dv v2 k →
+    relT3 t1 {!dt!} t2 (v1 • ρ1) dρ (v2 • ρ2) k
 
   -- Relate λ x → 0 and λ x → 1 at any step count.
   example1 : ∀ n → relV (nat ⇒ nat) (closure (const (lit 0)) ∅) (closure (const (lit 1)) ∅) n
