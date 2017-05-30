@@ -377,7 +377,7 @@ fundamental (app s t) (suc (suc n)) ρ1 ρ2 ρρ v1 n-j n-j≤n eq | Done sv1 n1
 fundamental (app s t) (suc (suc n)) ρ1 ρ2 ρρ v1 n-j n-j≤n eq | Done (closure st1 sρ1) n1 | [ s1eq ] | n1≤n | Done tv1 n2 | [ t1eq ] with eval-dec t _ _ n1 n2 t1eq
 ... | n2≤n1 with fundamental s (suc (suc n)) ρ1 ρ2 ρρ (closure st1 sρ1) (suc n1) (s≤s n1≤n) (eval-mono s ρ1 (closure st1 sρ1) n n1 s1eq)
   | fundamental t (suc (suc n1)) ρ1 ρ2 (relρ-mono (suc (suc n1)) (suc (suc n)) (s≤s (s≤s n1≤n)) _ _ _ ρρ) tv1 (suc n2) (s≤s n2≤n1) (eval-mono t ρ1 tv1 n1 n2 t1eq)
-... | sv2@(closure st2 sρ2) , sn3 , s2eq , refl , svv | tv2 , tn3 , t2eq , tvv with svv (suc n2) (s≤s (s≤s n2≤n1)) tv1 tv2 (relV-mono _ _ (s≤s (n≤1+n n2)) _ _ _ tvv ) v1 n-j (eval-dec st1 _ _ _ _ eq) eq
+... | sv2@(closure st2 sρ2) , sn3 , s2eq , refl , svv | tv2 , tn3 , t2eq , tvv with svv (suc n2) (s≤s (s≤s n2≤n1)) tv1 tv2 (relV-mono (suc n2) (suc (suc n2)) (s≤s (n≤1+n n2)) _ tv1 tv2 tvv) v1 n-j (eval-dec st1 _ _ _ _ eq) eq
 ... | v2 , n3 , eq2 , vv = v2 , suc (sn3 + (tn3 + n3)) , comp , vv
   where
     s2eq-adj : eval s ρ2 (sn3 + (tn3 + n3)) ≡ Done (closure st2 sρ2) (tn3 + n3)
