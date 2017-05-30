@@ -300,15 +300,11 @@ mutual
   -- environment.
   relV nat (intV v1) (intV v2) n = Σ[ dv ∈ ℤ ] dv I.+ (I.+ v1) ≡ (I.+ v2)
   relV (σ ⇒ τ) (closure {Γ1} t1 ρ1) (closure {Γ2} t2 ρ2) n =
-    Σ[ ≡Γ ∈ Γ1 ≡ Γ2 ]
+    Σ (Γ1 ≡ Γ2) λ { refl →
       ∀ (k : ℕ) (k≤n : k < n) v1 v2 →
       relV σ v1 v2 k →
-      relT
-        t1
-        (subst (λ Γ → Term (σ • Γ) τ) (sym ≡Γ) t2)
-        (v1 • ρ1)
-        (subst (λ Γ → ⟦ σ • Γ ⟧Context) (sym ≡Γ) (v2 • ρ2))
-        k
+      relT t1 t2 (v1 • ρ1) (v2 • ρ2) k
+    }
   -- Above, in the conclusion, I'm not relating app (closure t1 ρ1) v1 with app
   -- (closure t2 ρ2) v2 (or some encoding of that that actually works), but the
   -- result of taking a step from that configuration. That is important, because
@@ -320,11 +316,14 @@ mutual
   Δτ (σ ⇒ τ) = σ ⇒ (Δτ σ) ⇒ Δτ τ
   Δτ nat = nat
 
-  -- Since the original relation allows unrelated environments, we do that here
-  -- too. However, while that is fine as a logical relation, it's not OK if we
-  -- want to prove that validity agrees with oplus. Now relT demands
-  -- environments with matching contexts, we could do the same here.
-  relT3 : ∀ {τ Γ1 Γ2 ΔΓ} (t1 : Term Γ1 τ) (dt : Term ΔΓ (Δτ τ)) (t2 : Term Γ2 τ) (ρ1 : ⟦ Γ1 ⟧Context) (dρ : ⟦ ΔΓ ⟧Context) (ρ2 : ⟦ Γ2 ⟧Context) → ℕ → Set
+  -- The original relation allows unrelated environments. However, while that is
+  -- fine as a logical relation, it's not OK if we want to prove that validity
+  -- agrees with oplus. We want a finer relation.
+  -- Also: we still need to demand the actual environments to be related, and
+  -- the bodies to match. Haven't done that yet. On the other hand, since we do want
+  -- to allow for replacement changes, that would probably complicate the proof
+  -- elsewhere.
+  relT3 : ∀ {τ Γ ΔΓ} (t1 : Term Γ τ) (dt : Term ΔΓ (Δτ τ)) (t2 : Term Γ τ) (ρ1 : ⟦ Γ ⟧Context) (dρ : ⟦ ΔΓ ⟧Context) (ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
   relT3 t1 dt t2 ρ1 dρ ρ2 zero = ⊤
   relT3 {τ} t1 dt t2 ρ1 dρ ρ2 (suc n) =
     (v1 : Val τ) →
@@ -342,10 +341,12 @@ mutual
   -- and so on.
   relV3 : ∀ τ (v1 : Val τ) (dv : Val (Δτ τ)) (v2 : Val τ) → ℕ → Set
   relV3 nat (intV v1) (intV dv) (intV v2) n = dv + v1 ≡ v2
-  relV3 (σ ⇒ τ) (closure t1 ρ1) (closure dt dρ) (closure t2 ρ2) n =
-    ∀ (k : ℕ) (k≤n : k < n) v1 dv v2 →
-    relV3 σ v1 dv v2 k →
-    relT3 t1 (app (weaken (drop (Δτ σ) • ≼-refl) dt) (var this)) t2 (v1 • ρ1) (dv • v1 • dρ) (v2 • ρ2) k
+  relV3 (σ ⇒ τ) (closure {Γ1} t1 ρ1) (closure dt dρ) (closure {Γ2} t2 ρ2) n =
+    Σ (Γ1 ≡ Γ2) λ { refl →
+      ∀ (k : ℕ) (k≤n : k < n) v1 dv v2 →
+      relV3 σ v1 dv v2 k →
+      relT3 t1 (app (weaken (drop (Δτ σ) • ≼-refl) dt) (var this)) t2 (v1 • ρ1) (dv • v1 • dρ) (v2 • ρ2) k
+    }
 
   -- Relate λ x → 0 and λ x → 1 at any step count.
   example1 : ∀ n → relV (nat ⇒ nat) (closure (const (lit 0)) ∅) (closure (const (lit 1)) ∅) n
