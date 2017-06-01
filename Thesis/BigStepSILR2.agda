@@ -1,4 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
 module Thesis.BigStepSILR2 where
 
 open import Data.Empty
@@ -12,7 +11,8 @@ open import Data.Nat.Properties.Simple
 open DecTotalOrder Data.Nat.decTotalOrder using () renaming (refl to ≤-refl; trans to ≤-trans)
 open import Thesis.FunBigStepSILR2
 
--- Standard relational big-step semantics.
+-- Standard relational big-step semantics, with step-indexes matching a small-step semantics.
+-- Protip: doing this on ANF terms would be much easier.
 data _⊢_↓[_]_ {Γ} (ρ : ⟦ Γ ⟧Context) : ∀ {τ} → Term Γ τ → ℕ → Val τ → Set where
   abs : ∀ {τ₁ τ₂} {t : Term (τ₁ • Γ) τ₂} →
     ρ ⊢ abs t ↓[ 0 ] closure t ρ
@@ -161,25 +161,71 @@ rrelρ-mono m n m≤n (τ • Γ) (v1 • ρ1) (v2 • ρ2) (vv , ρρ) = rrelV-
 rfundamentalV : ∀ {Γ τ} (x : Var Γ τ) → (n : ℕ) → (ρ1 ρ2 : ⟦ Γ ⟧Context) (ρρ : rrelρ Γ ρ1 ρ2 n) → rrelT (var x) (var x) ρ1 ρ2 n
 rfundamentalV x n ρ1 ρ2 ρρ .(⟦ x ⟧Var ρ1) .0 j<n (var .x) = ⟦ x ⟧Var ρ2 , 0 , (var x) , ⟦ x ⟧RelVar ρρ
 
+bar : ∀ m {n o} → o ≤ n → m ≤ (m + n) ∸ o
+bar m {n} {o} o≤n rewrite +-∸-assoc m o≤n = m≤m+n m (n ∸ o)
+
+suc∸ : ∀ m n → n ≤ m → suc (m ∸ n) ≡ suc m ∸ n
+suc∸ m zero z≤n = refl
+suc∸ (suc m) (suc n) (s≤s n≤m) = suc∸ m n n≤m
+
+suc∸suc : ∀ m n → n < m → suc (m ∸ suc n) ≡ m ∸ n
+suc∸suc (suc m) zero (s≤s n<m) = refl
+suc∸suc (suc m) (suc n) (s≤s n<m) = suc∸suc m n n<m
+
+m≡m∸1+1 : ∀ m {n} → n < m → m ≡ suc (m ∸ 1)
+m≡m∸1+1 (suc m) (s≤s n<m) = refl
+
+m∸[n+1]<m : ∀ m n → n < m → m ∸ suc n < m
+m∸[n+1]<m (suc m) zero (s≤s n<m) = s≤s ≤-refl
+m∸[n+1]<m (suc m) (suc n) (s≤s n<m) rewrite sym (suc∸suc m n n<m) = ≤-step (m∸[n+1]<m m n n<m)
+
+sub∸ : ∀ m n o → m + n ≤ o → n ≤ o ∸ m
+sub∸ m n o n+m≤o rewrite +-comm m n | cong (_≤ o ∸ m) (sym (m+n∸n≡m n m)) = ∸-mono n+m≤o (≤-refl {m})
+
 rfundamental : ∀ {Γ τ} (t : Term Γ τ) → (n : ℕ) → (ρ1 ρ2 : ⟦ Γ ⟧Context) (ρρ : rrelρ Γ ρ1 ρ2 n) → rrelT t t ρ1 ρ2 n
 rfundamental (var x) n ρ1 ρ2 ρρ = rfundamentalV x n ρ1 ρ2 ρρ
 rfundamental (const (lit x)) n ρ1 ρ2 ρρ .(intV x) .0 j<n (lit .x) = intV x , 0 , lit x , I.+ 0 , refl
 rfundamental (abs t) n ρ1 ρ2 ρρ .(closure t ρ1) .0 j<n abs = closure t ρ2 , 0 , abs , refl , (λ k k<n v1 v2 vv v3 j j<k ρ1⊢t1↓[j]v1 → rfundamental t k (v1 • ρ1) (v2 • ρ2) (vv , rrelρ-mono k n (lt1 k<n) _ _ _ ρρ) v3 j j<k ρ1⊢t1↓[j]v1 )
-rfundamental (app s t) n ρ1 ρ2 ρρ v1 .(suc (n1 + n2 + n3)) j<n (app n1 n2 n3 ρ1⊢t1↓[j]v1 ρ1⊢t1↓[j]v2 ρ1⊢t1↓[j]v3) = body
+rfundamental (app s t) n ρ1 ρ2 ρρ v1 .(suc (n1 + n2 + n3)) 1+n1+n2+n3<n (app n1 n2 n3 ρ1⊢t1↓[j]v1 ρ1⊢t1↓[j]v2 ρ1⊢t1↓[j]v3) = body
   where
+    open ≤-Reasoning
+    n1≤sum : n1 ≤ n1 + n2 + n3
+    n1≤sum rewrite +-assoc n1 n2 n3 = m≤m+n n1 (n2 + n3)
     n1<n : n1 < n
-    n1<n = {!!}
+    n1<n = ≤-trans (s≤s (≤-step n1≤sum)) 1+n1+n2+n3<n
+
+    n2≤sum : n2 ≤ n1 + n2 + n3
+    n2≤sum rewrite +-assoc n1 n2 n3 = ≤-steps {n2} {n2 + n3} n1 (m≤m+n n2 n3)
     n2<n : n2 < n
-    n2<n = {!!}
-    n-n1-n2<n-n1 : n ∸ n1 ∸ n2 < n ∸ n1
-    n-n1-n2<n-n1 = {!!}
-    n-n1-n2≤n-n2 : n ∸ n1 ∸ n2 ≤ n ∸ n2
-    n-n1-n2≤n-n2 = {!!}
-    n3<n-n1-n2 : n3 < n ∸ n1 ∸ n2
-    n3<n-n1-n2 = {!!}
-    n-[1+n1+n2+n3]≤n-n1-n2-n3 : n ∸ suc (n1 + n2 + n3) ≤ n ∸ n1 ∸ n2 ∸ n3
-    n-[1+n1+n2+n3]≤n-n1-n2-n3 = {!!}
+    n2<n = ≤-trans (s≤s (≤-step n2≤sum)) 1+n1+n2+n3<n
+    n1+n2<n : n1 + n2 < n
+    n1+n2<n = ≤-trans (s≤s (≤-step (m≤m+n (n1 + n2) n3))) 1+n1+n2+n3<n
+    n2+n1<n : n2 + n1 < n
+    n2+n1<n rewrite +-comm n2 n1 = n1+n2<n
+
+    n1+n3≤sum : n1 + n3 ≤ (n1 + n2) + n3
+    n1+n3≤sum = m≤m+n n1 n2 +-mono (≤-refl {n3})
+    foo : suc n2 ≡ suc (n1 + n2 + n3) ∸ (n1 + n3)
+    foo rewrite cong suc (sym (m+n∸n≡m n2 (n1 + n3))) | sym (+-assoc n2 n1 n3) | +-comm n2 n1 = suc∸ (n1 + n2 + n3) (n1 + n3) n1+n3≤sum
+    n2<n∸n1 : n2 < n ∸ n1
+    n2<n∸n1 rewrite foo = ∸-mono {suc (n1 + n2 + n3)} {n} {n1 + n3} {n1} (lt1 1+n1+n2+n3<n) (m≤m+n n1 n3)
+    n-[1+n1+n2]<n-n1 : n ∸ n1 ∸ suc n2 < n ∸ n1
+    n-[1+n1+n2]<n-n1 = m∸[n+1]<m (n ∸ n1) n2 n2<n∸n1
+
+    n-[1+n1+n2]<n-n2 : n ∸ n1 ∸ suc n2 < n ∸ n2
+    n-[1+n1+n2]<n-n2 rewrite ∸-+-assoc n n1 (suc n2) | +-suc n1 n2 | +-comm n1 n2 | suc∸suc n (n2 + n1) n2+n1<n | sym (∸-+-assoc n n2 n1) = n∸m≤n n1 (n ∸ n2)
+
+    baz : n1 + suc (n2 + suc n3) ≤ n
+    baz rewrite +-suc n2 n3 | +-suc n1 (suc (n2 + n3)) | +-suc n1 (n2 + n3) | +-assoc n1 n2 n3 = 1+n1+n2+n3<n
+    n3<n-n1-[1+n2] : n3 < n ∸ n1 ∸ suc n2
+    n3<n-n1-[1+n2] = sub∸ (suc n2) (suc n3) (n ∸ n1) (sub∸ n1 (suc (n2 + suc n3)) n baz)
+
+    l1 : suc (n1 + n2 + n3) ≡ n1 + suc n2 + n3
+    l1 = cong (_+ n3) (sym (+-suc n1 n2))
+    n-1+sum≡alt : n ∸ suc (n1 + n2 + n3) ≡ n ∸ n1 ∸ suc n2 ∸ n3
+    n-1+sum≡alt rewrite l1 | sym (∸-+-assoc n (n1 + suc n2) n3) | sym (∸-+-assoc n n1 (suc n2)) = refl
+
     body : Σ[ v2 ∈ Val _ ] Σ[ tn ∈ ℕ ] ρ2 ⊢ app s t ↓[ tn ] v2 × rrelV _ v1 v2 (n ∸ suc (n1 + n2 + n3))
     body with rfundamental s n ρ1 ρ2 ρρ _ n1 n1<n ρ1⊢t1↓[j]v1 | rfundamental t n ρ1 ρ2 ρρ _ n2 n2<n ρ1⊢t1↓[j]v2
-    ... | sv2@(closure st2 sρ2) , sn2 , ρ2⊢s↓ , refl , sv1v2 | tv2 , tn2 , ρ2⊢t↓ , tv1v2 with sv1v2 (n ∸ n1 ∸ n2) n-n1-n2<n-n1 _ tv2 (rrelV-mono (n ∸ n1 ∸ n2) (n ∸ n2) n-n1-n2≤n-n2 _ _ tv2 tv1v2 ) v1 n3 n3<n-n1-n2 ρ1⊢t1↓[j]v3
-    ... | v2 , stn , ρ2⊢st2↓ , vv = v2 , suc (sn2 + tn2 + stn) , app _ _ _ ρ2⊢s↓ ρ2⊢t↓  ρ2⊢st2↓ , rrelV-mono (n ∸ suc (n1 + n2 + n3)) (n ∸ n1 ∸ n2 ∸ n3) n-[1+n1+n2+n3]≤n-n1-n2-n3 _ v1 v2 vv
+    ... | sv2@(closure st2 sρ2) , sn2 , ρ2⊢s↓ , refl , sv1v2 | tv2 , tn2 , ρ2⊢t↓ , tv1v2 with sv1v2 (n ∸ n1 ∸ suc n2) n-[1+n1+n2]<n-n1 _ tv2 (rrelV-mono (n ∸ n1 ∸ suc n2) (n ∸ n2) (lt1 n-[1+n1+n2]<n-n2) _ _ tv2 tv1v2) v1 n3 n3<n-n1-[1+n2]  ρ1⊢t1↓[j]v3
+    ... | v2 , stn , ρ2⊢st2↓ , vv rewrite n-1+sum≡alt = v2 , suc (sn2 + tn2 + stn) , app _ _ _ ρ2⊢s↓ ρ2⊢t↓  ρ2⊢st2↓ , vv
