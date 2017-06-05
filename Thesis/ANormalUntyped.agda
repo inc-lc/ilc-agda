@@ -6,26 +6,15 @@ open import Relation.Binary.PropositionalEquality
 
 {- Typed deBruijn indexes for untyped languages. -}
 
--- Make this abstract again *and* add needed equations.
-abstract
-  data Type : Set where
-    Uni : Type
-  uni = Uni
-
-  -- Allow exposing that there's a single type where needed.
-  isUni : ∀ τ → τ ≡ uni
-  isUni Uni = refl
-
--- This equation allows bypassing more checks. Otherwise we'd need to use isUni
--- even more often.
-_⇒_ : Type → Type → Type
-_⇒_ σ τ = τ
+-- Using a record gives an eta rule saying that all types are equal.
+record Type : Set where
+  constructor Uni
 
 open import Base.Syntax.Context Type public
-data Term (Γ : Context) (τ : Type) : Set where
-  var : (x : Var Γ τ) →
-    Term Γ τ
-  lett : ∀ {σ τ₁} → (f : Var Γ (σ ⇒ τ₁)) → (x : Var Γ σ) → Term (τ₁ • Γ) τ → Term Γ τ
+data Term (Γ : Context) : Set where
+  var : (x : Var Γ Uni) →
+    Term Γ
+  lett : (f : Var Γ Uni) → (x : Var Γ Uni) → Term (Uni • Γ) → Term Γ
 
 {-
 deriveC Δ (lett f x t) = dlett df x dx
@@ -39,21 +28,21 @@ deriveC Δ (lett f x t) = dlett df x dx
 --     ΔCTerm (τ₁ • Γ) τ (? • Δ) →
 --     ΔCTerm Γ τ Δ
 
-weaken-term : ∀ {Γ₁ Γ₂ τ} →
+weaken-term : ∀ {Γ₁ Γ₂} →
   (Γ₁≼Γ₂ : Γ₁ ≼ Γ₂) →
-  Term Γ₁ τ →
-  Term Γ₂ τ
+  Term Γ₁ →
+  Term Γ₂
 weaken-term Γ₁≼Γ₂ (var x) = var (weaken-var Γ₁≼Γ₂ x)
 weaken-term Γ₁≼Γ₂ (lett f x t) = lett (weaken-var Γ₁≼Γ₂ f) (weaken-var Γ₁≼Γ₂ x) (weaken-term (keep _ • Γ₁≼Γ₂) t)
 
-data Fun (Γ : Context) : (τ : Type) → Set where
-  term : ∀ {τ} → Term Γ τ → Fun Γ τ
-  abs : ∀ {σ τ} → Fun (σ • Γ) τ → Fun Γ (σ ⇒ τ)
+data Fun (Γ : Context) : Set where
+  term : Term Γ → Fun Γ
+  abs : ∀ {σ} → Fun (σ • Γ) → Fun Γ
 
-weaken-fun : ∀ {Γ₁ Γ₂ τ} →
+weaken-fun : ∀ {Γ₁ Γ₂} →
   (Γ₁≼Γ₂ : Γ₁ ≼ Γ₂) →
-  Fun Γ₁ τ →
-  Fun Γ₂ τ
+  Fun Γ₁ →
+  Fun Γ₂
 weaken-fun Γ₁≼Γ₂ (term x) = term (weaken-term Γ₁≼Γ₂ x)
 weaken-fun Γ₁≼Γ₂ (abs f) = abs (weaken-fun (keep _ • Γ₁≼Γ₂) f)
 
@@ -65,31 +54,30 @@ open import Base.Data.DependentList public
 
 -- data Val (τ : Type) where
 data Val where
-  closure : ∀ {Γ σ τ} → (t : Fun (σ • Γ) τ) → (ρ : ⟦ Γ ⟧Context) → Val (σ ⇒ τ)
-  intV : ∀ {τ} (n : ℤ) → Val τ
+  closure : ∀ {Γ} → (t : Fun (Uni • Γ)) → (ρ : ⟦ Γ ⟧Context) → Val Uni
+  intV : ∀ (n : ℤ) → Val Uni
 -- ⟦_⟧Term : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧Context → ⟦ τ ⟧Type
 -- ⟦ var x ⟧Term ρ = ⟦ x ⟧Var ρ
 -- ⟦ lett f x t ⟧Term ρ = ⟦ t ⟧Term (⟦ f ⟧Var ρ (⟦ x ⟧Var ρ) • ρ)
 
-data ErrVal (τ : Type) : Set where
-  Done : (v : Val τ) → ErrVal τ
-  Error : ErrVal τ
-  TimeOut : ErrVal τ
+data ErrVal : Set where
+  Done : (v : Val Uni) → ErrVal
+  Error : ErrVal
+  TimeOut : ErrVal
 
-_>>=_ : ∀ {σ τ} → ErrVal σ → (Val σ → ErrVal τ) → ErrVal τ
+_>>=_ : ErrVal → (Val Uni → ErrVal) → ErrVal
 Done v >>= f = f v
 Error >>= f = Error
 TimeOut >>= f = TimeOut
 
-Res : Type → Set
-Res τ = ℕ → ErrVal τ
+Res : Set
+Res = ℕ → ErrVal
 
-eval-fun : ∀ {Γ τ} → Fun Γ τ → ⟦ Γ ⟧Context → Res τ
-eval-term : ∀ {Γ τ} → Term Γ τ → ⟦ Γ ⟧Context → Res τ
+eval-fun : ∀ {Γ} → Fun Γ → ⟦ Γ ⟧Context → Res
+eval-term : ∀ {Γ} → Term Γ → ⟦ Γ ⟧Context → Res
 
-apply : ∀ {σ τ} → Val (σ ⇒ τ) → Val σ → Res τ
-apply {σ} (closure {σ = σ₁} f ρ) a n with isUni σ | isUni σ₁
-apply {.uni} (closure {_} {.uni} f ρ) a n | refl | refl = eval-fun f (a • ρ) n
+apply : Val Uni → Val Uni → Res
+apply (closure f ρ) a n = eval-fun f (a • ρ) n
 apply (intV _) a n = Error
 
 eval-term t ρ zero = TimeOut
@@ -103,16 +91,16 @@ eval-fun (abs f) ρ n = Done (closure f ρ)
 import Thesis.ANormalBigStep as T
 
 erase-type : T.Type → Type
-erase-type _ = uni
+erase-type _ = Uni
 
 erase-val : ∀ {τ} → T.Val τ → Val (erase-type τ)
 
-erase-errVal : ∀ {τ} → T.ErrVal τ → ErrVal (erase-type τ)
+erase-errVal : ∀ {τ} → T.ErrVal τ → ErrVal
 erase-errVal (T.Done v) = Done (erase-val v)
 erase-errVal T.Error = Error
 erase-errVal T.TimeOut = TimeOut
 
-erase-res : ∀ {τ} → T.Res τ → Res (erase-type τ)
+erase-res : ∀ {τ} → T.Res τ → Res
 erase-res r n = erase-errVal (r n)
 
 erase-ctx : T.Context → Context
@@ -127,11 +115,11 @@ erase-var : ∀ {Γ τ} → T.Var Γ τ → Var (erase-ctx Γ) (erase-type τ)
 erase-var T.this = this
 erase-var (T.that x) = that (erase-var x)
 
-erase-term : ∀ {Γ τ} → T.Term Γ τ → Term (erase-ctx Γ) (erase-type τ)
+erase-term : ∀ {Γ τ} → T.Term Γ τ → Term (erase-ctx Γ)
 erase-term (T.var x) = var (erase-var x)
 erase-term (T.lett f x t) = lett (erase-var f) (erase-var x) (erase-term t)
 
-erase-fun : ∀ {Γ τ} → T.Fun Γ τ → Fun (erase-ctx Γ) (erase-type τ)
+erase-fun : ∀ {Γ τ} → T.Fun Γ τ → Fun (erase-ctx Γ)
 erase-fun (T.term x) = term (erase-term x)
 erase-fun (T.abs f) = abs (erase-fun f)
 
@@ -150,8 +138,7 @@ erasure-commute-fun : ∀ {Γ τ} (t : T.Fun Γ τ) ρ n →
   erase-errVal (T.eval-fun t ρ n) ≡ eval-fun (erase-fun t) (erase-env ρ) n
 
 erasure-commute-apply : ∀ {σ τ} (f : T.Val (σ T.⇒ τ)) a n → erase-errVal (T.apply f a n) ≡ apply (erase-val f) (erase-val a) n
-erasure-commute-apply {σ} (T.closure t ρ) a n with isUni (erase-type σ)
-erasure-commute-apply {σ} (T.closure t ρ) a n | refl = erasure-commute-fun t (a • ρ) n
+erasure-commute-apply {σ} (T.closure t ρ) a n = erasure-commute-fun t (a • ρ) n
 
 erasure-commute-term : ∀ {Γ τ} (t : T.Term Γ τ) ρ n →
   erase-errVal (T.eval-term t ρ n) ≡ eval-term (erase-term t) (erase-env ρ) n
