@@ -114,22 +114,16 @@ eval-dec-sound (app s t) ρ v (suc r) n () | TimeOut | [ seq ]
 
 import Data.Integer as I
 open I using (ℤ)
+
+-- The extra "r" stands for "relational", because unlike relT and relV, rrelV
+-- and rrelT are based on a *relational* big-step semantics.
 mutual
   rrelT : ∀ {τ Γ} (t1 : Term Γ τ) (t2 : Term Γ τ) (ρ1 : ⟦ Γ ⟧Context) (ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
-  -- To compare this definition, note that the original k is suc n here.
-  rrelT {τ} t1 t2 ρ1 ρ2 n =
+  rrelT {τ} t1 t2 ρ1 ρ2 k =
     (v1 : Val τ) →
-    -- Originally we have 0 ≤ j < k, so j < suc n, so k - j = suc n - j.
-    -- It follows that 0 < k - j ≤ k, hence suc n - j ≤ suc n, or n - j ≤ n.
-    -- Here, instead of binding j we bind n-j = n - j, require n - j ≤ n, and
-    -- use suc n-j instead of k - j.
-    ∀ j (j<n : j < n) →
-    -- The next assumption is important. This still says that evaluation consumes j steps.
-    -- Since j ≤ n, it is OK to start evaluation with n steps.
-    -- Starting with (suc n) and getting suc n-j is equivalent, per eval-mono
-    -- and eval-strengthen. But in practice this version is easier to use.
+    ∀ j (j<k : j < k) →
     (ρ1⊢t1↓[j]v1 : ρ1 ⊢ t1 ↓[ j ] v1) →
-    Σ[ v2 ∈ Val τ ] Σ[ n2 ∈ ℕ ] ρ2 ⊢ t2 ↓[ n2 ] v2 × rrelV τ v1 v2 (n ∸ j)
+    Σ[ v2 ∈ Val τ ] Σ[ n2 ∈ ℕ ] ρ2 ⊢ t2 ↓[ n2 ] v2 × rrelV τ v1 v2 (k ∸ j)
 
   rrelV : ∀ τ (v1 v2 : Val τ) → ℕ → Set
   rrelV nat (intV v1) (intV v2) n = Σ[ dv ∈ ℤ ] dv I.+ (I.+ v1) ≡ (I.+ v2)

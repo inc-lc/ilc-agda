@@ -312,10 +312,11 @@ mutual
   -- "Imperative Self-Adjusting Computation" do the same thing (and point out it's
   -- important).
 
-  Δτ : Type → Type
-  Δτ (σ ⇒ τ) = σ ⇒ (Δτ σ) ⇒ Δτ τ
-  Δτ nat = nat
+Δτ : Type → Type
+Δτ (σ ⇒ τ) = σ ⇒ (Δτ σ) ⇒ Δτ τ
+Δτ nat = nat
 
+mutual
   -- The original relation allows unrelated environments. However, while that is
   -- fine as a logical relation, it's not OK if we want to prove that validity
   -- agrees with oplus. We want a finer relation.
@@ -335,6 +336,7 @@ mutual
 
   -- Weakening in this definition is going to be annoying to use. And having to
   -- construct terms is ugly.
+  -- Worse, evaluating the application consumes computation steps.
 
   -- Weakening could be avoided if we use a separate language of change terms
   -- with two environments, and with a dclosure binding two variables at once,
