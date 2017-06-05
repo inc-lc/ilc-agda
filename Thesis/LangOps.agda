@@ -112,3 +112,11 @@ ominusτ-equiv Γ ρ (sum σ τ) (inj₂ y) (inj₁ x) = refl
 ominusτ-equiv Γ ρ (sum σ τ) (inj₂ y) (inj₂ y₁)
   rewrite ominusτ-equiv-ext τ (τ • τ • sum σ τ • sum σ τ • Γ)
   = refl
+
+-- Proved these lemmas to show them in thesis.
+oplusτ-equiv-term : ∀ dΓ (dρ : ⟦ dΓ ⟧Context) τ t dt  →
+  ⟦ app₂ (oplusτo τ) t dt ⟧Term dρ ≡ ⟦ t ⟧Term dρ ⊕ ⟦ dt ⟧Term dρ
+oplusτ-equiv-term dΓ dρ τ t dt = oplusτ-equiv dΓ dρ τ (⟦ t ⟧Term dρ) (⟦ dt ⟧Term dρ)
+ominusτ-equiv-term : ∀ Γ (ρ : ⟦ Γ ⟧Context) τ t2 t1  →
+  ⟦ app₂ (ominusτo τ) t2 t1 ⟧Term ρ ≡ ⟦ t2 ⟧Term ρ ⊝ ⟦ t1 ⟧Term ρ
+ominusτ-equiv-term Γ ρ τ t2 t1 = ominusτ-equiv Γ ρ τ (⟦ t2 ⟧Term ρ) (⟦ t1 ⟧Term ρ)
