@@ -2,7 +2,7 @@ module Thesis.ANormalUntyped where
 
 open import Data.Empty
 open import Data.Product
-open import Data.Nat.Base
+open import Data.Nat
 import Data.Integer.Base as I
 open I using (ℤ)
 open import Data.Integer.Base using (ℤ)
@@ -172,38 +172,96 @@ data _D_⊢_↓_ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) : DTerm Γ → DV
     (v2 • ρ) D (dv2 • dρ) ⊢ dt ↓ dv3 →
     ρ D dρ ⊢ dlett f x t df dx dt ↓ dv3
 
-{-# TERMINATING #-} -- Dear lord. Why on Earth.
+open import Data.Nat.Properties
+open import Data.Nat.Properties.Simple
+open import Relation.Binary hiding (_⇒_)
+open DecTotalOrder Data.Nat.decTotalOrder using () renaming (refl to ≤-refl; trans to ≤-trans)
+
+suc∸ : ∀ m n → n ≤ m → suc (m ∸ n) ≡ suc m ∸ n
+suc∸ m zero z≤n = refl
+suc∸ (suc m) (suc n) (s≤s n≤m) = suc∸ m n n≤m
+
+suc∸suc : ∀ m n → n < m → suc (m ∸ suc n) ≡ m ∸ n
+suc∸suc (suc m) zero (s≤s n<m) = refl
+suc∸suc (suc m) (suc n) (s≤s n<m) = suc∸suc m n n<m
+
+lemlt : ∀ j k → suc j < k → k ∸ suc j < k
+lemlt j (suc k) (s≤s j<k) = s≤s (∸-mono {k} {k} {j} {0} ≤-refl z≤n)
+
+lemlt′ : ∀ j k → suc j <′ k → k ∸ suc j <′ k
+lemlt′ j k j<′k = ≤⇒≤′ (lemlt j k (≤′⇒≤ j<′k))
+
+open import Induction.WellFounded
+open import Induction.Nat
+rrelT3-Type : ℕ → Set₁
+rrelT3-Type n =
+  ∀ {Γ} → (t1 : Fun Γ) (dt : DFun Γ) (t2 : Fun Γ)
+  (ρ1 : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) (ρ2 : ⟦ Γ ⟧Context) → Set
+
+rrelV3-Type : ℕ → Set₁
+rrelV3-Type n = ∀ (v1 : Val Uni) (dv : DVal DUni) (v2 : Val Uni) → Set
+
+rrelTV3-Type : ℕ → Set₁
+rrelTV3-Type n = rrelT3-Type n × rrelV3-Type n
+
+-- The type of the function availalbe for recursive calls.
+rrelTV3-recSubCallsT : ℕ → Set₁
+rrelTV3-recSubCallsT n = (k : ℕ) → k <′ n → rrelTV3-Type k
+
 mutual
-  -- Single context? Yeah, good, that's what we want in the end...
+  -- Assemble together
+  rrelTV3-step : ∀ n → rrelTV3-recSubCallsT n → rrelTV3-Type n
+  rrelTV3-step n rec-rrelTV3 =
+    let rrelV3-n = rrelV3-step n rec-rrelTV3
+    in rrelT3-step n rec-rrelTV3 rrelV3-n , rrelV3-n
+  rrelTV3 = <-rec rrelTV3-Type rrelTV3-step
+  rrelT3 : ∀ n → rrelT3-Type n
+  rrelT3 n = proj₁ (rrelTV3 n)
+  rrelV3 : ∀ n → rrelV3-Type n
+  rrelV3 n = proj₂ (rrelTV3 n)
+
+  -- Have the same context for t1, dt and t2? Yeah, good, that's what we want in the end...
   -- Though we might want more flexibility till when we have replacement
   -- changes.
-  rrelT3 : ∀ {Γ} (t1 : Fun Γ) (dt : DFun Γ) (t2 : Fun Γ) (ρ1 : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) (ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
-  rrelT3 t1 dt t2 ρ1 dρ ρ2 k =
+  rrelT3-step : ∀ k → rrelTV3-recSubCallsT k →
+    rrelV3-Type k →
+    ∀ {Γ} → (t1 : Fun Γ) (dt : DFun Γ) (t2 : Fun Γ) (ρ1 : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) (ρ2 : ⟦ Γ ⟧Context) → Set
+  rrelT3-step k rec-rrelTV3 rrelV3-k =
+    λ t1 dt t2 ρ1 dρ ρ2 →
     (v1 v2 : Val Uni) →
-    ∀ j n2 (j<k : j < k) →
+    ∀ j n2 (j<k : j <′ k) →
     (ρ1⊢t1↓[j]v1 : ρ1 F⊢ t1 ↓[ j ] v1) →
     (ρ2⊢t2↓[n2]v2 : ρ2 F⊢ t2 ↓[ n2 ] v2) →
     Σ[ dv ∈ DVal DUni ] Σ[ dn ∈ ℕ ]
     ρ1 D dρ F⊢ dt ↓ dv ×
-    rrelV3 v1 dv v2 (k ∸ j)
+    s-rrelV3 j j<k v1 dv v2
+    where
+      s-rrelV3 : ∀ j → j <′ k → rrelV3-Type (k ∸ j)
+      -- If j = 0, we can't do a recursive call on (k - j) because that's not
+      -- well-founded. Luckily, we don't need to, just use relV as defined at
+      -- the same level.
+      -- Yet, this will be a pain in proofs.
+      s-rrelV3 0 _ = rrelV3-k
+      s-rrelV3 (suc j) sucj<′k = proj₂ (rec-rrelTV3 (k ∸ suc j) (lemlt′ j k sucj<′k))
 
-  rrelV3 : ∀ (v1 : Val Uni) (dv : DVal DUni) (v2 : Val Uni) → ℕ → Set
-  rrelV3 (intV v1) (dintV dv) (intV v2) n = dv I.+ (I.+ v1) ≡ (I.+ v2)
-  rrelV3 (closure {Γ1} t1 ρ1) (dclosure {ΔΓ} dt ρ' dρ) (closure {Γ2} t2 ρ2) n =
+  rrelV3-step : ∀ n → rrelTV3-recSubCallsT n →
+    -- rrelT3-Type n
+    ∀ (v1 : Val Uni) (dv : DVal DUni) (v2 : Val Uni) → Set
+  rrelV3-step n rec-rrelTV3 (intV v1) (dintV dv) (intV v2) = dv I.+ (I.+ v1) ≡ (I.+ v2)
+  rrelV3-step n rec-rrelTV3 (closure {Γ1} t1 ρ1) (dclosure {ΔΓ} dt ρ' dρ) (closure {Γ2} t2 ρ2) =
       -- Require a proof that the two contexts match:
       Σ ((Γ1 ≡ Γ2) × (Γ1 ≡ ΔΓ)) λ { (refl , refl) →
-        ∀ (k : ℕ) (k<n : k < n) v1 dv v2 →
-        rrelV3 v1 dv v2 k →
-        rrelT3
+        ∀ (k : ℕ) (k<n : k <′ n) v1 dv v2 →
+        proj₂ (rec-rrelTV3 k k<n) v1 dv v2 →
+        proj₁ (rec-rrelTV3 k k<n)
           t1
           dt
           t2
           (v1 • ρ1)
           (dv • dρ)
           (v2 • ρ2)
-          k
       }
-  rrelV3 _ _ _ n = ⊥
+  rrelV3-step n rec-rrelTV3 _ _ _ = ⊥
 
 -- -- [_]τ  from v1 to v2) :
 -- -- [ τ ]τ dv from v1 to v2) =
