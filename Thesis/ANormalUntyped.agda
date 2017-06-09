@@ -1,6 +1,8 @@
+{-# OPTIONS --allow-unsolved-metas #-}
 module Thesis.ANormalUntyped where
 
 open import Data.Empty
+open import Data.Unit using (⊤)
 open import Data.Product
 open import Data.Nat
 import Data.Integer.Base as I
@@ -117,11 +119,16 @@ ChΔ Δ = D.⟦ ΔΔ Δ ⟧Context
 -- ⟦ lett f x t ⟧Term ρ = ⟦ t ⟧Term (⟦ f ⟧Var ρ (⟦ x ⟧Var ρ) • ρ)
 
 -- XXX separate syntax is a bit dangerous. Also, do I want to be so accurate relative to the original model?
+data _⊢_↓[_]_ {Γ} (ρ : ⟦ Γ ⟧Context) : Term Γ → ℕ → Val Uni → Set
+
 data _F⊢_↓[_]_ {Γ} (ρ : ⟦ Γ ⟧Context) : Fun Γ → ℕ → Val Uni → Set where
   abs : ∀ {t : Fun (Uni • Γ)} →
     ρ F⊢ abs t ↓[ 0 ] closure t ρ
+  term : ∀ {v} n (t : Term Γ) →
+    ρ ⊢ t ↓[ n ] v →
+    ρ F⊢ term t ↓[ n ] v
 
-data _⊢_↓[_]_ {Γ} (ρ : ⟦ Γ ⟧Context) : Term Γ → ℕ → Val Uni → Set where
+data _⊢_↓[_]_ {Γ} (ρ : ⟦ Γ ⟧Context) where
   var : ∀ (x : Var Γ Uni) →
     ρ ⊢ var x ↓[ 0 ] (⟦ x ⟧Var ρ)
   lett : ∀ n1 n2 {Γ' ρ′ v1 v2 v3} {f x t t'}  →
@@ -152,11 +159,16 @@ data _⊢_↓[_]_ {Γ} (ρ : ⟦ Γ ⟧Context) : Term Γ → ℕ → Val Uni �
 
 -- Do I need to damn count steps here? No.
 
-data _D_F⊢_↓_ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) : DFun Γ → DVal DUni → Set where
-  dabs : ∀ {t : DFun (Uni • Γ)} →
-    ρ D dρ F⊢ dabs t ↓ dclosure t ρ dρ
+data _D_⊢_↓_ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) : DTerm Γ → DVal DUni → Set
 
-data _D_⊢_↓_ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) : DTerm Γ → DVal DUni → Set where
+data _D_F⊢_↓_ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) : DFun Γ → DVal DUni → Set where
+  dabs : ∀ {dt : DFun (Uni • Γ)} →
+    ρ D dρ F⊢ dabs dt ↓ dclosure dt ρ dρ
+  dterm : ∀ {dv} (dt : DTerm Γ) →
+    ρ D dρ ⊢ dt ↓ dv →
+    ρ D dρ F⊢ dterm dt ↓ dv
+
+data _D_⊢_↓_ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) where
   dvar : ∀ (x : DC.Var (ΔΔ Γ) DUni) →
     ρ D dρ ⊢ dvar x ↓ (D.⟦ x ⟧Var dρ)
   dlett : ∀ n1 n2 {Γ' ρ′ ρ'' dρ' v1 v2 v3 dv1 dv2 dv3} {f x t df dx dt t' dt'}  →
@@ -220,6 +232,11 @@ mutual
   rrelV3 : ∀ n → rrelV3-Type n
   rrelV3 n = proj₂ (rrelTV3 n)
 
+  s-rrelV3 :
+    ∀ k → rrelTV3-recSubCallsT k → rrelV3-Type k →
+    ∀ j → j <′ k → rrelV3-Type (k ∸ j)
+  s-rrelV3 k rec-rrelTV3 rrelV3-k 0 _ = rrelV3-k
+  s-rrelV3 k rec-rrelTV3 rrelV3-k (suc j) sucj<′k = proj₂ (rec-rrelTV3 (k ∸ suc j) (lemlt′ j k sucj<′k))
   -- Have the same context for t1, dt and t2? Yeah, good, that's what we want in the end...
   -- Though we might want more flexibility till when we have replacement
   -- changes.
@@ -234,15 +251,15 @@ mutual
     (ρ2⊢t2↓[n2]v2 : ρ2 F⊢ t2 ↓[ n2 ] v2) →
     Σ[ dv ∈ DVal DUni ] Σ[ dn ∈ ℕ ]
     ρ1 D dρ F⊢ dt ↓ dv ×
-    s-rrelV3 j j<k v1 dv v2
-    where
-      s-rrelV3 : ∀ j → j <′ k → rrelV3-Type (k ∸ j)
-      -- If j = 0, we can't do a recursive call on (k - j) because that's not
-      -- well-founded. Luckily, we don't need to, just use relV as defined at
-      -- the same level.
-      -- Yet, this will be a pain in proofs.
-      s-rrelV3 0 _ = rrelV3-k
-      s-rrelV3 (suc j) sucj<′k = proj₂ (rec-rrelTV3 (k ∸ suc j) (lemlt′ j k sucj<′k))
+    s-rrelV3 k rec-rrelTV3 rrelV3-k j j<k v1 dv v2
+    -- where
+    --   s-rrelV3 : ∀ j → j <′ k → rrelV3-Type (k ∸ j)
+    --   -- If j = 0, we can't do a recursive call on (k - j) because that's not
+    --   -- well-founded. Luckily, we don't need to, just use relV as defined at
+    --   -- the same level.
+    --   -- Yet, this will be a pain in proofs.
+    --   s-rrelV3 0 _ = rrelV3-k
+    --   s-rrelV3 (suc j) sucj<′k = proj₂ (rec-rrelTV3 (k ∸ suc j) (lemlt′ j k sucj<′k))
 
   rrelV3-step : ∀ n → rrelTV3-recSubCallsT n →
     -- rrelT3-Type n
@@ -262,6 +279,30 @@ mutual
           (v2 • ρ2)
       }
   rrelV3-step n rec-rrelTV3 _ _ _ = ⊥
+
+rrelρ3 : ℕ → ∀ Γ (ρ1 : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) (ρ2 : ⟦ Γ ⟧Context) → Set
+rrelρ3 n ∅ ∅ ∅ ∅ = ⊤
+rrelρ3 n (Uni • Γ) (v1 • ρ1) (dv • dρ) (v2 • ρ2) = rrelV3 n v1 dv v2 × rrelρ3 n Γ ρ1 dρ ρ2
+
+--
+rfundamental3 : ∀ {Γ} (t : Fun Γ) → ∀ k ρ1 dρ ρ2 → (ρρ : rrelρ3 k Γ ρ1 dρ ρ2) → rrelT3 k t (derive-dfun t) t ρ1 dρ ρ2
+rfundamental3 (term x) k ρ1 dρ ρ2 ρρ v1 v2 j n2 j<k ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2 = {!!}
+rfundamental3 {Γ} (abs t) k ρ1 dρ ρ2 ρρ (closure .t .ρ1) (closure .t .ρ2) .0 .0 j<k abs abs = dclosure (derive-dfun t) ρ1 dρ , 0 , dabs , (refl , refl) ,
+  λ
+  { k₁ k<n v1 dv v2 vv v3 v4 0 n2 j<k₁ ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2 → {! rfundamental3 {Uni • Γ} t k₁ (v1 • ρ1) (dv • dρ) (v2 • ρ2) ({!vv!} , {!ρρ!}) v3 v4 0 n2 {!j<k₁ !} {! ρ1⊢t1↓[j]v1 !} ρ2⊢t2↓[n2]v2 !}
+  ; k₁ k<n v1 dv v2 vv v3 v4 (suc j) n2 j<k₁ ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2 → {! rfundamental3 t k₁ (v1 • ρ1) (dv • dρ) (v2 • ρ2) ({!vv!} , {!ρρ!}) v3 v4 {!suc j !} n2 {!j<k₁ !} {! ρ1⊢t1↓[j]v1 !} ρ2⊢t2↓[n2]v2 !}
+  }
+--
+  -- where
+
+  --   -- ∀ k → rrelTV3-recSubCallsT k → rrelV3-Type k →
+  --   -- ∀ j → j <′ k → rrelV3-Type (k ∸ j)
+  --   foo : s-rrelV3 k
+  --     (All.wfRec-builder <-well-founded _ rrelTV3-Type rrelTV3-step k)
+  --     (rrelV3-step k (All.wfRec-builder <-well-founded _ rrelTV3-Type rrelTV3-step k))
+  --     j j<k v1 (dclosure (derive-dfun t) ρ1 dρ) v2
+  --   foo with j
+  --   ... | s = {!!}
 
 -- -- [_]τ  from v1 to v2) :
 -- -- [ τ ]τ dv from v1 to v2) =

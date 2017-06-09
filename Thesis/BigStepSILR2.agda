@@ -115,63 +115,6 @@ eval-dec-sound (app s t) ρ v (suc r) n () | TimeOut | [ seq ]
 import Data.Integer as I
 open I using (ℤ)
 
-mutual
-  rrelT3 : ∀ {τ Γ ΔΓ} (t1 : Term Γ τ) (dt : Term ΔΓ (Δτ τ)) (t2 : Term Γ τ) (ρ1 : ⟦ Γ ⟧Context) (dρ : ⟦ ΔΓ ⟧Context) (ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
-  rrelT3 {τ} t1 dt t2 ρ1 dρ ρ2 k =
-    (v1 v2 : Val τ) →
-    ∀ j n2 (j<k : j < k) →
-    (ρ1⊢t1↓[j]v1 : ρ1 ⊢ t1 ↓[ j ] v1) →
-    (ρ2⊢t2↓[n2]v2 : ρ2 ⊢ t2 ↓[ n2 ] v2) →
-    Σ[ dv ∈ Val (Δτ τ) ] Σ[ dn ∈ ℕ ]
-    dρ ⊢ dt ↓[ dn ] dv ×
-    rrelV3 τ v1 dv v2 (k ∸ j)
-
-  rrelV3 : ∀ τ (v1 : Val τ) (dv : Val (Δτ τ)) (v2 : Val τ) → ℕ → Set
-  rrelV3 nat (intV v1) (intV dv) (intV v2) n = dv + v1 ≡ v2
-
-  -- XXX What we want for rrelV3:
-  -- rrelV3 (σ ⇒ τ) (closure {Γ1} t1 ρ1) (dclosure dt dρ) (closure {Γ2} t2 ρ2) n =
-  --     Σ (Γ1 ≡ Γ2) λ { refl →
-  --       ∀ (k : ℕ) (k<n : k < n) v1 dv v2 →
-  --       rrelV3 σ v1 dv v2 k →
-  --       rrelT3
-  --         t1
-  --         dt
-  --         t2
-  --         (v1 • ρ1)
-  --         (dv • v1 • dρ)
-  --         (v2 • ρ2) k
-  --     }
-
-  -- However, we don't have separate change values, so we write:
-
-  rrelV3 (σ ⇒ τ) (closure {Γ1} t1 ρ1) (closure dt' dρ) (closure {Γ2} t2 ρ2) n =
-      -- Require a proof that the two contexts match:
-      Σ (Γ1 ≡ Γ2) λ { refl →
-        ∀ (k : ℕ) (k<n : k < n) v1 dv v2 →
-        rrelV3 σ v1 dv v2 k →
-        rrelT3
-          t1
-          -- XXX The next expression is wrong.
-          -- rrelV3 should require dv to be a change closure,
-          -- (λ x dx . dt , dρ) or (dclosure dt dρ).
-          -- Then, here we could write as conclusion.
-          -- rrelT3 t1 dt t2 (v1 • ρ1) (dv • v1 • dρ) (v2 • ρ2) k
-
-          -- Instead, with this syntax I can just match dv as a normal closure,
-          -- closure dt' dρ or (λ x . dt', dρ), where we hope that dt' evaluates
-          -- to λ dx. dt. So, instead of writing dt, I must write dt' dx where
-          -- dx is a newly bound variable (hence, var this), and dt' must be
-          -- weakened once. Hence, we write instead:
-          (app (weaken (drop (Δτ σ) • ≼-refl) dt') (var this))
-          t2
-          (v1 • ρ1)
-          (dv • v1 • dρ)
-          (v2 • ρ2)
-          k
-      }
-
-
 -- The extra "r" stands for "relational", because unlike relT and relV, rrelV
 -- and rrelT are based on a *relational* big-step semantics.
 mutual
@@ -280,3 +223,81 @@ rfundamental (app s t) n ρ1 ρ2 ρρ v1 .(suc (n1 + n2 + n3)) 1+n1+n2+n3<n (app
     body with rfundamental s n ρ1 ρ2 ρρ _ n1 n1<n ρ1⊢t1↓[j]v1 | rfundamental t n ρ1 ρ2 ρρ _ n2 n2<n ρ1⊢t1↓[j]v2
     ... | sv2@(closure st2 sρ2) , sn2 , ρ2⊢s↓ , refl , sv1v2 | tv2 , tn2 , ρ2⊢t↓ , tv1v2 with sv1v2 (n ∸ n1 ∸ suc n2) n-[1+n1+n2]<n-n1 _ tv2 (rrelV-mono (n ∸ n1 ∸ suc n2) (n ∸ n2) (lt1 n-[1+n1+n2]<n-n2) _ _ tv2 tv1v2) v1 n3 n3<n-n1-[1+n2]  ρ1⊢t1↓[j]v3
     ... | v2 , stn , ρ2⊢st2↓ , vv rewrite n-1+sum≡alt = v2 , suc (sn2 + tn2 + stn) , app _ _ _ ρ2⊢s↓ ρ2⊢t↓  ρ2⊢st2↓ , vv
+
+mutual
+  rrelT3 : ∀ {τ Γ ΔΓ} (t1 : Term Γ τ) (dt : Term ΔΓ (Δτ τ)) (t2 : Term Γ τ) (ρ1 : ⟦ Γ ⟧Context) (dρ : ⟦ ΔΓ ⟧Context) (ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
+  rrelT3 {τ} t1 dt t2 ρ1 dρ ρ2 k =
+    (v1 v2 : Val τ) →
+    ∀ j n2 (j<k : j < k) →
+    (ρ1⊢t1↓[j]v1 : ρ1 ⊢ t1 ↓[ j ] v1) →
+    (ρ2⊢t2↓[n2]v2 : ρ2 ⊢ t2 ↓[ n2 ] v2) →
+    Σ[ dv ∈ Val (Δτ τ) ] Σ[ dn ∈ ℕ ]
+    dρ ⊢ dt ↓[ dn ] dv ×
+    rrelV3 τ v1 dv v2 (k ∸ j)
+
+  rrelV3 : ∀ τ (v1 : Val τ) (dv : Val (Δτ τ)) (v2 : Val τ) → ℕ → Set
+  rrelV3 nat (intV v1) (intV dv) (intV v2) n = dv + v1 ≡ v2
+
+  -- XXX What we want for rrelV3:
+  -- rrelV3 (σ ⇒ τ) (closure {Γ1} t1 ρ1) (dclosure dt dρ) (closure {Γ2} t2 ρ2) n =
+  --     Σ (Γ1 ≡ Γ2) λ { refl →
+  --       ∀ (k : ℕ) (k<n : k < n) v1 dv v2 →
+  --       rrelV3 σ v1 dv v2 k →
+  --       rrelT3
+  --         t1
+  --         dt
+  --         t2
+  --         (v1 • ρ1)
+  --         (dv • v1 • dρ)
+  --         (v2 • ρ2) k
+  --     }
+
+  -- However, we don't have separate change values, so we write:
+
+  rrelV3 (σ ⇒ τ) (closure {Γ1} t1 ρ1) (closure dt' dρ) (closure {Γ2} t2 ρ2) n =
+      -- Require a proof that the two contexts match:
+      Σ (Γ1 ≡ Γ2) λ { refl →
+        ∀ (k : ℕ) (k<n : k < n) v1 dv v2 →
+        rrelV3 σ v1 dv v2 k →
+        rrelT3
+          t1
+          -- XXX The next expression is wrong.
+          -- rrelV3 should require dv to be a change closure,
+          -- (λ x dx . dt , dρ) or (dclosure dt dρ).
+          -- Then, here we could write as conclusion.
+          -- rrelT3 t1 dt t2 (v1 • ρ1) (dv • v1 • dρ) (v2 • ρ2) k
+
+          -- Instead, with this syntax I can just match dv as a normal closure,
+          -- closure dt' dρ or (λ x . dt', dρ), where we hope that dt' evaluates
+          -- to λ dx. dt. So, instead of writing dt, I must write dt' dx where
+          -- dx is a newly bound variable (hence, var this), and dt' must be
+          -- weakened once. Hence, we write instead:
+          (app (weaken (drop (Δτ σ) • ≼-refl) dt') (var this))
+          t2
+          (v1 • ρ1)
+          (dv • v1 • dρ)
+          (v2 • ρ2)
+          k
+      }
+
+ΔΓ : Context → Context
+ΔΓ ∅ = ∅
+ΔΓ (τ • Γ) = Δτ τ • ΔΓ Γ
+
+rrelρ3 : ∀ Γ (ρ1 : ⟦ Γ ⟧Context) (dρ : ⟦ ΔΓ Γ ⟧Context) (ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
+rrelρ3 ∅ ∅ ∅ ∅ n = ⊤
+rrelρ3 (τ • Γ) (v1 • ρ1) (dv • dρ) (v2 • ρ2) n = rrelV3 τ v1 dv v2 n × rrelρ3 Γ ρ1 dρ ρ2 n
+
+derive-var : ∀ {Γ τ} → Var Γ τ → Var (ΔΓ Γ) (Δτ τ)
+derive-var this = this
+derive-var (that x) = that (derive-var x)
+
+⟦_⟧RelVar3 : ∀ {Γ τ n} (x : Var Γ τ)
+  {ρ1 : ⟦ Γ ⟧Context} {dρ : ⟦ ΔΓ Γ ⟧Context} {ρ2 : ⟦ Γ ⟧Context} →
+  rrelρ3 Γ ρ1 dρ ρ2 n →
+  rrelV3 τ (⟦ x ⟧Var ρ1) (⟦ derive-var x ⟧Var dρ) (⟦ x ⟧Var ρ2) n
+⟦ this ⟧RelVar3 {v1 • ρ1} {dv • dρ} {v2 • ρ2} (vv , ρρ) = vv
+⟦ that x ⟧RelVar3 {v1 • ρ1} {dv • dρ} {v2 • ρ2} (vv , ρρ) = ⟦ x ⟧RelVar3 ρρ
+
+rfundamentalV3 : ∀ {Γ τ} (x : Var Γ τ) → (n : ℕ) → (ρ1 : ⟦ Γ ⟧Context) (dρ : ⟦ ΔΓ Γ ⟧Context) (ρ2 : ⟦ Γ ⟧Context) (ρρ : rrelρ3 Γ ρ1 dρ ρ2 n) → rrelT3 (var x) (var (derive-var x)) (var x) ρ1 dρ ρ2 n
+rfundamentalV3 x n ρ1 dρ ρ2 ρρ .(⟦ x ⟧Var ρ1) .(⟦ x ⟧Var ρ2) .0 .0 j<n (var .x) (var .x) = ⟦ derive-var x ⟧Var dρ , 0 , (var (derive-var x)) , ⟦ x ⟧RelVar3 ρρ

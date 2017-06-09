@@ -2,6 +2,7 @@ module Thesis.ANormalCTerm where
 
 open import Thesis.ANormalDTerm
 
+-- OK, this is all cool, but let's drop all this typing.
 data CType : Set where
   cache : CType
   input : Type → CType
@@ -27,14 +28,19 @@ open import Data.Nat
 ⟦ cache ⟧CTypeN 0 = ⊤
 ⟦ cache ⟧CTypeN (suc n) = Σ[ τ ∈ CType ] ⟦ τ ⟧CTypeN n
 
+-- To top it off, maybe add constructor tcache : CType × ℕ → Type t? Hm, guess
+-- that would loop. Just use big-step semantics then.
+
 open import Base.Syntax.Context CType using () renaming (Context to CCtx)
 open import Base.Denotation.Environment CType ⟦_⟧CType using () renaming (⟦_⟧Context to ⟦_⟧CCtx) 
 
+-- I must merge caches and normal types. So I must step-index types?
 data CTerm : (C CFin : CCtx) (Δ : Context) (τ : Type) → Set where
   cvar : ∀ {CFin Δ τ} (x : Var Δ τ) →
     CTerm CFin CFin Δ τ
   clett : ∀ {C CFin Δ τ σ τ₁} →
     (f : Var Δ (σ ⇒ τ₁)) →
+     -- XXX: (f : Var Δ (σ ⇒ (pair τ₁ cache))) →
     (x : Var Δ σ) →
     -- XXX pretend we only store integers. We should instead use a separate type of caches.
     (ct : CTerm (cache • C) CFin (τ₁ • Δ) τ) →
