@@ -235,21 +235,21 @@ data _D_⊢_↓_ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) : ∀ {τ} → DT
     ρ D dρ ⊢ dlett s ds dt ↓ dv
 
 mutual
-  -- Note the appearance of ρ. I think that's odd but I'm confused.
-  rrelT3 : ∀ {τ Γ} (t1 : Term Γ τ) (dt : DTerm Γ τ) (t2 : Term Γ τ) (ρ1 ρ : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) (ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
-  rrelT3 {τ} t1 dt t2 ρ1 ρ dρ ρ2 k =
+  rrelT3 : ∀ {τ Γ} (t1 : Term Γ τ) (dt : DTerm Γ τ) (t2 : Term Γ τ) (ρ1 : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) (ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
+  rrelT3 {τ} t1 dt t2 ρ1 dρ ρ2 k =
     (v1 v2 : Val τ) →
     ∀ j (j<k : j < k) →
     (ρ1⊢t1↓[j]v1 : ρ1 ⊢ t1 ↓[ i' j ] v1) →
     (ρ2⊢t2↓[n2]v2 : ρ2 ⊢ t2 ↓[ no ] v2) →
     Σ[ dv ∈ DVal τ ]
-    ρ D dρ ⊢ dt ↓ dv ×
+    ρ1 D dρ ⊢ dt ↓ dv ×
     rrelV3 τ v1 dv v2 (k ∸ j)
 
   rrelV3 : ∀ τ (v1 : Val τ) (dv : DVal τ) (v2 : Val τ) → ℕ → Set
   rrelV3 nat (natV v1) (dnatV dv) (natV v2) n = dv + v1 ≡ v2
   rrelV3 (σ ⇒ τ) (closure {Γ1} t1 ρ1) (dclosure {ΔΓ} dt ρ dρ) (closure {Γ2} t2 ρ2) n =
       Σ ((Γ1 ≡ Γ2) × (Γ1 ≡ ΔΓ)) λ { (refl , refl) →
+        ρ1 ≡ ρ ×
         ∀ (k : ℕ) (k<n : k < n) v1 dv v2 →
         rrelV3 σ v1 dv v2 k →
         rrelT3
@@ -257,7 +257,6 @@ mutual
           dt
           t2
           (v1 • ρ1)
-          (v1 • ρ)
           (dv • dρ)
           (v2 • ρ2)
           k
@@ -268,7 +267,7 @@ rrelρ3 ∅ ∅ ∅ ∅ n = ⊤
 rrelρ3 (τ • Γ) (v1 • ρ1) (dv • dρ) (v2 • ρ2) n = rrelV3 τ v1 dv v2 n × rrelρ3 Γ ρ1 dρ ρ2 n
 
 rrelV3-mono : ∀ m n → m ≤ n → ∀ τ v1 dv v2 → rrelV3 τ v1 dv v2 n → rrelV3 τ v1 dv v2 m
-rrelV3-mono m n m≤n (σ ⇒ τ) (closure t ρ) (dclosure dt ρ₁ dρ) (closure t₁ ρ₂) ((refl , refl) , vv) = (refl  , refl) , λ k k<m → vv k (≤-trans k<m m≤n)
+rrelV3-mono m n m≤n (σ ⇒ τ) (closure t ρ) (dclosure dt ρ₁ dρ) (closure t₁ ρ₂) ((refl , refl) , refl , vv) = (refl  , refl) , refl , λ k k<m → vv k (≤-trans k<m m≤n)
 rrelV3-mono m n m≤n nat (natV n₁) (dnatV n₂) (natV n₃) vv = vv
 
 rrelρ3-mono : ∀ m n → m ≤ n → ∀ Γ ρ1 dρ ρ2 → rrelρ3 Γ ρ1 dρ ρ2 n → rrelρ3 Γ ρ1 dρ ρ2 m
@@ -284,7 +283,7 @@ lt1 (s≤s p) = ≤-step p
 ⟦ this ⟧RelVar3   {v1 • ρ1} {dv • dρ} {v2 • ρ2} (vv , ρρ) = vv
 ⟦ that x ⟧RelVar3 {v1 • ρ1} {dv • dρ} {v2 • ρ2} (vv , ρρ) = ⟦ x ⟧RelVar3 ρρ
 
-rfundamentalV3 : ∀ {Γ τ} (x : Var Γ τ) → (n : ℕ) → ∀ ρ1 dρ ρ2 (ρρ : rrelρ3 Γ ρ1 dρ ρ2 n) → rrelT3 (val (var x)) (dval (dvar (derive-dvar x))) (val (var x)) ρ1 ρ1 dρ ρ2 n
+rfundamentalV3 : ∀ {Γ τ} (x : Var Γ τ) → (n : ℕ) → ∀ ρ1 dρ ρ2 (ρρ : rrelρ3 Γ ρ1 dρ ρ2 n) → rrelT3 (val (var x)) (dval (dvar (derive-dvar x))) (val (var x)) ρ1 dρ ρ2 n
 rfundamentalV3 x n ρ1 dρ ρ2 ρρ .(⟦ x ⟧Var ρ1) .(⟦ x ⟧Var ρ2) .0 j<n (var .x) (var .x) = (D.⟦ x ⟧Var dρ) , dvar x , ⟦ x ⟧RelVar3 ρρ
 
 m∸n≤m : ∀ m n → m ∸ n ≤ m
@@ -301,10 +300,10 @@ sub∸ m n o n+m≤o rewrite +-comm m n | cong (_≤ o ∸ m) (sym (m+n∸n≡m 
 
 -- Warning: names like ρ1⊢t1↓[j]v1 are all broken, sorry for not fixing them.
 rfundamental3 : ∀ {τ Γ} k (t : Term Γ τ) → ∀ ρ1 dρ ρ2 → (ρρ : rrelρ3 Γ ρ1 dρ ρ2 k) →
-  rrelT3 t (derive-dterm t) t ρ1 ρ1 dρ ρ2 k
+  rrelT3 t (derive-dterm t) t ρ1 dρ ρ2 k
 rfundamental3 k (val (var x)) ρ1 dρ ρ2 ρρ = rfundamentalV3 x k ρ1 dρ ρ2 ρρ
 rfundamental3 (suc k) (val (abs t)) ρ1 dρ ρ2 ρρ .(closure t ρ1) .(closure t ρ2) .0 (s≤s j<k) abs abs =
-  dclosure (derive-dterm t) ρ1 dρ , dabs , (refl , refl) ,
+  dclosure (derive-dterm t) ρ1 dρ , dabs , (refl , refl) , refl ,
     λ k₁ k<n v1 dv v2 vv v3 v4 j j<k₁ ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2 →
     rfundamental3 k₁ t (v1 • ρ1) (dv • dρ) (v2 • ρ2) (vv ,  rrelρ3-mono k₁ (suc k) (lt1 k<n) _ _ _ _ ρρ) v3 v4 j j<k₁ ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2
 rfundamental3 k (const .(lit n)) ρ1 dρ ρ2 ρρ (natV n) .(natV n) .0 j<k (lit .n) (lit .n) = dnatV 0 , dlit n , refl
@@ -313,7 +312,7 @@ rfundamental3 (suc k) (app vs vt) ρ1 dρ ρ2 ρρ v1 v2 .(suc j) (s≤s j<k)
   (app _ vtv2 ρ2⊢t2↓[n2]v2 ρ2⊢t2↓[n2]v3 ρ2⊢t2↓[n2]v4)
   with rfundamental3 (suc k) (val vs) ρ1 dρ ρ2 ρρ _ _ zero (s≤s z≤n) ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2
   | rfundamental3 (suc k) (val vt) ρ1 dρ ρ2 ρρ _ _ zero (s≤s z≤n) ρ1⊢t1↓[j]v2 ρ2⊢t2↓[n2]v3
-... | dclosure dt ρ dρ₁ , vs↓dsv , (refl , refl) , dsvv | dtv , vt↓dvv , dtvv
+... | dclosure dt ρ dρ₁ , vs↓dsv , (refl , refl) , refl , dsvv | dtv , vt↓dvv , dtvv
   with dsvv k (s≤s ≤-refl) vtv1 dtv vtv2 (rrelV3-mono k (suc k) (≤-step ≤-refl) _ _ _ _ dtvv) v1 v2 j j<k ρ1⊢t1↓[j]v3 ρ2⊢t2↓[n2]v4
 ... | dv , ↓dv , dvv = dv , dapp vs↓dsv ρ1⊢t1↓[j]v2 vt↓dvv ↓dv , dvv
 rfundamental3 (suc (suc k)) (lett s t) ρ1 dρ ρ2 ρρ v1 v2 .(suc (n1 + n2)) (s≤s (s≤s n1+n2≤k))
