@@ -372,8 +372,8 @@ rfundamental3 : ∀ {τ Γ} k (t : Term Γ τ) → ∀ ρ1 dρ ρ2 → (ρρ : r
 rfundamental3 k (val (var x)) ρ1 dρ ρ2 ρρ = rfundamentalV3 x k ρ1 dρ ρ2 ρρ
 rfundamental3 (suc k) (val (abs t)) ρ1 dρ ρ2 ρρ .(closure t ρ1) .(closure t ρ2) .0 (s≤s j<k) abs abs =
   dclosure (derive-dterm t) ρ1 dρ , dabs , (refl , refl) , refl , rrelρ3→⊕ ρ1 dρ ρ2 ρρ , refl , refl ,
-    λ k₁ k<n v1 dv v2 vv v3 v4 j j<k₁ ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2 →
-    rfundamental3 k₁ t (v1 • ρ1) (dv • dρ) (v2 • ρ2) (vv ,  rrelρ3-mono k₁ (suc k) (lt1 k<n) _ _ _ _ ρρ) v3 v4 j j<k₁ ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2
+    λ k₁ k<n v1 dv v2 vv →
+    rfundamental3 k₁ t (v1 • ρ1) (dv • dρ) (v2 • ρ2) (vv ,  rrelρ3-mono k₁ (suc k) (lt1 k<n) _ _ _ _ ρρ)
 rfundamental3 k (const .(lit n)) ρ1 dρ ρ2 ρρ (natV n) .(natV n) .0 j<k (lit .n) (lit .n) = dnatV 0 , dlit n , refl
 rfundamental3 (suc k) (app vs vt) ρ1 dρ ρ2 ρρ v1 v2 .(suc j) (s≤s j<k)
   (app j vtv1 ρ1⊢t1↓[j]v1 ρ1⊢t1↓[j]v2 ρ1⊢t1↓[j]v3)
