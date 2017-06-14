@@ -242,11 +242,13 @@ mutual
   -- changes.
   rrelT3-step : ∀ k → rrelTV3-recSubCallsT k →
     rrelV3-Type k →
-    ∀ {Γ} → (t1 : Fun Γ) (dt : DFun Γ) (t2 : Fun Γ) (ρ1 : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) (ρ2 : ⟦ Γ ⟧Context) → Set
+    -- rrelV3-Type n
+    ∀ {Γ} → (t1 : Fun Γ) (dt : DFun Γ) (t2 : Fun Γ)
+      (ρ1 : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) (ρ2 : ⟦ Γ ⟧Context) → Set
   rrelT3-step k rec-rrelTV3 rrelV3-k =
     λ t1 dt t2 ρ1 dρ ρ2 →
+    ∀ j (j<k : j <′ k) n2 →
     (v1 v2 : Val Uni) →
-    ∀ j n2 (j<k : j <′ k) →
     (ρ1⊢t1↓[j]v1 : ρ1 F⊢ t1 ↓[ j ] v1) →
     (ρ2⊢t2↓[n2]v2 : ρ2 F⊢ t2 ↓[ n2 ] v2) →
     Σ[ dv ∈ DVal DUni ] Σ[ dn ∈ ℕ ]
@@ -262,7 +264,7 @@ mutual
     --   s-rrelV3 (suc j) sucj<′k = proj₂ (rec-rrelTV3 (k ∸ suc j) (lemlt′ j k sucj<′k))
 
   rrelV3-step : ∀ n → rrelTV3-recSubCallsT n →
-    -- rrelT3-Type n
+    -- rrelV3-Type n
     ∀ (v1 : Val Uni) (dv : DVal DUni) (v2 : Val Uni) → Set
   rrelV3-step n rec-rrelTV3 (intV v1) (dintV dv) (intV v2) = dv I.+ (I.+ v1) ≡ (I.+ v2)
   rrelV3-step n rec-rrelTV3 (closure {Γ1} t1 ρ1) (dclosure {ΔΓ} dt ρ' dρ) (closure {Γ2} t2 ρ2) =
@@ -280,20 +282,69 @@ mutual
       }
   rrelV3-step n rec-rrelTV3 _ _ _ = ⊥
 
+open import Postulate.Extensionality
+mutual
+  rrelT3-equiv : ∀ k {Γ} {t1 : Fun Γ} {dt t2 ρ1 dρ ρ2} →
+    rrelT3 k t1 dt t2 ρ1 dρ ρ2 ≡
+    ∀ j (j<k : j <′ k) n2 →
+    ∀ (v1 v2 : Val Uni) →
+    (ρ1⊢t1↓[j]v1 : ρ1 F⊢ t1 ↓[ j ] v1) →
+    (ρ2⊢t2↓[n2]v2 : ρ2 F⊢ t2 ↓[ n2 ] v2) →
+    Σ[ dv ∈ DVal DUni ] Σ[ dn ∈ ℕ ]
+    ρ1 D dρ F⊢ dt ↓ dv ×
+    rrelV3 j v1 dv v2
+  rrelT3-equiv n = cong (λ □ → ∀ j → □ j) (ext (λ j → {!!}))
+
+  rrelV3-equiv : ∀ n {Γ1 Γ2 ΔΓ t1 dt t2 ρ1 ρ' dρ ρ2} →
+    rrelV3 n (closure {Γ1} t1 ρ1) (dclosure {ΔΓ} dt ρ' dρ) (closure {Γ2} t2 ρ2) ≡ Σ ((Γ1 ≡ Γ2) × (Γ1 ≡ ΔΓ)) λ { (refl , refl) →
+        ∀ (k : ℕ) (k<n : k <′ n) v1 dv v2 →
+        rrelV3 k v1 dv v2 →
+        rrelT3 k
+          t1
+          dt
+          t2
+          (v1 • ρ1)
+          (dv • dρ)
+          (v2 • ρ2)
+      }
+  rrelV3-equiv n = cong (λ □ → Σ (_ ≡ _ × _ ≡ _) □) (ext (λ { (eq1 , eq2) →
+    cong
+      (λ □ →
+         (λ { (refl , refl)
+                → ∀ (k : ℕ) (k<n : k <′ n) v1 dv v2 → □ k k<n v1 dv v2
+            })
+         eq1 eq2)
+      (ext (λ x → ext {!!}))}))
+  --
+  -- cong (λ □ → ∀ k → (k<n : k <′ n) → □ k k<n)
+  -- rrelV3-equiv k
+
 rrelρ3 : ℕ → ∀ Γ (ρ1 : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) (ρ2 : ⟦ Γ ⟧Context) → Set
 rrelρ3 n ∅ ∅ ∅ ∅ = ⊤
 rrelρ3 n (Uni • Γ) (v1 • ρ1) (dv • dρ) (v2 • ρ2) = rrelV3 n v1 dv v2 × rrelρ3 n Γ ρ1 dρ ρ2
 
 --
 rfundamental3 : ∀ {Γ} (t : Fun Γ) → ∀ k ρ1 dρ ρ2 → (ρρ : rrelρ3 k Γ ρ1 dρ ρ2) → rrelT3 k t (derive-dfun t) t ρ1 dρ ρ2
-rfundamental3 (term x) k ρ1 dρ ρ2 ρρ v1 v2 j n2 j<k ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2 = {!!}
-rfundamental3 {Γ} (abs t) k ρ1 dρ ρ2 ρρ (closure .t .ρ1) (closure .t .ρ2) .0 .0 j<k abs abs = dclosure (derive-dfun t) ρ1 dρ , 0 , dabs , (refl , refl) ,
-  λ
-  { k₁ k<n v1 dv v2 vv v3 v4 0 n2 j<k₁ ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2 → {! rfundamental3 {Uni • Γ} t k₁ (v1 • ρ1) (dv • dρ) (v2 • ρ2) ({!vv!} , {!ρρ!}) v3 v4 0 n2 {!j<k₁ !} {! ρ1⊢t1↓[j]v1 !} ρ2⊢t2↓[n2]v2 !}
-  ; k₁ k<n v1 dv v2 vv v3 v4 (suc j) n2 j<k₁ ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2 → {! rfundamental3 t k₁ (v1 • ρ1) (dv • dρ) (v2 • ρ2) ({!vv!} , {!ρρ!}) v3 v4 {!suc j !} n2 {!j<k₁ !} {! ρ1⊢t1↓[j]v1 !} ρ2⊢t2↓[n2]v2 !}
-  }
---
-  -- where
+rfundamental3 (term x) k ρ1 dρ ρ2 ρρ j j<k n2 v1 v2 ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2 = {!!}
+rfundamental3 {Γ} (abs t) k ρ1 dρ ρ2 ρρ .0 j<k .0 (closure .t .ρ1) (closure .t .ρ2) abs abs = dclosure (derive-dfun t) ρ1 dρ , 0 , dabs , (refl , refl) , {!body !}
+  where
+    body1 : ∀ k₁ (k₁<k : k₁ <′ k) → (v1 : Val Uni) (dv : DVal DUni) (v2 : Val Uni) → rrelV3 k₁ v1 dv v2 → rrelT3 k₁ t (derive-dfun t) t (v1 • ρ1) (dv • dρ) (v2 • ρ2)
+    body1 = λ k₁ k₁<k v1 dv v2 x v3 v4 j n2 j<k₁ ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2 → {!
+    rfundamental3 {Uni • Γ} t k₁ (v1 • ρ1) (dv • dρ) (v2 • ρ2) ({!vv!} , {!ρρ!}) v3 v4 0 n2 {!j<k₁ !} {! ρ1⊢t1↓[j]v1 !} ρ2⊢t2↓[n2]v2
+    !}
+  -- λ
+  -- { k₁ k<n v1 dv v2 vv v3 v4 0 n2 j<k₁ ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2 → {!
+  -- rfundamental3 {Uni • Γ} t k₁ (v1 • ρ1) (dv • dρ) (v2 • ρ2) ({!vv!} , {!ρρ!}) v3 v4 0 n2 {!j<k₁ !} {! ρ1⊢t1↓[j]v1 !} ρ2⊢t2↓[n2]v2
+  -- !}
+  -- -- (Some.wfRec-builder rrelTV3-Type rrelTV3-step k₁
+  --                     -- (<-well-founded′ k k₁ k<n))
+
+  -- -- All.wfRec-builder <-well-founded _ rrelTV3-Type rrelTV3-step k k₁ k<n : rrelTV3-Type k₁
+  -- --
+  -- ; k₁ k<n v1 dv v2 vv v3 v4 (suc j) n2 j<k₁ ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2 → {!
+  -- !}
+  -- -- rfundamental3 t k₁ (v1 • ρ1) (dv • dρ) (v2 • ρ2) ({!vv!} , {!ρρ!}) v3 v4 {!suc j !} n2 {!j<k₁ !} {! ρ1⊢t1↓[j]v1 !} ρ2⊢t2↓[n2]v2
+  -- }
 
   --   -- ∀ k → rrelTV3-recSubCallsT k → rrelV3-Type k →
   --   -- ∀ j → j <′ k → rrelV3-Type (k ∸ j)
