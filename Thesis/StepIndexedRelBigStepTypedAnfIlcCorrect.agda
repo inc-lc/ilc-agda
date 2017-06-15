@@ -49,6 +49,7 @@ module Thesis.StepIndexedRelBigStepTypedAnfIlcCorrect where
 open import Data.Empty
 open import Data.Unit.Base hiding (_≤_)
 open import Data.Product
+open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
 open import Relation.Binary hiding (_⇒_)
 open import Data.Nat -- using (ℕ; zero; suc; decTotalOrder; _<_; _≤_)
@@ -63,6 +64,37 @@ infixr 20 _⇒_
 
 open import Base.Syntax.Context Type public
 open import Base.Syntax.Vars Type public
+
+-- Decidable equivalence for types and contexts. Needed later for ⊕ on closures.
+
+⇒-inj : ∀ {τ1 τ2 τ3 τ4 : Type} → _≡_ {A = Type} (τ1 ⇒ τ2) (τ3 ⇒ τ4) → τ1 ≡ τ3 × τ2 ≡ τ4
+⇒-inj refl = refl , refl
+
+_≟Type_ : (τ1 τ2 : Type) → Dec (τ1 ≡ τ2)
+(τ1 ⇒ τ2) ≟Type (τ3 ⇒ τ4) with τ1 ≟Type τ3 | τ2 ≟Type τ4
+(τ1 ⇒ τ2) ≟Type (.τ1 ⇒ .τ2) | yes refl | yes refl = yes refl
+(τ1 ⇒ τ2) ≟Type (.τ1 ⇒ τ4) | yes refl | no ¬q = no (λ x → ¬q (proj₂ (⇒-inj x)))
+(τ1 ⇒ τ2) ≟Type (τ3 ⇒ τ4) | no ¬p | q = no (λ x → ¬p (proj₁ (⇒-inj x)))
+(τ1 ⇒ τ2) ≟Type nat = no (λ ())
+nat ≟Type (τ2 ⇒ τ3) = no (λ ())
+nat ≟Type nat = yes refl
+
+•-inj : ∀ {τ1 τ2 : Type} {Γ1 Γ2 : Context} → _≡_ {A = Context} (τ1 • Γ1) (τ2 • Γ2) → τ1 ≡ τ2 × Γ1 ≡ Γ2
+•-inj refl = refl , refl
+
+_≟Ctx_ : (Γ1 Γ2 : Context) → Dec (Γ1 ≡ Γ2)
+∅ ≟Ctx ∅ = yes refl
+∅ ≟Ctx (τ2 • Γ2) = no (λ ())
+(τ1 • Γ1) ≟Ctx ∅ = no (λ ())
+(τ1 • Γ1) ≟Ctx (τ2 • Γ2) with τ1 ≟Type τ2 | Γ1 ≟Ctx Γ2
+(τ1 • Γ1) ≟Ctx (.τ1 • .Γ1) | yes refl | yes refl = yes refl
+(τ1 • Γ1) ≟Ctx (.τ1 • Γ2) | yes refl | no ¬q = no (λ x → ¬q (proj₂ (•-inj x)))
+(τ1 • Γ1) ≟Ctx (τ2 • Γ2) | no ¬p | q = no (λ x → ¬p (proj₁ (•-inj x)))
+
+≟Ctx-refl : ∀ Γ → Γ ≟Ctx Γ ≡ yes refl
+≟Ctx-refl Γ with Γ ≟Ctx Γ
+≟Ctx-refl Γ | yes refl = refl
+≟Ctx-refl Γ | no ¬p = ⊥-elim (¬p refl)
 
 data Const : (τ : Type) → Set where
   lit : ℕ → Const nat
@@ -222,6 +254,17 @@ data DVal where
   dclosure : ∀ {Γ σ τ} → (dt : DTerm (σ • Γ) τ) → (ρ : ⟦ Γ ⟧Context) →  (dρ : ChΔ Γ) → DVal (σ ⇒ τ)
   dnatV : ∀ (n : ℕ) → DVal nat
 
+_⊕_ : ∀ {τ} → (v1 : Val τ) (dv : DVal τ) → Val τ
+
+_⊕ρ_ : ∀ {Γ} → ⟦ Γ ⟧Context → ChΔ Γ → ⟦ Γ ⟧Context
+∅ ⊕ρ ∅ = ∅
+(v • ρ1) ⊕ρ (dv • dρ) = v ⊕ dv • ρ1 ⊕ρ dρ
+
+_⊕_ (closure {Γ} t ρ) (dclosure {Γ1} dt ρ₁ dρ) with Γ ≟Ctx Γ1
+closure {Γ} t ρ ⊕ dclosure {.Γ} dt ρ₁ dρ | yes refl = closure t (ρ ⊕ρ dρ)
+closure {Γ} t ρ ⊕ dclosure {Γ₁} dt ρ₁ dρ | no ¬p = closure t ρ
+_⊕_ (natV n) (dnatV dn) = natV (n + dn)
+
 data _D_⊢_↓_ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) : ∀ {τ} → DTerm Γ τ → DVal τ → Set where
   dabs : ∀ {σ τ} {dt : DTerm (σ • Γ) τ} →
     ρ D dρ ⊢ dval (dabs dt) ↓ dclosure dt ρ dρ
@@ -230,10 +273,10 @@ data _D_⊢_↓_ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) : ∀ {τ} → DT
   dlit : ∀ n →
     ρ D dρ ⊢ dconst (lit n) ↓ dnatV 0
   dapp : ∀ {hasIdx} {n : Idx hasIdx}
-    {Γ′ σ τ ρ′ dρ′} {vtv} {dv}
-    {dvs : DSVal Γ (σ ⇒ τ)}
-    {vt : SVal Γ σ} {dvt : DSVal Γ σ}
-    {dvtv} {dt : DTerm (σ • Γ′) τ} →
+    {Γ′ σ τ ρ′ dρ′}
+    {dvs} {vt} {dvt}
+    {vtv} {dvtv}
+    {dt : DTerm (σ • Γ′) τ} {dv} →
     ρ D dρ ⊢ dval dvs ↓ dclosure dt ρ′ dρ′ →
     ρ ⊢ val vt ↓[ n ] vtv →
     ρ D dρ ⊢ dval dvt ↓ dvtv →
@@ -246,50 +289,6 @@ data _D_⊢_↓_ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) : ∀ {τ} → DT
     ρ D dρ ⊢ ds ↓ dvsv →
     (vsv • ρ) D (dvsv • dρ) ⊢ dt ↓ dv →
     ρ D dρ ⊢ dlett s ds dt ↓ dv
-
-open import Relation.Nullary
-
--- Decidable equivalence for types and contexts :-|
-
-⇒-inj : ∀ {τ1 τ2 τ3 τ4 : Type} → _≡_ {A = Type} (τ1 ⇒ τ2) (τ3 ⇒ τ4) → τ1 ≡ τ3 × τ2 ≡ τ4
-⇒-inj refl = refl , refl
-
-_≟Type_ : (τ1 τ2 : Type) → Dec (τ1 ≡ τ2)
-(τ1 ⇒ τ2) ≟Type (τ3 ⇒ τ4) with τ1 ≟Type τ3 | τ2 ≟Type τ4
-(τ1 ⇒ τ2) ≟Type (.τ1 ⇒ .τ2) | yes refl | yes refl = yes refl
-(τ1 ⇒ τ2) ≟Type (.τ1 ⇒ τ4) | yes refl | no ¬q = no (λ x → ¬q (proj₂ (⇒-inj x)))
-(τ1 ⇒ τ2) ≟Type (τ3 ⇒ τ4) | no ¬p | q = no (λ x → ¬p (proj₁ (⇒-inj x)))
-(τ1 ⇒ τ2) ≟Type nat = no (λ ())
-nat ≟Type (τ2 ⇒ τ3) = no (λ ())
-nat ≟Type nat = yes refl
-
-•-inj : ∀ {τ1 τ2 : Type} {Γ1 Γ2 : Context} → _≡_ {A = Context} (τ1 • Γ1) (τ2 • Γ2) → τ1 ≡ τ2 × Γ1 ≡ Γ2
-•-inj refl = refl , refl
-
-_≟Ctx_ : (Γ1 Γ2 : Context) → Dec (Γ1 ≡ Γ2)
-∅ ≟Ctx ∅ = yes refl
-∅ ≟Ctx (τ2 • Γ2) = no (λ ())
-(τ1 • Γ1) ≟Ctx ∅ = no (λ ())
-(τ1 • Γ1) ≟Ctx (τ2 • Γ2) with τ1 ≟Type τ2 | Γ1 ≟Ctx Γ2
-(τ1 • Γ1) ≟Ctx (.τ1 • .Γ1) | yes refl | yes refl = yes refl
-(τ1 • Γ1) ≟Ctx (.τ1 • Γ2) | yes refl | no ¬q = no (λ x → ¬q (proj₂ (•-inj x)))
-(τ1 • Γ1) ≟Ctx (τ2 • Γ2) | no ¬p | q = no (λ x → ¬p (proj₁ (•-inj x)))
-
-≟Ctx-refl : ∀ Γ → Γ ≟Ctx Γ ≡ yes refl
-≟Ctx-refl Γ with Γ ≟Ctx Γ
-≟Ctx-refl Γ | yes refl = refl
-≟Ctx-refl Γ | no ¬p = ⊥-elim (¬p refl)
-
-_⊕_ : ∀ {τ} → (v1 : Val τ) (dv : DVal τ) → Val τ
-
-_⊕ρ_ : ∀ {Γ} → ⟦ Γ ⟧Context → ChΔ Γ → ⟦ Γ ⟧Context
-∅ ⊕ρ ∅ = ∅
-(v • ρ1) ⊕ρ (dv • dρ) = v ⊕ dv • ρ1 ⊕ρ dρ
-
-_⊕_ (closure {Γ} t ρ) (dclosure {Γ1} dt ρ₁ dρ) with Γ ≟Ctx Γ1
-closure {Γ} t ρ ⊕ dclosure {.Γ} dt ρ₁ dρ | yes refl = closure t (ρ ⊕ρ dρ)
-closure {Γ} t ρ ⊕ dclosure {Γ₁} dt ρ₁ dρ | no ¬p = closure t ρ
-_⊕_ (natV n) (dnatV dn) = natV (n + dn)
 
 mutual
   rrelT3 : ∀ {τ Γ} (t1 : Term Γ τ) (dt : DTerm Γ τ) (t2 : Term Γ τ) (ρ1 : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) (ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
