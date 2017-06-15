@@ -98,7 +98,8 @@ _≟Ctx_ : (Γ1 Γ2 : Context) → Dec (Γ1 ≡ Γ2)
 
 data Const : (τ : Type) → Set where
   lit : ℕ → Const nat
-  -- succ : Const (int ⇒ int)
+  -- Adding this changes nothing without changes to the semantics.
+  succ : Const (nat ⇒ nat)
 
 data Term (Γ : Context) (τ : Type) : Set
 -- Source values
