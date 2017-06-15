@@ -275,6 +275,11 @@ _≟Ctx_ : (Γ1 Γ2 : Context) → Dec (Γ1 ≡ Γ2)
 (τ1 • Γ1) ≟Ctx (.τ1 • Γ2) | yes refl | no ¬q = no (λ x → ¬q (proj₂ (•-inj x)))
 (τ1 • Γ1) ≟Ctx (τ2 • Γ2) | no ¬p | q = no (λ x → ¬p (proj₁ (•-inj x)))
 
+≟Ctx-refl : ∀ Γ → Γ ≟Ctx Γ ≡ yes refl
+≟Ctx-refl Γ with Γ ≟Ctx Γ
+≟Ctx-refl Γ | yes refl = refl
+≟Ctx-refl Γ | no ¬p = ⊥-elim (¬p refl)
+
 _⊕_ : ∀ {τ} → (v1 : Val τ) (dv : DVal τ) → Val τ
 
 _⊕ρ_ : ∀ {Γ} → ⟦ Γ ⟧Context → ChΔ Γ → ⟦ Γ ⟧Context
@@ -318,9 +323,8 @@ mutual
       }
 
 rrelV3→⊕ : ∀ {τ n} v1 dv v2 → rrelV3 τ v1 dv v2 n → v1 ⊕ dv ≡ v2
-rrelV3→⊕ (closure {Γ} t ρ) (dclosure dt ρ₁ dρ) (closure t₁ ρ₂) ((refl , refl) , refl , p , refl , refl , dvv) with Γ ≟Ctx Γ
-rrelV3→⊕ (closure {Γ} t ρ) (dclosure .(derive-dterm t) .ρ dρ) (closure .t .(ρ ⊕ρ dρ)) ((refl , refl) , refl , refl , refl , refl , dvv) | yes refl = refl
-... | no ¬q = ⊥-elim (¬q refl)
+rrelV3→⊕ (closure {Γ} t ρ) (dclosure .(derive-dterm t) .ρ dρ) (closure .t .(ρ ⊕ρ dρ)) ((refl , refl) , refl , refl , refl , refl , dvv) with Γ ≟Ctx Γ | ≟Ctx-refl Γ
+... | .(yes refl) | refl = refl
 rrelV3→⊕ (natV n) (dnatV dn) (natV .(dn + n)) refl rewrite +-comm n dn = refl
 
 rrelρ3 : ∀ Γ (ρ1 : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) (ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
