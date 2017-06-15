@@ -251,6 +251,7 @@ ChΔ : ∀ (Δ : Context) → Set
 ChΔ Δ = D.⟦ Δ ⟧Context
 
 data DVal where
+  bang : ∀ {τ} → Val τ → DVal τ
   dclosure : ∀ {Γ σ τ} → (dt : DTerm (σ • Γ) τ) → (ρ : ⟦ Γ ⟧Context) →  (dρ : ChΔ Γ) → DVal (σ ⇒ τ)
   dnatV : ∀ (n : ℕ) → DVal nat
 
@@ -260,6 +261,7 @@ _⊕ρ_ : ∀ {Γ} → ⟦ Γ ⟧Context → ChΔ Γ → ⟦ Γ ⟧Context
 ∅ ⊕ρ ∅ = ∅
 (v • ρ1) ⊕ρ (dv • dρ) = v ⊕ dv • ρ1 ⊕ρ dρ
 
+v1 ⊕ bang v2 = v2
 closure {Γ} t ρ ⊕ dclosure {Γ1} dt ρ₁ dρ with Γ ≟Ctx Γ1
 closure {Γ} t ρ ⊕ dclosure {.Γ} dt ρ₁ dρ | yes refl = closure t (ρ ⊕ρ dρ)
 ... | no ¬p = closure t ρ
@@ -289,6 +291,15 @@ data _D_⊢_↓_ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) : ∀ {τ} → DT
     ρ D dρ ⊢ ds ↓ dvsv →
     (vsv • ρ) D (dvsv • dρ) ⊢ dt ↓ dv →
     ρ D dρ ⊢ dlett s ds dt ↓ dv
+  bangapp : ∀ {hasIdx} {n1 n2 : Idx hasIdx}
+    {Γ′ σ τ ρ′}
+    {dvs} {vt} {dvt}
+    {vtv2}
+    {t : Term (σ • Γ′) τ} {v2} →
+    ρ D dρ ⊢ dval dvs ↓ bang (closure t ρ′) →
+    (ρ ⊕ρ dρ) ⊢ val vt ↓[ n1 ] vtv2 →
+    (vtv2 • ρ′) ⊢ t ↓[ n2 ] v2 →
+    ρ D dρ ⊢ dapp dvs vt dvt ↓ bang v2
 
 mutual
   rrelT3 : ∀ {τ Γ} (t1 : Term Γ τ) (dt : DTerm Γ τ) (t2 : Term Γ τ) (ρ1 : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) (ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
@@ -302,6 +313,9 @@ mutual
     rrelV3 τ v1 dv v2 (k ∸ j)
 
   rrelV3 : ∀ τ (v1 : Val τ) (dv : DVal τ) (v2 : Val τ) → ℕ → Set
+  -- Making this case first ensures rrelV3 splits on its second argument, hence
+  -- that all its equations hold definitionally.
+  rrelV3 τ v1 (bang v2) v2' n = v2 ≡ v2'
   rrelV3 nat (natV v1) (dnatV dv) (natV v2) n = dv + v1 ≡ v2
   rrelV3 (σ ⇒ τ) (closure {Γ1} t1 ρ1) (dclosure {ΔΓ} dt ρ dρ) (closure {Γ2} t2 ρ2) n =
       Σ ((Γ1 ≡ Γ2) × (Γ1 ≡ ΔΓ)) λ { (refl , refl) →
@@ -322,6 +336,7 @@ mutual
       }
 
 rrelV3→⊕ : ∀ {τ n} v1 dv v2 → rrelV3 τ v1 dv v2 n → v1 ⊕ dv ≡ v2
+rrelV3→⊕ v1 (bang v2) v2' vv = vv
 rrelV3→⊕ (closure {Γ} t ρ) (dclosure .(derive-dterm t) .ρ dρ) (closure .t .(ρ ⊕ρ dρ)) ((refl , refl) , refl , refl , refl , refl , dvv) with Γ ≟Ctx Γ | ≟Ctx-refl Γ
 ... | .(yes refl) | refl = refl
 rrelV3→⊕ (natV n) (dnatV dn) (natV .(dn + n)) refl rewrite +-comm n dn = refl
@@ -335,6 +350,7 @@ rrelρ3→⊕ ∅ ∅ ∅ tt = refl
 rrelρ3→⊕ (v1 • ρ1) (dv • dρ) (v2 • ρ2) (vv , ρρ) rewrite rrelV3→⊕ v1 dv v2 vv | rrelρ3→⊕ ρ1 dρ ρ2 ρρ = refl
 
 rrelV3-mono : ∀ m n → m ≤ n → ∀ τ v1 dv v2 → rrelV3 τ v1 dv v2 n → rrelV3 τ v1 dv v2 m
+rrelV3-mono m n m≤n τ v1 (bang v2) v2′ vv = vv
 rrelV3-mono m n m≤n (σ ⇒ τ) (closure t ρ) (dclosure dt ρ₁ dρ) (closure t₁ ρ₂)
   -- Validity
   ((refl , refl) , refl , refl , refl , refl , vv) =
@@ -384,6 +400,9 @@ rfundamental3 (suc k) (app vs vt) ρ1 dρ ρ2 ρρ v1 v2 .(suc j) (s≤s j<k)
   (app _ vtv2 ρ2⊢t2↓[n2]v2 ρ2⊢t2↓[n2]v3 ρ2⊢t2↓[n2]v4)
   with rfundamental3 (suc k) (val vs) ρ1 dρ ρ2 ρρ _ _ zero (s≤s z≤n) ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2
        | rfundamental3 (suc k) (val vt) ρ1 dρ ρ2 ρρ _ _ zero (s≤s z≤n) ρ1⊢t1↓[j]v2 ρ2⊢t2↓[n2]v3
+... | bang f2 , vs↓dsv , refl | dtv , vt↓dvv , dtvv
+      rewrite sym (rrelρ3→⊕ ρ1 dρ ρ2 ρρ) =
+        bang v2 , bangapp vs↓dsv ρ2⊢t2↓[n2]v3 ρ2⊢t2↓[n2]v4 , refl
 ... | dclosure dt ρ dρ₁ , vs↓dsv , (refl , refl) , refl , refl , refl , refl , dsvv | dtv , vt↓dvv , dtvv
       with dsvv k (s≤s ≤-refl) vtv1 dtv vtv2
            (rrelV3-mono k (suc k) (≤-step ≤-refl) _ vtv1 dtv vtv2 dtvv)
