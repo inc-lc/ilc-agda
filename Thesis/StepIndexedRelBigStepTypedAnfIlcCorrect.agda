@@ -260,9 +260,9 @@ _⊕ρ_ : ∀ {Γ} → ⟦ Γ ⟧Context → ChΔ Γ → ⟦ Γ ⟧Context
 ∅ ⊕ρ ∅ = ∅
 (v • ρ1) ⊕ρ (dv • dρ) = v ⊕ dv • ρ1 ⊕ρ dρ
 
-_⊕_ (closure {Γ} t ρ) (dclosure {Γ1} dt ρ₁ dρ) with Γ ≟Ctx Γ1
+closure {Γ} t ρ ⊕ dclosure {Γ1} dt ρ₁ dρ with Γ ≟Ctx Γ1
 closure {Γ} t ρ ⊕ dclosure {.Γ} dt ρ₁ dρ | yes refl = closure t (ρ ⊕ρ dρ)
-closure {Γ} t ρ ⊕ dclosure {Γ₁} dt ρ₁ dρ | no ¬p = closure t ρ
+... | no ¬p = closure t ρ
 _⊕_ (natV n) (dnatV dn) = natV (n + dn)
 
 data _D_⊢_↓_ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) : ∀ {τ} → DTerm Γ τ → DVal τ → Set where
@@ -383,10 +383,13 @@ rfundamental3 (suc k) (app vs vt) ρ1 dρ ρ2 ρρ v1 v2 .(suc j) (s≤s j<k)
   (app j vtv1 ρ1⊢t1↓[j]v1 ρ1⊢t1↓[j]v2 ρ1⊢t1↓[j]v3)
   (app _ vtv2 ρ2⊢t2↓[n2]v2 ρ2⊢t2↓[n2]v3 ρ2⊢t2↓[n2]v4)
   with rfundamental3 (suc k) (val vs) ρ1 dρ ρ2 ρρ _ _ zero (s≤s z≤n) ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2
-  | rfundamental3 (suc k) (val vt) ρ1 dρ ρ2 ρρ _ _ zero (s≤s z≤n) ρ1⊢t1↓[j]v2 ρ2⊢t2↓[n2]v3
+       | rfundamental3 (suc k) (val vt) ρ1 dρ ρ2 ρρ _ _ zero (s≤s z≤n) ρ1⊢t1↓[j]v2 ρ2⊢t2↓[n2]v3
 ... | dclosure dt ρ dρ₁ , vs↓dsv , (refl , refl) , refl , refl , refl , refl , dsvv | dtv , vt↓dvv , dtvv
-  with dsvv k (s≤s ≤-refl) vtv1 dtv vtv2 (rrelV3-mono k (suc k) (≤-step ≤-refl) _ vtv1 dtv vtv2 dtvv) v1 v2 j j<k ρ1⊢t1↓[j]v3 ρ2⊢t2↓[n2]v4
-... | dv , ↓dv , dvv = dv , dapp vs↓dsv ρ1⊢t1↓[j]v2 vt↓dvv ↓dv , dvv
+      with dsvv k (s≤s ≤-refl) vtv1 dtv vtv2
+           (rrelV3-mono k (suc k) (≤-step ≤-refl) _ vtv1 dtv vtv2 dtvv)
+           v1 v2 j j<k ρ1⊢t1↓[j]v3 ρ2⊢t2↓[n2]v4
+... | dv , ↓dv , dvv =
+      dv , dapp vs↓dsv ρ1⊢t1↓[j]v2 vt↓dvv ↓dv , dvv
 rfundamental3 (suc (suc k)) (lett s t) ρ1 dρ ρ2 ρρ v1 v2 .(suc (n1 + n2)) (s≤s (s≤s n1+n2≤k))
   (lett n1 n2 vs1 .s .t ρ1⊢t1↓[j]v1 ρ1⊢t1↓[j]v2) (lett _ _ vs2 .s .t ρ2⊢t2↓[n2]v2 ρ2⊢t2↓[n2]v3)
   with rfundamental3 (suc (suc k)) s ρ1 dρ ρ2 ρρ vs1 vs2 n1
