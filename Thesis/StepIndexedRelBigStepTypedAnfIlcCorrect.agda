@@ -121,9 +121,9 @@ i {true} j = i' j
 module _ {hasIdx : HasIdx} where
   data _⊢_↓[_]_ {Γ} (ρ : ⟦ Γ ⟧Context) : ∀ {τ} → Term Γ τ → Idx hasIdx → Val τ → Set where
     abs : ∀ {σ τ} {t : Term (σ • Γ) τ} →
-      ρ ⊢ val (abs t) ↓[ i 0 ] closure t ρ
+      ρ ⊢ val (abs t) ↓[ i 1 ] closure t ρ
     var : ∀ {τ} (x : Var Γ τ) →
-      ρ ⊢ val (var x) ↓[ i 0 ] (⟦ x ⟧Var ρ)
+      ρ ⊢ val (var x) ↓[ i 1 ] (⟦ x ⟧Var ρ)
     app : ∀ n {Γ′ σ τ ρ′} vtv {v} {vs : SVal Γ (σ ⇒ τ)} {vt : SVal Γ σ} {t : Term (σ • Γ′) τ} →
       ρ ⊢ val vs ↓[ i 0 ] closure t ρ′ →
       ρ ⊢ val vt ↓[ i 0 ] vtv →
@@ -135,7 +135,7 @@ module _ {hasIdx : HasIdx} where
       (vsv • ρ) ⊢ t ↓[ i n2 ] v →
       ρ ⊢ lett s t ↓[ i (suc n1 + n2) ] v
     lit : ∀ n →
-      ρ ⊢ const (lit n) ↓[ i 0 ] natV n
+      ρ ⊢ const (lit n) ↓[ i 1 ] natV n
 
 -- data DType : Set where
 --   _⇒_ : (σ τ : DType) → DType
@@ -351,13 +351,13 @@ lt1 (s≤s p) = ≤-step p
 ⟦ this ⟧RelVar3   {v1 • ρ1} {dv • dρ} {v2 • ρ2} (vv , ρρ) = vv
 ⟦ that x ⟧RelVar3 {v1 • ρ1} {dv • dρ} {v2 • ρ2} (vv , ρρ) = ⟦ x ⟧RelVar3 ρρ
 
-rfundamentalV3 : ∀ {Γ τ} (x : Var Γ τ) → (n : ℕ) → ∀ ρ1 dρ ρ2 (ρρ : rrelρ3 Γ ρ1 dρ ρ2 n) → rrelT3 (val (var x)) (dval (dvar (derive-dvar x))) (val (var x)) ρ1 dρ ρ2 n
-rfundamentalV3 x n ρ1 dρ ρ2 ρρ .(⟦ x ⟧Var ρ1) .(⟦ x ⟧Var ρ2) .0 j<n (var .x) (var .x) = (D.⟦ x ⟧Var dρ) , dvar x , ⟦ x ⟧RelVar3 ρρ
-
 m∸n≤m : ∀ m n → m ∸ n ≤ m
 m∸n≤m m zero = ≤-refl
 m∸n≤m zero (suc n) = z≤n
 m∸n≤m (suc m) (suc n) = ≤-step (m∸n≤m m n)
+
+rfundamentalV3 : ∀ {Γ τ} (x : Var Γ τ) → (n : ℕ) → ∀ ρ1 dρ ρ2 (ρρ : rrelρ3 Γ ρ1 dρ ρ2 n) → rrelT3 (val (var x)) (dval (dvar (derive-dvar x))) (val (var x)) ρ1 dρ ρ2 n
+rfundamentalV3 x n ρ1 dρ ρ2 ρρ .(⟦ x ⟧Var ρ1) .(⟦ x ⟧Var ρ2) .1 j<n (var .x) (var .x) = (D.⟦ x ⟧Var dρ) , dvar x ,  rrelV3-mono (n ∸ 1) n (m∸n≤m n 1) _ _ _ _ (⟦ x ⟧RelVar3 ρρ)
 
 suc∸ : ∀ m n → n ≤ m → suc (m ∸ n) ≡ suc m ∸ n
 suc∸ m zero z≤n = refl
@@ -370,11 +370,11 @@ sub∸ m n o n+m≤o rewrite +-comm m n | cong (_≤ o ∸ m) (sym (m+n∸n≡m 
 rfundamental3 : ∀ {τ Γ} k (t : Term Γ τ) → ∀ ρ1 dρ ρ2 → (ρρ : rrelρ3 Γ ρ1 dρ ρ2 k) →
   rrelT3 t (derive-dterm t) t ρ1 dρ ρ2 k
 rfundamental3 k (val (var x)) ρ1 dρ ρ2 ρρ = rfundamentalV3 x k ρ1 dρ ρ2 ρρ
-rfundamental3 (suc k) (val (abs t)) ρ1 dρ ρ2 ρρ .(closure t ρ1) .(closure t ρ2) .0 (s≤s j<k) abs abs =
+rfundamental3 (suc k) (val (abs t)) ρ1 dρ ρ2 ρρ .(closure t ρ1) .(closure t ρ2) .1 (s≤s j<k) abs abs =
   dclosure (derive-dterm t) ρ1 dρ , dabs , (refl , refl) , refl , rrelρ3→⊕ ρ1 dρ ρ2 ρρ , refl , refl ,
-    λ k₁ k<n v1 dv v2 vv →
-    rfundamental3 k₁ t (v1 • ρ1) (dv • dρ) (v2 • ρ2) (vv ,  rrelρ3-mono k₁ (suc k) (lt1 k<n) _ _ _ _ ρρ)
-rfundamental3 k (const .(lit n)) ρ1 dρ ρ2 ρρ (natV n) .(natV n) .0 j<k (lit .n) (lit .n) = dnatV 0 , dlit n , refl
+    λ k₁ k<n v1 dv v2 vv v3 v4 j j<k₁ ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2 →
+    rfundamental3 k₁ t (v1 • ρ1) (dv • dρ) (v2 • ρ2) (vv , rrelρ3-mono k₁ (suc k) (≤-step (lt1 k<n)) _ _ _ _ ρρ) v3 v4 j j<k₁ ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2
+rfundamental3 k (const .(lit n)) ρ1 dρ ρ2 ρρ (natV n) .(natV n) .1 j<k (lit .n) (lit .n) = dnatV 0 , dlit n , refl
 rfundamental3 (suc k) (app vs vt) ρ1 dρ ρ2 ρρ v1 v2 .(suc j) (s≤s j<k)
   (app j vtv1 ρ1⊢t1↓[j]v1 ρ1⊢t1↓[j]v2 ρ1⊢t1↓[j]v3)
   (app _ vtv2 ρ2⊢t2↓[n2]v2 ρ2⊢t2↓[n2]v3 ρ2⊢t2↓[n2]v4)
