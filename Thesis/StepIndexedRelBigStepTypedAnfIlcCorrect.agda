@@ -128,13 +128,47 @@ data Term (Γ : Context) (τ : Type) where
     (t : Term (σ • Γ) τ) →
     Term Γ τ
 
+⟦_⟧Type : Type → Set
+⟦ σ ⇒ τ ⟧Type = ⟦ σ ⟧Type → ⟦ τ ⟧Type
+⟦ nat ⟧Type = ℕ
+
 data Val : Type → Set
-open import Base.Denotation.Environment Type Val public
+
+import Base.Denotation.Environment
+module Den = Base.Denotation.Environment Type ⟦_⟧Type
+open Base.Denotation.Environment Type Val public
 open import Base.Data.DependentList public
+
+⟦_⟧Const : ∀ {τ} → Const τ → ⟦ τ ⟧Type
+⟦ lit n ⟧Const = n
+⟦ succ ⟧Const = suc
+
+⟦_⟧Term : ∀ {Γ τ} → Term Γ τ → Den.⟦ Γ ⟧Context → ⟦ τ ⟧Type
+⟦_⟧SVal : ∀ {Γ τ} → SVal Γ τ → Den.⟦ Γ ⟧Context → ⟦ τ ⟧Type
+⟦ var x ⟧SVal ρ = Den.⟦ x ⟧Var ρ
+⟦ abs t ⟧SVal ρ = λ v → ⟦ t ⟧Term (v • ρ)
+⟦ const c ⟧Term ρ = ⟦ c ⟧Const
+⟦ val sv ⟧Term ρ = ⟦ sv ⟧SVal ρ
+⟦ app s t ⟧Term ρ = ⟦ s ⟧SVal ρ (⟦ t ⟧SVal ρ)
+⟦ lett s t ⟧Term ρ = ⟦ t ⟧Term ((⟦ s ⟧Term ρ) • ρ)
 
 data Val where
   closure : ∀ {Γ σ τ} → (t : Term (σ • Γ) τ) → (ρ : ⟦ Γ ⟧Context) → Val (σ ⇒ τ)
   natV : ∀ (n : ℕ) → Val nat
+
+⟦_⟧Val : ∀ {τ} → Val τ → ⟦ τ ⟧Type
+⟦_⟧Env : ∀ {Γ} → ⟦ Γ ⟧Context → Den.⟦ Γ ⟧Context
+
+⟦ ∅ ⟧Env = ∅
+⟦ v • ρ ⟧Env = ⟦ v ⟧Val • ⟦ ρ ⟧Env
+
+⟦ closure t ρ ⟧Val = λ v → (⟦ t ⟧Term) (v • ⟦ ρ ⟧Env)
+⟦ natV n ⟧Val = n
+
+↦-sound : ∀ {Γ τ} ρ (x : Var Γ τ) →
+  Den.⟦ x ⟧Var ⟦ ρ ⟧Env ≡ ⟦ ⟦ x ⟧Var ρ ⟧Val
+↦-sound (px • ρ) this = refl
+↦-sound (px • ρ) (that x) = ↦-sound ρ x
 
 import Data.Integer as I
 open I using (ℤ)
@@ -169,6 +203,19 @@ module _ {hasIdx : HasIdx} where
       ρ ⊢ lett s t ↓[ i (suc n1 + n2) ] v
     lit : ∀ n →
       ρ ⊢ const (lit n) ↓[ i 1 ] natV n
+
+↓-sound : ∀ {Γ τ ρ v hasIdx} {n : Idx hasIdx} {t : Term Γ τ} →
+  ρ ⊢ t ↓[ n ] v →
+  ⟦ t ⟧Term ⟦ ρ ⟧Env ≡ ⟦ v ⟧Val
+↓-sound abs = refl
+↓-sound (app _ _ ↓₁ ↓₂ ↓′) rewrite ↓-sound ↓₁ | ↓-sound ↓₂ | ↓-sound ↓′ = refl
+↓-sound (var x) = ↦-sound _ x
+↓-sound (lit n) = refl
+↓-sound (lett n1 n2 vsv s t ↓ ↓₁) rewrite ↓-sound ↓ | ↓-sound ↓₁ = refl
+-- ↓-sound (add ↓₁ ↓₂) rewrite ↓-sound ↓₁ | ↓-sound ↓₂ = refl
+-- ↓-sound (minus ↓₁ ↓₂) rewrite ↓-sound ↓₁ | ↓-sound ↓₂ = refl
+
+-- No proof of completeness yet: the statement does not hold here.
 
 -- data DType : Set where
 --   _⇒_ : (σ τ : DType) → DType
