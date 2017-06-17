@@ -192,10 +192,10 @@ module _ {hasIdx : HasIdx} where
     var : ∀ {τ} (x : Var Γ τ) →
       ρ ⊢ val (var x) ↓[ i 1 ] (⟦ x ⟧Var ρ)
     app : ∀ n {Γ′ σ τ ρ′} vtv {v} {vs : SVal Γ (σ ⇒ τ)} {vt : SVal Γ σ} {t : Term (σ • Γ′) τ} →
-      ρ ⊢ val vs ↓[ i 0 ] closure t ρ′ →
-      ρ ⊢ val vt ↓[ i 0 ] vtv →
+      ρ ⊢ val vs ↓[ i 1 ] closure t ρ′ →
+      ρ ⊢ val vt ↓[ i 1 ] vtv →
       (vtv • ρ′) ⊢ t ↓[ i n ] v →
-      ρ ⊢ app vs vt ↓[ i (suc n) ] v
+      ρ ⊢ app vs vt ↓[ i (suc (suc (suc n))) ] v
     lett :
       ∀ n1 n2 {σ τ} vsv {v} (s : Term Γ σ) (t : Term (σ • Γ) τ) →
       ρ ⊢ s ↓[ i n1 ] vsv →
@@ -203,6 +203,13 @@ module _ {hasIdx : HasIdx} where
       ρ ⊢ lett s t ↓[ i (suc n1 + n2) ] v
     lit : ∀ n →
       ρ ⊢ const (lit n) ↓[ i 1 ] natV n
+
+-- Check it's fine to use i 1 in the above proofs.
+↓-sv-1-step : ∀ {Γ τ ρ v} {n} {sv : SVal Γ τ} →
+  ρ ⊢ val sv ↓[ i' n ] v →
+  n ≡ 1
+↓-sv-1-step abs = refl
+↓-sv-1-step (var x) = refl
 
 ↓-sound : ∀ {Γ τ ρ v hasIdx} {n : Idx hasIdx} {t : Term Γ τ} →
   ρ ⊢ t ↓[ n ] v →
@@ -443,18 +450,18 @@ rfundamental3 (suc k) (val (abs t)) ρ1 dρ ρ2 ρρ .(closure t ρ1) .(closure 
     λ k₁ k<n v1 dv v2 vv v3 v4 j j<k₁ ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2 →
     rfundamental3 k₁ t (v1 • ρ1) (dv • dρ) (v2 • ρ2) (vv , rrelρ3-mono k₁ (suc k) (≤-step (lt1 k<n)) _ _ _ _ ρρ) v3 v4 j j<k₁ ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2
 rfundamental3 k (const .(lit n)) ρ1 dρ ρ2 ρρ (natV n) .(natV n) .1 j<k (lit .n) (lit .n) = dnatV 0 , dlit n , refl
-rfundamental3 (suc k) (app vs vt) ρ1 dρ ρ2 ρρ v1 v2 .(suc j) (s≤s j<k)
+rfundamental3 (suc (suc (suc (suc k)))) (app vs vt) ρ1 dρ ρ2 ρρ v1 v2 .(suc (suc (suc j))) (s≤s (s≤s (s≤s (s≤s j<k))))
   (app j vtv1 ρ1⊢t1↓[j]v1 ρ1⊢t1↓[j]v2 ρ1⊢t1↓[j]v3)
-  (app _ vtv2 ρ2⊢t2↓[n2]v2 ρ2⊢t2↓[n2]v3 ρ2⊢t2↓[n2]v4)
-  with rfundamental3 (suc k) (val vs) ρ1 dρ ρ2 ρρ _ _ zero (s≤s z≤n) ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2
-       | rfundamental3 (suc k) (val vt) ρ1 dρ ρ2 ρρ _ _ zero (s≤s z≤n) ρ1⊢t1↓[j]v2 ρ2⊢t2↓[n2]v3
+  (app n₁ vtv2 ρ2⊢t2↓[n2]v2 ρ2⊢t2↓[n2]v3 ρ2⊢t2↓[n2]v4)
+  with rfundamental3 (suc (suc (suc (suc k)))) (val vs) ρ1 dρ ρ2 ρρ _ _ (suc zero) (s≤s (s≤s z≤n)) ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2
+       | rfundamental3 (suc (suc (suc (suc k)))) (val vt) ρ1 dρ ρ2 ρρ _ _ (suc zero) (s≤s (s≤s z≤n)) ρ1⊢t1↓[j]v2 ρ2⊢t2↓[n2]v3
 ... | bang f2 , vs↓dsv , refl | dtv , vt↓dvv , dtvv
       rewrite sym (rrelρ3→⊕ ρ1 dρ ρ2 ρρ) =
         bang v2 , bangapp vs↓dsv ρ2⊢t2↓[n2]v3 ρ2⊢t2↓[n2]v4 , refl
 ... | dclosure dt ρ dρ₁ , vs↓dsv , (refl , refl) , refl , refl , refl , refl , dsvv | dtv , vt↓dvv , dtvv
-      with dsvv k (s≤s ≤-refl) vtv1 dtv vtv2
-           (rrelV3-mono k (suc k) (≤-step ≤-refl) _ vtv1 dtv vtv2 dtvv)
-           v1 v2 j j<k ρ1⊢t1↓[j]v3 ρ2⊢t2↓[n2]v4
+      with dsvv (suc k) (s≤s (s≤s (≤-step ≤-refl))) vtv1 dtv vtv2
+           ( (rrelV3-mono (suc k) (suc (suc (suc k))) (s≤s (≤-step (≤-step ≤-refl))) _ vtv1 dtv vtv2 dtvv) )
+           v1 v2 j (s≤s j<k) ρ1⊢t1↓[j]v3 ρ2⊢t2↓[n2]v4
 ... | dv , ↓dv , dvv =
       dv , dapp vs↓dsv ρ1⊢t1↓[j]v2 vt↓dvv ↓dv , dvv
 rfundamental3 (suc (suc k)) (lett s t) ρ1 dρ ρ2 ρρ v1 v2 .(suc (n1 + n2)) (s≤s (s≤s n1+n2≤k))
