@@ -42,14 +42,14 @@ i {true} j = i' j
 module _ {hasIdx : HasIdx} where
   data _⊢_↓[_]_ {Γ} (ρ : ⟦ Γ ⟧Context) : ∀ {τ} → Term Γ τ → Idx hasIdx → Val τ → Set where
     val : ∀ {τ} (sv : SVal Γ τ) →
-      ρ ⊢ val sv ↓[ i 1 ] eval sv ρ
+      ρ ⊢ val sv ↓[ i 0 ] eval sv ρ
     primapp : ∀ {σ τ} (p : Primitive (σ ⇒ τ)) (sv : SVal Γ σ) →
       ρ ⊢ primapp p sv ↓[ i 1 ] eval-primitive p (eval sv ρ)
     app : ∀ n {Γ′ σ τ ρ′} vtv {v} {vs : SVal Γ (σ ⇒ τ)} {vt : SVal Γ σ} {t : Term (σ • Γ′) τ} →
-      ρ ⊢ val vs ↓[ i 1 ] closure t ρ′ →
-      ρ ⊢ val vt ↓[ i 1 ] vtv →
+      ρ ⊢ val vs ↓[ i 0 ] closure t ρ′ →
+      ρ ⊢ val vt ↓[ i 0 ] vtv →
       (vtv • ρ′) ⊢ t ↓[ i n ] v →
-      ρ ⊢ app vs vt ↓[ i (suc (suc (suc n))) ] v
+      ρ ⊢ app vs vt ↓[ i (suc n) ] v
     lett :
       ∀ n1 n2 {σ τ} vsv {v} (s : Term Γ σ) (t : Term (σ • Γ) τ) →
       ρ ⊢ s ↓[ i n1 ] vsv →

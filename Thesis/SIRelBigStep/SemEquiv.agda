@@ -37,10 +37,10 @@ eval-sound ρ (abs t) = refl
 eval-sound ρ (cons sv1 sv2) rewrite eval-sound ρ sv1 | eval-sound ρ sv2 = refl
 eval-sound ρ (const c) = eval-const-sound c
 
--- Check it's fine to use i 1 in the above proofs.
+-- Check it's fine to use i 0 in the derivations for app
 ↓-sv-1-step : ∀ {Γ τ ρ v} {n} {sv : SVal Γ τ} →
   ρ ⊢ val sv ↓[ i' n ] v →
-  n ≡ 1
+  n ≡ 0
 ↓-sv-1-step (val sv) = refl
 
 ↓-sound : ∀ {Γ τ ρ v hasIdx} {n : Idx hasIdx} {t : Term Γ τ} →

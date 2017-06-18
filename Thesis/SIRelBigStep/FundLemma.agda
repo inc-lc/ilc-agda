@@ -5,8 +5,8 @@ open import Relation.Binary.PropositionalEquality
 
 open import Thesis.SIRelBigStep.IlcSILR
 
-rfundamentalV3v : ∀ {Γ τ} (x : Var Γ τ) → (n : ℕ) → ∀ ρ1 dρ ρ2 (ρρ : rrelρ3 Γ ρ1 dρ ρ2 (suc n)) → rrelV3 τ (⟦ x ⟧Var ρ1) (D.⟦ x ⟧Var dρ) (⟦ x ⟧Var ρ2) n
-rfundamentalV3v x n ρ1 dρ ρ2 ρρ = rrelV3-mono n (suc n) (≤-step ≤-refl) _ (⟦ x ⟧Var ρ1) (D.⟦ x ⟧Var dρ) (⟦ x ⟧Var ρ2) (⟦ x ⟧RelVar3 ρρ)
+rfundamentalV3v : ∀ {Γ τ} (x : Var Γ τ) → (n : ℕ) → ∀ ρ1 dρ ρ2 (ρρ : rrelρ3 Γ ρ1 dρ ρ2 n) → rrelV3 τ (⟦ x ⟧Var ρ1) (D.⟦ x ⟧Var dρ) (⟦ x ⟧Var ρ2) n
+rfundamentalV3v x n ρ1 dρ ρ2 ρρ = ⟦ x ⟧RelVar3 ρρ
 
 rfundamental3constV : ∀ {τ} k (c : Const τ) →
   rrelV3 τ (eval-const c) (deval (derive-const c) ∅ ∅) (eval-const c) k
@@ -16,17 +16,17 @@ rfundamental3 : ∀ {τ Γ} k (t : Term Γ τ) → ∀ ρ1 dρ ρ2 → (ρρ : r
   rrelT3 t (derive-dterm t) t ρ1 dρ ρ2 k
 
 rfundamental3svv : ∀ {τ Γ} k (sv : SVal Γ τ) →
-  ∀ ρ1 dρ ρ2 → (ρρ : rrelρ3 Γ ρ1 dρ ρ2 (suc k)) → rrelV3 τ (eval sv ρ1) (deval (derive-dsval sv) ρ1 dρ) (eval sv ρ2) k
+  ∀ ρ1 dρ ρ2 → (ρρ : rrelρ3 Γ ρ1 dρ ρ2 k) → rrelV3 τ (eval sv ρ1) (deval (derive-dsval sv) ρ1 dρ) (eval sv ρ2) k
 rfundamental3svv k (var x) ρ1 dρ ρ2 ρρ = rfundamentalV3v x k ρ1 dρ ρ2 ρρ
 rfundamental3svv k (cons sv1 sv2) ρ1 dρ ρ2 ρρ = rfundamental3svv k sv1 ρ1 dρ ρ2 ρρ , rfundamental3svv k sv2 ρ1 dρ ρ2 ρρ
 rfundamental3svv k (const c) ρ1 dρ ρ2 ρρ rewrite deval-derive-const-inv c ρ1 dρ = rfundamental3constV k c
 rfundamental3svv k (abs t) ρ1 dρ ρ2 ρρ = (refl , refl) , refl , rrelρ3→⊕ ρ1 dρ ρ2 ρρ , refl , refl ,
     λ k₁ k<n v1 dv v2 vv →
-    rfundamental3 k₁ t (v1 • ρ1) (dv • dρ) (v2 • ρ2) (vv , rrelρ3-mono k₁ (suc k) (≤-step (lt1 k<n)) _ _ _ _ ρρ)
+    rfundamental3 k₁ t (v1 • ρ1) (dv • dρ) (v2 • ρ2) (vv , rrelρ3-mono k₁ k (lt1 k<n) _ _ _ _ ρρ)
 
 rfundamental3sv : ∀ {τ Γ} k (sv : SVal Γ τ) →
   ∀ ρ1 dρ ρ2 → (ρρ : rrelρ3 Γ ρ1 dρ ρ2 k) → rrelT3 (val sv) (dval (derive-dsval sv)) (val sv) ρ1 dρ ρ2 k
-rfundamental3sv (suc k) sv ρ1 dρ ρ2 ρρ .(eval sv ρ1) .(eval sv ρ2) .1 (s≤s j<k) (val .sv) (val .sv) = deval (derive-dsval sv) ρ1 dρ , dval (derive-dsval sv) , rfundamental3svv k sv ρ1 dρ ρ2 ρρ
+rfundamental3sv k sv ρ1 dρ ρ2 ρρ .(eval sv ρ1) .(eval sv ρ2) .0 j<k (val .sv) (val .sv) = deval (derive-dsval sv) ρ1 dρ , dval (derive-dsval sv) , rfundamental3svv k sv ρ1 dρ ρ2 ρρ
 
 open import Theorem.Groups-Nehemiah
 rfundamental3primv : ∀ {σ τ} k p →
@@ -51,19 +51,20 @@ rfundamental3 k (val sv) = rfundamental3sv k sv
 rfundamental3 (suc k) (primapp p sv) ρ1 dρ ρ2 ρρ
   .(eval-primitive p (eval sv ρ1)) .(eval-primitive p (eval sv ρ2)) .1 (s≤s j<k) (primapp .p .sv) (primapp .p .sv) =
    deval-primitive p (eval sv ρ1) (deval (derive-dsval sv) ρ1 dρ) , dprimapp p sv (derive-dsval sv) ,
-     rfundamental3primv k p (eval sv ρ1) (deval (derive-dsval sv) ρ1 dρ) (eval sv ρ2) (rfundamental3svv k sv ρ1 dρ ρ2 ρρ)
+     rfundamental3primv k p (eval sv ρ1) (deval (derive-dsval sv) ρ1 dρ) (eval sv ρ2)
+       (rfundamental3svv k sv ρ1 dρ ρ2 (rrelρ3-mono k (suc k) (≤-step ≤-refl) _ ρ1 dρ ρ2 ρρ))
 -- (eval sv ρ1) (deval (derive-dsval sv) ρ1 dρ) (eval sv ρ2) k
-rfundamental3 (suc (suc (suc (suc k)))) (app vs vt) ρ1 dρ ρ2 ρρ v1 v2 .(suc (suc (suc j))) (s≤s (s≤s (s≤s (s≤s j<k))))
+rfundamental3 (suc (suc k)) (app vs vt) ρ1 dρ ρ2 ρρ v1 v2 .(suc j) (s≤s (s≤s j<k))
   (app j vtv1 ρ1⊢t1↓[j]v1 ρ1⊢t1↓[j]v2 ρ1⊢t1↓[j]v3)
   (app n₁ vtv2 ρ2⊢t2↓[n2]v2 ρ2⊢t2↓[n2]v3 ρ2⊢t2↓[n2]v4)
-  with rfundamental3 (suc (suc (suc (suc k)))) (val vs) ρ1 dρ ρ2 ρρ _ _ (suc zero) (s≤s (s≤s z≤n)) ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2
-       | rfundamental3 (suc (suc (suc (suc k)))) (val vt) ρ1 dρ ρ2 ρρ _ _ (suc zero) (s≤s (s≤s z≤n)) ρ1⊢t1↓[j]v2 ρ2⊢t2↓[n2]v3
+  with rfundamental3 (suc (suc k)) (val vs) ρ1 dρ ρ2 ρρ _ _ zero (s≤s z≤n) ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2
+       | rfundamental3 (suc (suc k)) (val vt) ρ1 dρ ρ2 ρρ _ _ zero (s≤s z≤n) ρ1⊢t1↓[j]v2 ρ2⊢t2↓[n2]v3
 ... | bang f2 , vs↓dsv , refl | dtv , vt↓dvv , dtvv
       rewrite sym (rrelρ3→⊕ ρ1 dρ ρ2 ρρ) =
         bang v2 , bangapp vs↓dsv ρ2⊢t2↓[n2]v3 ρ2⊢t2↓[n2]v4 , refl
 ... | dclosure dt ρ dρ₁ , vs↓dsv , (refl , refl) , refl , refl , refl , refl , dsvv | dtv , vt↓dvv , dtvv
-      with dsvv (suc k) (s≤s (s≤s (≤-step ≤-refl))) vtv1 dtv vtv2
-           ( (rrelV3-mono (suc k) (suc (suc (suc k))) (s≤s (≤-step (≤-step ≤-refl))) _ vtv1 dtv vtv2 dtvv) )
+      with dsvv (suc k) ≤-refl vtv1 dtv vtv2
+           (rrelV3-mono (suc k) (suc (suc k)) (s≤s (≤-step ≤-refl)) _ vtv1 dtv vtv2 dtvv)
            v1 v2 j (s≤s j<k) ρ1⊢t1↓[j]v3 ρ2⊢t2↓[n2]v4
 ... | dv , ↓dv , dvv =
       dv , dapp vs↓dsv ρ1⊢t1↓[j]v2 vt↓dvv ↓dv , dvv
