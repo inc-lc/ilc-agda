@@ -44,8 +44,34 @@
 -- bound. Similarly, we do not bound in how many steps de terminates, since on
 -- big inputs it might take long.
 
-module Thesis.StepIndexedRelBigStepTypedAnfIlcCorrect where
+module Thesis.SIRelBigStep.README where
 
-open import Thesis.SIRelBigStep.Lang public
-open import Thesis.SIRelBigStep.DLang public
-open import Thesis.SIRelBigStep.IlcSILR public
+-- Base language
+import Thesis.SIRelBigStep.Lang
+-- Which comprises:
+import Thesis.SIRelBigStep.Types
+import Thesis.SIRelBigStep.Syntax
+-- Denotational semantics:
+import Thesis.SIRelBigStep.DenSem
+-- Big-step operations semantics:
+import Thesis.SIRelBigStep.OpSem
+-- Show these two semantics are equivalent:
+import Thesis.SIRelBigStep.SemEquiv
+
+-- Change language
+import Thesis.SIRelBigStep.DLang
+
+-- Which comprises:
+import Thesis.SIRelBigStep.DSyntax
+-- The operational semantics also defines ⊕:
+import Thesis.SIRelBigStep.DOpSem
+
+-- Differentiation:
+import Thesis.SIRelBigStep.DLangDerive
+
+-- Small extra arithmetic lemmas for step-indexes.
+import Thesis.SIRelBigStep.ArithExtra
+-- Step-indexed logical relations for validity, their monotonicity and agreement with ⊕
+import Thesis.SIRelBigStep.IlcSILR
+-- Prove the fundamental lemma:
+import Thesis.SIRelBigStep.FundLemma
