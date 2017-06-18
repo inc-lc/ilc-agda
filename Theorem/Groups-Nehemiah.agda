@@ -33,6 +33,14 @@ open import Algebra.Structures
       f (f a c) (f b d)
     ∎ where open ≡-Reasoning
 
+module _ where
+  open import Data.Nat
+  -- Apologies for irregular name.
+  ℕ-mn·pq=mp·nq : ∀ {m n p q : ℕ} →
+    (m + n) + (p + q) ≡ (m + p) + (n + q)
+  ℕ-mn·pq=mp·nq {m} {n} {p} {q} =
+    4-way-shuffle {a = m} {n} {p} {q} {{comm-monoid-nat}}
+
 open import Data.Integer
 
 n+[m-n]=m : ∀ {n m} → n + (m - n) ≡ m
