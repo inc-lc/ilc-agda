@@ -21,7 +21,7 @@ mutual
     ρ1 D dρ ⊢ dt ↓ dv ×
     rrelV3 τ v1 dv v2 (k ∸ j)
 
-  rrelV3 : ∀ τ (v1 : Val τ) (dv : DVal τ) (v2 : Val τ) → ℕ → Set
+  rrelV3 : ∀ τ (v1 : Val τ) (dv : DVal τ) (v2 : Val τ) → (n : ℕ) → Set
   -- Making this case first ensures rrelV3 splits on its second argument, hence
   -- that all its equations hold definitionally.
   rrelV3 τ v1 (bang v2) v2' n = v2 ≡ v2'
@@ -43,12 +43,15 @@ mutual
           (v2 • ρ2)
           k
       }
+  rrelV3 (pair τ1 τ2) (pairV va1 vb1) (dpairV dva dvb) (pairV va2 vb2) n =
+    rrelV3 τ1 va1 dva va2 n × rrelV3 τ2 vb1 dvb vb2 n
 
 rrelV3→⊕ : ∀ {τ n} v1 dv v2 → rrelV3 τ v1 dv v2 n → v1 ⊕ dv ≡ v2
 rrelV3→⊕ v1 (bang v2) v2' vv = vv
 rrelV3→⊕ (closure {Γ} t ρ) (dclosure .(derive-dterm t) .ρ dρ) (closure .t .(ρ ⊕ρ dρ)) ((refl , refl) , refl , refl , refl , refl , dvv) with Γ ≟Ctx Γ | ≟Ctx-refl Γ
 ... | .(yes refl) | refl = refl
 rrelV3→⊕ (natV n) (dnatV dn) (natV .(dn + n)) refl rewrite +-comm n dn = refl
+rrelV3→⊕ (pairV va1 vb1) (dpairV dva dvb) (pairV va2 vb2) (vaa , vbb) rewrite rrelV3→⊕  va1 dva va2 vaa | rrelV3→⊕ vb1 dvb vb2 vbb = refl
 
 rrelρ3 : ∀ Γ (ρ1 : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) (ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
 rrelρ3 ∅ ∅ ∅ ∅ n = ⊤
@@ -65,6 +68,8 @@ rrelV3-mono m n m≤n (σ ⇒ τ) (closure t ρ) (dclosure dt ρ₁ dρ) (closur
   ((refl , refl) , refl , refl , refl , refl , vv) =
   (refl  , refl) , refl , refl , refl , refl , λ k k<m → vv k (≤-trans k<m m≤n)
 rrelV3-mono m n m≤n nat (natV n₁) (dnatV n₂) (natV n₃) vv = vv
+rrelV3-mono m n m≤n (pair τ1 τ2) (pairV va1 vb1) (dpairV dva dvb) (pairV va2 vb2) (vaa , vbb) =
+  rrelV3-mono m n m≤n τ1 va1 dva va2 vaa , rrelV3-mono m n m≤n τ2 vb1 dvb vb2 vbb
 
 rrelρ3-mono : ∀ m n → m ≤ n → ∀ Γ ρ1 dρ ρ2 → rrelρ3 Γ ρ1 dρ ρ2 n → rrelρ3 Γ ρ1 dρ ρ2 m
 rrelρ3-mono m n m≤n ∅ ∅ ∅ ∅ tt = tt
@@ -75,7 +80,3 @@ rrelρ3-mono m n m≤n (τ • Γ) (v1 • ρ1) (dv • dρ) (v2 • ρ2) (vv , 
   rrelV3 τ (⟦ x ⟧Var ρ1) (D.⟦ x ⟧Var dρ) (⟦ x ⟧Var ρ2) n
 ⟦ this ⟧RelVar3   {v1 • ρ1} {dv • dρ} {v2 • ρ2} (vv , ρρ) = vv
 ⟦ that x ⟧RelVar3 {v1 • ρ1} {dv • dρ} {v2 • ρ2} (vv , ρρ) = ⟦ x ⟧RelVar3 ρρ
-
-rfundamentalV3 : ∀ {Γ τ} (x : Var Γ τ) → (n : ℕ) → ∀ ρ1 dρ ρ2 (ρρ : rrelρ3 Γ ρ1 dρ ρ2 n) → rrelT3 (val (var x)) (dval (dvar (derive-dvar x))) (val (var x)) ρ1 dρ ρ2 n
-rfundamentalV3 x n ρ1 dρ ρ2 ρρ .(⟦ x ⟧Var ρ1) .(⟦ x ⟧Var ρ2) .1 j<n (var .x) (var .x) =
-  D.⟦ x ⟧Var dρ , dvar x , rrelV3-mono (n ∸ 1) n (m∸n≤m n 1) _ (⟦ x ⟧Var ρ1) (D.⟦ x ⟧Var dρ) (⟦ x ⟧Var ρ2) (⟦ x ⟧RelVar3 ρρ)

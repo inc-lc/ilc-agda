@@ -12,6 +12,20 @@ open import Base.Data.DependentList public
 data Val where
   closure : ∀ {Γ σ τ} → (t : Term (σ • Γ) τ) → (ρ : ⟦ Γ ⟧Context) → Val (σ ⇒ τ)
   natV : ∀ (n : ℕ) → Val nat
+  pairV : ∀ {σ τ} → Val σ → Val τ → Val (pair σ τ)
+
+eval-const : ∀ {τ} → Const τ → Val τ
+eval-const (lit n) = natV n
+
+eval : ∀ {Γ τ} (sv : SVal Γ τ) (ρ : ⟦ Γ ⟧Context) → Val τ
+eval (var x) ρ = ⟦ x ⟧Var ρ
+eval (abs t) ρ = closure t ρ
+eval (cons sv1 sv2) ρ = pairV (eval sv1 ρ) (eval sv2 ρ)
+eval (const c) ρ = eval-const c
+
+eval-primitive : ∀ {σ τ} → Primitive (σ ⇒ τ) → Val σ → Val τ
+eval-primitive succ (natV n) = natV (suc n)
+eval-primitive add (pairV (natV n1) (natV n2)) = natV (n1 + n2)
 
 -- Yann's idea.
 data HasIdx : Set where
@@ -27,10 +41,10 @@ i {true} j = i' j
 
 module _ {hasIdx : HasIdx} where
   data _⊢_↓[_]_ {Γ} (ρ : ⟦ Γ ⟧Context) : ∀ {τ} → Term Γ τ → Idx hasIdx → Val τ → Set where
-    abs : ∀ {σ τ} {t : Term (σ • Γ) τ} →
-      ρ ⊢ val (abs t) ↓[ i 1 ] closure t ρ
-    var : ∀ {τ} (x : Var Γ τ) →
-      ρ ⊢ val (var x) ↓[ i 1 ] (⟦ x ⟧Var ρ)
+    val : ∀ {τ} (sv : SVal Γ τ) →
+      ρ ⊢ val sv ↓[ i 1 ] eval sv ρ
+    primapp : ∀ {σ τ} (p : Primitive (σ ⇒ τ)) (sv : SVal Γ σ) →
+      ρ ⊢ primapp p sv ↓[ i 1 ] eval-primitive p (eval sv ρ)
     app : ∀ n {Γ′ σ τ ρ′} vtv {v} {vs : SVal Γ (σ ⇒ τ)} {vt : SVal Γ σ} {t : Term (σ • Γ′) τ} →
       ρ ⊢ val vs ↓[ i 1 ] closure t ρ′ →
       ρ ⊢ val vt ↓[ i 1 ] vtv →
@@ -41,5 +55,3 @@ module _ {hasIdx : HasIdx} where
       ρ ⊢ s ↓[ i n1 ] vsv →
       (vsv • ρ) ⊢ t ↓[ i n2 ] v →
       ρ ⊢ lett s t ↓[ i (suc n1 + n2) ] v
-    lit : ∀ n →
-      ρ ⊢ const (lit n) ↓[ i 1 ] natV n

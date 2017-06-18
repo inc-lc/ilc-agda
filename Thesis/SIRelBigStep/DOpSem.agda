@@ -1,3 +1,4 @@
+{-# OPTIONS --exact-split #-}
 module Thesis.SIRelBigStep.DOpSem where
 
 open import Data.Nat
@@ -19,6 +20,7 @@ data DVal where
   bang : ∀ {τ} → Val τ → DVal τ
   dclosure : ∀ {Γ σ τ} → (dt : DTerm (σ • Γ) τ) → (ρ : ⟦ Γ ⟧Context) →  (dρ : ChΔ Γ) → DVal (σ ⇒ τ)
   dnatV : ∀ (n : ℕ) → DVal nat
+  dpairV : ∀ {σ τ} → DVal σ → DVal τ → DVal (pair σ τ)
 
 _⊕_ : ∀ {τ} → (v1 : Val τ) (dv : DVal τ) → Val τ
 
@@ -30,15 +32,42 @@ v1 ⊕ bang v2 = v2
 closure {Γ} t ρ ⊕ dclosure {Γ1} dt ρ₁ dρ with Γ ≟Ctx Γ1
 closure {Γ} t ρ ⊕ dclosure {.Γ} dt ρ₁ dρ | yes refl = closure t (ρ ⊕ρ dρ)
 ... | no ¬p = closure t ρ
-_⊕_ (natV n) (dnatV dn) = natV (n + dn)
+natV n ⊕ dnatV dn = natV (n + dn)
+pairV v1 v2 ⊕ dpairV dv1 dv2 = pairV (v1 ⊕ dv1) (v2 ⊕ dv2)
+
+inv-Δτ-nat : ∀ τ → Δτ τ ≡ nat → τ ≡ nat
+inv-Δτ-nat nat refl = refl
+inv-Δτ-nat (τ ⇒ τ₁) ()
+inv-Δτ-nat (pair τ τ₁) ()
+
+deval-const : ∀ {τ} → Const (Δτ τ) → DVal τ
+deval-const {σ} c with Δτ σ | inv-Δτ-nat σ
+deval-const {σ} (lit n) | .nat | inv-σ with inv-σ refl
+deval-const {.nat} (lit n) | .nat | inv-σ | refl = dnatV n
+
+deval : ∀ {Γ τ} (sv : DSVal Γ τ) (ρ : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) → DVal τ
+deval (dvar x) ρ dρ = D.⟦ x ⟧Var dρ
+deval (dabs dt) ρ dρ = dclosure dt ρ dρ
+deval (dcons dsv1 dsv2) ρ dρ = dpairV (deval dsv1 ρ dρ) (deval dsv2 ρ dρ)
+deval (dconst c) ρ dρ = deval-const c
+
+deval-primitive : ∀ {σ τ} → Primitive (σ ⇒ τ) → Val σ → DVal σ → DVal τ
+deval-primitive succ (natV _) (bang (natV n2)) = bang (natV (suc n2))
+deval-primitive succ (natV n) (dnatV dn) = dnatV dn
+deval-primitive add (pairV _ _) (dpairV (dnatV da) (dnatV db)) = dnatV (da + db)
+deval-primitive add (pairV _ _) (bang p2) = bang (eval-primitive add p2)
+-- During the proof we need to know which clauses hold definitionally, and sadly we can't get a single equation here.
+deval-primitive add p1 @ (pairV a1 b1) dp @ (dpairV (dnatV da) (bang b2)) = bang (eval-primitive add (p1 ⊕ dp))
+deval-primitive add p1 @ (pairV a1 b1) dp @ (dpairV (bang a2) db) = bang (eval-primitive add (p1 ⊕ dp))
+
+deval-derive-const-inv : ∀ {τ Γ} (c : Const τ) (ρ : ⟦ Γ ⟧Context) dρ → deval (derive-const c) ρ dρ ≡ deval (derive-const c) ∅ ∅
+deval-derive-const-inv (lit n) ρ dρ = refl
 
 data _D_⊢_↓_ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) : ∀ {τ} → DTerm Γ τ → DVal τ → Set where
-  dabs : ∀ {σ τ} {dt : DTerm (σ • Γ) τ} →
-    ρ D dρ ⊢ dval (dabs dt) ↓ dclosure dt ρ dρ
-  dvar : ∀ {τ} (x : DC.Var Γ τ) →
-    ρ D dρ ⊢ dval (dvar (derive-dvar x)) ↓ D.⟦ x ⟧Var dρ
-  dlit : ∀ n →
-    ρ D dρ ⊢ dconst (lit n) ↓ dnatV 0
+  dval : ∀ {τ} (sv : DSVal Γ τ) →
+    ρ D dρ ⊢ dval sv ↓ deval sv ρ dρ
+  dprimapp : ∀ {σ τ} (p : Primitive (σ ⇒ τ)) (sv : SVal Γ σ) dsv →
+    ρ D dρ ⊢ dprimapp p sv dsv ↓ deval-primitive p (eval sv ρ) (deval dsv ρ dρ)
   dapp : ∀ {hasIdx} {n : Idx hasIdx}
     {Γ′ σ τ ρ′ dρ′}
     {dvs} {vt} {dvt}
