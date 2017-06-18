@@ -9,29 +9,7 @@ module Theorem.Groups-Nehemiah where
 open import Structure.Bag.Nehemiah public
 
 open import Relation.Binary.PropositionalEquality
-open import Data.Integer
 open import Algebra.Structures
-
-n+[m-n]=m : ∀ {n m} → n + (m - n) ≡ m
-n+[m-n]=m {n} {m} =
-  begin
-    n + (m - n)
-  ≡⟨ cong (λ hole → n + hole) (commutative-int m (- n)) ⟩
-    n + (- n + m)
-  ≡⟨ sym (associative-int n (- n) m) ⟩
-    (n - n) + m
-  ≡⟨ cong (λ hole → hole + m) (right-inv-int n) ⟩
-    (+ 0) + m
-  ≡⟨ left-id-int m ⟩
-    m
-  ∎ where open ≡-Reasoning
-
-a++[b\\a]=b : ∀ {a b} → a ++ (b \\ a) ≡ b
-a++[b\\a]=b {b} {d} = trans
-  (cong (λ hole → b ++ hole) (commutative-bag d (negateBag b))) (trans
-  (sym (associative-bag b (negateBag b) d)) (trans
-  (cong (λ hole → hole ++ d) (right-inv-bag b))
-  (left-id-bag d)))
 
 4-way-shuffle : ∀ {A : Set} {f} {z a b c d : A}
   {{comm-monoid : IsCommutativeMonoid _≡_ f z}} →
@@ -54,6 +32,29 @@ a++[b\\a]=b {b} {d} = trans
     ≡⟨ sym (assoc a c (f b d)) ⟩
       f (f a c) (f b d)
     ∎ where open ≡-Reasoning
+
+open import Data.Integer
+
+n+[m-n]=m : ∀ {n m} → n + (m - n) ≡ m
+n+[m-n]=m {n} {m} =
+  begin
+    n + (m - n)
+  ≡⟨ cong (λ hole → n + hole) (commutative-int m (- n)) ⟩
+    n + (- n + m)
+  ≡⟨ sym (associative-int n (- n) m) ⟩
+    (n - n) + m
+  ≡⟨ cong (λ hole → hole + m) (right-inv-int n) ⟩
+    (+ 0) + m
+  ≡⟨ left-id-int m ⟩
+    m
+  ∎ where open ≡-Reasoning
+
+a++[b\\a]=b : ∀ {a b} → a ++ (b \\ a) ≡ b
+a++[b\\a]=b {b} {d} = trans
+  (cong (λ hole → b ++ hole) (commutative-bag d (negateBag b))) (trans
+  (sym (associative-bag b (negateBag b) d)) (trans
+  (cong (λ hole → hole ++ d) (right-inv-bag b))
+  (left-id-bag d)))
 
 ab·cd=ac·bd : ∀ {a b c d : Bag} →
   (a ++ b) ++ (c ++ d) ≡ (a ++ c) ++ (b ++ d)
