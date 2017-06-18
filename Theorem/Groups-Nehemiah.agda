@@ -33,13 +33,13 @@ a++[b\\a]=b {b} {d} = trans
   (cong (λ hole → hole ++ d) (right-inv-bag b))
   (left-id-bag d)))
 
-4-way-shuffle : ∀ {A : Set} {f neg} {z a b c d : A}
-  {{abelian : IsAbelianGroup _≡_ f z neg}} →
+4-way-shuffle : ∀ {A : Set} {f} {z a b c d : A}
+  {{comm-monoid : IsCommutativeMonoid _≡_ f z}} →
   f (f a b) (f c d) ≡ f (f a c) (f b d)
-4-way-shuffle {f = f} {z = z} {a} {b} {c} {d} {{abelian}} =
+4-way-shuffle {f = f} {z = z} {a} {b} {c} {d} {{comm-monoid}} =
   let
-    assoc = associative abelian
-    cmute = commutative abelian
+    assoc = associative comm-monoid
+    cmute = commutative comm-monoid
   in
     begin
       f (f a b) (f c d)
@@ -58,12 +58,12 @@ a++[b\\a]=b {b} {d} = trans
 ab·cd=ac·bd : ∀ {a b c d : Bag} →
   (a ++ b) ++ (c ++ d) ≡ (a ++ c) ++ (b ++ d)
 ab·cd=ac·bd {a} {b} {c} {d} =
-  4-way-shuffle {a = a} {b} {c} {d} {{abelian-bag}}
+  4-way-shuffle {a = a} {b} {c} {d} {{comm-monoid-bag}}
 
 mn·pq=mp·nq : ∀ {m n p q : ℤ} →
   (m + n) + (p + q) ≡ (m + p) + (n + q)
 mn·pq=mp·nq {m} {n} {p} {q} =
-  4-way-shuffle {a = m} {n} {p} {q} {{abelian-int}}
+  4-way-shuffle {a = m} {n} {p} {q} {{comm-monoid-int}}
 
 inverse-unique : ∀ {A : Set} {f neg} {z a b : A}
   {{abelian : IsAbelianGroup _≡_ f z neg}} →
@@ -71,8 +71,8 @@ inverse-unique : ∀ {A : Set} {f neg} {z a b : A}
 
 inverse-unique {f = f} {neg} {z} {a} {b} {{abelian}} ab=z =
   let
-    assoc = associative abelian
-    cmute = commutative abelian
+    assoc = associative (IsAbelianGroup.isCommutativeMonoid abelian)
+    cmute = commutative (IsAbelianGroup.isCommutativeMonoid abelian)
   in
     begin
       b
@@ -98,7 +98,7 @@ distribute-neg {f = f} {neg} {z} {a} {b} {{abelian}} = inverse-unique
   {{abelian}}
   (begin
     f (f a b) (f (neg a) (neg b))
-  ≡⟨ 4-way-shuffle {{abelian}} ⟩
+  ≡⟨ 4-way-shuffle {{IsAbelianGroup.isCommutativeMonoid abelian}} ⟩
     f (f a (neg a)) (f b (neg b))
   ≡⟨ cong₂ f (inverse a) (inverse b) ⟩
     f z z
