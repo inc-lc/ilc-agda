@@ -80,5 +80,5 @@ import Thesis.SIRelBigStep.DLangDerive
 import Thesis.SIRelBigStep.ArithExtra
 -- Step-indexed logical relations for validity, their monotonicity and agreement with ⊕
 import Thesis.SIRelBigStep.IlcSILR
--- Prove the fundamental lemma:
-import Thesis.SIRelBigStep.FundLemma
+-- Prove the fundamental property
+import Thesis.SIRelBigStep.FundamentalProperty

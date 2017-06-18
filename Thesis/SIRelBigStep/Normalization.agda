@@ -6,6 +6,7 @@ open import Data.Unit.Base hiding (_≤_)
 open import Data.Product
 open import Relation.Binary.PropositionalEquality
 
+-- Define logical relation for normalization. Adapted from TAPL Ch. 12.
 mutual
   normT : ∀ {Γ} τ (t : Term Γ τ) (ρ : ⟦ Γ ⟧Context) → Set
   normT τ t ρ = Σ[ v ∈ Val τ ] ρ ⊢ t ↓[ no ] v × normV τ v
@@ -25,6 +26,7 @@ normρ (τ • Γ) (v • ρ) = normV τ v × normρ Γ ρ
 ⟦ this ⟧VarNorm   {v • ρ} (vv , ρρ) = vv
 ⟦ that x ⟧VarNorm {v • ρ} (vv , ρρ) = ⟦ x ⟧VarNorm ρρ
 
+-- Prove fundamental property.
 normT-fund : ∀ {τ Γ} (t : Term Γ τ) ρ (ρρ : normρ Γ ρ) →
   normT τ t ρ
 
@@ -57,6 +59,7 @@ normT-fund (lett s t) ρ ρρ with normT-fund s ρ ρρ
 ... | sv , ↓s , svv with normT-fund t (sv • ρ) (svv , ρρ)
 ... | tv , ↓t , tvv = tv , lett zero zero sv s t ↓s ↓t , tvv
 
+-- Deduce from fundamental property that all terms indeed normalize.
 normalize : ∀ {τ} (t : Term ∅ τ) → Σ[ v ∈ Val τ ] ∅ ⊢ t ↓[ no ] v
 normalize t with normT-fund t ∅ tt
 ... | v , ↓ , _ = v , ↓

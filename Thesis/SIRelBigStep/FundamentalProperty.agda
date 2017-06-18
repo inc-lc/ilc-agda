@@ -1,4 +1,4 @@
-module Thesis.SIRelBigStep.FundLemma where
+module Thesis.SIRelBigStep.FundamentalProperty where
 
 open import Data.Product
 open import Relation.Binary.PropositionalEquality
