@@ -45,9 +45,6 @@ data DTerm (Δ : Context) (τ : DType) where
     (sv : SVal Δ σ) →
     (dsv : DSVal Δ σ) →
     DTerm Δ τ
-  dconst :
-    (c : Const τ) →
-    DTerm Δ τ
   dapp : ∀ {σ}
     (dvs : DSVal Δ (σ ⇒ τ)) →
     (vt : SVal Δ σ) →
