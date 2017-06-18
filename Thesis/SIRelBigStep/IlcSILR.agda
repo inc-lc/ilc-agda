@@ -10,16 +10,24 @@ open import Thesis.SIRelBigStep.DLang public
 
 open import Thesis.SIRelBigStep.ArithExtra public
 
+rrelT3-skeleton :
+  ∀ {τ Γ} →
+  ((v1 : Val τ) → (dv : DVal τ) → (v2 : Val τ) → (k : ℕ) → Set) →
+  (t1 : Term Γ τ) (dt : DTerm Γ τ) (t2 : Term Γ τ)
+  (ρ1 : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) (ρ2 : ⟦ Γ ⟧Context) →
+  ℕ → Set
+rrelT3-skeleton {τ} ternary-rel t1 dt t2 ρ1 dρ ρ2 k =
+  (v1 v2 : Val τ) →
+  ∀ j (j<k : j < k) →
+  (ρ1⊢t1↓[j]v1 : ρ1 ⊢ t1 ↓[ i' j ] v1) →
+  (ρ2⊢t2↓[n2]v2 : ρ2 ⊢ t2 ↓[ no ] v2) →
+  Σ[ dv ∈ DVal τ ]
+  ρ1 D dρ ⊢ dt ↓ dv ×
+  ternary-rel v1 dv v2 (k ∸ j)
+
 mutual
   rrelT3 : ∀ {τ Γ} (t1 : Term Γ τ) (dt : DTerm Γ τ) (t2 : Term Γ τ) (ρ1 : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) (ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
-  rrelT3 {τ} t1 dt t2 ρ1 dρ ρ2 k =
-    (v1 v2 : Val τ) →
-    ∀ j (j<k : j < k) →
-    (ρ1⊢t1↓[j]v1 : ρ1 ⊢ t1 ↓[ i' j ] v1) →
-    (ρ2⊢t2↓[n2]v2 : ρ2 ⊢ t2 ↓[ no ] v2) →
-    Σ[ dv ∈ DVal τ ]
-    ρ1 D dρ ⊢ dt ↓ dv ×
-    rrelV3 τ v1 dv v2 (k ∸ j)
+  rrelT3 {τ} = rrelT3-skeleton (rrelV3 τ)
 
   rrelV3 : ∀ τ (v1 : Val τ) (dv : DVal τ) (v2 : Val τ) → (n : ℕ) → Set
   -- Making this case first ensures rrelV3 splits on its second argument, hence
@@ -80,3 +88,13 @@ rrelρ3-mono m n m≤n (τ • Γ) (v1 • ρ1) (dv • dρ) (v2 • ρ2) (vv , 
   rrelV3 τ (⟦ x ⟧Var ρ1) (D.⟦ x ⟧Var dρ) (⟦ x ⟧Var ρ2) n
 ⟦ this ⟧RelVar3   {v1 • ρ1} {dv • dρ} {v2 • ρ2} (vv , ρρ) = vv
 ⟦ that x ⟧RelVar3 {v1 • ρ1} {dv • dρ} {v2 • ρ2} (vv , ρρ) = ⟦ x ⟧RelVar3 ρρ
+
+-- Direct analogue of rrelV3→⊕ for rrelT3: simply say that the resulting values
+-- are related.
+-- Alternatively, one could try internalizing ⊕ and giving some term equivalence, but it does not seem worthwhile.
+rrelT3→⊕ : ∀ {τ Γ k}
+  (t1 : Term Γ τ) (dt : DTerm Γ τ) (t2 : Term Γ τ) (ρ1 : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) (ρ2 : ⟦ Γ ⟧Context) →
+  rrelT3 {τ} t1 dt t2 ρ1 dρ ρ2 k →
+  rrelT3-skeleton (λ v1 dv v2 _ → v1 ⊕ dv ≡ v2) t1 dt t2 ρ1 dρ ρ2 k
+rrelT3→⊕ t1 dt t2 ρ1 dρ ρ2 ttrel v1 v2 j j<k ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2 with ttrel v1 v2 j j<k ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2
+... | dv , ↓dv , vv = dv , ↓dv , rrelV3→⊕ v1 dv v2 vv
