@@ -54,6 +54,7 @@ rfundamental3 (suc k) (primapp p sv) ρ1 dρ ρ2 ρρ
      rfundamental3primv k p (eval sv ρ1) (deval (derive-dsval sv) ρ1 dρ) (eval sv ρ2)
        (rfundamental3svv k sv ρ1 dρ ρ2 (rrelρ3-mono k (suc k) (≤-step ≤-refl) _ ρ1 dρ ρ2 ρρ))
 -- (eval sv ρ1) (deval (derive-dsval sv) ρ1 dρ) (eval sv ρ2) k
+
 rfundamental3 (suc (suc k)) (app vs vt) ρ1 dρ ρ2 ρρ v1 v2 .(suc j) (s≤s (s≤s j<k))
   (app j vtv1 ρ1⊢t1↓[j]v1 ρ1⊢t1↓[j]v2 ρ1⊢t1↓[j]v3)
   (app n₁ vtv2 ρ2⊢t2↓[n2]v2 ρ2⊢t2↓[n2]v3 ρ2⊢t2↓[n2]v4)
@@ -68,6 +69,7 @@ rfundamental3 (suc (suc k)) (app vs vt) ρ1 dρ ρ2 ρρ v1 v2 .(suc j) (s≤s (
            v1 v2 j (s≤s j<k) ρ1⊢t1↓[j]v3 ρ2⊢t2↓[n2]v4
 ... | dv , ↓dv , dvv =
       dv , dapp vs↓dsv ρ1⊢t1↓[j]v2 vt↓dvv ↓dv , dvv
+
 rfundamental3 (suc (suc k)) (lett s t) ρ1 dρ ρ2 ρρ v1 v2 .(suc (n1 + n2)) (s≤s (s≤s n1+n2≤k))
   (lett n1 n2 vs1 .s .t ρ1⊢t1↓[j]v1 ρ1⊢t1↓[j]v2) (lett _ _ vs2 .s .t ρ2⊢t2↓[n2]v2 ρ2⊢t2↓[n2]v3)
   with rfundamental3 (suc (suc k)) s ρ1 dρ ρ2 ρρ vs1 vs2 n1
