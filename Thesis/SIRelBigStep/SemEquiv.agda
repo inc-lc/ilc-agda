@@ -50,5 +50,3 @@ eval-sound ρ (const c) = eval-const-sound c
 ↓-sound (app _ _ ↓₁ ↓₂ ↓′) rewrite ↓-sound ↓₁ | ↓-sound ↓₂ | ↓-sound ↓′ = refl
 ↓-sound (lett n1 n2 vsv s t ↓ ↓₁) rewrite ↓-sound ↓ | ↓-sound ↓₁ = refl
 ↓-sound {ρ = ρ} (primapp p sv) rewrite eval-sound ρ sv = eval-primitive-sound p (eval sv ρ)
-
--- No proof of completeness yet: the statement does not hold here.

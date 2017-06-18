@@ -57,6 +57,13 @@ import Thesis.SIRelBigStep.DenSem
 import Thesis.SIRelBigStep.OpSem
 -- Show these two semantics are equivalent:
 import Thesis.SIRelBigStep.SemEquiv
+-- It follows that the big-step semantics is deterministic.
+
+-- To show that the big-step semantics is total, give a proof of (CBV) strong
+-- normalization for this calculus, using a unary logical relation.
+-- This is just TAPL Ch. 12, adapted to our environment-based big-step
+-- semantics.
+import Thesis.SIRelBigStep.Normalization
 
 -- Change language
 import Thesis.SIRelBigStep.DLang
