@@ -69,3 +69,39 @@ nilV (pairV a b) = let 0a , aa = nilV a; 0b , bb = nilV b in dpairV 0a 0b , aa ,
 
 nilρ ∅ = ∅ , tt
 nilρ (v • ρ) = let dv , vv = nilV v ; dρ , ρρ = nilρ ρ in dv • dρ , vv , ρρ
+
+-- Try to prove to define validity-preserving change composition.
+-- Sadly, if we don't store proofs that environment changes in closures are valid, we can't finish the proof for the closure case :-(.
+-- Moreover, the proof is annoying to do unless we build a datatype to invert
+-- validity proofs (as suggested by Ezyang in
+-- http://blog.ezyang.com/2013/09/induction-and-logical-relations/).
+
+-- ocomposeρ : ∀ {Γ} n ρ1 dρ1 ρ2 dρ2 ρ3 → rrelρ3 Γ ρ1 dρ1 ρ2 n → rrelρ3 Γ ρ2 dρ2 ρ3 n → Σ[ dρ ∈ ChΔ Γ ] rrelρ3 Γ ρ1 dρ ρ3 n
+
+-- ocomposev : ∀ {τ} n v1 dv1 v2 dv2 v3 → rrelV3 τ v1 dv1 v2 n → rrelV3 τ v2 dv2 v3 n → Σ[ dv ∈ DVal τ ] rrelV3 τ v1 dv v3 n
+-- ocomposev n v1 dv1 v2 (bang v3) .v3 vv1 refl = bang v3 , refl
+-- ocomposev n v1 (bang x) v2 (dclosure dt ρ dρ) v3 vv1 vv2 = {!!}
+-- ocomposev n (closure t ρ) (dclosure .(derive-dterm t) .ρ dρ1) (closure .t .(ρ ⊕ρ dρ1)) (dclosure .(derive-dterm t) .(ρ ⊕ρ dρ1) dρ2) (closure .t .((ρ ⊕ρ dρ1) ⊕ρ dρ2)) ((refl , refl) , refl , refl , refl , refl , p5) ((refl , refl) , refl , refl , refl , refl , p5q) =
+--   let dρ , ρρ = ocomposeρ n ρ dρ1 (ρ ⊕ρ dρ1) dρ2 ((ρ ⊕ρ dρ1) ⊕ρ dρ2) {!!} {!!}
+--   in dclosure (derive-dterm t) ρ dρ , (refl , refl) , refl , {!!} , refl , refl ,
+--     λ { k (s≤s k<n) v1 dv v2 vv →
+--       rfundamental3 k t (v1 • ρ) (dv • dρ) (v2 • ((ρ ⊕ρ dρ1) ⊕ρ dρ2)) (vv , rrelρ3-mono k n (≤-step k<n) _ ρ dρ ((ρ ⊕ρ dρ1) ⊕ρ dρ2) ρρ)}
+-- -- p1 , p2 , p3 , p4 , p5
+-- ocomposev n v1 dv1 v2 (dnatV n₁) v3 vv1 vv2 = {!!}
+-- ocomposev n v1 dv1 v2 (dpairV dv2 dv3) v3 vv1 vv2 = {!!}
+-- -- ocomposev n v1 (bang v2) .v2 dv2 v3 refl vv2 = bang (v2 ⊕ dv2) , rrelV3→⊕ v2 dv2 v3 vv2
+-- -- ocomposev n v1 (dclosure dt ρ dρ) v2 dv2 v3 vv1 vv2 = {!!}
+-- -- ocomposev n v1 (dnatV n₁) v2 dv2 v3 vv1 vv2 = {!!}
+-- -- ocomposev n v1 (dpairV dv1 dv2) v2 dv3 v3 vv1 vv2 = {!!}
+-- -- ocomposeV : ∀ {τ n} (v : Val τ) → Σ[ dv ∈ DVal τ ] rrelV3 τ v dv v n
+
+-- ocomposeρ {∅} n ∅ dρ1 ρ2 dρ2 ∅ ρρ1 ρρ2 = ∅ , tt
+-- ocomposeρ {τ • Γ} n (v1 • ρ1) (dv1 • dρ1) (v2 • ρ2) (dv2 • dρ2) (v3 • ρ3) (vv1 , ρρ1) (vv2 , ρρ2) =
+--   let dv , vv = ocomposev n v1 dv1 v2 dv2 v3 vv1 vv2
+--       dρ , ρρ = ocomposeρ n ρ1 dρ1 ρ2 dρ2 ρ3 ρρ1 ρρ2
+--   in  dv • dρ , vv , ρρ
+
+-- But we sort of know how to store environments validity proofs in closures, you just need to use well-founded inductions, even if you're using types. Sad, yes, that's insanely tedious. Let's leave that to Coq.
+-- What is also interesting: if that were fixed, could we prove correct
+-- composition for change *terms* and rrelT3? And for *open expressions*? The
+-- last is the main problem Ahmed run into.
