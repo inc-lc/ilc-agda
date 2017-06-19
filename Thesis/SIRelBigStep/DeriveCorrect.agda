@@ -58,3 +58,14 @@ derive-correct :
   ρ1 D dρ ⊢ derive-dterm t ↓ dv ×
   v1 ⊕ dv ≡ v2
 derive-correct t ρ1 dρ ρ2 ρρ v1 v2 j = derive-correct-si t ρ1 dρ ρ2 (ρρ (suc j)) v1 v2 j ≤-refl
+
+open import Data.Unit
+
+nilρ : ∀ {Γ n} (ρ : ⟦ Γ ⟧Context) → Σ[ dρ ∈ ChΔ Γ ] rrelρ3 Γ ρ dρ ρ n
+nilV : ∀ {τ n} (v : Val τ) → Σ[ dv ∈ DVal τ ] rrelV3 τ v dv v n
+nilV (closure t ρ) = let dρ , ρρ = nilρ ρ in dclosure (derive-dterm t) ρ dρ , rfundamental3svv _ (abs t) ρ dρ ρ ρρ
+nilV (natV n₁) = dnatV zero , refl
+nilV (pairV a b) = let 0a , aa = nilV a; 0b , bb = nilV b in dpairV 0a 0b , aa , bb
+
+nilρ ∅ = ∅ , tt
+nilρ (v • ρ) = let dv , vv = nilV v ; dρ , ρρ = nilρ ρ in dv • dρ , vv , ρρ
