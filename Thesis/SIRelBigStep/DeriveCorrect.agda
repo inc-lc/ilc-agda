@@ -70,22 +70,30 @@ nilV (pairV a b) = let 0a , aa = nilV a; 0b , bb = nilV b in dpairV 0a 0b , aa ,
 nilρ ∅ = ∅ , tt
 nilρ (v • ρ) = let dv , vv = nilV v ; dρ , ρρ = nilρ ρ in dv • dρ , vv , ρρ
 
--- Try to prove to define validity-preserving change composition.
--- Sadly, if we don't store proofs that environment changes in closures are valid, we can't finish the proof for the closure case :-(.
--- Moreover, the proof is annoying to do unless we build a datatype to invert
--- validity proofs (as suggested by Ezyang in
--- http://blog.ezyang.com/2013/09/induction-and-logical-relations/).
+-- -- Try to prove to define validity-preserving change composition.
+-- -- If we don't store proofs that environment changes in closures are valid, we
+-- -- can't finish the proof for the closure case using the Fundamental property.
+-- -- But it seems that's not the approach we need to use: we might need
+-- -- environment validity elsewhere.
+-- -- Moreover, the proof is annoying to do unless we build a datatype to invert
+-- -- validity proofs (as suggested by Ezyang in
+-- -- http://blog.ezyang.com/2013/09/induction-and-logical-relations/).
 
 -- ocomposeρ : ∀ {Γ} n ρ1 dρ1 ρ2 dρ2 ρ3 → rrelρ3 Γ ρ1 dρ1 ρ2 n → rrelρ3 Γ ρ2 dρ2 ρ3 n → Σ[ dρ ∈ ChΔ Γ ] rrelρ3 Γ ρ1 dρ ρ3 n
 
 -- ocomposev : ∀ {τ} n v1 dv1 v2 dv2 v3 → rrelV3 τ v1 dv1 v2 n → rrelV3 τ v2 dv2 v3 n → Σ[ dv ∈ DVal τ ] rrelV3 τ v1 dv v3 n
 -- ocomposev n v1 dv1 v2 (bang v3) .v3 vv1 refl = bang v3 , refl
 -- ocomposev n v1 (bang x) v2 (dclosure dt ρ dρ) v3 vv1 vv2 = {!!}
--- ocomposev n (closure t ρ) (dclosure .(derive-dterm t) .ρ dρ1) (closure .t .(ρ ⊕ρ dρ1)) (dclosure .(derive-dterm t) .(ρ ⊕ρ dρ1) dρ2) (closure .t .((ρ ⊕ρ dρ1) ⊕ρ dρ2)) ((refl , refl) , refl , refl , refl , refl , p5) ((refl , refl) , refl , refl , refl , refl , p5q) =
+-- ocomposev n (closure t ρ) (dclosure .(derive-dterm t) .ρ dρ1) (closure .t .(ρ ⊕ρ dρ1)) (dclosure .(derive-dterm t) .(ρ ⊕ρ dρ1) dρ2) (closure .t .((ρ ⊕ρ dρ1) ⊕ρ dρ2)) ((refl , refl) , refl , refl , refl , refl , vv1) ((refl , refl) , refl , refl , refl , refl , vv2) =
 --   let dρ , ρρ = ocomposeρ n ρ dρ1 (ρ ⊕ρ dρ1) dρ2 ((ρ ⊕ρ dρ1) ⊕ρ dρ2) {!!} {!!}
 --   in dclosure (derive-dterm t) ρ dρ , (refl , refl) , refl , {!!} , refl , refl ,
---     λ { k (s≤s k<n) v1 dv v2 vv →
---       rfundamental3 k t (v1 • ρ) (dv • dρ) (v2 • ((ρ ⊕ρ dρ1) ⊕ρ dρ2)) (vv , rrelρ3-mono k n (≤-step k<n) _ ρ dρ ((ρ ⊕ρ dρ1) ⊕ρ dρ2) ρρ)}
+--     λ { k (s≤s k≤n) v1 dv v2 vv →
+--       let nilv2 , nilv2v = nilV v2
+--       -- vv1 k ? v1 dv v2 vv
+--       -- vv2 k ? v2 nilv2 v2 nilv2v
+--       in {!!}
+--       }
+--       -- rfundamental3 k t (v1 • ρ) (dv • dρ) (v2 • ((ρ ⊕ρ dρ1) ⊕ρ dρ2)) (vv , rrelρ3-mono k n (≤-step k<n) _ ρ dρ ((ρ ⊕ρ dρ1) ⊕ρ dρ2) ρρ)}
 -- -- p1 , p2 , p3 , p4 , p5
 -- ocomposev n v1 dv1 v2 (dnatV n₁) v3 vv1 vv2 = {!!}
 -- ocomposev n v1 dv1 v2 (dpairV dv2 dv3) v3 vv1 vv2 = {!!}
@@ -101,7 +109,21 @@ nilρ (v • ρ) = let dv , vv = nilV v ; dρ , ρρ = nilρ ρ in dv • dρ , 
 --       dρ , ρρ = ocomposeρ n ρ1 dρ1 ρ2 dρ2 ρ3 ρρ1 ρρ2
 --   in  dv • dρ , vv , ρρ
 
--- But we sort of know how to store environments validity proofs in closures, you just need to use well-founded inductions, even if you're using types. Sad, yes, that's insanely tedious. Let's leave that to Coq.
--- What is also interesting: if that were fixed, could we prove correct
--- composition for change *terms* and rrelT3? And for *open expressions*? The
--- last is the main problem Ahmed run into.
+-- -- But we sort of know how to store environments validity proofs in closures, you just need to use well-founded inductions, even if you're using types. Sad, yes, that's insanely tedious. Let's leave that to Coq.
+-- -- What is also interesting: if that were fixed, could we prove correct
+-- -- composition for change *terms* and rrelT3? And for *open expressions*? The
+-- -- last is the main problem Ahmed run into.
+
+-- 1: the proof of transitivity of rrelT by Ahmed is for the case where the second rrelT holds at arbitrary step counts :-)
+-- 2: that proof doesn't go through for us. If de1 : e1 -> e2 and de2 : e2 ->
+-- e3, we must show that if e1 and e3 evaluate something happens, but to use our
+-- hypothesis we need that e2 also terminates, which in our case does not
+-- follow. For Ahmed 2006, instead, e1 terminates and e1 ≤ e2 implies that e2
+-- terminates.
+--
+-- Indeed, it seems that we can have a change from e1 to looping e2 and a change
+-- from looping e2 to e3, and I don't expect the composition of such changes to
+-- satisfy anything.
+--
+-- Indeed, "Imperative self-adjusting computation" does not mention any
+-- transitivity result (even in the technical report).
