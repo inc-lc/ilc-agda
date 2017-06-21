@@ -61,8 +61,8 @@ rfundamental3 (suc (suc k)) (app vs vt) ρ1 dρ ρ2 ρρ v1 v2 .(suc j) (s≤s (
   with rfundamental3 (suc (suc k)) (val vs) ρ1 dρ ρ2 ρρ _ _ zero (s≤s z≤n) ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2
        | rfundamental3 (suc (suc k)) (val vt) ρ1 dρ ρ2 ρρ _ _ zero (s≤s z≤n) ρ1⊢t1↓[j]v2 ρ2⊢t2↓[n2]v3
 ... | bang f2 , vs↓dsv , refl | dtv , vt↓dvv , dtvv
-      rewrite sym (rrelρ3→⊕ ρ1 dρ ρ2 ρρ) =
-        bang v2 , bangapp vs↓dsv ρ2⊢t2↓[n2]v3 ρ2⊢t2↓[n2]v4 , refl
+      rewrite sym (rrelV3→⊕ vtv1 dtv vtv2 dtvv) =
+        bang v2 , bangapp vs↓dsv ρ1⊢t1↓[j]v2 vt↓dvv ρ2⊢t2↓[n2]v4 , refl
 ... | dclosure dt ρ dρ₁ , vs↓dsv , (refl , refl) , refl , refl , refl , refl , dsvv | dtv , vt↓dvv , dtvv
       with dsvv (suc k) ≤-refl vtv1 dtv vtv2
            (rrelV3-mono (suc k) (suc (suc k)) (s≤s (≤-step ≤-refl)) _ vtv1 dtv vtv2 dtvv)

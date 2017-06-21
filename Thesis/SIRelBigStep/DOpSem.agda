@@ -85,12 +85,15 @@ data _D_⊢_↓_ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) : ∀ {τ} → DT
     ρ D dρ ⊢ ds ↓ dvsv →
     (vsv • ρ) D (dvsv • dρ) ⊢ dt ↓ dv →
     ρ D dρ ⊢ dlett s ds dt ↓ dv
-  bangapp : ∀ {hasIdx} {n1 n2 : Idx hasIdx}
+  bangapp : ∀ {hasIdx1 hasIdx2}
+    {n1 : Idx hasIdx1}
+    {n2 : Idx hasIdx2}
     {Γ′ σ τ ρ′}
     {dvs} {vt} {dvt}
-    {vtv2}
+    {vtv1 dvtv}
     {t : Term (σ • Γ′) τ} {v2} →
     ρ D dρ ⊢ dval dvs ↓ bang (closure t ρ′) →
-    (ρ ⊕ρ dρ) ⊢ val vt ↓[ n1 ] vtv2 →
-    (vtv2 • ρ′) ⊢ t ↓[ n2 ] v2 →
+    ρ ⊢ val vt ↓[ n1 ] vtv1 →
+    ρ D dρ ⊢ dval dvt ↓ dvtv →
+    (vtv1 ⊕ dvtv • ρ′) ⊢ t ↓[ n2 ] v2 →
     ρ D dρ ⊢ dapp dvs vt dvt ↓ bang v2
