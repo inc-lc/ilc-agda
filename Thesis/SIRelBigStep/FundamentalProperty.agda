@@ -22,6 +22,10 @@ rfundamental3svv k (cons sv1 sv2) ρ1 dρ ρ2 ρρ = rfundamental3svv k sv1 ρ1 
 rfundamental3svv k (const c) ρ1 dρ ρ2 ρρ rewrite deval-derive-const-inv c ρ1 dρ = rfundamental3constV k c
 rfundamental3svv k (abs t) ρ1 dρ ρ2 ρρ = (refl , refl) , refl , rrelρ3→⊕ ρ1 dρ ρ2 ρρ , refl , refl ,
     λ j j<k v1 dv v2 vv →
+    -- If we replace abs t by rec t, here we would need to invoke (by
+    -- well-founded recursion) rfundamental3svv on (abs t) at a smaller j, as follows:
+    --   rfundamental3svv j (abs t) ρ1 dρ ρ2 (rrelρ3-mono j k (lt1 j<k) _ _ _ _ ρρ)
+    -- As you'd expect, Agda's termination checker does not accept that call directly.
       rfundamental3 j t (v1 • ρ1) (dv • dρ) (v2 • ρ2) (vv , rrelρ3-mono j k (lt1 j<k) _ _ _ _ ρρ)
 
 rfundamental3sv : ∀ {τ Γ} k (sv : SVal Γ τ) →
