@@ -57,13 +57,12 @@ rfundamental3 (suc k) (primapp p sv) ρ1 dρ ρ2 ρρ
    deval-primitive p (eval sv ρ1) (deval (derive-dsval sv) ρ1 dρ) , dprimapp p sv (derive-dsval sv) ,
      rfundamental3primv k p (eval sv ρ1) (deval (derive-dsval sv) ρ1 dρ) (eval sv ρ2)
        (rfundamental3svv k sv ρ1 dρ ρ2 (rrelρ3-mono k (suc k) (≤-step ≤-refl) _ ρ1 dρ ρ2 ρρ))
--- (eval sv ρ1) (deval (derive-dsval sv) ρ1 dρ) (eval sv ρ2) k
 
 rfundamental3 (suc (suc k)) (app vs vt) ρ1 dρ ρ2 ρρ v1 v2 .(suc j) (s≤s (s≤s j<k))
   (app j vtv1 ρ1⊢t1↓[j]v1 ρ1⊢t1↓[j]v2 ρ1⊢t1↓[j]v3)
   (app n₁ vtv2 ρ2⊢t2↓[n2]v2 ρ2⊢t2↓[n2]v3 ρ2⊢t2↓[n2]v4)
-  with rfundamental3 (suc (suc k)) (val vs) ρ1 dρ ρ2 ρρ _ _ zero (s≤s z≤n) ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2
-       | rfundamental3 (suc (suc k)) (val vt) ρ1 dρ ρ2 ρρ _ _ zero (s≤s z≤n) ρ1⊢t1↓[j]v2 ρ2⊢t2↓[n2]v3
+  with rfundamental3sv (suc (suc k)) vs ρ1 dρ ρ2 ρρ _ _ zero (s≤s z≤n) ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2
+       | rfundamental3sv (suc (suc k)) vt ρ1 dρ ρ2 ρρ _ _ zero (s≤s z≤n) ρ1⊢t1↓[j]v2 ρ2⊢t2↓[n2]v3
 ... | bang f2 , vs↓dsv , refl | dtv , vt↓dvv , dtvv
       rewrite sym (rrelV3→⊕ vtv1 dtv vtv2 dtvv) =
         bang v2 , bangapp vs↓dsv ρ1⊢t1↓[j]v2 vt↓dvv ρ2⊢t2↓[n2]v4 , refl
