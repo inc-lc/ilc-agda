@@ -21,8 +21,8 @@ rfundamental3svv k (var x) ρ1 dρ ρ2 ρρ = rfundamentalV3v x k ρ1 dρ ρ2 ρ
 rfundamental3svv k (cons sv1 sv2) ρ1 dρ ρ2 ρρ = rfundamental3svv k sv1 ρ1 dρ ρ2 ρρ , rfundamental3svv k sv2 ρ1 dρ ρ2 ρρ
 rfundamental3svv k (const c) ρ1 dρ ρ2 ρρ rewrite deval-derive-const-inv c ρ1 dρ = rfundamental3constV k c
 rfundamental3svv k (abs t) ρ1 dρ ρ2 ρρ = (refl , refl) , refl , rrelρ3→⊕ ρ1 dρ ρ2 ρρ , refl , refl ,
-    λ k₁ k<n v1 dv v2 vv →
-    rfundamental3 k₁ t (v1 • ρ1) (dv • dρ) (v2 • ρ2) (vv , rrelρ3-mono k₁ k (lt1 k<n) _ _ _ _ ρρ)
+    λ j j<k v1 dv v2 vv →
+      rfundamental3 j t (v1 • ρ1) (dv • dρ) (v2 • ρ2) (vv , rrelρ3-mono j k (lt1 j<k) _ _ _ _ ρρ)
 
 rfundamental3sv : ∀ {τ Γ} k (sv : SVal Γ τ) →
   ∀ ρ1 dρ ρ2 → (ρρ : rrelρ3 Γ ρ1 dρ ρ2 k) → rrelT3 (val sv) (dval (derive-dsval sv)) (val sv) ρ1 dρ ρ2 k
