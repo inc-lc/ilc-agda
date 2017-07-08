@@ -25,13 +25,13 @@ _\\_ : Bag → Bag → Bag
 d \\ b = d ++ (negateBag b)
 
 -- Useful properties of abelian groups
-commutative : ∀ {A : Set} {f : A → A → A} {z neg} →
-  IsAbelianGroup _≡_ f z neg → (m n : A) → f m n ≡ f n m
-commutative = IsAbelianGroup.comm
+commutative : ∀ {A : Set} {f : A → A → A} {z} →
+  IsCommutativeMonoid _≡_ f z → (m n : A) → f m n ≡ f n m
+commutative = IsCommutativeMonoid.comm
 
-associative : ∀ {A : Set} {f : A → A → A} {z neg} →
-  IsAbelianGroup _≡_ f z neg → (k m n : A) → f (f k m) n ≡ f k (f m n)
-associative abelian = IsAbelianGroup.assoc abelian
+associative : ∀ {A : Set} {f : A → A → A} {z} →
+  IsCommutativeMonoid _≡_ f z → (k m n : A) → f (f k m) n ≡ f k (f m n)
+associative abelian = IsCommutativeMonoid.assoc abelian
 
 left-inverse : ∀ {A : Set} {f : A → A → A} {z neg} →
   IsAbelianGroup _≡_ f z neg → (n : A) → f (neg n) n ≡ z
@@ -54,10 +54,25 @@ instance
   abelian-int =
     CommutativeRing.+-isAbelianGroup ℤ-is-commutativeRing
 
+  abelian→comm-monoid :
+   ∀ {A : Set} {f : A → A → A} {z neg} →
+   {{abel : IsAbelianGroup _≡_ f z neg}} → IsCommutativeMonoid _≡_ f z
+  abelian→comm-monoid {{abel}} = IsAbelianGroup.isCommutativeMonoid abel
+
+  comm-monoid-int : IsCommutativeMonoid _≡_ _+_ (+ 0)
+  comm-monoid-int = IsAbelianGroup.isCommutativeMonoid abelian-int
+  comm-monoid-bag : IsCommutativeMonoid _≡_ _++_ emptyBag
+  comm-monoid-bag = IsAbelianGroup.isCommutativeMonoid abelian-bag
+
+  import Data.Nat as N
+  import Data.Nat.Properties as NP
+  comm-monoid-nat : IsCommutativeMonoid _≡_ N._+_ 0
+  comm-monoid-nat = IsCommutativeSemiring.+-isCommutativeMonoid NP.isCommutativeSemiring
+
 commutative-int : (m n : ℤ) → m + n ≡ n + m
-commutative-int = commutative abelian-int
+commutative-int = commutative comm-monoid-int
 associative-int : (k m n : ℤ) → (k + m) + n ≡ k + (m + n)
-associative-int = associative abelian-int
+associative-int = associative comm-monoid-int
 right-inv-int : (n : ℤ) → n - n ≡ + 0
 right-inv-int = right-inverse abelian-int
 left-id-int : (n : ℤ) → (+ 0) + n ≡ n
@@ -66,9 +81,9 @@ right-id-int : (n : ℤ) → n + (+ 0) ≡ n
 right-id-int = right-identity abelian-int
 
 commutative-bag : (a b : Bag) → a ++ b ≡ b ++ a
-commutative-bag = commutative abelian-bag
+commutative-bag = commutative comm-monoid-bag
 associative-bag : (a b c : Bag) → (a ++ b) ++ c ≡ a ++ (b ++ c)
-associative-bag = associative abelian-bag
+associative-bag = associative comm-monoid-bag
 right-inv-bag : (b : Bag) → b \\ b ≡ emptyBag
 right-inv-bag = right-inverse abelian-bag
 left-id-bag : (b : Bag) → emptyBag ++ b ≡ b
