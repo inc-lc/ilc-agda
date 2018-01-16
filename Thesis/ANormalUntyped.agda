@@ -266,6 +266,8 @@ mutual
     -- rrelV3-Type n
     ∀ (v1 : Val Uni) (dv : DVal DUni) (v2 : Val Uni) → Set
   rrelV3-step n rec-rrelTV3 (intV v1) (dintV dv) (intV v2) = dv I.+ (I.+ v1) ≡ (I.+ v2)
+  rrelV3-step n rec-rrelTV3 (intV v1) (dintV n₁) (closure t ρ) = ⊥
+  rrelV3-step n rec-rrelTV3 (intV v1) (dclosure dt ρ dρ) c = ⊥
   rrelV3-step n rec-rrelTV3 (closure {Γ1} t1 ρ1) (dclosure {ΔΓ} dt ρ' dρ) (closure {Γ2} t2 ρ2) =
       -- Require a proof that the two contexts match:
       Σ ((Γ1 ≡ Γ2) × (Γ1 ≡ ΔΓ)) λ { (refl , refl) →
@@ -279,7 +281,8 @@ mutual
           (dv • dρ)
           (v2 • ρ2)
       }
-  rrelV3-step n rec-rrelTV3 _ _ _ = ⊥
+  rrelV3-step n rec-rrelTV3 (closure t ρ) (dclosure dt ρ₁ dρ) (intV n₁) = ⊥
+  rrelV3-step n rec-rrelTV3 (closure t ρ) (dintV n₁) c = ⊥
 
 open import Postulate.Extensionality
 mutual
