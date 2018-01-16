@@ -1,6 +1,7 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 module Thesis.ANormalUntyped where
 
+open import Agda.Primitive
 open import Data.Empty
 open import Data.Unit using (⊤)
 open import Data.Product
@@ -295,7 +296,29 @@ mutual
     Σ[ dv ∈ DVal DUni ] Σ[ dn ∈ ℕ ]
     ρ1 D dρ F⊢ dt ↓ dv ×
     rrelV3 j v1 dv v2
-  rrelT3-equiv n = cong (λ □ → ∀ j → □ j) (ext (λ j → {!!}))
+  rrelT3-equiv k {Γ} {t1} {dt} {t2} {ρ1} {dρ} {ρ2} =
+    cong (λ □ → ∀ j → □ j) (ext
+      λ {
+        zero -> cong {lsuc lzero} {lsuc lzero} {{!!}} {{!!}} {!!} {{!!}} {{! !}} {!cong!}
+        -- cong {{!!}} {{!!}}
+        -- (λ (□ : zero < k → ∀ (n2 : ℕ) (v1 v2 : Val Uni) (ρ1⊢t1↓[j]v1 : ρ1 F⊢ t1 ↓[ zero ] v1)  → {!(ρ2⊢t2↓[n2]v2 : ρ2 F⊢ t2 ↓[ n2 ] v2) → ? !})→
+        --              ∀ (j<k : zero < k) n2 →
+        --              (v1 v2 : Val Uni) →
+        --              (ρ1⊢t1↓[j]v1 : ρ1 F⊢ t1 ↓[ zero ] v1) →
+        --              (ρ2⊢t2↓[n2]v2 : ρ2 F⊢ t2 ↓[ n2 ] v2) →
+        --              Σ-syntax (DVal DUni)
+        --              λ dv → Σ-syntax ℕ λ dn → (ρ1 D dρ F⊢ dt ↓ dv) × □ j<k n2 v1 v2 ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2)
+        --           {!!}
+        ;
+        (suc j') -> {!!}})
+    -- cong (λ □ →
+    --      (j : ℕ) (j<k : j < k) (n2 : ℕ)
+    --      (v1 v2 : Val Uni) →
+    --      (ρ1⊢t1↓[j]v1 : ρ1 F⊢ t1 ↓[ j ] v1) →
+    --      -- (ρ2⊢t2↓[n2]v2 : ρ2 F⊢ t2 ↓[ n2 ] v2) →
+    --        □ j j<k n2 v1 v2 ρ1⊢t1↓[j]v1
+    --     -- □ j<k n2 v1 v2 ρ1⊢t1↓[j]v1 ρ2⊢t2↓[n2]v2
+    --     ) (ext³ λ j j<k n2 → {!ext³!})
 
   rrelV3-equiv : ∀ n {Γ1 Γ2 ΔΓ t1 dt t2 ρ1 ρ' dρ ρ2} →
     rrelV3 n (closure {Γ1} t1 ρ1) (dclosure {ΔΓ} dt ρ' dρ) (closure {Γ2} t2 ρ2) ≡ Σ ((Γ1 ≡ Γ2) × (Γ1 ≡ ΔΓ)) λ { (refl , refl) →
