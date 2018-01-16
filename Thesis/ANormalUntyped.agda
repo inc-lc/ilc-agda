@@ -187,7 +187,6 @@ data _D_⊢_↓_ {Γ} (ρ : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) where
 open import Data.Nat.Properties
 open import Data.Nat.Properties.Simple
 open import Relation.Binary hiding (_⇒_)
-open DecTotalOrder Data.Nat.decTotalOrder using () renaming (refl to ≤-refl; trans to ≤-trans)
 
 suc∸ : ∀ m n → n ≤ m → suc (m ∸ n) ≡ suc m ∸ n
 suc∸ m zero z≤n = refl
@@ -218,7 +217,7 @@ rrelTV3-Type n = rrelT3-Type n × rrelV3-Type n
 
 -- The type of the function availalbe for recursive calls.
 rrelTV3-recSubCallsT : ℕ → Set₁
-rrelTV3-recSubCallsT n = (k : ℕ) → k <′ n → rrelTV3-Type k
+rrelTV3-recSubCallsT n = (k : ℕ) → k < n → rrelTV3-Type k
 
 mutual
   -- Assemble together
@@ -226,17 +225,17 @@ mutual
   rrelTV3-step n rec-rrelTV3 =
     let rrelV3-n = rrelV3-step n rec-rrelTV3
     in rrelT3-step n rec-rrelTV3 rrelV3-n , rrelV3-n
-  rrelTV3 = <-rec rrelTV3-Type rrelTV3-step
+  rrelTV3 =  <-rec rrelTV3-Type rrelTV3-step
   rrelT3 : ∀ n → rrelT3-Type n
-  rrelT3 n = proj₁ (rrelTV3 n)
+  rrelT3 n =  proj₁ (rrelTV3 n)
   rrelV3 : ∀ n → rrelV3-Type n
-  rrelV3 n = proj₂ (rrelTV3 n)
+  rrelV3 n =  proj₂ (rrelTV3 n)
 
   s-rrelV3 :
     ∀ k → rrelTV3-recSubCallsT k → rrelV3-Type k →
-    ∀ j → j <′ k → rrelV3-Type (k ∸ j)
+    ∀ j → j < k → rrelV3-Type (k ∸ j)
   s-rrelV3 k rec-rrelTV3 rrelV3-k 0 _ = rrelV3-k
-  s-rrelV3 k rec-rrelTV3 rrelV3-k (suc j) sucj<′k = proj₂ (rec-rrelTV3 (k ∸ suc j) (lemlt′ j k sucj<′k))
+  s-rrelV3 k rec-rrelTV3 rrelV3-k (suc j) sucj<k = proj₂ (rec-rrelTV3 (k ∸ suc j) (lemlt j k sucj<k))
   -- Have the same context for t1, dt and t2? Yeah, good, that's what we want in the end...
   -- Though we might want more flexibility till when we have replacement
   -- changes.
@@ -247,7 +246,7 @@ mutual
       (ρ1 : ⟦ Γ ⟧Context) (dρ : ChΔ Γ) (ρ2 : ⟦ Γ ⟧Context) → Set
   rrelT3-step k rec-rrelTV3 rrelV3-k =
     λ t1 dt t2 ρ1 dρ ρ2 →
-    ∀ j (j<k : j <′ k) n2 →
+    ∀ j (j<k : j < k) n2 →
     (v1 v2 : Val Uni) →
     (ρ1⊢t1↓[j]v1 : ρ1 F⊢ t1 ↓[ j ] v1) →
     (ρ2⊢t2↓[n2]v2 : ρ2 F⊢ t2 ↓[ n2 ] v2) →
@@ -270,7 +269,7 @@ mutual
   rrelV3-step n rec-rrelTV3 (closure {Γ1} t1 ρ1) (dclosure {ΔΓ} dt ρ' dρ) (closure {Γ2} t2 ρ2) =
       -- Require a proof that the two contexts match:
       Σ ((Γ1 ≡ Γ2) × (Γ1 ≡ ΔΓ)) λ { (refl , refl) →
-        ∀ (k : ℕ) (k<n : k <′ n) v1 dv v2 →
+        ∀ (k : ℕ) (k<n : k < n) v1 dv v2 →
         proj₂ (rec-rrelTV3 k k<n) v1 dv v2 →
         proj₁ (rec-rrelTV3 k k<n)
           t1
@@ -286,7 +285,7 @@ open import Postulate.Extensionality
 mutual
   rrelT3-equiv : ∀ k {Γ} {t1 : Fun Γ} {dt t2 ρ1 dρ ρ2} →
     rrelT3 k t1 dt t2 ρ1 dρ ρ2 ≡
-    ∀ j (j<k : j <′ k) n2 →
+    ∀ j (j<k : j < k) n2 →
     ∀ (v1 v2 : Val Uni) →
     (ρ1⊢t1↓[j]v1 : ρ1 F⊢ t1 ↓[ j ] v1) →
     (ρ2⊢t2↓[n2]v2 : ρ2 F⊢ t2 ↓[ n2 ] v2) →
