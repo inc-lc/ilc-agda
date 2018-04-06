@@ -41,8 +41,6 @@ open import Relation.Binary.PropositionalEquality
 open import Relation.Binary hiding (_⇒_)
 open import Data.Nat -- using (ℕ; zero; suc; decTotalOrder; _<_; _≤_)
 open import Data.Nat.Properties
-open import Data.Nat.Properties.Simple
-open DecTotalOrder Data.Nat.decTotalOrder using () renaming (refl to ≤-refl; trans to ≤-trans)
 
 data Type : Set where
   _⇒_ : (σ τ : Type) → Type
@@ -361,7 +359,7 @@ mutual
   example2 : ∀ n → relV (nat ⇒ nat) (closure (const (lit 0)) ∅) (closure (var this) ∅) n
   example2 n = refl ,
     λ { zero k<n v1 v2 x → tt
-      ; (suc k) k<n (intV v1) (intV v2) x .(intV 0) .k n-j≤n refl → intV v2 , 0 , refl , (I.+ v2 , cong I.+_ (+-right-identity v2))
+      ; (suc k) k<n (intV v1) (intV v2) x .(intV 0) .k n-j≤n refl → intV v2 , 0 , refl , (I.+ v2 , cong I.+_ (+-identityʳ v2))
       }
 
 relρ : ∀ Γ (ρ1 ρ2 : ⟦ Γ ⟧Context) → ℕ → Set
@@ -399,9 +397,9 @@ fundamental (app s t) (suc (suc n)) ρ1 ρ2 ρρ v1 n-j n-j≤n eq | Done (closu
 ... | v2 , n3 , eq2 , vv = v2 , suc (sn3 + (tn3 + n3)) , comp , vv
   where
     s2eq-adj : eval s ρ2 (sn3 + (tn3 + n3)) ≡ Done (closure st2 sρ2) (tn3 + n3)
-    s2eq-adj rewrite +-comm sn3 (tn3 + n3)| cong (Done (closure st2 sρ2)) (sym (+-right-identity (tn3 + n3))) = eval-adjust-plus (tn3 + n3) s _ sv2 _ _ s2eq
+    s2eq-adj rewrite +-comm sn3 (tn3 + n3)| cong (Done (closure st2 sρ2)) (sym (+-identityʳ (tn3 + n3))) = eval-adjust-plus (tn3 + n3) s _ sv2 _ _ s2eq
     t2eq-adj : eval t ρ2 (tn3 + n3) ≡ Done tv2 n3
-    t2eq-adj rewrite +-comm tn3 n3 | cong (Done tv2) (sym (+-right-identity n3)) = eval-adjust-plus n3 t _ tv2 _ _ t2eq
+    t2eq-adj rewrite +-comm tn3 n3 | cong (Done tv2) (sym (+-identityʳ n3)) = eval-adjust-plus n3 t _ tv2 _ _ t2eq
 
     comp : (eval s ρ2 >>= (λ sv → eval t ρ2 >>= apply sv))
       (sn3 + (tn3 + n3))

@@ -17,7 +17,7 @@ open import Algebra.Structures
 open import Data.Integer
 open import Data.Integer.Properties
   using ()
-  renaming (commutativeRing to ℤ-is-commutativeRing)
+  renaming (+-*-commutativeRing to ℤ-is-commutativeRing)
 open import Data.Product
 
 infixl 9 _\\_ -- same as Data.Map.(\\)
