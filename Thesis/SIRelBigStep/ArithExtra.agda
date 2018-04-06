@@ -3,9 +3,7 @@ module Thesis.SIRelBigStep.ArithExtra where
 open import Relation.Binary.PropositionalEquality
 open import Data.Nat public
 open import Data.Nat.Properties public
-open import Data.Nat.Properties.Simple public
 open import Relation.Binary hiding (_⇒_)
-open DecTotalOrder Data.Nat.decTotalOrder using () renaming (refl to ≤-refl; trans to ≤-trans) public
 
 lt1 : ∀ {k n} → k < n → k ≤ n
 lt1 (s≤s p) = ≤-step p

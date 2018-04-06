@@ -7,8 +7,6 @@ open import Relation.Binary.PropositionalEquality
 open import Relation.Binary hiding (_⇒_)
 open import Data.Nat -- using (ℕ; zero; suc; decTotalOrder; _<_; _≤_)
 open import Data.Nat.Properties
-open import Data.Nat.Properties.Simple
-open DecTotalOrder Data.Nat.decTotalOrder using () renaming (refl to ≤-refl; trans to ≤-trans)
 open import Thesis.FunBigStepSILR2
 
 -- Standard relational big-step semantics, with step-indexes matching a small-step semantics.
@@ -49,7 +47,7 @@ module _ where
   rearr∸ a (suc b) (suc c) (s≤s c≤b) rewrite +-suc a b = rearr∸ a b c c≤b
 
   cancel∸ : ∀ a b → b ≤ a → a ∸ b + b ≡ a
-  cancel∸ a zero b≤a = +-right-identity a
+  cancel∸ a zero b≤a = +-identityʳ a
   cancel∸ zero (suc b) ()
   cancel∸ (suc a) (suc b) (s≤s b≤a) rewrite +-suc (a ∸ b) b = cong suc (cancel∸ a b b≤a)
 
